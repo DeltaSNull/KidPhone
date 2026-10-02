@@ -78,6 +78,10 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   await page.route('**/assets/family/family.json', r => family
     ? r.fulfill({ contentType: 'application/json', body: JSON.stringify({ contacts: [{ name: 'Daddy', photo: FAMILY_PHOTO, clips: [wavDataUri(0.8), wavDataUri(0.5)], color: '#BFE3F7' }] }) })
     : r.fulfill({ status: 404, body: 'not found' }));
+  // a dropped-in real recording replaces the lion's synth voice
+  await page.route('**/assets/sounds/sounds.json', r => family
+    ? r.fulfill({ contentType: 'application/json', body: JSON.stringify({ lion: wavDataUri(1.0) }) })
+    : r.fulfill({ status: 404, body: 'not found' }));
   await page.goto(base + '/index.html');
   await page.evaluate(() => document.fonts.ready);
   await sleep(500);
@@ -113,7 +117,7 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   };
 
   // --- first touch unlocks sound and speech
-  await tapXY(viewport.width / 2, viewport.height * 0.12);
+  await tapXY(viewport.width * 0.6, 22);   // a tap on the status bar (not a button)
   await shot('1-home');
   await fits('home');
   const homeBtn = await page.locator('#homeBtn').boundingBox();
@@ -122,8 +126,17 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   check(tile.width >= 120 && tile.height >= 120, `app icons are at least 120px (${Math.round(tile.width)})`);
   check(await page.evaluate(() => !document.querySelector('a[href^="tel:"]')), 'no tel: links');
   let before = await osc();
-  await tapAll('.friend');
-  check(await osc() > before, 'home friends make sounds');
+  if (await visible('.friend')) { await tapAll('.friend'); check(await osc() > before, 'home friends make sounds'); }
+  if (name === 'portrait') {
+    const calls = ['roar','bigroar','trumpet','munch','neigh','ooh','bray','hippo','bellow','huff','stego','screech','snort','growl','squawk','honk','thump','ribbit','hoot','yawn','moo'];
+    const bad = [];
+    for (const n of calls) {
+      const r = await page.evaluate(n => window.__toyPhone.renderFx(n, 3).then(r => { let p = 0; for (const v of r.data) p = Math.max(p, Math.abs(v)); return { p, len: r.len }; }), n);
+      if (!(r.p > 0.1 && r.p < 0.99 && r.len > 0.2 && r.len < 2.5)) bad.push(`${n} peak ${r.p.toFixed(2)} len ${r.len}`);
+    }
+    check(!bad.length, `all ${calls.length} animal calls render, are audible and don't clip ${bad.join(', ')}`);
+  }
+  if (family) check(await page.evaluate(() => window.__decoded) >= 1, 'a recording listed in sounds.json is loaded');
 
   // --- PHONE: contacts and a full outgoing call
   await tap('[data-app="phone"]'); await sleep(500);
@@ -136,14 +149,14 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   check(await state() === 'dialing', 'tapping Lion dials');
   await sleep(5300);
   check(await state() === 'talking', 'Lion answers after the ringback');
-  await sleep(1500);
+  await sleep(3000);   // the lion roars first (up to ~2s), then says hello
   const s1 = await said();
   check(s1.includes('Calling Lion!') && s1.some(s => /It's Lion/.test(s)), 'Lion says hello');
   check(/^\d\d:\d\d$/.test(await page.locator('#callTime').textContent()), 'call timer runs');
   await shot('3-call');
   await fits('call');
   await tap('#callFace');
-  await sleep(6500);
+  await sleep(9000);   // next line comes after the sound, the speech and a short pause
   check((await said()).length > s1.length, 'Lion keeps talking every ~6s');
   await tap('#hangupBtn');
   check(await state() === 'ending', 'hang up ends the call');
@@ -153,9 +166,10 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   check(await state() === null, 'call screen closes');
 
   if (family) {
+    const dec0 = await page.evaluate(() => window.__decoded);
     await tap(`.contact[aria-label="Call Daddy"]`);
     await sleep(6000);
-    check(await state() === 'talking' && await page.evaluate(() => window.__decoded) >= 1, 'family contact plays a recorded clip');
+    check(await state() === 'talking' && await page.evaluate(() => window.__decoded) > dec0, 'family contact plays a recorded clip');
     await tap('#hangupBtn'); await sleep(2200);
   }
 
@@ -281,6 +295,62 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   await fits('songs');
   await tap('#dancer');
   await tap('#songStop'); await tap('#songPlay'); await sleep(400); await tap('#songStop');
+  await home();
+
+  // --- GAMES: the picker, then both games
+  await tap('[data-app="games"]'); await sleep(600);
+  check((await said()).some(s => /Pick a game/.test(s)), 'games speaks its prompt');
+  check(await page.locator('.gamecard').count() === 2, 'games list shows Wild Tap and Dino Buddies');
+  await shot('16-games');
+  await fits('games');
+  await tap('.gamecard[aria-label="Wild Tap"]'); await sleep(600);
+  check(await visible('#wt-menu'), 'Wild Tap opens on its menu');
+  await shot('17-wildtap');
+  await fits('wild tap menu');
+  for (const w of ['safari', 'zoo', 'dino']) {
+    await tap(`[data-wt="${w}"]`); await sleep(300);
+    before = await osc();
+    await tapAll('#wtAnimals .wt-pad');
+    check(await osc() > before + 6, `Wild Tap ${w}: every animal makes its sound`);
+    if (w === 'safari') { await shot('18-wildtap-safari'); await fits('wild tap safari'); }
+    await tap('#wt-world .wt-back'); await sleep(250);
+  }
+  await tap('[data-wt="find"]'); await sleep(900);
+  const target = await page.evaluate(() => document.getElementById('wtFindQ').textContent.replace(/^Where is the |\?$/g, ''));
+  await tap(`#wtChoices .wt-choice[aria-label="${target}"]`); await sleep(300);
+  check(await page.locator('#wtStickers .s').count() === 1, 'Find It: finding the animal earns a sticker');
+  await shot('19-wildtap-find');
+  await fits('wild tap find it');
+  await tap('#wtRepeat');
+  await tap('#wt-find .wt-back'); await sleep(250);
+  await tap('[data-wt="egg"]'); await sleep(300);
+  for (let i = 0; i < 6; i++) await tap('#wtEggwrap');
+  await sleep(1400);
+  check(await visible('#wtNewegg'), 'Hatch: six taps hatch the egg');
+  await shot('20-wildtap-egg');
+  await fits('wild tap egg');
+  await tap('#wtNewegg');
+  await tap('#wt-egg .wt-back'); await sleep(250);
+  await tap('[data-wt="bubbles"]'); await sleep(2500);
+  const bub = await page.locator('.wt-bub:not(.popped)').first().boundingBox();
+  if (bub) await tapXY(bub.x + bub.width / 2, bub.y + bub.height / 2);
+  check(await page.locator('.wt-bub.popped').count() >= 1, 'Bubbles: tapping a bubble pops it');
+  await shot('21-wildtap-bubbles');
+  await home();
+  check(await page.locator('.wt-bub').count() === 0, 'leaving Wild Tap stops the bubbles');
+  await tap('[data-app="games"]'); await sleep(500);
+  await tap('.gamecard[aria-label="Dino Buddies"]'); await sleep(600);
+  check(await visible('.db-a'), 'Dino Buddies opens');
+  const da = await page.locator('.db-a').boundingBox(), db = await page.locator('.db-b').boundingBox();
+  const inside = r => [r.x + r.width * (0.25 + 0.5 * Math.random()), r.y + r.height * (0.25 + 0.5 * Math.random())];
+  for (let i = 0; i < 13; i++) { await touch('touchStart', [inside(da), inside(db)]); await sleep(30); await touch('touchEnd', []); await sleep(150); }
+  await sleep(500);
+  await shot('22-dinobuddies');
+  await fits('dino buddies');
+  await sleep(3500);
+  check((await page.evaluate(() => window.__toyPhone.dino())).family >= 1, 'Dino Buddies: both kids tapping at once hatch the shared egg');
+  check((await said()).some(s => /A baby/.test(s)), 'Dino Buddies says which baby hatched');
+  check(!!(await page.evaluate(() => localStorage.getItem('toyphone.dinobuddies'))), 'the hatched family is remembered');
   await home();
 
   // --- clearing photos (parent) leaves a friendly empty album

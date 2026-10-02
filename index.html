@@ -33,12 +33,12 @@
   --display:"Baloo 2","Arial Rounded MT Bold","Trebuchet MS",system-ui,sans-serif;
   --emoji:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif;
   --status:30px; --bar:84px; --gap:10px; --home:84px;
-  --icon:clamp(120px, min(34vw, 21vh), 156px);
+  --icon:clamp(120px, min(32vw, 19vh), 150px); --igap:clamp(20px,8vw,40px);
   color-scheme:light;
   box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
   background:var(--case);
 }
-@media (orientation:landscape){ :root{ --status:26px; --bar:80px; --gap:8px; --icon:clamp(120px, min(17vw, 33vh), 150px) } }
+@media (orientation:landscape){ :root{ --status:26px; --bar:80px; --gap:8px; --icon:clamp(120px, min(15vw, 29vh), 140px) } }
 *,*::before,*::after{box-sizing:border-box}
 [hidden]{display:none!important}
 html,body{height:100%}
@@ -120,8 +120,8 @@ svg{display:block}
     radial-gradient(ellipse 80% 30% at 88% 106%, #4FA84C 0 60%, transparent 61%),
     linear-gradient(180deg, #8FD8F5 0%, #CBEFFF 66%, #A8E08F 66%, #7CC96B 100%);
 }
-.icons{flex:1; min-height:0; display:grid; grid-template-columns:repeat(2,auto); place-content:center; gap:14px clamp(20px,8vw,40px)}
-@media (orientation:landscape){ .icons{grid-template-columns:repeat(4,auto)} }
+.icons{flex:1; min-height:0; display:flex; flex-wrap:wrap; justify-content:center; align-content:center; gap:12px var(--igap); width:100%; max-width:calc(var(--icon)*2 + var(--igap) + 8px); margin:0 auto}
+@media (orientation:landscape){ .icons{max-width:calc(var(--icon)*3 + var(--igap)*2 + 8px)} .appicon .lbl{font-size:18px} }
 .appicon{display:flex; flex-direction:column; align-items:center; gap:4px}
 .appicon .tile{
   position:relative; width:var(--icon); height:var(--icon); display:grid; place-items:center; overflow:hidden;
@@ -134,10 +134,11 @@ svg{display:block}
 .t-camera{background:linear-gradient(160deg,#82CBFF,#3D8FE0)}
 .t-photos{background:linear-gradient(160deg,#FFE38A,#FFAE34)}
 .t-music{background:linear-gradient(160deg,#BCA6F2,#7B5DCB)}
+.t-games{background:linear-gradient(160deg,#8EE07A,#36A04A)}
 .appicon.go .tile{animation:hop .45s cubic-bezier(.3,1.6,.5,1)}
-.friends{flex:none; display:flex; justify-content:space-around; align-items:flex-end; height:clamp(80px,15vh,124px)}
-@media (orientation:landscape){ .friends{height:clamp(80px,22vh,96px); justify-content:space-evenly} }
-.friend{position:relative; width:clamp(84px,24vw,120px); height:100%; display:grid; place-items:end center; font-size:clamp(58px,min(13vw,10vh),86px)}
+.friends{flex:none; display:flex; justify-content:space-around; align-items:flex-end; height:96px}
+@media (orientation:landscape), (max-height:799px){ .friends{display:none} }   /* five big icons need the room */
+.friend{position:relative; width:clamp(84px,24vw,120px); height:100%; display:grid; place-items:end center; font-size:76px}
 .friend .em{transform-origin:50% 100%; display:block}
 .friend.go .em{animation:hop .45s cubic-bezier(.3,1.6,.5,1)}
 .friend .word{top:-10%}
@@ -321,6 +322,149 @@ svg{display:block}
 .fly{position:absolute; pointer-events:none; z-index:6; font-size:34px; animation:flyup 1.1s ease-out forwards}
 @keyframes flyup{from{transform:translate(0,0) scale(.6); opacity:1}to{transform:translate(var(--dx,0px),-120px) scale(1.2); opacity:0}}
 
+/* ---------- Games: a picker, then each game fills the screen ---------- */
+#games{background:repeating-linear-gradient(135deg, rgba(255,255,255,.14) 0 18px, transparent 18px 36px), linear-gradient(180deg,#A5E8A2,#4FB86A)}
+.gamelist{flex:1; min-height:0; display:grid; grid-template-columns:1fr; grid-auto-rows:minmax(0,1fr); gap:16px}
+@media (orientation:landscape){ .gamelist{grid-template-columns:repeat(2,1fr)} }
+.gamecard{position:relative; min-height:0; border-radius:30px; overflow:hidden; display:grid; place-items:center; box-shadow:var(--drop), inset 0 -8px 0 rgba(59,43,32,.14)}
+.gamecard .gart{display:flex; align-items:flex-end; gap:6px; margin-bottom:34px; pointer-events:none}
+.gamecard .gname{position:absolute; left:50%; bottom:12px; translate:-50% 0; background:var(--paper); border-radius:16px; padding:0 16px; font-size:22px; white-space:nowrap; box-shadow:var(--drop-sm)}
+.g-wild{background:radial-gradient(circle at 84% 20%, #FFF1B8 0 26px, transparent 27px), linear-gradient(180deg,#FFD58A 0%,#FFB56B 50%,#E8A945 50%,#C98A30 100%)}
+.g-wild .em{font-size:clamp(52px,min(12vh,18vw),104px)} .g-wild .em:nth-child(odd){font-size:clamp(38px,min(8vh,12vw),72px)}
+.g-dino{background:linear-gradient(90deg,#A6E39A 0 50%,#A9DDF7 50% 100%)}
+.g-dino .gart{align-items:center}
+.g-dino .em{font-size:clamp(56px,min(13vh,19vw),108px)} .g-dino .flip{transform:scaleX(-1)}
+.g-dino .gegg{width:clamp(36px,min(7vh,10vw),56px); aspect-ratio:3/4; border-radius:50% 50% 50% 50% / 60% 60% 40% 40%; background:linear-gradient(to top,#FFC83D 45%,#FFF6E0 45%); box-shadow:inset -5px -6px 0 rgba(59,43,32,.1)}
+.gamecard.go{animation:hop .45s cubic-bezier(.3,1.6,.5,1)}
+
+/* ---------- Game: Wild Tap Safari (the first game, moved in whole) ---------- */
+.app.wt, .app.db{padding:0; gap:0}
+.wt{--savanna:#E8A945; --dusk:#5B4A9E}
+.wt-screen{position:absolute; inset:0; display:flex; flex-direction:column; padding:12px 16px 16px; gap:12px}
+#wt-menu{background:radial-gradient(circle at 88% 9%, var(--sun) 0 34px, rgba(255,240,170,.8) 35px 50px, transparent 51px), linear-gradient(180deg, var(--sky) 0 72%, var(--grass) 72% 100%)}
+.wt-head h1{margin:0; font-size:clamp(28px,8vw,42px); font-weight:800; line-height:1; color:#fff; text-shadow:0 3px 0 var(--ink); letter-spacing:.5px}
+.wt-grid{flex:1; display:grid; grid-template-columns:1fr 1fr; grid-template-rows:repeat(3,1fr); gap:14px; min-height:0}
+@media (orientation:landscape){ .wt-grid{grid-template-columns:repeat(3,1fr); grid-template-rows:1fr 1fr} }
+.wt-tile{position:relative; border-radius:28px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; box-shadow:0 6px 0 rgba(59,43,32,.35); min-height:0; overflow:hidden}
+.wt-tile .wt-big{font-size:clamp(46px,10vh,92px); line-height:1.05}
+.wt-tile .wt-lbl{font-size:clamp(18px,4.6vw,24px); color:#fff; text-shadow:0 2px 0 rgba(59,43,32,.5)}
+.wt-safari{background:linear-gradient(180deg,#FFB65C,#E8913A)}
+.wt-zoo{background:linear-gradient(180deg,#5CC9B5,#2E9C8A)}
+.wt-dino{background:linear-gradient(180deg,#8A6FD1,var(--dusk))}
+.wt-find{background:linear-gradient(180deg,#FF8FA3,var(--berry))}
+.wt-egg{background:linear-gradient(180deg,#9AD66F,#5DA545)}
+.wt-bubble{background:linear-gradient(180deg,#7EC8FF,#3D8FE0)}
+.wt-bar{display:flex; align-items:center; gap:12px; min-height:80px; flex:none}
+.wt-back{width:80px; height:80px; border-radius:24px; background:var(--paper); display:grid; place-items:center; box-shadow:0 5px 0 rgba(59,43,32,.35); flex:none}
+.wt-back svg{width:48px; height:48px}
+.wt-bar h2{margin:0; font-size:clamp(26px,7vw,38px); font-weight:800; color:#fff; text-shadow:0 3px 0 rgba(59,43,32,.55); line-height:1}
+.wt-w-safari{background:radial-gradient(circle at 80% 14%, #FFF1B8 0 34px, transparent 35px), linear-gradient(180deg,#FFD58A 0%,#FFB56B 34%,var(--savanna) 34%,#C98A30 100%)}
+.wt-w-zoo{background:repeating-linear-gradient(90deg, transparent 0 46px, rgba(59,43,32,.12) 46px 52px), linear-gradient(180deg,var(--sky) 0 34%,#93D67F 34%,#5FAE52 100%)}
+.wt-w-dino{background:radial-gradient(ellipse at 18% 34%, #FF7A3D 0 18px, transparent 19px), linear-gradient(180deg,#6B5BB8 0%,#9C82DD 34%,#4F7A3A 34%,#2F5A28 100%)}
+.wt-animals{flex:1; display:grid; grid-template-columns:1fr 1fr; grid-template-rows:repeat(3,1fr); gap:12px; min-height:0}
+@media (orientation:landscape){ .wt-animals{grid-template-columns:repeat(3,1fr); grid-template-rows:1fr 1fr} }
+.wt-pad{position:relative; border-radius:50% 50% 44% 44% / 56% 56% 44% 44%; background:rgba(255,253,246,.55); display:grid; place-items:center; min-height:0; box-shadow:inset 0 -8px 0 rgba(59,43,32,.12)}
+.wt-art{font-size:clamp(52px,12vh,116px); line-height:1; display:grid; place-items:center; pointer-events:none}
+.wt-art svg{width:1.15em; height:1em; display:block}
+.wt-pad.go .wt-art{animation:wt-bounce .7s cubic-bezier(.3,1.6,.5,1)}
+.wt-word{position:absolute; top:4%; left:50%; translate:-50% 0; background:#fff; color:var(--ink); font-size:clamp(20px,5.5vw,30px); padding:2px 14px; border-radius:18px; box-shadow:0 4px 0 rgba(59,43,32,.25); white-space:nowrap; opacity:0; pointer-events:none; z-index:2}
+.wt-pad.go .wt-word{animation:wt-pop 1.6s ease-out}
+@keyframes wt-bounce{0%{transform:scale(1)}30%{transform:scale(1.32) rotate(-8deg)}55%{transform:scale(.92) rotate(6deg)}100%{transform:scale(1) rotate(0)}}
+@keyframes wt-pop{0%{opacity:0; transform:scale(.4) translateY(10px)}15%{opacity:1; transform:scale(1.1)}25%{transform:scale(1)}80%{opacity:1}100%{opacity:0; transform:translateY(-14px)}}
+@keyframes wt-shake{0%,100%{transform:translate(0)}20%{transform:translate(-8px,4px)}40%{transform:translate(7px,-5px)}60%{transform:translate(-6px,-3px)}80%{transform:translate(5px,5px)}}
+.wt-shake{animation:wt-shake .5s linear 2}
+#wt-find{background:linear-gradient(180deg,#FFD1DA 0%,#FFB3C2 100%)}
+.wt-ask{flex:1; display:flex; align-items:center; justify-content:center; gap:12px; min-width:0}
+.wt-ear{width:80px; height:80px; border-radius:50%; background:var(--berry); display:grid; place-items:center; box-shadow:0 5px 0 rgba(59,43,32,.35); flex:none}
+.wt-ear svg{width:44px; height:44px}
+.wt-q{font-size:clamp(20px,5.4vw,32px); color:var(--ink); min-width:0}
+.wt-choices{flex:1; display:flex; flex-wrap:wrap; justify-content:center; align-content:center; gap:16px; min-height:0}
+.wt-choice{flex:0 0 calc(50% - 8px); height:calc(50% - 8px); max-height:260px; border-radius:30px; background:var(--paper); display:grid; place-items:center; box-shadow:0 7px 0 rgba(59,43,32,.3)}
+.wt-choices.n2 .wt-choice{flex-basis:min(100%,340px)}
+@media (orientation:landscape){ .wt-choice{flex-basis:calc(25% - 12px); height:calc(100% - 8px)} .wt-choices.n2 .wt-choice{flex-basis:calc(40% - 8px)} }
+.wt-choice .wt-art{font-size:clamp(60px,13vh,128px)}
+.wt-choice.no{animation:wt-wiggle .45s}
+.wt-choice.yes{background:#FFF3B0; animation:wt-bounce .7s cubic-bezier(.3,1.6,.5,1)}
+@keyframes wt-wiggle{0%,100%{transform:rotate(0)}25%{transform:rotate(-7deg)}75%{transform:rotate(7deg)}}
+.wt-stickers{min-height:52px; flex:none; display:flex; flex-wrap:wrap; gap:4px; justify-content:center; align-items:center; background:rgba(255,253,246,.7); border-radius:20px; padding:6px 10px; font-size:30px; line-height:1; font-family:var(--emoji); font-weight:400}
+.wt-stickers svg{width:1.15em; height:1em}
+.wt-stickers .s{animation:wt-bounce .6s}
+#wt-egg{background:radial-gradient(ellipse 46% 13% at 50% 70%, #C98A4E 0 96%, transparent 100%), linear-gradient(180deg,#BFE9FF 0 60%,#8BCB6C 60%)}
+.wt-nest{flex:1; display:grid; place-items:center; position:relative; min-height:0}
+.wt-eggwrap{position:relative; width:min(56vw,30vh,260px); aspect-ratio:3/4; max-width:100%}
+@media (orientation:landscape){ .wt-eggwrap{width:min(28vw,27vh,200px)} }
+.wt-shell{position:absolute; inset:0; border-radius:50% 50% 50% 50% / 60% 60% 40% 40%; background:var(--eggc,#F7EBD0); box-shadow:inset -14px -18px 0 rgba(59,43,32,.10), 0 10px 0 rgba(59,43,32,.15); transition:transform .6s cubic-bezier(.3,1.4,.5,1), opacity .6s}
+.wt-shell::before,.wt-shell::after{content:""; position:absolute; border-radius:50%; background:var(--spot,#E8A945); opacity:.75}
+.wt-shell::before{width:22%; height:16%; left:22%; top:30%}
+.wt-shell::after{width:15%; height:11%; right:22%; top:55%}
+.wt-top{clip-path:polygon(0 0,100% 0,100% 46%,88% 52%,76% 44%,64% 53%,52% 44%,40% 53%,28% 44%,16% 52%,0 45%)}
+.wt-bottom{clip-path:polygon(0 45%,16% 52%,28% 44%,40% 53%,52% 44%,64% 53%,76% 44%,88% 52%,100% 46%,100% 100%,0 100%)}
+.wt-cracks{position:absolute; inset:0; width:100%; height:100%; pointer-events:none}
+.wt-cracks path{fill:none; stroke:var(--ink); stroke-width:3; stroke-linecap:round; stroke-linejoin:round; opacity:0; transition:opacity .2s}
+.wt-eggwrap.wob{animation:wt-wob .4s}
+@keyframes wt-wob{0%,100%{transform:rotate(0)}25%{transform:rotate(-9deg)}75%{transform:rotate(9deg)}}
+.wt-eggwrap.hatched .wt-top{transform:translate(-40%,-70%) rotate(-40deg); opacity:0}
+.wt-eggwrap.hatched .wt-bottom{transform:translateY(25%); opacity:0}
+.wt-eggwrap.hatched .wt-cracks{opacity:0}
+.wt-baby{position:absolute; inset:0; display:grid; place-items:center; font-size:clamp(76px,18vh,160px); transform:scale(0); transition:transform .6s cubic-bezier(.3,1.7,.5,1) .15s; pointer-events:none}
+.wt-baby svg{width:1.15em; height:1em}
+.wt-eggwrap.hatched .wt-baby{transform:scale(1)}
+.wt-newegg{align-self:center; flex:none; min-height:80px; background:var(--paper); border-radius:40px; padding:10px 26px; font-size:44px; line-height:1; box-shadow:0 6px 0 rgba(59,43,32,.3); display:flex; align-items:center; gap:10px}
+.wt-newegg span:last-child{font-size:24px}
+#wt-bubbles{background:linear-gradient(180deg,#4FB3F0 0%,#1E6FB8 100%)}
+.wt-pool{flex:1; position:relative; overflow:hidden; border-radius:24px; min-height:0}
+.wt-bub{position:absolute; bottom:-160px; width:var(--sz); height:var(--sz); border-radius:50%; display:grid; place-items:center; font-size:calc(var(--sz) * .5); font-family:var(--emoji); font-weight:400;
+  background:radial-gradient(circle at 32% 28%, rgba(255,255,255,.95) 0 9%, rgba(255,255,255,.25) 10% 45%, rgba(170,225,255,.35) 70%, rgba(255,255,255,.7) 100%);
+  border:3px solid rgba(255,255,255,.75); animation:wt-rise var(--dur) linear forwards}
+.wt-bub svg{width:1.15em; height:1em; pointer-events:none}
+.wt-bub span{pointer-events:none; line-height:1}
+@keyframes wt-rise{from{transform:translate(0,0)} 50%{transform:translate(var(--sway),-55vh)} to{transform:translate(0,-115vh)}}
+.wt-bub.popped{animation:none; border-color:transparent; background:none}
+.wt-bub.popped span,.wt-bub.popped svg{animation:wt-drop .9s ease-in forwards}
+@keyframes wt-drop{0%{transform:scale(1.3)}30%{transform:scale(1.4) translateY(-20px) rotate(-10deg)}100%{transform:translateY(60vh) rotate(30deg); opacity:0}}
+
+/* ---------- Game: Dino Buddies (the second game, moved in whole): two halves, one shared egg ---------- */
+.app.db{display:grid; grid-template-rows:1fr auto 1fr; overflow:hidden; background:var(--db-sand);
+  --db-jungle:#6CC46A; --db-jungle-deep:#3E9447; --db-lagoon:#5BB8E8; --db-lagoon-deep:#2F86C4; --db-sand:#F3D08A; --db-twig:#9A6436}
+@media (orientation:landscape){ .app.db{grid-template-rows:none; grid-template-columns:1fr auto 1fr} }
+.db-side{position:relative; overflow:hidden; display:grid; place-items:center; min-height:0; min-width:0; touch-action:none}
+.db-a{background:radial-gradient(ellipse at 12% 100%, var(--db-jungle-deep) 0 22%, transparent 23%), radial-gradient(ellipse at 92% 96%, var(--db-jungle-deep) 0 18%, transparent 19%), linear-gradient(180deg,#A6E39A,var(--db-jungle))}
+.db-b{background:radial-gradient(ellipse at 88% 100%, var(--db-lagoon-deep) 0 22%, transparent 23%), radial-gradient(ellipse at 8% 96%, var(--db-lagoon-deep) 0 18%, transparent 19%), linear-gradient(180deg,#A9DDF7,var(--db-lagoon))}
+.db-dino{font-size:clamp(84px,22vmin,180px); line-height:1; pointer-events:none; transform-origin:50% 90%; display:grid; place-items:center}
+.db-dino svg{width:1.15em; height:1em; display:block}
+.db-b .db-dino{transform:scaleX(-1)}
+.db-dino.db-hop{animation:db-hop .38s cubic-bezier(.3,1.6,.5,1)}
+.db-b .db-dino.db-hop{animation:db-hopb .38s cubic-bezier(.3,1.6,.5,1)}
+.db-dino.db-dance{animation:db-dance .5s ease-in-out 5}
+.db-b .db-dino.db-dance{animation:db-danceb .5s ease-in-out 5}
+@keyframes db-hop{0%{transform:scale(1,1)}35%{transform:translateY(-14%) scale(.92,1.12)}70%{transform:scale(1.1,.9)}100%{transform:scale(1,1)}}
+@keyframes db-hopb{0%{transform:scaleX(-1)}35%{transform:scaleX(-1) translateY(-14%) scale(.92,1.12)}70%{transform:scaleX(-1) scale(1.1,.9)}100%{transform:scaleX(-1)}}
+@keyframes db-dance{0%,100%{transform:rotate(0)}25%{transform:translateY(-18%) rotate(-12deg)}75%{transform:translateY(-18%) rotate(12deg)}}
+@keyframes db-danceb{0%,100%{transform:scaleX(-1) rotate(0)}25%{transform:scaleX(-1) translateY(-18%) rotate(-12deg)}75%{transform:scaleX(-1) translateY(-18%) rotate(12deg)}}
+.db-mid{position:relative; z-index:3; display:flex; align-items:center; justify-content:center; gap:14px; padding:8px 16px; background:var(--db-sand); box-shadow:0 -6px 0 rgba(59,43,32,.12) inset, 0 6px 0 rgba(59,43,32,.12) inset}
+@media (orientation:landscape){ .db-mid{flex-direction:column; padding:12px 10px; box-shadow:6px 0 0 rgba(59,43,32,.12) inset, -6px 0 0 rgba(59,43,32,.12) inset} }
+.db-nest{position:relative; width:clamp(104px,24vmin,160px); aspect-ratio:1/1; display:grid; place-items:end center; flex:none}
+.db-nest::after{content:""; position:absolute; left:0; right:0; bottom:0; height:38%; border-radius:0 0 50% 50% / 0 0 100% 100%;
+  background:repeating-linear-gradient(20deg, transparent 0 7px, rgba(59,43,32,.25) 7px 9px), repeating-linear-gradient(-25deg, transparent 0 9px, rgba(255,255,255,.18) 9px 11px), var(--db-twig); box-shadow:0 5px 0 rgba(59,43,32,.3)}
+.db-egg{--p:0%; position:absolute; left:50%; bottom:16%; width:62%; aspect-ratio:3/4; translate:-50% 0; border-radius:50% 50% 50% 50% / 60% 60% 40% 40%;
+  background:linear-gradient(to top, var(--fillc,#FFC83D) var(--p), var(--eggc,#FFF6E0) var(--p)); box-shadow:inset -8px -10px 0 rgba(59,43,32,.10), 0 0 calc(var(--glow,0) * 34px) var(--fillc,#FFC83D); transition:background .25s, box-shadow .25s, opacity .3s}
+.db-egg::before,.db-egg::after{content:""; position:absolute; border-radius:50%; background:rgba(59,43,32,.14)}
+.db-egg::before{width:20%; height:15%; left:22%; top:24%}
+.db-egg::after{width:14%; height:10%; right:22%; top:46%}
+.db-egg.db-wig{animation:db-wig .25s}
+.db-egg.db-gone{opacity:0}
+@keyframes db-wig{0%,100%{rotate:0deg}30%{rotate:-8deg}70%{rotate:8deg}}
+.db-baby{position:absolute; left:50%; bottom:20%; translate:-50% 0; font-size:clamp(64px,18vmin,120px); line-height:1; transform:scale(0); pointer-events:none; z-index:4}
+.db-baby svg{width:1.15em; height:1em; display:block}
+.db-baby.db-show{animation:db-born 2.6s cubic-bezier(.3,1.5,.5,1) forwards}
+@keyframes db-born{0%{transform:scale(0)}18%{transform:scale(1.7) translateY(-12%)}30%{transform:scale(1.4)}80%{transform:scale(1.4)}100%{transform:scale(0) translateY(40%)}}
+.db-family{display:flex; flex-wrap:wrap; justify-content:center; align-content:center; gap:2px; font-size:clamp(24px,6vmin,38px); line-height:1; min-width:0; flex:1; font-family:var(--emoji); font-weight:400}
+@media (orientation:landscape){ .db-family{flex:none; max-height:calc(100% - 190px); width:clamp(70px,16vmin,104px); overflow:hidden} }
+.db-family span{display:inline-grid; place-items:center; animation:db-arrive .5s cubic-bezier(.3,1.6,.5,1)}
+.db-family svg{width:1.15em; height:1em}
+@keyframes db-arrive{from{transform:scale(0)}}
+.db-treat{position:absolute; left:0; top:0; width:56px; height:56px; display:grid; place-items:center; font-size:44px; line-height:1; pointer-events:none; z-index:6; will-change:transform; font-family:var(--emoji); font-weight:400}
+
 /* ---------- Parent settings ---------- */
 #settings{position:absolute; inset:0; z-index:50; display:grid; place-items:center; padding:12px; background:rgba(59,43,32,.5)}
 .sheet{width:min(100%,470px); max-height:100%; overflow-y:auto; touch-action:pan-y; overscroll-behavior:contain; -webkit-overflow-scrolling:touch;
@@ -344,7 +488,7 @@ svg{display:block}
 .ring{position:absolute; width:20px; height:20px; margin:-10px 0 0 -10px; border-radius:50%; border:4px solid #fff; pointer-events:none; z-index:55; animation:ring .45s ease-out forwards}
 @keyframes ring{to{transform:scale(5); opacity:0}}
 
-@media (prefers-reduced-motion:reduce){ *{animation-duration:.01ms!important; transition-duration:.01ms!important} }
+@media (prefers-reduced-motion:reduce){ *{animation-duration:.01ms!important; transition-duration:.01ms!important} .wt-bub{animation-duration:var(--dur)!important} }
 </style>
 <!-- page:end -->
 </head>
@@ -364,6 +508,7 @@ svg{display:block}
           <button class="appicon" data-app="camera" aria-label="Camera"><span class="tile t-camera"></span><span class="lbl">Camera</span></button>
           <button class="appicon" data-app="photos" aria-label="Photos"><span class="tile t-photos"></span><span class="lbl">Photos</span></button>
           <button class="appicon" data-app="music" aria-label="Music"><span class="tile t-music"></span><span class="lbl">Music</span></button>
+          <button class="appicon" data-app="games" aria-label="Games"><span class="tile t-games"></span><span class="lbl">Games</span></button>
         </div>
         <div class="friends" id="friends"></div>
       </section>
@@ -428,6 +573,68 @@ svg{display:block}
             <button class="round stop" id="songStop" aria-label="Stop"></button>
           </div>
         </div>
+      </section>
+      <!-- GAMES: pick a game -->
+      <section class="app" id="games" hidden aria-label="Games">
+        <div class="gamelist" id="gameList"></div>
+      </section>
+
+      <!-- GAME: Wild Tap Safari -->
+      <section class="app wt" id="wildtap" hidden aria-label="Wild Tap Safari">
+        <section class="wt-screen" id="wt-menu">
+          <div class="wt-head"><h1>Wild Tap</h1></div>
+          <div class="wt-grid">
+            <button class="wt-tile wt-safari" data-wt="safari" aria-label="Safari"><span class="wt-big em">🦁</span><span class="wt-lbl">Safari</span></button>
+            <button class="wt-tile wt-zoo" data-wt="zoo" aria-label="Zoo"><span class="wt-big em">🐧</span><span class="wt-lbl">Zoo</span></button>
+            <button class="wt-tile wt-dino" data-wt="dino" aria-label="Dinosaurs"><span class="wt-big em">🦖</span><span class="wt-lbl">Dinos</span></button>
+            <button class="wt-tile wt-find" data-wt="find" aria-label="Find it"><span class="wt-big em">🔎</span><span class="wt-lbl">Find It</span></button>
+            <button class="wt-tile wt-egg" data-wt="egg" aria-label="Hatch an egg"><span class="wt-big em">🥚</span><span class="wt-lbl">Hatch</span></button>
+            <button class="wt-tile wt-bubble" data-wt="bubbles" aria-label="Bubble pop"><span class="wt-big em">🫧</span><span class="wt-lbl">Bubbles</span></button>
+          </div>
+        </section>
+        <section class="wt-screen" id="wt-world" hidden>
+          <div class="wt-bar"><button class="wt-back" aria-label="Wild Tap menu"></button><h2 id="wtWorldTitle">Safari</h2></div>
+          <div class="wt-animals" id="wtAnimals"></div>
+        </section>
+        <section class="wt-screen" id="wt-find" hidden>
+          <div class="wt-bar"><button class="wt-back" aria-label="Wild Tap menu"></button>
+            <div class="wt-ask"><button class="wt-ear" id="wtRepeat" aria-label="Say it again"></button><span class="wt-q" id="wtFindQ">Where is it?</span></div>
+          </div>
+          <div class="wt-choices" id="wtChoices"></div>
+          <div class="wt-stickers" id="wtStickers" aria-label="Animals found"></div>
+        </section>
+        <section class="wt-screen" id="wt-egg" hidden>
+          <div class="wt-bar"><button class="wt-back" aria-label="Wild Tap menu"></button><h2>Hatch!</h2></div>
+          <div class="wt-nest">
+            <div class="wt-eggwrap" id="wtEggwrap" role="button" aria-label="Tap the egg">
+              <div class="wt-baby" id="wtBaby"></div>
+              <div class="wt-shell wt-top"></div>
+              <div class="wt-shell wt-bottom"></div>
+              <svg class="wt-cracks" viewBox="0 0 100 133" aria-hidden="true">
+                <path d="M50 30 L44 42 L52 50 L46 60"/>
+                <path d="M22 58 L32 64 L28 72 L38 74"/>
+                <path d="M78 54 L68 62 L74 70 L64 74"/>
+                <path d="M8 62 L16 68 L28 60 L40 68 L52 60 L64 68 L76 60 L88 67 L96 61"/>
+                <path d="M46 60 L52 66 L48 76 L56 84"/>
+              </svg>
+            </div>
+          </div>
+          <button class="wt-newegg" id="wtNewegg" hidden aria-label="New egg"><span class="em">🥚</span><span>Again!</span></button>
+        </section>
+        <section class="wt-screen" id="wt-bubbles" hidden>
+          <div class="wt-bar"><button class="wt-back" aria-label="Wild Tap menu"></button><h2>Pop!</h2></div>
+          <div class="wt-pool" id="wtPool"></div>
+        </section>
+      </section>
+
+      <!-- GAME: Dino Buddies (two kids, one egg) -->
+      <section class="app db" id="dinobuddies" hidden aria-label="Dino Buddies">
+        <section class="db-side db-a" data-side="0" aria-label="Green side"><div class="db-dino"></div></section>
+        <section class="db-mid" aria-label="Shared nest">
+          <div class="db-nest"><div class="db-egg" id="dbEgg"></div><div class="db-baby" id="dbBaby"></div></div>
+          <div class="db-family" id="dbFamily" aria-label="Baby dinosaurs hatched"></div>
+        </section>
+        <section class="db-side db-b" data-side="1" aria-label="Blue side"><div class="db-dino"></div></section>
       </section>
     </div>
 
@@ -502,6 +709,7 @@ const ICON = {
   camera:`<svg viewBox="0 0 100 100"><rect x="30" y="18" width="26" height="16" rx="5" fill="#F0524F"/><rect x="10" y="28" width="80" height="56" rx="14" fill="#F0524F"/><rect x="10" y="64" width="80" height="20" rx="10" fill="#D23F3C"/><rect x="68" y="35" width="13" height="9" rx="3" fill="#FFC83D"/><circle cx="50" cy="56" r="22" fill="#FFFDF6"/><circle cx="50" cy="56" r="15" fill="#3D8FE0"/><circle cx="50" cy="56" r="7" fill="#24589E"/><circle cx="44" cy="50" r="4.5" fill="#fff"/></svg>`,
   photos:`<svg viewBox="0 0 100 100"><rect x="10" y="14" width="80" height="72" rx="12" fill="#9A6436"/><rect x="19" y="23" width="62" height="54" rx="6" fill="#8FD8F5"/><circle cx="64" cy="38" r="8" fill="#FFC83D"/><path d="M19 64 Q34 46 50 60 Q62 50 81 60 V77 H19 Z" fill="#6CC46A"/><path d="M19 70 Q40 60 81 70 V77 H19 Z" fill="#4FA84C"/></svg>`,
   music:`<svg viewBox="0 0 100 100"><path d="M36 72 V27 L78 18 V62" fill="none" stroke="#fff" stroke-width="8" stroke-linejoin="round"/><path d="M36 27 L78 18 V32 L36 41 Z" fill="#fff"/><ellipse cx="26" cy="73" rx="13" ry="10" fill="#FFE27A" transform="rotate(-18 26 73)"/><ellipse cx="68" cy="63" rx="13" ry="10" fill="#FFE27A" transform="rotate(-18 68 63)"/></svg>`,
+  controller:`<svg viewBox="0 0 100 100"><path d="M28 28 H72 C87 28 95 43 95 60 C95 74 89 83 80 83 C72 83 68 73 62 67 H38 C32 73 28 83 20 83 C11 83 5 74 5 60 C5 43 13 28 28 28 Z" fill="#FFFDF6"/><rect x="20" y="44" width="9" height="26" rx="3" fill="#3B2B20"/><rect x="11.5" y="52.5" width="26" height="9" rx="3" fill="#3B2B20"/><circle cx="70" cy="46" r="6.5" fill="#F0524F"/><circle cx="81" cy="57" r="6.5" fill="#3D8FE0"/><circle cx="59" cy="57" r="6.5" fill="#FFC83D"/><circle cx="70" cy="68" r="6.5" fill="#7CC96B"/></svg>`,
   contacts:`<svg viewBox="0 0 100 100"><circle cx="30" cy="30" r="18" fill="#FFB65C"/><circle cx="70" cy="30" r="18" fill="#7CC96B"/><circle cx="30" cy="70" r="18" fill="#8A6FD1"/><circle cx="70" cy="70" r="18" fill="#3D8FE0"/><g fill="#3B2B20"><circle cx="24" cy="27" r="2.8"/><circle cx="36" cy="27" r="2.8"/><circle cx="64" cy="27" r="2.8"/><circle cx="76" cy="27" r="2.8"/><circle cx="24" cy="67" r="2.8"/><circle cx="36" cy="67" r="2.8"/><circle cx="64" cy="67" r="2.8"/><circle cx="76" cy="67" r="2.8"/></g><g fill="none" stroke="#3B2B20" stroke-width="2.8" stroke-linecap="round"><path d="M23 35 Q30 41 37 35"/><path d="M63 35 Q70 41 77 35"/><path d="M23 75 Q30 81 37 75"/><path d="M63 75 Q70 81 77 75"/></g></svg>`,
   grid:`<svg viewBox="0 0 100 100"><rect x="12" y="12" width="34" height="34" rx="9" fill="#F0524F"/><rect x="54" y="12" width="34" height="34" rx="9" fill="#3D8FE0"/><rect x="12" y="54" width="34" height="34" rx="9" fill="#7CC96B"/><rect x="54" y="54" width="34" height="34" rx="9" fill="#FFC83D"/></svg>`,
   left:`<svg viewBox="0 0 100 100"><path d="M62 16 L28 50 L62 84" fill="none" stroke="#3B2B20" stroke-width="17" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
@@ -527,10 +735,11 @@ const ANIMALS = [
     "I'm spraying water with my long trunk. Splash!",
     "I'm eating crunchy peanuts. Yum yum!",
     "Can you swing your arm like a trunk? Paaa-ooo!"]},
-  {id:'giraffe', n:'Giraffe', a:'🦒', c:'#D7CBF5', fx:'munch', snd:'Munch munch', p:1.2, lines:[
+  {id:'giraffe', n:'Giraffe', a:'🦒', c:'#D7CBF5', fx:'munch', snd:'Hmmm', p:1.2, lines:[
     "Hello buddy! It's Giraffe. I'm munching leaves way up high!",
     "My neck is so long, I can see over the trees!",
-    "I have lots and lots of spots. Can you count them?"]},
+    "I have lots and lots of spots. Can you count them?",
+    "Giraffes hum very quietly. Hmmmm. Can you hum like me?"]},
   {id:'zebra', n:'Zebra', a:'🦓', c:'#FFE08A', fx:'neigh', snd:'Neigh', p:1.15, lines:[
     "Hi buddy! It's Zebra. I'm running with my friends! Neigh!",
     "Black and white, black and white. I love my stripes!",
@@ -540,20 +749,22 @@ const ANIMALS = [
     "I'm swinging from tree to tree. Wheee!",
     "I found a big yellow banana! Do you want some?",
     "Can you jump up and down like a monkey?"]},
-  {id:'penguin', n:'Penguin', a:'🐧', c:'#B9F0E3', fx:'squawk', snd:'Squawk', p:1.4, lines:[
+  {id:'penguin', n:'Penguin', a:'🐧', c:'#B9F0E3', fx:'bray', snd:'Haw haw', p:1.4, lines:[
     "Hi buddy! It's Penguin. I'm sliding on the ice! Wheee!",
+    "Did you hear me bray? Haw haw! Penguins can sound like a donkey!",
     "Waddle, waddle, waddle. Can you waddle like me?",
     "Brrr! It's so cold here. I love it!"]},
-  {id:'hippo', n:'Hippo', a:'🦛', c:'#FFD7B0', fx:'splash', snd:'Splash', p:.85, lines:[
+  {id:'hippo', n:'Hippo', a:'🦛', c:'#FFD7B0', fx:'hippo', snd:'Honk honk', p:.85, lines:[
     "Hi buddy! It's Hippo. I'm taking a big bath! Splash!",
     "Blub blub blub. I'm blowing bubbles in the river!",
+    "Hippos honk and laugh. Honk honk honk!",
     "I can open my mouth super wide. Ahhhh!"]},
   {id:'trex', n:'T. rex', sp:'T rex', a:'🦖', c:'#FFC9C9', fx:'bigroar', snd:'Rawr', p:.8, lines:[
     "Hi buddy! It's T rex! Rawr! I'm a friendly dinosaur.",
     "I have big teeth and teeny tiny arms. Can you make tiny arms?",
     "Stomp, stomp, stomp! I'm going for a walk.",
     "Rawr means I love you in dinosaur!"]},
-  {id:'longneck', n:'Long neck', a:'🦕', c:'#FFE6B3', fx:'stomp', snd:'Stomp stomp', p:.9, lines:[
+  {id:'longneck', n:'Long neck', a:'🦕', c:'#FFE6B3', fx:'bellow', snd:'Hooom', p:.9, lines:[
     "Hello buddy! It's Long neck. I'm eating leaves from the very tops of the trees!",
     "My neck is so long, I can almost touch the clouds!",
     "Stomp, stomp. I'm a big, gentle dinosaur."]},
@@ -561,7 +772,7 @@ const ANIMALS = [
     "Hi buddy! It's Triceratops! I have three horns. One, two, three!",
     "Huff huff! I'm munching on some yummy ferns.",
     "I have a big frill on my head. Isn't it pretty?"]},
-  {id:'stego', n:'Stegosaurus', a:SVG.stego, c:'#FFD9C2', fx:'stomp', snd:'Thump thump', p:.95, lines:[
+  {id:'stego', n:'Stegosaurus', a:SVG.stego, c:'#FFD9C2', fx:'stego', snd:'Hrrumph', p:.95, lines:[
     "Hi buddy! It's Stegosaurus. I have pointy plates on my back!",
     "Thump, thump! I'm swishing my spiky tail.",
     "I eat plants. Crunchy leaves are my favorite!"]},
@@ -629,9 +840,10 @@ function synth(o){
 const tone = (f0, f1, dur, type='sine', vol=.25, delay=0, vib=0, lp=0) => synth({f:f0, f1, dur, type, vol, at:delay, vib, lp});
 const beep = (f, dur, vol=.1, delay=0) => synth({f, dur, vol, at:delay, atk:.01, rel:.03});
 let noiseBuf = null;
+function makeNoise(c){ if (!noiseBuf || noiseBuf.sampleRate !== c.sampleRate){ noiseBuf = c.createBuffer(1, c.sampleRate*2, c.sampleRate); const d = noiseBuf.getChannelData(0); for (let i=0;i<d.length;i++) d[i] = Math.random()*2-1; } }
 function noise(dur, ftype='lowpass', f0=800, f1=f0, vol=.3, delay=0){
   const c = audio(); if (!c) return;
-  if (!noiseBuf){ noiseBuf = c.createBuffer(1, c.sampleRate*2, c.sampleRate); const d = noiseBuf.getChannelData(0); for (let i=0;i<d.length;i++) d[i] = Math.random()*2-1; }
+  makeNoise(c);
   const t = c.currentTime + delay, s = c.createBufferSource(), fl = c.createBiquadFilter(), g = c.createGain();
   s.buffer = noiseBuf; fl.type = ftype; fl.frequency.setValueAtTime(f0, t); fl.frequency.exponentialRampToValueAtTime(Math.max(f1,20), t+dur);
   g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(vol, t+.02); g.gain.exponentialRampToValueAtTime(.0001, t+dur);
@@ -645,32 +857,138 @@ function killBus(bus){
   try{ bus.gain.cancelScheduledValues(ctx.currentTime); bus.gain.setTargetAtTime(0, ctx.currentTime, .02); }catch(e){}
   setTimeout(() => { try{ bus.disconnect(); }catch(e){} }, 400);
 }
-/* Animal sounds stay short and mid-volume: nothing scary. */
+/* ---------- Animal voices ----------
+   A real animal call is a buzzing "vocal cord" sound shaped by the throat and mouth (resonances called formants),
+   with a pitch that swoops, roughness (a growl is the voice flapping 20-60 times a second) and breath noise.
+   vox() builds one call from contours: f0 = pitch [[sec, Hz]...], amp = loudness [[sec, 0..1]...],
+   form = resonances [{f: Hz or contour, q, g}], rough/roughHz = growl, noise = breath, vib/jitter = wobble (cents),
+   drive = brassy edge. It returns when the call ends, in seconds from now. */
+function curve(param, pts, t0, k=1){ param.setValueAtTime(pts[0][1]*k, t0 + pts[0][0]); for (let i=1;i<pts.length;i++) param.linearRampToValueAtTime(pts[i][1]*k, t0 + pts[i][0]); }
+function noiseSrc(c){ makeNoise(c); const s = c.createBufferSource(); s.buffer = noiseBuf; s.loop = true; return s; }
+const shapers = {};
+function shaper(k){ if (!shapers[k]){ const n = 1024, a = new Float32Array(n); for (let i=0;i<n;i++){ const x = i/(n-1)*2 - 1; a[i] = Math.tanh(k*x) / Math.tanh(k); } shapers[k] = a; } return shapers[k]; }
+function vox(o){
+  const c = audio(); if (!c) return (o.at || 0);
+  const end = o.amp[o.amp.length-1][0], t0 = c.currentTime + (o.at || 0), stop = t0 + end + .05;
+  const out = c.createGain(); out.gain.value = 0; curve(out.gain, o.amp, t0, o.vol ?? .3); out.connect(OUT || master);
+  const mix = c.createGain();
+  if (o.form) o.form.forEach(fm => {
+    const bp = c.createBiquadFilter(), g = c.createGain(), q = fm.q || 5;
+    bp.type = 'bandpass'; bp.Q.value = q; curve(bp.frequency, Array.isArray(fm.f) ? fm.f : [[0, fm.f]], t0);
+    g.gain.value = (fm.g ?? 1) * Math.sqrt(q);   // narrow resonances pass less, so lift them back up
+    mix.connect(bp); bp.connect(g); g.connect(out);
+  });
+  else mix.connect(out);
+  if (o.f0){
+    const osc = c.createOscillator(); osc.type = o.type || 'sawtooth'; curve(osc.frequency, o.f0, t0);
+    if (o.vib){ const l = c.createOscillator(), lg = c.createGain(); l.frequency.value = o.vibHz || 6; lg.gain.value = o.vib; l.connect(lg); lg.connect(osc.detune); l.start(t0); l.stop(stop); }
+    if (o.jitter){ const n = noiseSrc(c), lp = c.createBiquadFilter(), jg = c.createGain(); lp.type = 'lowpass'; lp.frequency.value = 16; jg.gain.value = o.jitter * 6; n.connect(lp); lp.connect(jg); jg.connect(osc.detune); n.start(t0, Math.random()); n.stop(stop); }
+    let src = osc;
+    if (o.drive){ const ws = c.createWaveShaper(); ws.curve = shaper(o.drive); src.connect(ws); src = ws; }
+    if (o.rough){ const am = c.createGain(), l = c.createOscillator(), lg = c.createGain(); am.gain.value = 1 - o.rough/2; l.type = 'triangle'; l.frequency.value = o.roughHz || 35; lg.gain.value = o.rough/2; l.connect(lg); lg.connect(am.gain); src.connect(am); src = am; l.start(t0); l.stop(stop); }
+    src.connect(mix);
+    osc.start(t0); osc.stop(stop);
+  }
+  if (o.noise){ const n = noiseSrc(c), ng = c.createGain(); ng.gain.value = o.noise; n.connect(ng); ng.connect(mix); n.start(t0, Math.random()); n.stop(stop); }
+  return (o.at || 0) + end;
+}
+/* Animal calls stay mid-volume and under ~2 seconds: realistic, not scary. Each returns its length in seconds. */
 const FX = {
-  roar(){ noise(.6,'lowpass',700,250,.32); tone(140,80,.6,'sawtooth',.08); },
-  bigroar(){ noise(.75,'lowpass',520,150,.36); tone(110,60,.75,'sawtooth',.1); },
-  trumpet(){ tone(320,560,.7,'sawtooth',.11,0,7,2400); },
-  munch(){ [0,.18,.36].forEach(d=>noise(.1,'highpass',2500,1800,.22,d)); },
-  neigh(){ tone(900,500,.6,'square',.05,0,18,2200); },
-  splash(){ noise(.7,'bandpass',3000,400,.38); },
-  snort(){ noise(.22,'lowpass',900,500,.34); noise(.22,'lowpass',900,500,.34,.3); },
-  growl(){ noise(.6,'lowpass',400,200,.34); tone(90,70,.6,'sawtooth',.09,0,24); },
-  squawk(){ tone(900,1400,.14,'square',.06,0,0,2600); tone(950,1500,.14,'square',.06,.2,0,2600); },
-  ooh(){ tone(380,700,.22,'sine',.25); tone(380,700,.22,'sine',.25,.26); tone(800,1100,.15,'sine',.2,.55); tone(800,1100,.15,'sine',.2,.75); },
-  honk(){ tone(460,420,.18,'square',.07,0,0,1800); tone(460,420,.18,'square',.07,.24,0,1800); },
-  stomp(){ tone(90,38,.3,'sine',.5); tone(90,38,.3,'sine',.5,.42); },
-  huff(){ noise(.3,'lowpass',1300,500,.36); noise(.3,'lowpass',1300,500,.36,.38); },
-  screech(){ tone(1200,1900,.45,'sawtooth',.05,0,12,3000); },
-  tweet(){ tone(2000,2700,.08,'sine',.16); tone(2200,2900,.08,'sine',.16,.12); tone(2000,2800,.1,'sine',.14,.26); },
-  hoot(){ tone(430,390,.3,'sine',.3); tone(410,360,.45,'sine',.3,.42); },
-  ribbit(){ [0,.06,.12,.36,.42,.48].forEach(d=>tone(260,210,.05,'square',.08,d,0,1400)); },
-  thump(){ [0,.14,.28,.42].forEach(d=>tone(130,70,.12,'sine',.45,d)); },
-  yawn(){ tone(520,300,.9,'sine',.2,0,4); },
-  flutter(){ [0,.07,.14,.21].forEach(d=>noise(.05,'bandpass',1800,1400,.16,d)); },
-  flick(){ tone(1400,2400,.05,'sine',.15); tone(1400,2400,.05,'sine',.15,.1); },
-  snap(){ noise(.05,'highpass',2500,2000,.36); noise(.05,'highpass',2500,2000,.36,.16); },
-  peep(){ tone(1800,2400,.09,'sine',.18); tone(1900,2500,.09,'sine',.18,.15); },
-  moo(){ synth({f:150, f1:130, dur:.8, type:'sawtooth', vol:.16, lp:650, vib:5, atk:.12}); },
+  roar(at=0){   // lion: a deep, rough, moaning roar, then two grunts
+    vox({at, vol:.5, f0:[[0,95],[.2,150],[.55,178],[.9,140],[1.2,88]], amp:[[0,0],[.12,.45],[.45,1],[.95,.7],[1.25,0]],
+      form:[{f:[[0,420],[.4,740],[.95,600],[1.25,380]], q:4}, {f:[[0,850],[.4,1180],[1.25,800]], q:5, g:.55}, {f:2500, q:6, g:.12}],
+      rough:.6, roughHz:38, noise:.45, jitter:30, drive:2});
+    [1.42, 1.78].forEach((d, i) => vox({at:at+d, vol:.4 - i*.12, f0:[[0,125],[.22,88]], amp:[[0,0],[.05,1],[.25,0]], form:[{f:520, q:4}, {f:980, q:5, g:.5}], rough:.65, roughHz:32, noise:.45}));
+    return at + 2.05;
+  },
+  bigroar(at=0){   // T. rex: deeper and growlier than the lion, with a soft rumble under it
+    vox({at, vol:.5, f0:[[0,62],[.2,100],[.55,118],[.95,82],[1.3,52]], amp:[[0,0],[.15,.6],[.5,1],[1,.65],[1.35,0]],
+      form:[{f:[[0,340],[.45,640],[1.35,330]], q:3}, {f:[[0,780],[.45,1100],[1.35,700]], q:4, g:.5}, {f:2200, q:5, g:.15}],
+      rough:.75, roughHz:24, noise:.55, jitter:40, drive:3});
+    synth({f:46, f1:36, dur:1.3, vol:.2, at, atk:.25});
+    return at + 1.4;
+  },
+  trumpet(at=0){   // elephant: a bright, brassy, wobbly blare
+    return vox({at, vol:.24, f0:[[0,300],[.1,520],[.35,565],[.6,540],[.85,600],[1.05,430]], amp:[[0,0],[.06,.7],[.2,1],[.8,.9],[1.1,0]],
+      form:[{f:[[0,700],[.2,1000],[1.1,820]], q:3}, {f:1900, q:4, g:.7}, {f:3300, q:5, g:.35}],
+      vib:35, vibHz:7, jitter:40, rough:.25, roughHz:55, noise:.22, drive:6});
+  },
+  munch(at=0){   // giraffe: giraffes really do hum, low and soft; then munching leaves
+    vox({at, type:'triangle', vol:.6, f0:[[0,100],[.7,94]], amp:[[0,0],[.12,.8],[.55,.8],[.8,0]], form:[{f:260, q:2}, {f:520, q:4, g:.3}], vib:12, vibHz:4});
+    return FX.crunch(at + .85);
+  },
+  crunch(at=0){ [0,.26,.52].forEach(d => { noise(.07,'bandpass',3400,2000,.34,at+d); noise(.05,'bandpass',2200,1400,.26,at+d+.07); }); return at + .65; },
+  neigh(at=0){   // horse or zebra whinny: a high trilling squeal sliding down, then a soft nicker
+    vox({at, vol:.42, f0:[[0,820],[.12,1050],[.5,900],[.95,620],[1.25,430]], amp:[[0,0],[.06,1],[.75,.85],[1.3,0]],
+      form:[{f:[[0,750],[1.3,560]], q:4}, {f:[[0,2100],[1.3,1500]], q:5, g:.6}, {f:3300, q:6, g:.25}],
+      rough:.75, roughHz:11, vib:70, vibHz:11, noise:.18});
+    [1.38, 1.56, 1.74].forEach((d, i) => vox({at:at+d, vol:.22 - i*.04, f0:[[0,190],[.12,160]], amp:[[0,0],[.03,1],[.13,0]], form:[{f:500, q:3}, {f:1100, q:4, g:.4}], noise:.6, rough:.5, roughHz:30}));
+    return at + 1.9;
+  },
+  ooh(at=0){   // chimpanzee pant-hoot: breathy hoots that speed up and climb, then excited screams
+    let t = at;
+    [[270,.27],[310,.23],[360,.19],[410,.16],[460,.14]].forEach(([f, gap]) => { vox({at:t, vol:.28, type:'triangle', f0:[[0,f*.9],[.13,f*1.08]], amp:[[0,0],[.04,1],[.15,0]], form:[{f:340, q:3}, {f:820, q:4, g:.45}], noise:.25}); t += gap; });
+    [0,.21,.42].forEach((d, i) => vox({at:t+d, vol:.2, f0:[[0,880],[.07,1150 - i*40],[.19,950]], amp:[[0,0],[.03,1],[.19,0]], form:[{f:1050, q:4}, {f:1700, q:5, g:.7}, {f:3000, q:6, g:.3}], rough:.45, roughHz:40, noise:.2, drive:2}));
+    return t + .65;
+  },
+  bray(at=0){   // African penguin: a donkey-like bray, "haa haa hee-haaaw"
+    [0,.24].forEach(d => vox({at:at+d, vol:.42, f0:[[0,520],[.16,470]], amp:[[0,0],[.03,1],[.17,0]], form:[{f:800, q:4}, {f:1400, q:5, g:.6}, {f:2600, q:6, g:.2}], rough:.6, roughHz:45, noise:.3}));
+    vox({at:at+.5, vol:.3, f0:[[0,700],[.12,760]], amp:[[0,0],[.03,1],[.13,0]], form:[{f:420, q:4}, {f:2300, q:5, g:.7}], rough:.5, roughHz:50, noise:.35});
+    vox({at:at+.68, vol:.45, f0:[[0,520],[.3,565],[.75,430]], amp:[[0,0],[.05,1],[.6,.85],[.8,0]], form:[{f:[[0,820],[.8,700]], q:4}, {f:1400, q:5, g:.6}, {f:2600, q:6, g:.2}], rough:.6, roughHz:40, noise:.3});
+    return at + 1.5;
+  },
+  hippo(at=0){   // wheeze-honk: a squeaky in-breath, then deep rhythmic honks
+    noise(.34,'bandpass',1200,1900,.14,at);
+    vox({at, vol:.14, f0:[[0,600],[.32,880]], amp:[[0,0],[.1,1],[.33,0]], form:[{f:900, q:3}, {f:2400, q:4, g:.5}], rough:.6, roughHz:55, noise:.4});
+    [0,.21,.42,.63].forEach((d, i) => vox({at:at+.45+d, vol:.6 - i*.08, f0:[[0,155],[.16,122]], amp:[[0,0],[.03,1],[.17,0]], form:[{f:520, q:3}, {f:880, q:4, g:.5}, {f:2300, q:5, g:.1}], rough:.55, roughHz:26, noise:.45, drive:2}));
+    return at + 1.3;
+  },
+  bellow(at=0){   // long neck: a low, gentle "hoooom", then two big footsteps
+    vox({at, vol:.5, f0:[[0,68],[.35,92],[1,80],[1.3,60]], amp:[[0,0],[.25,.85],[.95,.8],[1.3,0]], form:[{f:[[0,300],[.5,430],[1.3,280]], q:4}, {f:[[0,700],[1.3,600]], q:5, g:.4}], vib:20, vibHz:4, noise:.18, rough:.25, roughHz:20});
+    return FX.stomp(at + 1.35);
+  },
+  stomp(at=0){ tone(90,38,.3,'sine',.5,at); tone(90,38,.3,'sine',.5,at+.42); return at + .75; },
+  huff(at=0){   // triceratops: two big nose snorts and a grunt
+    [0,.32].forEach(d => { noise(.22,'bandpass',900,380,.6,at+d); vox({at:at+d, vol:.2, f0:[[0,110],[.2,85]], amp:[[0,0],[.03,1],[.22,0]], form:[{f:420, q:3}], noise:.7, rough:.5, roughHz:30}); });
+    return vox({at:at+.72, vol:.55, f0:[[0,92],[.4,74]], amp:[[0,0],[.06,1],[.42,0]], form:[{f:460, q:3}, {f:900, q:4, g:.5}], rough:.65, roughHz:24, noise:.4});
+  },
+  stego(at=0){   // stegosaurus: a rumbly grunt, a tail swish and a thump
+    vox({at, vol:.45, f0:[[0,86],[.45,70]], amp:[[0,0],[.08,1],[.48,0]], form:[{f:400, q:3}, {f:850, q:4, g:.5}], rough:.7, roughHz:22, noise:.4});
+    noise(.28,'highpass',600,3200,.22,at+.55); tone(95,38,.32,'sine',.55,at+.85);
+    return at + 1.2;
+  },
+  screech(at=0){   // pterodactyl or eagle: a raspy "keee-ahh"
+    return vox({at, vol:.15, f0:[[0,1700],[.1,2100],[.45,1900],[.8,1300]], amp:[[0,0],[.04,1],[.5,.8],[.85,0]], form:[{f:[[0,2400],[.8,1700]], q:4}, {f:3600, q:5, g:.4}], rough:.5, roughHz:70, noise:.25, vib:60, vibHz:18});
+  },
+  splash(at=0){ noise(.7,'bandpass',3000,400,.38,at); return at + .7; },
+  snort(at=0){   // rhino: snorts and a low grunt
+    [0,.3].forEach(d => noise(.22,'bandpass',800,350,.7,at+d));
+    return vox({at:at+.62, vol:.45, f0:[[0,100],[.3,80]], amp:[[0,0],[.05,1],[.3,0]], form:[{f:450, q:3}], rough:.6, roughHz:28, noise:.5});
+  },
+  growl(at=0){   // leopard or tiger: a rough "sawing" growl, in and out
+    [0,.36,.72].forEach((d, i) => vox({at:at+d, vol:.55, f0:[[0, i%2 ? 92 : 108],[.3, i%2 ? 78 : 92]], amp:[[0,0],[.06,1],[.3,0]], form:[{f:450, q:3}, {f:950, q:4, g:.5}], rough:.75, roughHz:28, noise:.6}));
+    return at + 1.05;
+  },
+  squawk(at=0){   // parrot: a harsh "raaak"
+    [0,.36].forEach(d => vox({at:at+d, vol:.17, f0:[[0,1050],[.08,1300],[.28,980]], amp:[[0,0],[.03,1],[.3,0]], form:[{f:1500, q:4}, {f:3000, q:5, g:.5}], rough:.7, roughHz:80, noise:.2, drive:4}));
+    return at + .7;
+  },
+  honk(at=0){   // flamingo: goose-like honks
+    [0,.28].forEach(d => vox({at:at+d, vol:.26, f0:[[0,480],[.08,520],[.2,430]], amp:[[0,0],[.03,1],[.2,0]], form:[{f:700, q:5}, {f:1600, q:6, g:.8}, {f:2900, q:6, g:.3}], rough:.3, roughHz:60, noise:.15, drive:3}));
+    return at + .5;
+  },
+  thump(at=0){ [0,.12,.24,.36,.48,.58].forEach(d => { noise(.09,'bandpass',260,180,.55,at+d); tone(170,110,.1,'sine',.35,at+d); }); return at + .7; },   // gorilla chest beats
+  ribbit(at=0){ [[0,280],[.2,340]].forEach(([d, f]) => vox({at:at+d, vol:.5, f0:[[0,f],[.12,f*.92]], amp:[[0,0],[.02,1],[.12,0]], form:[{f:800, q:4}, {f:1900, q:5, g:.4}], rough:1, roughHz:60, noise:.1})); return at + .35; },
+  hoot(at=0){ [[0,.24],[.36,.16],[.6,.45]].forEach(([d, len]) => vox({at:at+d, type:'triangle', vol:.2, f0:[[0,410],[len,370]], amp:[[0,0],[.05,1],[len,0]], form:[{f:420, q:3}, {f:800, q:4, g:.2}], noise:.12})); return at + 1.05; },
+  yawn(at=0){ return vox({at, type:'triangle', vol:.15, f0:[[0,1400],[.2,2200],[.55,1500]], amp:[[0,0],[.08,1],[.55,0]], form:[{f:2000, q:2}], vib:40, vibHz:6, noise:.05}); },   // sloth: a high, whistly "ah-eee"
+  moo(at=0){ return vox({at, vol:.42, f0:[[0,118],[.2,135],[.9,112],[1.1,96]], amp:[[0,0],[.15,.9],[.85,.8],[1.1,0]], form:[{f:[[0,260],[.3,560],[1.1,430]], q:4}, {f:[[0,800],[.3,950],[1.1,850]], q:5, g:.4}], rough:.3, roughHz:25, noise:.2}); },
+  tweet(at=0){ tone(2000,2700,.08,'sine',.16,at); tone(2200,2900,.08,'sine',.16,at+.12); tone(2000,2800,.1,'sine',.14,at+.26); return at + .36; },
+  flutter(at=0){ [0,.07,.14,.21].forEach(d => noise(.05,'bandpass',1800,1400,.16,at+d)); return at + .26; },
+  flick(at=0){ tone(1400,2400,.05,'sine',.15,at); tone(1400,2400,.05,'sine',.15,at+.1); return at + .15; },
+  snap(at=0){ noise(.05,'highpass',2500,2000,.36,at); noise(.05,'highpass',2500,2000,.36,at+.16); return at + .21; },
+  peep(at=0){ [0,.15,.3].forEach(d => tone(2600,3300,.09,'sine',.16,at+d)); return at + .4; },
+  boing(at=0){ [0,.3,.6].forEach(d => tone(180,620,.25,'sine',.3,at+d)); return at + .85; },
+  boom(at=0){ noise(1.6,'lowpass',320,60,.7,at); tone(60,30,1.4,'sine',.6,at); return at + 1.6; },
   pop(){ tone(500+Math.random()*400, 1300+Math.random()*400, .09, 'sine', .3); },
   boop(){ tone(420,330,.18,'sine',.2); },
   tick(){ tone(1800,1800,.03,'square',.03); },
@@ -681,6 +999,27 @@ const FX = {
   hangup(){ tone(480,480,.13,'sine',.16); tone(360,360,.2,'sine',.16,.16); },
   swoosh(){ noise(.25,'bandpass',600,2400,.18); }
 };
+
+/* Real recordings win: list them in assets/sounds/sounds.json (see the README there) and that animal plays the file instead. */
+const SOUND_FILES = {}, soundBufs = {};
+async function loadSounds(){
+  try{
+    if (location.protocol === 'file:') return;
+    const r = await fetch('assets/sounds/sounds.json', {cache:'no-cache'});
+    if (!r.ok) return;
+    const j = await r.json();
+    Object.entries(j || {}).forEach(([id, f]) => {
+      if (typeof f !== 'string') return;
+      const url = /^(data:|blob:|https?:|\/)/.test(f) ? f : 'assets/sounds/' + f;
+      SOUND_FILES[id] = url; loadClip(url).then(buf => { if (buf) soundBufs[id] = buf; });
+    });
+  }catch(e){}
+}
+function animalSound(a, at=0){
+  const buf = a.id && soundBufs[a.id];
+  if (buf && ctx){ const s = ctx.createBufferSource(); s.buffer = buf; s.connect(OUT || master); s.start(ctx.currentTime + at); return at + buf.duration; }
+  return (a.fx && FX[a.fx]) ? (FX[a.fx](at) || at + .8) : at;
+}
 
 /* ---------- Speech ---------- */
 let voice = null, speechReady = false, pending = null;
@@ -796,9 +1135,9 @@ function updateClock(){ const d = new Date(); $('#clockTxt').textContent = ((d.g
 updateClock(); setInterval(updateClock, 10000);
 
 /* ---------- Navigation ---------- */
-const APPS = ['home','phone','camera','photos','music'];
+const APPS = ['home','phone','camera','photos','music','games','wildtap','dinobuddies'];
 let current = 'home';
-const APP_SAY = {phone:'Phone! Who do you want to call?', camera:'Camera! Slide to look around. Then press the big button!', music:'Music! Let\'s play!'};
+const APP_SAY = {phone:'Phone! Who do you want to call?', camera:'Camera! Slide to look around. Then press the big button!', music:'Music! Let\'s play!', games:'Games! Pick a game!'};
 function go(name, fromEl){
   if (!APPS.includes(name)) name = 'home';
   clearLater(); hush();
@@ -817,11 +1156,16 @@ function enterApp(name){
   if (name === 'camera'){ startCamera(); say(APP_SAY.camera); }
   if (name === 'photos'){ openPhotos(); }
   if (name === 'music'){ showMusicTab(musicTab, true); say(APP_SAY.music); }
+  if (name === 'games') say(APP_SAY.games);
+  if (name === 'wildtap') WildTap.enter();
+  if (name === 'dinobuddies') DinoBuddies.enter();
 }
 function leaveApp(name){
   if (name === 'camera') stopCamera();
   if (name === 'music') stopSong();
   if (name === 'photos') closeViewer(true);
+  if (name === 'wildtap') WildTap.leave();
+  if (name === 'dinobuddies') DinoBuddies.leave();
 }
 $('#homeBtn').innerHTML = ICON.home;
 tap($('#homeBtn'), () => {
@@ -831,7 +1175,7 @@ tap($('#homeBtn'), () => {
   go('home');
   if (inCall) (call.state === 'ringing' ? decline() : hangUp());
 });
-const TILE_ICON = {phone:ICON.phone, camera:ICON.camera, photos:ICON.photos, music:ICON.music};
+const TILE_ICON = {phone:ICON.phone, camera:ICON.camera, photos:ICON.photos, music:ICON.music, games:ICON.controller};
 $$('.appicon').forEach(b => {
   b.querySelector('.tile').innerHTML = TILE_ICON[b.dataset.app];
   tap(b, () => { FX.pop(); retrigger(b, 'go'); go(b.dataset.app, b.querySelector('.tile')); }, {bump:false});
@@ -842,7 +1186,7 @@ const FRIENDS = [ANIMALS[0], ANIMALS[7], ANIMALS[1]];
 FRIENDS.forEach(f => {
   const b = document.createElement('button'); b.className = 'friend'; b.setAttribute('aria-label', f.n);
   const s = document.createElement('span'); put(s, f.a); b.appendChild(s);
-  tap(b, () => { retrigger(b, 'go'); FX[f.fx](); popWord(b, f.snd.split(' ')[0].toUpperCase() + '!'); later(() => say(sp(f) + '!', f.p), 450); }, {bump:false});
+  tap(b, () => { retrigger(b, 'go'); animalSound(f); popWord(b, f.snd.split(' ')[0].toUpperCase() + '!'); later(() => say(sp(f) + '!', f.p), 450); }, {bump:false});
   $('#friends').appendChild(b);
 });
 
@@ -984,9 +1328,9 @@ function talk(first){
     return;
   }
   const text = first ? c.lines[0] : nextLine(c);
-  const withFx = c.fx && (first || Math.random() < .45);
-  if (withFx){ FX[c.fx](); callFace.classList.add('talk'); }
-  const d = withFx ? 800 : 0;
+  const withFx = (c.fx || soundBufs[c.id]) && (first || Math.random() < .45);
+  let d = 0;
+  if (withFx){ d = animalSound(c) * 1000 + 200; callFace.classList.add('talk'); }
   callLater(() => animalTalk(c, text), d);
   callLater(talk, Math.max(6000, d + talkMs(text) + 2000));
 }
@@ -1017,7 +1361,7 @@ function closeCall(){
 tap($('#hangupBtn'), hangUp);
 tap($('#declineBtn'), decline);
 tap($('#answerBtn'), () => { if (!call || call.state !== 'ringing') return; stopCallSounds(); connect(); });
-tap(callFace, () => { if (call && call.state === 'talking' && call.c.fx && !call.src){ FX[call.c.fx](); retrigger(callFace, 'hop'); } }, {bump:false});
+tap(callFace, () => { if (call && call.state === 'talking' && !call.c.family){ animalSound(call.c); retrigger(callFace, 'hop'); } }, {throttle:900, bump:false});
 
 /* Incoming calls: one is due every 1-3 minutes; it rings when the kid is on the home screen. */
 let incomingTimer = null, incomingDue = false;
@@ -1187,12 +1531,12 @@ const SCENES = {
       {n:'zebra', a:'🦓', x:770, y:850, size:210, z:6.5, m:'peek', amp:90, period:5, phase:.2, fx:'neigh', hideBelow:790},
       {n:'lion', a:'🦁', x:960, y:920, size:170, z:8, m:'peek', amp:120, period:6, phase:.55, fx:'roar', hideBelow:810},
       {n:'elephant', a:'🐘', x0:2350, x1:2860, y:880, size:270, z:7, m:'walk', speed:28, phase:.3, fx:'trumpet'},
-      {n:'hippo', a:'🦛', x:1700, y:880, size:190, z:5, m:'peek', amp:70, period:4.5, phase:.1, fx:'splash', hideBelow:830},
+      {n:'hippo', a:'🦛', x:1700, y:880, size:190, z:5, m:'peek', amp:70, period:4.5, phase:.1, fx:'hippo', hideBelow:830},
       {n:'flamingo', a:'🦩', x:1990, y:840, size:170, z:6, m:'sway', amp:.06, speed:1.5, fx:'honk'},
       {n:'rhino', a:'🦏', x0:90, x1:330, y:770, size:150, z:3, m:'walk', speed:18, phase:.6, fx:'snort'},
       {n:'eagle', a:'🦅', x:1600, y:240, size:120, z:1.5, m:'fly', range:1250, speed:.12, phase:0, fx:'screech'},
       {n:'leopard', a:'🐆', x:2330, y:512, size:118, z:4.2, m:'bob', amp:3, speed:1, fx:'growl', hidden:true, hideAbove:452},
-      {n:'turtle', a:'🐢', x:2960, y:950, size:92, z:8.5, m:'peek', amp:50, period:7, phase:.7, fx:'munch', hidden:true, hideBelow:885}
+      {n:'turtle', a:'🐢', x:2960, y:950, size:92, z:8.5, m:'peek', amp:50, period:7, phase:.7, fx:'crunch', hidden:true, hideBelow:885}
     ]},
   jungle:{n:'Jungle', icon:'🐒', sky:['#C3F2C6','#93DA97'], horizon:640, ground:['#7CC96B','#4FA84C'],
     props:[
@@ -1233,10 +1577,10 @@ const SCENES = {
       {k:'fern', x:2000, y:1000, s:1.2, z:9}, {k:'fern', x:2620, y:1000, s:1.0, z:9}, {k:'fern', x:3120, y:990, s:1.2, z:9}
     ],
     animals:[
-      {n:'long neck', a:'🦕', x:1000, y:840, size:430, z:5, m:'sway', amp:.03, speed:.8, fx:'stomp'},
+      {n:'long neck', a:'🦕', x:1000, y:840, size:430, z:5, m:'sway', amp:.03, speed:.8, fx:'bellow'},
       {n:'T rex', a:'🦖', x:1850, y:900, size:300, z:6, m:'stomp', amp:18, phase:.4, fx:'bigroar'},
       {n:'triceratops', a:SVG.trike, x0:220, x1:640, y:890, size:240, z:6, m:'walk', speed:24, phase:.1, fx:'huff'},
-      {n:'stegosaurus', a:SVG.stego, x0:2650, x1:3050, y:880, size:250, z:6, m:'walk', speed:20, phase:.6, fx:'stomp'},
+      {n:'stegosaurus', a:SVG.stego, x0:2650, x1:3050, y:880, size:250, z:6, m:'walk', speed:20, phase:.6, fx:'stego'},
       {n:'pterodactyl', a:SVG.ptero, x:1500, y:220, size:150, z:1.8, m:'fly', range:1200, speed:.14, phase:2, fx:'screech'},
       {n:'baby dinosaur', a:'🦕', x:1520, y:900, size:88, z:8, m:'peek', amp:46, period:5, phase:.3, fx:'peep', hidden:true, hideBelow:880},
       {n:'crocodile', a:'🐊', x:2240, y:930, size:170, z:5, m:'peek', amp:36, period:6, phase:.6, fx:'snap', hidden:true, hideBelow:900}
@@ -1622,6 +1966,281 @@ tap($('#songPlay'), () => { FX.pop(); playSong(songPick); });
 tap($('#songStop'), () => { FX.boop(); if (song){ stopSong(); say('Stop!'); } });
 tap(dancer, () => { const s = songPick; FX[s.fx] && FX[s.fx](); retrigger(dancer, 'bow'); });
 
+/* ======================= GAMES ======================= */
+/* The picker. To add a game later: add its <section class="app"> above, a card here, and enter/leave hooks in enterApp/leaveApp. */
+const GAMES = [
+  {id:'wildtap', n:'Wild Tap', cls:'g-wild', art:'<span class="em">🐘</span><span class="em">🦁</span><span class="em">🦒</span>'},
+  {id:'dinobuddies', n:'Dino Buddies', cls:'g-dino', art:'<span class="em">🦖</span><span class="gegg"></span><span class="em flip">🦖</span>'}
+];
+GAMES.forEach(g => {
+  const b = document.createElement('button'); b.className = 'gamecard ' + g.cls; b.setAttribute('aria-label', g.n);
+  b.innerHTML = `<span class="gart">${g.art}</span><span class="gname">${g.n}</span>`;
+  tap(b, () => { FX.pop(); retrigger(b, 'go'); go(g.id, b); }, {bump:false});
+  $('#gameList').appendChild(b);
+});
+
+/* ---------- Wild Tap Safari: sound boards, Find It, egg hatching, bubble popping ---------- */
+const WildTap = (() => {
+  const EAR = `<svg viewBox="0 0 40 40"><path d="M6 15 H13 L22 7 V33 L13 25 H6 Z" fill="#fff"/><path d="M27 13 Q32 20 27 27 M31 9 Q39 20 31 31" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round"/></svg>`;
+  const W = {
+    safari:{title:'Safari', cls:'wt-w-safari', list:[
+      {n:'Lion', a:'🦁', w:'ROAR!', s:'Lion! Roooar!', f:'Lions live in a big family called a pride.', x:'roar'},
+      {n:'Elephant', a:'🐘', w:'TOOT!', s:'Elephant! Paaa-ooo!', f:'Elephants use their long trunk like a hand.', x:'trumpet'},
+      {n:'Giraffe', a:'🦒', w:'MUNCH!', s:'Giraffe! Munch munch, yummy leaves!', f:'Giraffes are the tallest animals in the whole world.', x:'munch'},
+      {n:'Zebra', a:'🦓', w:'NEIGH!', s:'Zebra! Neigh!', f:'Every zebra has its very own stripes.', x:'neigh'},
+      {n:'Hippo', a:'🦛', w:'SPLASH!', s:'Hippo! Splash splash!', f:'Hippos love to stay cool in the water.', x:'splash'},
+      {n:'Rhino', a:'🦏', w:'SNORT!', s:'Rhino! Snort snort!', f:'A rhino has a big horn on its nose.', x:'snort'}]},
+    zoo:{title:'Zoo', cls:'wt-w-zoo', list:[
+      {n:'Tiger', a:'🐅', w:'GRRR!', s:'Tiger! Grrrrr!', f:'Tigers have orange fur with black stripes.', x:'growl'},
+      {n:'Penguin', a:'🐧', w:'SQUAWK!', s:'Penguin! Squawk squawk!', f:'Penguins waddle on land and zoom in the water.', x:'bray'},
+      {n:'Monkey', a:'🐒', w:'OOH OOH!', s:'Monkey! Ooh ooh, ah ah!', f:'Monkeys swing from tree to tree.', x:'ooh'},
+      {n:'Panda', a:'🐼', w:'CRUNCH!', s:'Panda! Crunch crunch bamboo!', f:'Pandas eat bamboo almost all day long.', x:'crunch'},
+      {n:'Kangaroo', a:'🦘', w:'BOING!', s:'Kangaroo! Boing boing boing!', f:'A baby kangaroo rides in its mommy’s pouch.', x:'boing'},
+      {n:'Flamingo', a:'🦩', w:'HONK!', s:'Flamingo! Honk honk!', f:'Flamingos can stand on one leg.', x:'honk'}]},
+    dino:{title:'Dinos', cls:'wt-w-dino', list:[
+      {n:'T. rex', sp:'T rex', a:'🦖', w:'ROAR!', s:'T rex! ROOOAR!', f:'T rex had big teeth and tiny little arms.', x:'bigroar'},
+      {n:'Brachiosaurus', sp:'long neck', a:'🦕', w:'STOMP!', s:'Long neck! Stomp, stomp!', f:'Long neck dinosaurs ate leaves from the tops of trees.', x:'bellow'},
+      {n:'Triceratops', a:SVG.trike, w:'HUFF!', s:'Triceratops! Huff huff!', f:'Triceratops had three horns on its face.', x:'huff'},
+      {n:'Stegosaurus', a:SVG.stego, w:'THUMP!', s:'Stegosaurus! Thump thump!', f:'Stegosaurus had plates on its back and spikes on its tail.', x:'stego'},
+      {n:'Pterodactyl', sp:'pterodactyl', a:SVG.ptero, w:'SCREECH!', s:'Pterodactyl! Screeech!', f:'Pterodactyls flew high in the sky.', x:'screech'},
+      {n:'Volcano', a:'🌋', w:'BOOM!', s:'Volcano! Rumble rumble, BOOM!', f:'Hot lava is super hot. Stay back!', x:'boom', noFind:true}]}
+  };
+  const ALL = Object.values(W).flatMap(w => w.list).filter(a => !a.noFind);
+  const HATCH = [...W.dino.list.slice(0, 5),
+    {n:'Crocodile', a:'🐊', s:'It’s a baby crocodile! Snap snap!'},
+    {n:'Turtle', a:'🐢', s:'It’s a baby turtle! Hello little turtle!'},
+    {n:'Penguin', a:'🐧', s:'It’s a baby penguin! Squawk!'},
+    {n:'Chick', a:'🐥', s:'It’s a baby chick! Peep peep!'}];
+  const spoken = a => a.sp || a.n;
+  const SCREENS = ['menu','world','find','egg','bubbles'];
+  let cur = 'menu';
+  function show(name){
+    clearLater(); hush(); stopBubbles();
+    const s = W[name] ? 'world' : name;
+    SCREENS.forEach(k => { $('#wt-' + k).hidden = k !== s; });
+    cur = name;
+    if (W[name]){ buildWorld(name); say(name === 'dino' ? 'Dinosaurs!' : W[name].title + '!'); }
+    if (name === 'find'){ stickerCount = 0; $('#wtStickers').innerHTML = ''; nChoices = 2; streak = 0; target = null; later(newRound, 400); }
+    if (name === 'egg'){ newEgg(); say('Tap the egg!'); }
+    if (name === 'bubbles'){ startBubbles(); say('Pop the bubbles!'); }
+  }
+  /* inside Wild Tap, the grid button goes back to its menu; the phone's big home button still goes home */
+  $$('#wildtap .wt-back').forEach(b => { b.innerHTML = ICON.grid; tap(b, () => { FX.boop(); show('menu'); }); });
+  $$('#wildtap [data-wt]').forEach(b => tap(b, () => { FX.pop(); show(b.dataset.wt); }));
+
+  function buildWorld(key){
+    const w = W[key], scr = $('#wt-world'), box = $('#wtAnimals');
+    scr.className = 'wt-screen ' + w.cls;
+    $('#wtWorldTitle').textContent = w.title;
+    box.innerHTML = '';
+    w.list.forEach(a => {
+      const p = document.createElement('button'); p.className = 'wt-pad'; p.setAttribute('aria-label', a.n);
+      p.innerHTML = '<span class="wt-word"></span><span class="wt-art"></span>';
+      put(p.querySelector('.wt-art'), a.a); p.querySelector('.wt-word').textContent = a.w;
+      let taps = 0;
+      tap(p, () => {
+        retrigger(p, 'go');
+        const len = FX[a.x] ? (FX[a.x]() || .5) : .5, line = taps++ % 2 === 0 ? a.s : a.f;
+        later(() => say(line), clamp(len*1000 - 250, 350, 1400));   // talk once the animal is (nearly) done
+        if (a.x === 'boom' || a.x === 'bigroar') retrigger(scr, 'wt-shake');
+        if (a.x === 'boom'){ const [x, y] = rel(p); confetti(x, y, 18); }
+      }, {bump:false});
+      box.appendChild(p);
+    });
+  }
+
+  let target = null, nChoices = 2, streak = 0, locked = false, stickerCount = 0;
+  $('#wtRepeat').innerHTML = EAR;
+  tap($('#wtRepeat'), () => { if (target) say('Where is the ' + spoken(target) + '?'); });
+  function newRound(){
+    if (current !== 'wildtap' || cur !== 'find') return;
+    locked = false;
+    target = rnd(ALL.filter(a => a !== target));
+    const others = shuffle(ALL.filter(a => a !== target)).slice(0, nChoices - 1);
+    const box = $('#wtChoices'); box.className = 'wt-choices n' + nChoices; box.innerHTML = '';
+    $('#wtFindQ').textContent = 'Where is the ' + target.n + '?';
+    shuffle([target, ...others]).forEach(a => {
+      const c = document.createElement('button'); c.className = 'wt-choice'; c.setAttribute('aria-label', a.n);
+      c.innerHTML = '<span class="wt-art"></span>'; put(c.querySelector('.wt-art'), a.a);
+      tap(c, () => pick(a, c), {bump:false});
+      box.appendChild(c);
+    });
+    say('Where is the ' + spoken(target) + '?');
+  }
+  function pick(a, el){
+    if (locked) return;
+    if (a === target){
+      locked = true; el.classList.add('yes'); FX.cheer();
+      const [x, y] = rel(el); confetti(x, y);
+      later(() => say('Yes! You found the ' + spoken(a) + '!'), 300);
+      addSticker(a);
+      streak++; if (streak % 3 === 0 && nChoices < 4) nChoices++;
+      later(newRound, 2600);
+    } else {
+      retrigger(el, 'no'); FX.boop();
+      later(() => say('That’s the ' + spoken(a) + '. Can you find the ' + spoken(target) + '?'), 150);
+    }
+  }
+  function addSticker(a){
+    const st = $('#wtStickers');
+    if (stickerCount >= 10){ st.innerHTML = ''; stickerCount = 0; }
+    const s = document.createElement('span'); s.className = 's'; put(s, a.a); st.appendChild(s); stickerCount++;
+    if (stickerCount === 10) later(() => { const [x, y] = rel(st); confetti(x, y, 40); FX.cheer(); say('Wow! Ten animals! You are a super explorer!'); }, 900);
+  }
+
+  const EGGS = [['#F7EBD0','#E8A945'],['#D9F2C6','#5DA545'],['#DDEBFF','#3D8FE0'],['#FFE0E7','#E8506E'],['#EDE3FF','#8A6FD1']];
+  let cracks = 0, hatched = false;
+  const eggwrap = $('#wtEggwrap');
+  function newEgg(){
+    cracks = 0; hatched = false;
+    const [c, s] = rnd(EGGS);
+    eggwrap.style.setProperty('--eggc', c); eggwrap.style.setProperty('--spot', s);
+    eggwrap.classList.remove('hatched', 'wob');
+    $$('.wt-cracks path', eggwrap).forEach(p => p.style.opacity = 0);
+    $('#wtBaby').innerHTML = '';
+    $('#wtNewegg').hidden = true;
+  }
+  tap(eggwrap, () => {
+    if (hatched) return;
+    retrigger(eggwrap, 'wob'); FX.crack();
+    const paths = $$('.wt-cracks path', eggwrap);
+    if (cracks < paths.length) paths[cracks].style.opacity = 1;
+    cracks++;
+    if (cracks === 2) say('Crack!');
+    if (cracks > paths.length){
+      hatched = true;
+      const b = rnd(HATCH);
+      put($('#wtBaby'), b.a);
+      eggwrap.classList.add('hatched'); FX.cheer();
+      const [x, y] = rel(eggwrap); confetti(x, y, 34);
+      later(() => say(b.s || ('It’s a baby ' + spoken(b) + '!')), 400);
+      later(() => { $('#wtNewegg').hidden = false; }, 1200);
+    }
+  }, {bump:false});
+  tap($('#wtNewegg'), () => { FX.pop(); newEgg(); });
+
+  let bubTimer = null;
+  const BUB_ART = [...ALL.map(a => a.a), '🐠','🐙','🐳','🦀'];
+  function spawnBubble(){
+    const pool = $('#wtPool');
+    if (pool.querySelectorAll('.wt-bub:not(.popped)').length >= 7) return;
+    const b = document.createElement('div'); b.className = 'wt-bub';
+    const sz = 90 + Math.random()*60, w = pool.clientWidth;
+    b.style.setProperty('--sz', sz + 'px');
+    b.style.setProperty('--dur', (6 + Math.random()*4) + 's');
+    b.style.setProperty('--sway', ((Math.random() - .5)*80) + 'px');
+    b.style.left = Math.max(0, Math.random()*(w - sz)) + 'px';
+    const art = rnd(BUB_ART);
+    if (isSvg(art)) b.innerHTML = art; else { const s = document.createElement('span'); s.textContent = art; b.appendChild(s); }
+    b.addEventListener('pointerdown', e => {
+      e.preventDefault(); keepAwake();
+      if (b.classList.contains('popped')) return;
+      const r = b.getBoundingClientRect(), pr = pool.getBoundingClientRect(), [x, y] = rel(b);
+      b.style.animation = 'none'; b.style.bottom = 'auto';
+      b.style.left = (r.left - pr.left) + 'px'; b.style.top = (r.top - pr.top) + 'px';
+      b.classList.add('popped'); FX.pop(); ripple(x, y);
+      setTimeout(() => b.remove(), 950);
+    });
+    b.addEventListener('animationend', ev => { if (ev.target === b) b.remove(); });
+    pool.appendChild(b);
+  }
+  function startBubbles(){ stopBubbles(); for (let i=0;i<3;i++) later(spawnBubble, i*350); bubTimer = setInterval(spawnBubble, 1100); }
+  function stopBubbles(){ clearInterval(bubTimer); bubTimer = null; $('#wtPool').innerHTML = ''; }
+
+  return {
+    enter(){ show('menu'); say('Wild Tap! Pick one!'); },
+    leave(){ stopBubbles(); }
+  };
+})();
+
+/* ---------- Dino Buddies: two kids, one half each; every tap flies a treat into the shared egg ---------- */
+const DinoBuddies = (() => {
+  const DINOS = [{n:'T rex', a:'🦖'}, {n:'long neck', a:'🦕'}, {n:'Triceratops', a:SVG.trike}, {n:'Stegosaurus', a:SVG.stego}, {n:'Pterodactyl', a:SVG.ptero}];
+  const TREATS = ['⭐','🌟','💛','💚','🍓','🫐','🍃','🌸','🍉','🍌'];
+  const EGGS = [['#FFF6E0','#FFC83D'],['#EAF7DF','#7CC96B'],['#E3F1FF','#5BB8E8'],['#FFE6EC','#F27A93'],['#F0E8FF','#9C82DD']];
+  const GOAL = 24;
+  const root = $('#dinobuddies'), eggEl = $('#dbEgg'), babyEl = $('#dbBaby'), famEl = $('#dbFamily');
+  const sides = $$('.db-side', root), dinoEls = sides.map(s => s.querySelector('.db-dino'));
+  const saved = store.get('dinobuddies', {}) || {};   // the hatched family is remembered between visits
+  let fill = 0, hatching = false, buddy = DINOS[clamp(saved.buddy | 0, 0, DINOS.length - 1)];
+  let family = Array.isArray(saved.family) ? saved.family.filter(i => DINOS[i]).slice(0, 8) : [];
+  const lastTap = [0, 0];
+  /* each side plays its own instrument on the same pentatonic scale, so two kids mashing at once still sounds like music */
+  const PENTA = [262,294,330,392,440,523,587,659,784,880], step = [0, 4];
+  function note(side){
+    const i = step[side] % PENTA.length;
+    step[side] += Math.random() < .75 ? 1 : 2;
+    if (side === 0){ tone(PENTA[i]*.5, PENTA[i]*.5, .35, 'triangle', .32); tone(PENTA[i], PENTA[i], .2, 'sine', .08); }
+    else { tone(PENTA[i], PENTA[i], .45, 'sine', .22); tone(PENTA[i]*2, PENTA[i]*2, .18, 'sine', .05); }
+  }
+  const tink = () => tone(1568, 1760, .08, 'sine', .07);
+  const crack = () => noise(.12, 'highpass', 4000, 2000, .3);
+  const cheer = () => { [523,659,784,1047,1319].forEach((f, i) => tone(f, f, .3, 'triangle', .2, i*.1)); noise(.6, 'lowpass', 300, 120, .25); };
+  function setBuddy(d){ buddy = d; dinoEls.forEach(el => put(el, d.a)); }
+  function newEgg(){ const [c, f] = rnd(EGGS); eggEl.style.setProperty('--eggc', c); eggEl.style.setProperty('--fillc', f); fill = 0; drawEgg(); eggEl.classList.remove('db-gone'); }
+  function drawEgg(){
+    const p = Math.min(1, fill / GOAL);
+    eggEl.style.setProperty('--p', (p === 0 ? 0 : 27 + p*73).toFixed(1) + '%');   // the bottom ~27% sits behind the nest
+    eggEl.style.setProperty('--glow', p.toFixed(2));
+  }
+  function renderFamily(){ famEl.innerHTML = ''; family.forEach(i => { const s = document.createElement('span'); put(s, DINOS[i].a); famEl.appendChild(s); }); }
+  const centerOf = el => { const r = el.getBoundingClientRect(), a = root.getBoundingClientRect(); return [r.left - a.left + r.width/2, r.top - a.top + r.height/2]; };
+  sides.forEach((side, s) => {
+    side.addEventListener('pointerdown', e => {
+      e.preventDefault(); keepAwake();
+      const now = performance.now();
+      if (now - lastTap[s] < 110) return;   // a palm-mash counts as one tap, not ten
+      lastTap[s] = now;
+      const a = root.getBoundingClientRect();
+      note(s);
+      if (!hatching) retrigger(dinoEls[s], 'db-hop');
+      const [rx, ry] = relPt(e); ripple(rx, ry);
+      flyTreat(e.clientX - a.left, e.clientY - a.top);
+    });
+  });
+  function flyTreat(x, y){
+    const t = document.createElement('div'); t.className = 'db-treat'; t.textContent = rnd(TREATS);
+    root.appendChild(t);
+    const [nx, ny] = centerOf(eggEl);
+    const mx = (x + nx)/2 + (Math.random() - .5)*80, my = Math.min(y, ny) - 40;
+    const anim = t.animate([
+      {transform:`translate(${x-28}px,${y-28}px) scale(.2)`},
+      {transform:`translate(${x-28}px,${y-48}px) scale(1.25)`, offset:.22},
+      {transform:`translate(${mx-28}px,${my-28}px) scale(.9)`, offset:.6},
+      {transform:`translate(${nx-28}px,${ny-28}px) scale(.3)`}
+    ], {duration:750, easing:'ease-in-out', fill:'forwards'});
+    anim.onfinish = () => { t.remove(); land(); };
+  }
+  function land(){
+    if (hatching || current !== 'dinobuddies') return;
+    fill++; drawEgg(); tink(); retrigger(eggEl, 'db-wig');
+    if (fill === Math.round(GOAL/2)) crack();
+    if (fill >= GOAL) hatch();
+  }
+  function hatch(){
+    hatching = true; crack(); cheer();
+    const i = Math.floor(Math.random()*DINOS.length), d = DINOS[i];
+    eggEl.classList.add('db-gone');
+    put(babyEl, d.a); retrigger(babyEl, 'db-show');
+    const [x, y] = rel(eggEl); confetti(x, y, 36);
+    sides.forEach(sd => { const [cx, cy] = rel(sd); confetti(cx, cy, 18); });
+    dinoEls.forEach(el => retrigger(el, 'db-dance'));
+    say(rnd(['Hooray! Teamwork!','You did it together!','Yay, buddies!']) + ' A baby ' + d.n + '!');
+    setTimeout(() => {
+      family.push(i); if (family.length > 8) family = [i];
+      renderFamily(); setBuddy(d); store.set('dinobuddies', {family, buddy:i});
+      dinoEls.forEach(el => el.classList.remove('db-dance'));
+      newEgg(); hatching = false;
+    }, 2700);
+  }
+  setBuddy(buddy); newEgg(); renderFamily();
+  return {
+    enter(){ say('Dino Buddies! Tap tap tap! Help the egg hatch!'); },
+    leave(){ $$('.db-treat', root).forEach(t => t.remove()); },
+    fill: () => fill, family: () => family.length
+  };
+})();
+
 /* ======================= PARENT SETTINGS ======================= */
 /* hidden behind a 3-second press on the clock; a quick tap just wiggles it */
 const clock = $('#clock');
@@ -1671,11 +2290,20 @@ try{ if ('serviceWorker' in navigator && location.protocol === 'https:' && !/cla
 /* ---------- Start (and keep the current app across live updates) ---------- */
 buildContacts();
 loadFamily();
+loadSounds();
 seedPhotos();
 window.claude?.hot?.snapshot?.(() => ({ app: current, scene: cam.scene }));
 const start = (data) => { if (data && data.scene && SCENES[data.scene]) cam.scene = data.scene; if (data && data.app && data.app !== 'home') go(data.app); };
 window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? {});
-window.__toyPhone = { go, ringIn: () => maybeRing(true), photos: () => Photos.list.length, call: () => call && call.state, contacts: () => CONTACTS.length };
+/* test hook: render one sound into an offline buffer (used by the tests to check every animal call) */
+async function renderFx(name, secs=3){
+  const prev = [ctx, master, noiseBuf], off = new OfflineAudioContext(1, 44100*secs, 44100);
+  ctx = off; master = off.createGain(); master.connect(off.destination);
+  let len = 0; try{ len = (typeof name === 'string' ? FX[name](0) : vox(name)) || 0; } finally { [ctx, master, noiseBuf] = prev; }
+  const buf = await off.startRendering();
+  return {len, data:Array.from(buf.getChannelData(0))};
+}
+window.__toyPhone = { go, renderFx, dino: () => ({fill:DinoBuddies.fill(), family:DinoBuddies.family()}), fx: () => Object.keys(FX), ringIn: () => maybeRing(true), photos: () => Photos.list.length, call: () => call && call.state, contacts: () => CONTACTS.length };
 })();
 </script>
 </body>

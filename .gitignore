@@ -6,3 +6,8 @@ tests/screenshots/
 assets/family/*
 !assets/family/README.md
 !assets/family/family.example.json
+
+# Real animal recordings: often licensed for personal use only
+assets/sounds/*
+!assets/sounds/README.md
+!assets/sounds/sounds.example.json
