@@ -30,12 +30,12 @@ function serve() {
   });
 }
 
-/* ---------- fixtures: Baloo 2 from npm (no network needed) and a pretend family contact ---------- */
+/* ---------- fixtures: the two pixel fonts from npm (no network needed) and a pretend family contact ---------- */
 function fontCss() {
-  try {
-    const dir = path.dirname(require.resolve('@fontsource/baloo-2/package.json'));
-    return [600, 800].map(w => `@font-face{font-family:"Baloo 2";font-weight:${w};font-style:normal;src:url(data:font/woff2;base64,${fs.readFileSync(path.join(dir, 'files', `baloo-2-latin-${w}-normal.woff2`)).toString('base64')}) format("woff2")}`).join('\n');
-  } catch (e) { return '/* Baloo 2 not installed: fallback fonts */'; }
+  const face = (pkg, family, w) => { const dir = path.dirname(require.resolve(`@fontsource/${pkg}/package.json`));
+    return `@font-face{font-family:"${family}";font-weight:${w};font-style:normal;src:url(data:font/woff2;base64,${fs.readFileSync(path.join(dir, 'files', `${pkg}-latin-${w}-normal.woff2`)).toString('base64')}) format("woff2")}`; };
+  try { return [face('pixelify-sans', 'Pixelify Sans', 500), face('pixelify-sans', 'Pixelify Sans', 700), face('press-start-2p', 'Press Start 2P', 400)].join('\n'); }
+  catch (e) { return '/* fonts not installed: fallback fonts */'; }
 }
 function wavDataUri(seconds = 0.8) {
   const rate = 16000, n = Math.round(rate * seconds), buf = Buffer.alloc(44 + n * 2);
@@ -235,7 +235,7 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   await tap('#shutter'); await sleep(700);
   const meta = await page.evaluate(() => JSON.parse(localStorage.getItem('toyphone.photos'))[0]);
   const src = await page.evaluate(id => localStorage.getItem('toyphone.photo.' + id), meta.id);
-  check(src.startsWith('data:image/jpeg') && src.length < 250000, `photo is a small JPEG (${Math.round(src.length / 1024)} KB)`);
+  check(src.startsWith('data:image/png') && src.length < 250000, `photo is a small pixel-art PNG (${Math.round(src.length / 1024)} KB)`);
   await shot('8-camera-zoom');
   await tap('#lastShot'); await sleep(700);
   check(await visible('#viewer'), 'thumbnail opens the photo');
@@ -381,6 +381,9 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   check(await page.evaluate(() => !document.getElementById('home').hidden && document.getElementById('call').hidden), 'after mashing, home button still gets home');
 
   check(await page.evaluate(() => !/\p{Extended_Pictographic}/u.test(document.body.innerText)), 'no emoji on screen: every picture is drawn art');
+  check(await page.evaluate(() => document.querySelectorAll('svg').length === 0), 'no vector pictures on the page: every picture is pixel art');
+  const broken = await page.evaluate(() => [...document.querySelectorAll('img.px')].filter(i => !i.complete || !i.naturalWidth).length);
+  check(!broken, `every pixel sprite on the page has loaded (${broken} not)`);
   const garbled = (await said()).filter(t => /\b[A-Z]{2,}\b/.test(t) || /([a-z])\1\1/i.test(t));
   check(!garbled.length, `spoken lines have no ALL-CAPS or stretched words (the voice would spell them out) ${JSON.stringify(garbled.slice(0, 3))}`);
   const real = errors.filter(e => family || !/404|Failed to load resource/.test(e));
@@ -389,8 +392,18 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
 }
 
 (async () => {
-  const left = (fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8').match(/\p{Extended_Pictographic}/gu) || []);
+  const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
+  const left = (html.match(/\p{Extended_Pictographic}/gu) || []);
   check(!left.length, `index.html has no emoji (all art is drawn) ${left.slice(0, 10).join(' ')}`);
+  check(!/<svg[\s>]/.test(html), 'index.html has no SVG: every picture is a pixel sprite');
+  /* every sprite: same-width rows, and a color for every letter */
+  const pix = html.slice(html.indexOf('const PIX = {'), html.indexOf('\n};\n', html.indexOf('const PIX = {')));
+  const bad = [...pix.matchAll(/^(\w+):\{pal:\{([^}]*)\}, rows:`\n([^`]*)`/gm)].flatMap(([, n, pal, rows]) => {
+    const keys = new Set([...pal.matchAll(/(\w):'#/g)].map(m => m[1])), r = rows.split('\n');
+    return [...(r.some(x => x.length !== r[0].length) ? [`${n}: uneven rows`] : []), ...[...new Set(r.join(''))].filter(c => c !== '.' && !keys.has(c)).map(c => `${n}: no color for ${c}`)];
+  });
+  const count = (pix.match(/^\w+:\{pal:/gm) || []).length;
+  check(count > 80 && !bad.length, `all ${count} pixel sprites are well formed ${bad.slice(0, 5).join(', ')}`);
   const srv = await serve();
   const base = `http://127.0.0.1:${srv.address().port}`;
   const browser = await chromium.launch({ args: ['--autoplay-policy=no-user-gesture-required'] });
