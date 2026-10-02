@@ -47,7 +47,8 @@ gorilla chest beats, frog ribbit, owl hoot and more).
 **Real recordings:** a synthesizer only gets so close. To use real recordings (for example, ones you make at the zoo),
 drop them in `assets/sounds/` and list them in `sounds.json`. See [`assets/sounds/README.md`](assets/sounds/README.md).
 
-The big yellow home button is always in the same spot and always goes home. Every prompt is spoken, every tap answers
+The big yellow home button is always in the same spot and always goes home. Every prompt is spoken (except in Music and on the
+keypad's number keys, where the sound is the answer), every tap answers
 on `pointerdown` with sound and motion, there are no failure states, and two kids can tap at once.
 
 ![Portrait screens](screenshots/portrait.jpg)
@@ -121,7 +122,8 @@ so private voices and faces stay on your server.
 The automated test runs in Chromium, so these need a person and the phone:
 
 - [ ] Sound plays on the very first tap
-- [ ] Sound plays with the ring/silent switch set to silent (the page asks for `navigator.audioSession.type = 'playback'`)
+- [ ] The animal calls, drums and ringtones play, and keep playing after the voice talks. If the voice works but the
+      sound effects are quiet, flip the ring/silent switch to ring (parent settings shows whether the sound engine is on)
 - [ ] The speech voice sounds right (Enhanced voice downloaded?)
 - [ ] The animal calls sound right on the phone's speaker. They were checked here with spectrograms, not by ear
 - [ ] Guided Access session: nothing leads out of the page
@@ -168,6 +170,12 @@ console error. Screenshots go to `tests/screenshots/`.
 - Photos are stored in `localStorage` as small pixel-art PNGs (a few KB each, one pixel per art pixel). If the phone runs out of room, the oldest
   photo is dropped first. Clearing Safari's website data deletes them. The sample photos from an older version are swapped
   for pixel ones the first time this version runs; photos the kids took are kept.
+- **Sound effects and the voice on iPhone.** The page sets its audio session to `ambient` so the sound effects mix with
+  the speech voice. With `playback`, the effects would also play through the silent switch, but on iPhone every spoken
+  sentence then takes the speaker from the sound effects and Safari doesn't give it back, so the animals go quiet. The
+  catch: like most web pages, the effects follow the ring/silent switch. If iOS pauses the sound engine anyway (a phone
+  call, Siri), sounds asked for meanwhile are held and play on the next touch, and an engine that won't restart is
+  replaced. The voice waits for a sound to finish rather than talking over it.
 - A call nobody hangs up says goodbye by itself after 3 minutes (`CALL_MAX_MS`), so a forgotten phone doesn't chat all afternoon.
 - In portrait, the 8 xylophone bars and 8 piano keys are about 66px tall but span the full width. Every other kid control is 80px or more.
 - With five app icons, the three animals on the home-screen hill only show on tall portrait screens (800px or more).

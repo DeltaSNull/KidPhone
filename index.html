@@ -641,6 +641,7 @@ img[src^="data:image/jpeg"],.face img{image-rendering:auto}
         </div>
         <div class="srow"><span>Try it</span>
           <div class="seg"><button class="sbtn" id="testRing">Ring now</button><button class="sbtn" id="testSound">Test sound</button></div></div>
+        <p class="note" id="soundNote"></p>
         <p class="note" id="voiceNote"></p>
         <p class="note" id="familyNote"></p>
       </div>
@@ -3720,25 +3721,60 @@ const settings = Object.assign({incoming:true, vol:2}, store.get('settings', {})
 settings.vol = clamp(settings.vol|0, 0, 3);
 const saveSettings = () => store.set('settings', settings);
 
-/* ---------- Sound: synth effects ---------- */
+/* ---------- Sound: synth effects ----------
+   iPhone notes, learned the hard way:
+   - The audio session is "ambient", so the sound effects mix with the speech voice. ("playback" would also play
+     through the silent switch, but then every spoken sentence takes the speaker away from the sound effects and Safari
+     never gives it back: the animals go quiet and only the voice is left.) So the effects follow the ring/silent switch.
+   - Safari only starts sound when a finger lifts (touchend/click), and a phone call or Siri can pause it. A sound asked
+     for while the engine isn't running is held for a moment and played as soon as it runs again. Every touch checks
+     the engine; one that won't restart is replaced with a new one. */
 const VOLS = [.25, .45, .7, 1];
-let ctx = null, master = null, OUT = null;
+let ctx = null, master = null, OUT = null, held = [], stuck = 0, rebuilds = 0, fxEnd = 0;
 function audio(){
   if (!ctx){
     try{
-      try{ if (navigator.audioSession) navigator.audioSession.type = 'playback'; }catch(e){}   // play even with the silent switch on
-      ctx = new (window.AudioContext || window.webkitAudioContext)();
-      const comp = ctx.createDynamicsCompressor();  // two kids mashing at once never clips
+      try{ if (navigator.audioSession) navigator.audioSession.type = 'ambient'; }catch(e){}
+      const c = ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const comp = c.createDynamicsCompressor();  // two kids mashing at once never clips
       comp.threshold.value = -16; comp.knee.value = 10; comp.ratio.value = 4; comp.attack.value = .004; comp.release.value = .25;
-      master = ctx.createGain(); master.gain.value = VOLS[settings.vol];
-      master.connect(comp); comp.connect(ctx.destination);
+      master = c.createGain(); master.gain.value = VOLS[settings.vol];
+      master.connect(comp); comp.connect(c.destination);
+      c.onstatechange = () => { if (c !== ctx) return; if (c.state === 'running'){ stuck = 0; playHeld(); } showSound(); };
     }catch(e){ ctx = null; return null; }
   }
   if (ctx.state !== 'running' && ctx.state !== 'closed'){ try{ ctx.resume().catch(()=>{}); }catch(e){} }
   return ctx;
 }
-function synth(o){
+/* true (and the sound kept for later) when the engine isn't making sound right now */
+function hold(fn){
+  const c = audio(); if (!c) return true;
+  if (c.state === 'running' || (window.OfflineAudioContext && c instanceof OfflineAudioContext)) return false;
+  held.push([performance.now(), fn]); if (held.length > 16) held.shift();
+  return true;
+}
+function playHeld(){ const now = performance.now(), list = held.filter(([t]) => now - t < 900); held = []; list.forEach(([, fn]) => { try{ fn(); }catch(e){} }); }
+/* every touch: the engine must be running; if the phone paused it and it won't come back, build a new one */
+function wakeAudio(){
   const c = audio(); if (!c) return;
+  if (c.state === 'running'){ playHeld(); return; }
+  if (c.state === 'interrupted' || stuck){
+    rebuilds++; held = held.slice(-6);
+    ctx = null; master = null; OUT = null;
+    try{ c.onstatechange = null; c.close(); }catch(e){}
+    audio();
+  } else stuck = 1;   // if this resume doesn't take, the next touch builds a new engine
+  const n = ctx; if (!n) return;
+  try{ n.resume().then(() => { if (n === ctx && n.state === 'running'){ stuck = 0; playHeld(); } }).catch(() => {}); }catch(e){}
+}
+/* where a sound goes: the current bus (a ringtone or song), or the main output */
+const dest = () => (OUT && OUT.context === ctx) ? OUT : master;
+/* the voice waits until sound effects finish, so it never talks over an animal (buses don't count: songs, ringtones) */
+const busy = sec => { if (!OUT && !(window.OfflineAudioContext && ctx instanceof OfflineAudioContext)) fxEnd = Math.max(fxEnd, performance.now() + sec*1000); };
+function synth(o){
+  busy((o.at || 0) + (o.dur || .3));
+  if (hold(() => synth(o))) return;
+  const c = ctx;
   const t = c.currentTime + (o.at || 0), dur = o.dur || .3, vol = o.vol ?? .2, f = o.f || 440, f1 = o.f1 ?? f, atk = o.atk || .015;
   const osc = c.createOscillator(), g = c.createGain();
   osc.type = o.type || 'sine';
@@ -3751,7 +3787,7 @@ function synth(o){
   else g.gain.exponentialRampToValueAtTime(.0001, t + dur);
   let node = osc;
   if (o.lp){ const fl = c.createBiquadFilter(); fl.type = 'lowpass'; fl.frequency.value = o.lp; fl.Q.value = o.q || 1; osc.connect(fl); node = fl; }
-  node.connect(g); g.connect(OUT || master);
+  node.connect(g); g.connect(dest());
   osc.start(t); osc.stop(t + dur + .05);
 }
 const tone = (f0, f1, dur, type='sine', vol=.25, delay=0, vib=0, lp=0) => synth({f:f0, f1, dur, type, vol, at:delay, vib, lp});
@@ -3759,18 +3795,21 @@ const beep = (f, dur, vol=.1, delay=0) => synth({f, dur, vol, at:delay, atk:.01,
 let noiseBuf = null;
 function makeNoise(c){ if (!noiseBuf || noiseBuf.sampleRate !== c.sampleRate){ noiseBuf = c.createBuffer(1, c.sampleRate*2, c.sampleRate); const d = noiseBuf.getChannelData(0); for (let i=0;i<d.length;i++) d[i] = Math.random()*2-1; } }
 function noise(dur, ftype='lowpass', f0=800, f1=f0, vol=.3, delay=0){
-  const c = audio(); if (!c) return;
+  busy(delay + dur);
+  if (hold(() => noise(dur, ftype, f0, f1, vol, delay))) return;
+  const c = ctx;
   makeNoise(c);
   const t = c.currentTime + delay, s = c.createBufferSource(), fl = c.createBiquadFilter(), g = c.createGain();
   s.buffer = noiseBuf; fl.type = ftype; fl.frequency.setValueAtTime(f0, t); fl.frequency.exponentialRampToValueAtTime(Math.max(f1,20), t+dur);
   g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(vol, t+.02); g.gain.exponentialRampToValueAtTime(.0001, t+dur);
-  s.connect(fl); fl.connect(g); g.connect(OUT || master); s.start(t); s.stop(t+dur+.05);
+  s.connect(fl); fl.connect(g); g.connect(dest()); s.start(t); s.stop(t+dur+.05);
 }
 /* A bus groups long sounds (ringtones, songs) so they can be stopped at once. */
 function makeBus(){ const c = audio(); if (!c) return null; const g = c.createGain(); g.connect(master); return g; }
 function into(bus, fn){ const prev = OUT; OUT = bus; try{ fn(); } finally { OUT = prev; } }
 function killBus(bus){
   if (!bus || !ctx) return;
+  if (bus.context !== ctx){ try{ bus.disconnect(); }catch(e){} return; }   // from an engine that was replaced
   try{ bus.gain.cancelScheduledValues(ctx.currentTime); bus.gain.setTargetAtTime(0, ctx.currentTime, .02); }catch(e){}
   setTimeout(() => { try{ bus.disconnect(); }catch(e){} }, 400);
 }
@@ -3785,9 +3824,11 @@ function noiseSrc(c){ makeNoise(c); const s = c.createBufferSource(); s.buffer =
 const shapers = {};
 function shaper(k){ if (!shapers[k]){ const n = 1024, a = new Float32Array(n); for (let i=0;i<n;i++){ const x = i/(n-1)*2 - 1; a[i] = Math.tanh(k*x) / Math.tanh(k); } shapers[k] = a; } return shapers[k]; }
 function vox(o){
-  const c = audio(); if (!c) return (o.at || 0);
-  const end = o.amp[o.amp.length-1][0], t0 = c.currentTime + (o.at || 0), stop = t0 + end + .05;
-  const out = c.createGain(); out.gain.value = 0; curve(out.gain, o.amp, t0, o.vol ?? .3); out.connect(OUT || master);
+  const end = o.amp[o.amp.length-1][0];
+  busy((o.at || 0) + end);
+  if (hold(() => vox(o))) return (o.at || 0) + end;
+  const c = ctx, t0 = c.currentTime + (o.at || 0), stop = t0 + end + .05;
+  const out = c.createGain(); out.gain.value = 0; curve(out.gain, o.amp, t0, o.vol ?? .3); out.connect(dest());
   const mix = c.createGain();
   if (o.form) o.form.forEach(fm => {
     const bp = c.createBiquadFilter(), g = c.createGain(), q = fm.q || 5;
@@ -3934,7 +3975,11 @@ async function loadSounds(){
 }
 function animalSound(a, at=0){
   const buf = a.id && soundBufs[a.id];
-  if (buf && ctx){ const s = ctx.createBufferSource(); s.buffer = buf; s.connect(OUT || master); s.start(ctx.currentTime + at); return at + buf.duration; }
+  if (buf){
+    busy(at + buf.duration);
+    if (hold(() => animalSound(a, at))) return at + buf.duration;
+    const s = ctx.createBufferSource(); s.buffer = buf; s.connect(dest()); s.start(ctx.currentTime + at); return at + buf.duration;
+  }
   return (a.fx && FX[a.fx]) ? (FX[a.fx](at) || at + .8) : at;
 }
 
@@ -3967,18 +4012,26 @@ function speakNow(text, pitch){
     const u = new SpeechSynthesisUtterance(speakable(text));
     if (voice){ u.voice = voice; u.lang = voice.lang; }
     u.rate = .9; u.pitch = pitch || 1.15; u.volume = Math.min(1, VOLS[settings.vol] + .3);
+    u.onend = u.onerror = () => { if (ctx && ctx.state !== 'running' && ctx.state !== 'closed') try{ ctx.resume().catch(() => {}); }catch(e){} };
     speechSynthesis.speak(u);
   }catch(e){}
 }
-function say(text, pitch){ if (speechReady) speakNow(text, pitch); else pending = [text, pitch]; }
-function hush(){ pending = null; try{ speechSynthesis.cancel(); }catch(e){} }
+let sayTimer = 0;
+function say(text, pitch){
+  if (!speechReady){ pending = [text, pitch]; return; }
+  clearTimeout(sayTimer);
+  const wait = Math.min(1500, fxEnd - performance.now());   // a sound is still playing: talk right after it
+  if (wait > 40) sayTimer = setTimeout(() => speakNow(text, pitch), wait + 120); else speakNow(text, pitch);
+}
+function hush(){ pending = null; clearTimeout(sayTimer); try{ speechSynthesis.cancel(); }catch(e){} }
+const speaking = () => { try{ return speechSynthesis.speaking; }catch(e){ return false; } };
 const talkMs = text => 900 + text.length * 68;   // rough speaking time at rate .9
 
 /* iPhone only unlocks sound and speech when a finger lifts (touchend/click, not pointerdown),
    so unlock there. Sounds and words queued by the first pointerdown play right then. */
 let unlocked = false;
 function unlock(){
-  audio();
+  wakeAudio();
   if (!speechReady){
     speechReady = true;
     const p = pending; pending = null;
@@ -4065,7 +4118,7 @@ updateClock(); setInterval(updateClock, 10000);
 /* ---------- Navigation ---------- */
 const APPS = ['home','phone','camera','photos','music','games','wildtap','dinobuddies'];
 let current = 'home';
-const APP_SAY = {phone:'Phone! Who do you want to call?', camera:'Camera! Slide to look around. Then press the big button!', music:'Music! Let\'s play!', games:'Games! Pick a game!'};
+const APP_SAY = {phone:'Phone! Who do you want to call?', camera:'Camera! Slide to look around. Then press the big button!', games:'Games! Pick a game!'};   // Music has no voice: the music is the answer
 function go(name, fromEl){
   if (!APPS.includes(name)) name = 'home';
   clearLater(); hush();
@@ -4083,7 +4136,7 @@ function enterApp(name){
   if (name === 'phone'){ showPhoneTab('contacts', true); say(APP_SAY.phone); }
   if (name === 'camera'){ startCamera(); say(APP_SAY.camera); }
   if (name === 'photos'){ openPhotos(); }
-  if (name === 'music'){ showMusicTab(musicTab, true); say(APP_SAY.music); }
+  if (name === 'music') showMusicTab(musicTab);
   if (name === 'games') say(APP_SAY.games);
   if (name === 'wildtap') WildTap.enter();
   if (name === 'dinobuddies') DinoBuddies.enter();
@@ -4165,7 +4218,6 @@ function fitContacts(){
 
 /* keypad: real touch-tone pairs */
 const DTMF = {'1':[697,1209],'2':[697,1336],'3':[697,1477],'4':[770,1209],'5':[770,1336],'6':[770,1477],'7':[852,1209],'8':[852,1336],'9':[852,1477],'*':[941,1209],'0':[941,1336],'#':[941,1477]};
-const NUMWORD = ['Zero','One','Two','Three','Four','Five','Six','Seven','Eight','Nine'];
 const KEYCOL = ['#F0524F','#FF9F43','#FFC83D','#7CC96B','#5CC9B5','#3D8FE0','#8A6FD1','#E8506E','#FF9F43','#3D8FE0'];
 let digits = '';
 ['1','2','3','4','5','6','7','8','9','*','0','#'].forEach(k => {
@@ -4178,7 +4230,6 @@ let digits = '';
     const [lo, hi] = DTMF[k]; beep(lo, .2, .08); beep(hi, .2, .08);
     retrigger(b, 'lit'); setTimeout(() => b.classList.remove('lit'), 220);
     digits = (digits + k).slice(-10); renderDial();
-    if (k >= '0' && k <= '9') say(NUMWORD[+k] + '!');
   });
   $('#keys').appendChild(b);
 });
@@ -4313,7 +4364,7 @@ function ringIn(c){
     [784, 988, 1175, 988, 784, 988, 1175, 1568].forEach((f, i) => { tone(f, f, .24, 'triangle', .12, i*.13); tone(f*2, f*2, .1, 'sine', .025, i*.13); });
     [1047, 1319, 1568, 2093].forEach((f, i) => tone(f, f, .3, 'triangle', .1, 1.2 + i*.12));
   });
-  const loop = () => { bar(); callLater(loop, 2900); };
+  const loop = () => { if (speaking()) return callLater(loop, 500); bar(); callLater(loop, 2900); };   // ring between the words, not over them
   loop();
   callLater(() => say(sp(c) + ' is calling you! Ring ring!', c.p), 2100);
   callLater(() => endCall("Okay, I'll call you later. Bye bye!"), 26000);
@@ -4332,7 +4383,9 @@ function loadClip(url){
 }
 function playClip(url){
   return loadClip(url).then(buf => {
-    if (!buf || !ctx) return null;
+    if (!buf) return null;
+    busy(buf.duration);
+    if (hold(() => playClip(url))) return buf.duration;
     const s = ctx.createBufferSource(); s.buffer = buf; s.connect(master); s.start();
     if (call){ call.src = s; s.onended = () => { if (call && call.src === s) call.src = null; }; }
     return buf.duration;
@@ -4763,7 +4816,7 @@ function camTap(e){
   else later(() => say(article(hit.n).replace(/^./, ch => ch.toUpperCase()) + '!'), 500);
 }
 $('#zoomBtn').insertAdjacentHTML('afterbegin', ICON.zoom);
-tap($('#zoomBtn'), () => { FX.pop(); cam.target = cam.target > 1.5 ? 1 : 2; $('#zoomTxt').textContent = cam.target > 1.5 ? '2×' : '1×'; say(cam.target > 1.5 ? 'Zoom in!' : 'Zoom out!'); });
+tap($('#zoomBtn'), () => { FX.pop(); cam.target = cam.target > 1.5 ? 1 : 2; $('#zoomTxt').textContent = cam.target > 1.5 ? '2×' : '1×'; });
 tap($('#shutter'), () => {
   FX.shutter(); retrigger($('#flash'), 'go'); retrigger(vf, 'shake');
   cam.shotAt = performance.now();
@@ -4877,13 +4930,11 @@ let musicTab = 'xylo';
 const mtabs = $$('[data-mtab]');
 mtabs[0].innerHTML = ICON.xylo;
 mtabs.forEach(b => tap(b, () => { FX.pop(); showMusicTab(b.dataset.mtab); }));
-const MUSIC_SAY = {xylo:'Xylophone!', drums:'Drums! Boom boom!', piano:'Animal piano!', songs:'Songs! Pick a song!'};
-function showMusicTab(t, quiet){
+function showMusicTab(t){
   if (t !== 'songs') stopSong();
   musicTab = t;
   mtabs.forEach(b => b.classList.toggle('on', b.dataset.mtab === t));
   ['xylo','drums','piano','songs'].forEach(k => { $('#' + k).hidden = k !== t; });
-  if (!quiet) say(MUSIC_SAY[t]);
 }
 function mallet(f, vol=.3, at=0){ synth({f, dur:1.2, vol, at}); synth({f:f*4, dur:.22, vol:vol*.16, at}); synth({f:f*2, dur:.45, type:'triangle', vol:vol*.12, at}); }
 
@@ -4953,7 +5004,6 @@ function markSong(s){ songPick = s; $$('.song').forEach(b => b.classList.toggle(
 markSong(SONGS[0]);
 function playSong(s){
   stopSong(); markSong(s);
-  say(s.n + '!');
   const timers = [];
   song = {s, bus:null, timers};
   timers.push(setTimeout(() => {
@@ -4971,13 +5021,13 @@ function playSong(s){
       }
       at += dur;
     }));
-    timers.push(setTimeout(() => { if (!song || song.s !== s) return; dancer.classList.remove('l','r'); retrigger(dancer, 'bow'); FX.cheer(); const [x, y] = rel(dancer); confetti(x, y, 30); song = null; later(() => say('Yay! Great dancing!'), 500); }, (at + .3)*1000));
-  }, 1700));
+    timers.push(setTimeout(() => { if (!song || song.s !== s) return; dancer.classList.remove('l','r'); retrigger(dancer, 'bow'); FX.cheer(); const [x, y] = rel(dancer); confetti(x, y, 30); song = null; }, (at + .3)*1000));
+  }, 300));
 }
 function stopSong(){ if (!song) return; song.timers.forEach(clearTimeout); killBus(song.bus); song = null; dancer.classList.remove('l','r'); }
 $('#songPlay').innerHTML = ICON.play; $('#songStop').innerHTML = ICON.stop;
 tap($('#songPlay'), () => { FX.pop(); playSong(songPick); });
-tap($('#songStop'), () => { FX.boop(); if (song){ stopSong(); say('Stop!'); } });
+tap($('#songStop'), () => { FX.boop(); stopSong(); });
 tap(dancer, () => { const s = songPick; FX[s.fx] && FX[s.fx](); retrigger(dancer, 'bow'); });
 
 /* ======================= GAMES ======================= */
@@ -5273,7 +5323,15 @@ function renderSettings(){
   const n = Photos.list.length; $('#photoCount').textContent = n + (n === 1 ? ' photo' : ' photos');
   $('#clearBtn').disabled = !n;
 }
-function openSettings(){ hush(); $('#confirmClear').hidden = true; renderSettings(); pickVoice(); $('#settings').hidden = false; FX.cheer(); }
+function openSettings(){ hush(); $('#confirmClear').hidden = true; renderSettings(); pickVoice(); showSound(); $('#settings').hidden = false; FX.cheer(); }
+/* is the sound engine running? (the animals, drums and ringtones all come from it; the voice doesn't) */
+function showSound(){
+  const n = $('#soundNote'); if (!n) return;
+  const st = ctx ? ctx.state : '';
+  n.textContent = (st === 'running' ? 'Sound effects: on.' : st ? 'Sound effects: paused by the phone. Any tap starts them again.' : 'Sound effects: they start with the first tap.')
+    + ' If the voice talks but the animals and drums are quiet, flip the ring/silent switch to ring: iPhone keeps web page sound effects quiet in silent mode.'
+    + (rebuilds ? ` (Restarted ${rebuilds} time${rebuilds > 1 ? 's' : ''}.)` : '');
+}
 function closeSettings(){ $('#settings').hidden = true; }
 $$('[data-incoming]').forEach(b => tap(b, () => { settings.incoming = b.dataset.incoming === '1'; saveSettings(); renderSettings(); scheduleIncoming(); }));
 $$('[data-vol]').forEach(b => tap(b, () => { settings.vol = +b.dataset.vol; saveSettings(); if (master) master.gain.value = VOLS[settings.vol]; renderSettings(); FX.cheer(); }));
@@ -5318,7 +5376,8 @@ async function renderFx(name, secs=3){
   return {len, data:Array.from(buf.getChannelData(0))};
 }
 window.__toyPhone = { go, renderFx, speakable,
-  panorama: (k, w=1600) => Promise.resolve().then(() => { const cv = document.createElement('canvas'); cv.width = w; cv.height = Math.round(w * WH / WW); renderScene(cv.getContext('2d'), SCENES[k], 0, 0, w / WW, cv.width, cv.height, 3, true); return cv.toDataURL('image/png'); }), dino: () => ({fill:DinoBuddies.fill(), family:DinoBuddies.family()}), fx: () => Object.keys(FX), ringIn: () => maybeRing(true), photos: () => Photos.list.length, call: () => call && call.state, contacts: () => CONTACTS.length };
+  panorama: (k, w=1600) => Promise.resolve().then(() => { const cv = document.createElement('canvas'); cv.width = w; cv.height = Math.round(w * WH / WW); renderScene(cv.getContext('2d'), SCENES[k], 0, 0, w / WW, cv.width, cv.height, 3, true); return cv.toDataURL('image/png'); }), dino: () => ({fill:DinoBuddies.fill(), family:DinoBuddies.family()}), fx: () => Object.keys(FX), ringIn: () => maybeRing(true), sound: () => ({state: ctx ? ctx.state : 'none', rebuilds, held: held.length}),
+  pauseSound: () => { if (ctx) Object.defineProperty(ctx, 'state', {configurable:true, get: () => 'interrupted'}); }, photos: () => Photos.list.length, call: () => call && call.state, contacts: () => CONTACTS.length };
 })();
 </script>
 </body>

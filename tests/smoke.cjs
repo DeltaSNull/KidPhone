@@ -176,8 +176,10 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   // --- PHONE: keypad
   await tap('[data-ptab="keypad"]'); await sleep(250);
   before = await osc();
+  const saidKeys = (await said()).length;
   const nKeys = await tapAll('.key');
   check(nKeys === 12 && await osc() >= before + 24, 'all 12 keys play touch tones');
+  check((await said()).length === saidKeys, 'number keys play their tone without the voice talking');
   check((await page.locator('#dial').textContent()) === '3456789*0#', 'dial shows the last 10 presses');
   await shot('4-keypad');
   await fits('keypad');
@@ -230,6 +232,7 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   await tapXY(vf.x + vf.width / 2, vf.y + vf.height * 0.6);
   await tap('#shutter'); await sleep(700);
   check(await page.evaluate(() => window.__toyPhone.photos()) === photos0 + 1, 'shutter saves a photo');
+  await sleep(1500);   // the voice waits for the animal's call to finish
   check((await said()).some(s => /picture/i.test(s)), 'camera says what is in the picture');
   await tap('#zoomBtn'); await sleep(500);
   await tap('#shutter'); await sleep(700);
@@ -258,6 +261,7 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
 
   // --- MUSIC
   await tap('[data-app="music"]'); await sleep(600);
+  const saidMusic = (await said()).length;
   before = await osc();
   await tapAll('.bar');
   check(await osc() >= before + 24, 'every xylophone bar plays');
@@ -276,6 +280,12 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   before = await osc();
   await tapAll('.pad');
   check(await osc() > before, 'drum pads play');
+  // the phone can pause the sound engine (a call, Siri, the voice): the next tap must still play, on a new engine if needed
+  await page.evaluate(() => window.__toyPhone.pauseSound());
+  before = await osc();
+  await tap('.pad'); await sleep(300);
+  const snd = await page.evaluate(() => window.__toyPhone.sound());
+  check(snd.state === 'running' && snd.rebuilds >= 1 && await osc() > before, `after the phone pauses the sound engine, the next tap restarts it and the drum still plays (${JSON.stringify(snd)})`);
   await shot('12-drums');
   await fits('drums');
   await tap('[data-mtab="piano"]'); await sleep(200);
@@ -295,6 +305,7 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   await fits('songs');
   await tap('#dancer');
   await tap('#songStop'); await tap('#songPlay'); await sleep(400); await tap('#songStop');
+  check((await said()).length === saidMusic, `the voice stays quiet in Music: the music is the answer ${JSON.stringify((await said()).slice(saidMusic))}`);
   await home();
 
   // --- GAMES: the picker, then both games
