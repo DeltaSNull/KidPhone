@@ -62,8 +62,10 @@ on `pointerdown` with sound and motion, there are no failure states, and two kid
    with no Safari bars, and it keeps working offline once loaded (the service worker caches it).
 3. **Guided Access**: Settings → Accessibility → Guided Access → on, and set a passcode. Open Toy Phone, then
    triple-click the side button to start. Triple-click and enter the passcode to leave.
-4. **Nicer voice**: Settings → Accessibility → Spoken Content → Voices → English → download an *Enhanced* voice
-   (Samantha, Karen or Moira). The page picks it up automatically.
+4. **Nicer voice**: Settings → Accessibility → Read & Speak → Voices → English (on iOS 18 and earlier it's
+   *Spoken Content* instead of *Read & Speak*). Download an *Enhanced* or *Premium* voice, such as Samantha (Enhanced),
+   then reload the page. The page prefers a downloaded Enhanced or Premium voice, and the parent settings panel shows
+   which voice it's using. If it still says the basic Samantha, Safari isn't offering the downloaded voice to web pages.
 
 Home-screen apps keep their own storage, so photos taken there don't show up in Safari's copy, and the reverse.
 

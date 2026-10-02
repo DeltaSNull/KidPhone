@@ -380,6 +380,8 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   await tap('#homeBtn'); await sleep(2300);
   check(await page.evaluate(() => !document.getElementById('home').hidden && document.getElementById('call').hidden), 'after mashing, home button still gets home');
 
+  const garbled = (await said()).filter(t => /\b[A-Z]{2,}\b/.test(t) || /([a-z])\1\1/i.test(t));
+  check(!garbled.length, `spoken lines have no ALL-CAPS or stretched words (the voice would spell them out) ${JSON.stringify(garbled.slice(0, 3))}`);
   const real = errors.filter(e => family || !/404|Failed to load resource/.test(e));
   check(!real.length, `no console errors ${real.length ? JSON.stringify(real.slice(0, 5)) : ''}`);
   await context.close();

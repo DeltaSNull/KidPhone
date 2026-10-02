@@ -729,42 +729,42 @@ const ANIMALS = [
     "Hi buddy! It's Lion. I'm napping in the warm sunshine. Roar!",
     "Guess what? I have a big, fluffy mane!",
     "My cubs are playing chase in the tall grass. So fun!",
-    "Can you do a big roar like me? Roooar!"]},
-  {id:'elephant', n:'Elephant', a:'🐘', c:'#BFE3F7', fx:'trumpet', snd:'Paaa-ooo', p:.95, lines:[
-    "Hi buddy! It's Elephant. I'm splashing in the mud! Paaa-ooo!",
+    "Can you do a big roar like me? Roar!"]},
+  {id:'elephant', n:'Elephant', a:'🐘', c:'#BFE3F7', fx:'trumpet', snd:'Pawoo', p:.95, lines:[
+    "Hi buddy! It's Elephant. I'm splashing in the mud! Pawoo!",
     "I'm spraying water with my long trunk. Splash!",
     "I'm eating crunchy peanuts. Yum yum!",
-    "Can you swing your arm like a trunk? Paaa-ooo!"]},
-  {id:'giraffe', n:'Giraffe', a:'🦒', c:'#D7CBF5', fx:'munch', snd:'Hmmm', p:1.2, lines:[
+    "Can you swing your arm like a trunk? Pawoo!"]},
+  {id:'giraffe', n:'Giraffe', a:'🦒', c:'#D7CBF5', fx:'munch', snd:'Hmm', p:1.2, lines:[
     "Hello buddy! It's Giraffe. I'm munching leaves way up high!",
     "My neck is so long, I can see over the trees!",
     "I have lots and lots of spots. Can you count them?",
-    "Giraffes hum very quietly. Hmmmm. Can you hum like me?"]},
+    "Giraffes hum very quietly. Hmm. Can you hum like me?"]},
   {id:'zebra', n:'Zebra', a:'🦓', c:'#FFE08A', fx:'neigh', snd:'Neigh', p:1.15, lines:[
     "Hi buddy! It's Zebra. I'm running with my friends! Neigh!",
     "Black and white, black and white. I love my stripes!",
     "Clip clop, clip clop. Can you gallop like me?"]},
   {id:'monkey', n:'Monkey', a:'🐒', c:'#FFD1DA', fx:'ooh', snd:'Ooh ooh ah ah', p:1.35, lines:[
     "Ooh ooh ah ah! Hi buddy! It's Monkey!",
-    "I'm swinging from tree to tree. Wheee!",
+    "I'm swinging from tree to tree. Whee!",
     "I found a big yellow banana! Do you want some?",
     "Can you jump up and down like a monkey?"]},
   {id:'penguin', n:'Penguin', a:'🐧', c:'#B9F0E3', fx:'bray', snd:'Haw haw', p:1.4, lines:[
-    "Hi buddy! It's Penguin. I'm sliding on the ice! Wheee!",
+    "Hi buddy! It's Penguin. I'm sliding on the ice! Whee!",
     "Did you hear me bray? Haw haw! Penguins can sound like a donkey!",
     "Waddle, waddle, waddle. Can you waddle like me?",
-    "Brrr! It's so cold here. I love it!"]},
+    "Brr! It's so cold here. I love it!"]},
   {id:'hippo', n:'Hippo', a:'🦛', c:'#FFD7B0', fx:'hippo', snd:'Honk honk', p:.85, lines:[
     "Hi buddy! It's Hippo. I'm taking a big bath! Splash!",
     "Blub blub blub. I'm blowing bubbles in the river!",
     "Hippos honk and laugh. Honk honk honk!",
-    "I can open my mouth super wide. Ahhhh!"]},
-  {id:'trex', n:'T. rex', sp:'T rex', a:'🦖', c:'#FFC9C9', fx:'bigroar', snd:'Rawr', p:.8, lines:[
-    "Hi buddy! It's T rex! Rawr! I'm a friendly dinosaur.",
+    "I can open my mouth super wide. Ahh!"]},
+  {id:'trex', n:'T. rex', sp:'T rex', a:'🦖', c:'#FFC9C9', fx:'bigroar', snd:'Roar', p:.8, lines:[
+    "Hi buddy! It's T rex! Roar! I'm a friendly dinosaur.",
     "I have big teeth and teeny tiny arms. Can you make tiny arms?",
     "Stomp, stomp, stomp! I'm going for a walk.",
-    "Rawr means I love you in dinosaur!"]},
-  {id:'longneck', n:'Long neck', a:'🦕', c:'#FFE6B3', fx:'bellow', snd:'Hooom', p:.9, lines:[
+    "Roar means I love you in dinosaur!"]},
+  {id:'longneck', n:'Long neck', a:'🦕', c:'#FFE6B3', fx:'bellow', snd:'Hoom', p:.9, lines:[
     "Hello buddy! It's Long neck. I'm eating leaves from the very tops of the trees!",
     "My neck is so long, I can almost touch the clouds!",
     "Stomp, stomp. I'm a big, gentle dinosaur."]},
@@ -772,7 +772,7 @@ const ANIMALS = [
     "Hi buddy! It's Triceratops! I have three horns. One, two, three!",
     "Huff huff! I'm munching on some yummy ferns.",
     "I have a big frill on my head. Isn't it pretty?"]},
-  {id:'stego', n:'Stegosaurus', a:SVG.stego, c:'#FFD9C2', fx:'stego', snd:'Hrrumph', p:.95, lines:[
+  {id:'stego', n:'Stegosaurus', a:SVG.stego, c:'#FFD9C2', fx:'stego', snd:'Harrumph', p:.95, lines:[
     "Hi buddy! It's Stegosaurus. I have pointy plates on my back!",
     "Thump, thump! I'm swishing my spiky tail.",
     "I eat plants. Crunchy leaves are my favorite!"]},
@@ -787,9 +787,9 @@ const FILLERS = [
   () => "I love talking to you, buddy!",
   () => "Let's count together! One, two, three!",
   () => "You are my best friend!",
-  () => "Can you say hello? Hellooo!",
-  () => "Can you give me a big hug? Mwah!",
-  () => "Let's sing a song! La la laaa!",
+  () => "Can you say hello? Hello!",
+  () => "Can you give me a big hug? Smooch!",
+  () => "Let's sing a song! La la la!",
   () => "What did you have for breakfast? Yum yum!"
 ];
 const sp = c => c.sp || c.n;
@@ -1023,20 +1023,31 @@ function animalSound(a, at=0){
 
 /* ---------- Speech ---------- */
 let voice = null, speechReady = false, pending = null;
+/* Best English voice the phone offers: a downloaded Premium or Enhanced voice beats the basic built-in one. */
+const voiceTier = v => { const t = (v.name + ' ' + v.voiceURI).toLowerCase(); return t.includes('premium') ? 2 : t.includes('enhanced') ? 1 : 0; };
 function pickVoice(){
   try{
-    const vs = speechSynthesis.getVoices().filter(v => /^en/i.test(v.lang));
-    voice = vs.find(v => /Samantha|Karen|Moira/i.test(v.name) && /enhanced|premium/i.test(v.name))
-         || vs.find(v => /Samantha|Karen|Moira|Google US/i.test(v.name))
-         || vs.find(v => /en-US/i.test(v.lang)) || vs[0] || null;
-    const vn = $('#voiceNote'); if (vn) vn.textContent = 'Voice: ' + (voice ? voice.name : 'device default') + '. For a nicer voice, download an Enhanced English voice in Settings → Accessibility → Spoken Content → Voices.';
+    const score = v => voiceTier(v)*10 + (/samantha|karen|moira|ava|zoe|google us/i.test(v.name) ? 4 : 0) + (/en-US/i.test(v.lang) ? 2 : 0) + (v.localService ? 1 : 0);
+    voice = speechSynthesis.getVoices().filter(v => /^en/i.test(v.lang)).sort((x, y) => score(y) - score(x))[0] || null;
+    const vn = $('#voiceNote');
+    if (vn) vn.textContent = voice && voiceTier(voice)
+      ? `Voice: ${voice.name}${/enhanced|premium/i.test(voice.name) ? '' : voiceTier(voice) > 1 ? ' (Premium)' : ' (Enhanced)'}. That's the natural-sounding kind.`
+      : `Voice: ${voice ? voice.name : 'device default'}, the basic built-in version. For a more natural voice, download an Enhanced or Premium English voice in Settings → Accessibility → Read & Speak → Voices (called Spoken Content on iOS 18 and earlier), then reload this page.`;
   }catch(e){}
 }
 try{ pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }catch(e){}
+/* The phone's voice reads ALL-CAPS words letter by letter ("R-O-A-R") and stumbles on stretched made-up words,
+   so every line is cleaned first: sound words get spellings it says right, caps go lowercase, "Wheee" becomes "Whee". */
+const SAY_AS = [[/\b(?:r+o+a+r+|rawr)\b/gi, 'roar'], [/\bpa+-?o+\b/gi, 'pawoo'], [/\bgr{2,}\b/gi, 'grr'], [/\bhr+umph\b/gi, 'harrumph'], [/\bmwah\b/gi, 'smooch']];
+function speakable(text){
+  let t = String(text).replace(/\b[A-Z]{2,}\b/g, w => w.toLowerCase());
+  SAY_AS.forEach(([re, w]) => { t = t.replace(re, m => m[0] === m[0].toUpperCase() ? w[0].toUpperCase() + w.slice(1) : w); });
+  return t.replace(/([a-z])\1{2,}/gi, '$1$1');
+}
 function speakNow(text, pitch){
   try{
     speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(text);
+    const u = new SpeechSynthesisUtterance(speakable(text));
     if (voice){ u.voice = voice; u.lang = voice.lang; }
     u.rate = .9; u.pitch = pitch || 1.15; u.volume = Math.min(1, VOLS[settings.vol] + .3);
     speechSynthesis.speak(u);
@@ -1984,26 +1995,26 @@ const WildTap = (() => {
   const EAR = `<svg viewBox="0 0 40 40"><path d="M6 15 H13 L22 7 V33 L13 25 H6 Z" fill="#fff"/><path d="M27 13 Q32 20 27 27 M31 9 Q39 20 31 31" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round"/></svg>`;
   const W = {
     safari:{title:'Safari', cls:'wt-w-safari', list:[
-      {n:'Lion', a:'🦁', w:'ROAR!', s:'Lion! Roooar!', f:'Lions live in a big family called a pride.', x:'roar'},
-      {n:'Elephant', a:'🐘', w:'TOOT!', s:'Elephant! Paaa-ooo!', f:'Elephants use their long trunk like a hand.', x:'trumpet'},
+      {n:'Lion', a:'🦁', w:'ROAR!', s:'Lion! Roar!', f:'Lions live in a big family called a pride.', x:'roar'},
+      {n:'Elephant', a:'🐘', w:'TOOT!', s:'Elephant! Pawoo!', f:'Elephants use their long trunk like a hand.', x:'trumpet'},
       {n:'Giraffe', a:'🦒', w:'MUNCH!', s:'Giraffe! Munch munch, yummy leaves!', f:'Giraffes are the tallest animals in the whole world.', x:'munch'},
       {n:'Zebra', a:'🦓', w:'NEIGH!', s:'Zebra! Neigh!', f:'Every zebra has its very own stripes.', x:'neigh'},
       {n:'Hippo', a:'🦛', w:'SPLASH!', s:'Hippo! Splash splash!', f:'Hippos love to stay cool in the water.', x:'splash'},
       {n:'Rhino', a:'🦏', w:'SNORT!', s:'Rhino! Snort snort!', f:'A rhino has a big horn on its nose.', x:'snort'}]},
     zoo:{title:'Zoo', cls:'wt-w-zoo', list:[
-      {n:'Tiger', a:'🐅', w:'GRRR!', s:'Tiger! Grrrrr!', f:'Tigers have orange fur with black stripes.', x:'growl'},
+      {n:'Tiger', a:'🐅', w:'GRRR!', s:'Tiger! Grr!', f:'Tigers have orange fur with black stripes.', x:'growl'},
       {n:'Penguin', a:'🐧', w:'SQUAWK!', s:'Penguin! Squawk squawk!', f:'Penguins waddle on land and zoom in the water.', x:'bray'},
       {n:'Monkey', a:'🐒', w:'OOH OOH!', s:'Monkey! Ooh ooh, ah ah!', f:'Monkeys swing from tree to tree.', x:'ooh'},
       {n:'Panda', a:'🐼', w:'CRUNCH!', s:'Panda! Crunch crunch bamboo!', f:'Pandas eat bamboo almost all day long.', x:'crunch'},
       {n:'Kangaroo', a:'🦘', w:'BOING!', s:'Kangaroo! Boing boing boing!', f:'A baby kangaroo rides in its mommy’s pouch.', x:'boing'},
       {n:'Flamingo', a:'🦩', w:'HONK!', s:'Flamingo! Honk honk!', f:'Flamingos can stand on one leg.', x:'honk'}]},
     dino:{title:'Dinos', cls:'wt-w-dino', list:[
-      {n:'T. rex', sp:'T rex', a:'🦖', w:'ROAR!', s:'T rex! ROOOAR!', f:'T rex had big teeth and tiny little arms.', x:'bigroar'},
+      {n:'T. rex', sp:'T rex', a:'🦖', w:'ROAR!', s:'T rex! Roar!', f:'T rex had big teeth and tiny little arms.', x:'bigroar'},
       {n:'Brachiosaurus', sp:'long neck', a:'🦕', w:'STOMP!', s:'Long neck! Stomp, stomp!', f:'Long neck dinosaurs ate leaves from the tops of trees.', x:'bellow'},
       {n:'Triceratops', a:SVG.trike, w:'HUFF!', s:'Triceratops! Huff huff!', f:'Triceratops had three horns on its face.', x:'huff'},
       {n:'Stegosaurus', a:SVG.stego, w:'THUMP!', s:'Stegosaurus! Thump thump!', f:'Stegosaurus had plates on its back and spikes on its tail.', x:'stego'},
-      {n:'Pterodactyl', sp:'pterodactyl', a:SVG.ptero, w:'SCREECH!', s:'Pterodactyl! Screeech!', f:'Pterodactyls flew high in the sky.', x:'screech'},
-      {n:'Volcano', a:'🌋', w:'BOOM!', s:'Volcano! Rumble rumble, BOOM!', f:'Hot lava is super hot. Stay back!', x:'boom', noFind:true}]}
+      {n:'Pterodactyl', sp:'pterodactyl', a:SVG.ptero, w:'SCREECH!', s:'Pterodactyl! Screech!', f:'Pterodactyls flew high in the sky.', x:'screech'},
+      {n:'Volcano', a:'🌋', w:'BOOM!', s:'Volcano! Rumble rumble, boom!', f:'Hot lava is super hot. Stay back!', x:'boom', noFind:true}]}
   };
   const ALL = Object.values(W).flatMap(w => w.list).filter(a => !a.noFind);
   const HATCH = [...W.dino.list.slice(0, 5),
@@ -2303,7 +2314,7 @@ async function renderFx(name, secs=3){
   const buf = await off.startRendering();
   return {len, data:Array.from(buf.getChannelData(0))};
 }
-window.__toyPhone = { go, renderFx, dino: () => ({fill:DinoBuddies.fill(), family:DinoBuddies.family()}), fx: () => Object.keys(FX), ringIn: () => maybeRing(true), photos: () => Photos.list.length, call: () => call && call.state, contacts: () => CONTACTS.length };
+window.__toyPhone = { go, renderFx, speakable, dino: () => ({fill:DinoBuddies.fill(), family:DinoBuddies.family()}), fx: () => Object.keys(FX), ringIn: () => maybeRing(true), photos: () => Photos.list.length, call: () => call && call.state, contacts: () => CONTACTS.length };
 })();
 </script>
 </body>
