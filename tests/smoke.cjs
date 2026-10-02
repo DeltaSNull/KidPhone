@@ -380,6 +380,7 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   await tap('#homeBtn'); await sleep(2300);
   check(await page.evaluate(() => !document.getElementById('home').hidden && document.getElementById('call').hidden), 'after mashing, home button still gets home');
 
+  check(await page.evaluate(() => !/\p{Extended_Pictographic}/u.test(document.body.innerText)), 'no emoji on screen: every picture is drawn art');
   const garbled = (await said()).filter(t => /\b[A-Z]{2,}\b/.test(t) || /([a-z])\1\1/i.test(t));
   check(!garbled.length, `spoken lines have no ALL-CAPS or stretched words (the voice would spell them out) ${JSON.stringify(garbled.slice(0, 3))}`);
   const real = errors.filter(e => family || !/404|Failed to load resource/.test(e));
@@ -388,6 +389,8 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
 }
 
 (async () => {
+  const left = (fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8').match(/\p{Extended_Pictographic}/gu) || []);
+  check(!left.length, `index.html has no emoji (all art is drawn) ${left.slice(0, 10).join(' ')}`);
   const srv = await serve();
   const base = `http://127.0.0.1:${srv.address().port}`;
   const browser = await chromium.launch({ args: ['--autoplay-policy=no-user-gesture-required'] });

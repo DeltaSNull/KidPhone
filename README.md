@@ -134,5 +134,5 @@ console error. Screenshots go to `tests/screenshots/`.
 - A call nobody hangs up says goodbye by itself after 3 minutes (`CALL_MAX_MS`), so a forgotten phone doesn't chat all afternoon.
 - In portrait, the 8 xylophone bars and 8 piano keys are about 66px tall but span the full width. Every other kid control is 80px or more.
 - With five app icons, the three animals on the home-screen hill only show on tall portrait screens (800px or more).
-- Screenshots come from Linux Chromium (Noto emoji). On the iPhone you'll see Apple's emoji.
+- Every picture is drawn in `index.html` (the `ART` library): no emoji, so the toy looks the same on every phone, and walking animals always face the way they walk. The test fails if an emoji sneaks back in.
 - Camera and microphone ideas (selfie stickers, talk-back calls) need this self-hosted HTTPS setup. claude.ai artifacts block both.
