@@ -8,9 +8,9 @@ Guided Access. It's one self-contained `index.html` (vanilla JS, no build step),
   1–3 minutes while the kids are on the home screen. It can never place a real call: there are no `tel:` links,
   and phone-number detection is turned off.
 - **Camera**: a pretend safari camera. Drag to look around a pixel-art panorama (savanna, jungle, dino valley) about
-  3 screens wide. The shutter flashes, clicks and saves a small pixel-art PNG, and the voice says what's in the shot.
+  3 screens wide. The shutter flashes, clicks and saves a small pixel-art PNG, and (if a parent turns it on) the voice says what's in the shot.
   Each scene has two hidden animals to find. 1×/2× zoom, and the last-photo thumbnail opens Photos.
-- **Photos**: the kids' pictures, newest first. Big arrows and swipe, and the voice names the animals.
+- **Photos**: the kids' pictures, newest first. Big arrows and swipe, and (if a parent turns it on) the voice names the animals.
   Starts with 4 sample photos. Keeps the newest 40. There's no delete button for kids.
 - **Music**: a pentatonic xylophone, drum pads, an animal piano (every key is an animal sound in tune), and
   4 songs with a dancing animal: Twinkle Twinkle, Old MacDonald, The Wheels on the Bus, If You're Happy and You Know It.
@@ -47,8 +47,8 @@ gorilla chest beats, frog ribbit, owl hoot and more).
 **Real recordings:** a synthesizer only gets so close. To use real recordings (for example, ones you make at the zoo),
 drop them in `assets/sounds/` and list them in `sounds.json`. See [`assets/sounds/README.md`](assets/sounds/README.md).
 
-The big yellow home button is always in the same spot and always goes home. Every prompt is spoken (except in Music and on the
-keypad's number keys, where the sound is the answer), every tap answers
+The big yellow home button is always in the same spot and always goes home. The talking voice speaks only where a parent
+turns it on in settings (phone calls and Wild Tap's Find It to start with), every tap answers
 on `pointerdown` with sound and motion, there are no failure states, and two kids can tap at once.
 
 ![Portrait screens](screenshots/portrait.jpg)
@@ -60,8 +60,8 @@ Every picture is pixel art placed one pixel at a time: no emoji, no vector drawi
 
 - **Sprites** live in `index.html` as text, in the `PIX` block: a palette, then one row of letters per row of pixels.
   Each letter is a color and `.` is see-through. Edit a row, reload, and the picture changes everywhere.
-  There are 92: 37 animals and dinosaurs (32×32, facing left), 7 little 16×16 animals for far away in the camera,
-  27 things and treats, the 5 app icons, 15 buttons and status-bar icons, and the toy's own home-screen icon.
+  There are 93: 37 animals and dinosaurs (32×32, facing left), 7 little 16×16 animals for far away in the camera,
+  27 things and treats, the 5 app icons, 16 buttons, checkmarks and status-bar icons, and the toy's own home-screen icon.
   `npm run sprites` draws them all on one sheet:
 
   ![Every sprite](screenshots/sprites.png)
@@ -107,6 +107,18 @@ Hold the clock in the top-left corner for **3 seconds**. A quick tap only wiggle
 
 - Incoming calls on/off
 - Volume (Quiet / Soft / Medium / Loud)
+- **Voice**: a checkbox for each place the talking voice can speak. Animal sounds and music always play.
+
+  | Checkbox | What the voice says | Starts |
+  | --- | --- | --- |
+  | Phone calls | The animals talk when you call them and when they call you | on (a call is the animal talking) |
+  | Wild Tap: Find It | "Where is the giraffe?" | on (the game is the question) |
+  | Opening apps | "Hi buddy!", "Phone! Who do you want to call?", "Tap the egg!" | off |
+  | Animal names | The animal's name after its sound, Wild Tap facts, hatched babies | off |
+  | Camera and Photos | The animals in view and in each picture | off |
+  | Keypad numbers | Each number pressed | off |
+  | Music | Instrument and song names | off |
+
 - Clear photos, with a confirm step built into the page
 - Ring now and Test sound, for checking the phone
 - Which speech voice is in use, and how many family contacts loaded

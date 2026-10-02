@@ -140,7 +140,7 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
 
   // --- PHONE: contacts and a full outgoing call
   await tap('[data-app="phone"]'); await sleep(500);
-  check((await said()).some(s => /Who do you want to call/.test(s)), 'phone speaks its prompt');
+  check(!(await said()).some(s => /Who do you want to call/.test(s)), 'by default the voice stays quiet when an app opens');
   const nContacts = await page.locator('.contact').count();
   check(nContacts === (family ? 13 : 12), `contacts grid shows ${nContacts} portraits`);
   await shot('2-phone-contacts');
@@ -198,6 +198,15 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   await touch('touchStart', [[cx, cy]]); await sleep(3300); await touch('touchEnd', []); await sleep(300);
   check(await visible('#settings'), 'holding the clock 3s opens parent settings');
   await shot('5-settings');
+  // voice checkboxes: on only where the voice is the point (calls, Find It); the rest start off
+  const voiceBoxes = await page.$$eval('[data-voice]', bs => Object.fromEntries(bs.map(b => [b.dataset.voice, b.getAttribute('aria-checked')])));
+  check(JSON.stringify(voiceBoxes) === JSON.stringify({ calls: 'true', find: 'true', menus: 'false', names: 'false', camera: 'false', numbers: 'false', music: 'false' }),
+    `voice checkboxes start on for calls and Find It only ${JSON.stringify(voiceBoxes)}`);
+  for (const k of ['menus', 'names', 'camera']) await tap(`[data-voice="${k}"]`);   // turn these on: the checks below hear them
+  await tap('[data-voice="numbers"]'); await tap('[data-voice="numbers"]');      // on and off again
+  const savedVoice = await page.evaluate(() => JSON.parse(localStorage.getItem('toyphone.settings')).voice);
+  check(savedVoice.menus && savedVoice.names && savedVoice.camera && !savedVoice.numbers && !savedVoice.music && savedVoice.calls, `voice choices are saved ${JSON.stringify(savedVoice)}`);
+  await page.evaluate(() => { document.querySelector('.sheet').scrollTop = 0; }); await sleep(100);
   await tapAll('[data-vol]');
   await tap('[data-incoming="1"]'); await tap('[data-incoming="0"]');
   check(await page.evaluate(() => JSON.parse(localStorage.getItem('toyphone.settings')).incoming) === false, 'incoming calls setting is saved');

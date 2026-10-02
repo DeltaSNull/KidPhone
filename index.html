@@ -58,7 +58,7 @@ img[src^="data:image/png"]{image-rendering:-webkit-optimize-contrast; image-rend
 .art{line-height:1}
 .art > .px{width:1.15em; height:1.15em}
 /* frames: notched pixel corners, a light rim, a darker lip and a drop shadow, stretched to fit (border-image) */
-.tab,.contact,.dial,.key,.callbtn,.thumb,.pic,.song,.wt-tile,.wt-back,.wt-pad,.wt-choice,.wt-stickers,.wt-newegg,.sheet,.sbtn,.confirm,.bar,.pad,.pkey,.vstage img,.pkey.blk::after{
+.tab,.contact,.dial,.key,.callbtn,.thumb,.pic,.song,.wt-tile,.wt-back,.wt-pad,.wt-choice,.wt-stickers,.wt-newegg,.sheet,.sbtn,.vopt,.confirm,.bar,.pad,.pkey,.vstage img,.pkey.blk::after{
   border-style:solid; border-color:transparent; border-width:9px 9px 15px; border-image:var(--fr, var(--f-paper)) 9 9 15 fill / 9px 9px 15px stretch;
   border-radius:0!important; box-shadow:none!important; background:none!important}
 .word,.wt-word,.nm,.gname,.calltime,#zoomTxt{border-style:solid; border-color:transparent; border-width:6px 6px 9px; border-image:var(--tg, var(--t-paper)) 6 6 9 fill / 6px 6px 9px stretch; border-radius:0!important; box-shadow:none!important; background:none!important}
@@ -461,6 +461,16 @@ img[src^="data:image/jpeg"],.face img{image-rendering:auto}
 .sbtn.danger{--fr:var(--f-stop); color:#fff}
 .sbtn.done{--fr:var(--f-go); color:#fff; padding:0 16px}
 .sbtn:disabled{opacity:.45}
+.vhint{flex-basis:100%; font-weight:500; font-size:14px; color:#6A5848; line-height:1.3}
+.vlist{display:grid; gap:4px; padding:0 0 8px}
+.vopt{display:flex; align-items:center; gap:10px; min-height:58px; padding:0 4px; text-align:left; --fr:var(--f-cream)}
+.vopt.on{--fr:var(--f-lit)}
+.vbox{flex:none; width:30px; height:30px; display:grid; place-items:center; background:#FFFDF6; box-shadow:inset 0 0 0 3px var(--ink)}
+.vbox .px{width:22px; height:18px}
+.vopt:not(.on) .vbox .px{visibility:hidden}
+.vtxt{display:flex; flex-direction:column; gap:1px; min-width:0}
+.vtxt b{font-size:17px; font-weight:700}
+.vtxt small{font-size:13px; font-weight:500; color:#6A5848; line-height:1.25}
 .confirm{display:flex; flex-wrap:wrap; align-items:center; gap:8px; padding:4px; margin-bottom:6px; --fr:var(--f-pink)}
 .note{margin:4px 0 8px; font-size:14px; color:#6A5848; line-height:1.35}
 
@@ -633,6 +643,8 @@ img[src^="data:image/jpeg"],.face img{image-rendering:auto}
         <div class="srow"><span>Incoming calls</span>
           <div class="seg"><button class="sbtn" data-incoming="1">On</button><button class="sbtn" data-incoming="0">Off</button></div></div>
         <div class="srow"><span>Volume</span><div class="seg" id="volSeg"></div></div>
+        <div class="srow"><span>Voice</span><span class="vhint">Where the talking voice speaks. Animal sounds and music always play.</span></div>
+        <div class="vlist" id="voiceList"></div>
         <div class="srow"><span id="photoCount">Photos</span><button class="sbtn danger" id="clearBtn">Clear photos</button></div>
         <div class="confirm" id="confirmClear" hidden>
           <span>Delete every photo?</span>
@@ -3335,6 +3347,15 @@ WWWWwwww...w...w
 ......WW.....w..
 .......W....w...
 ................`},
+check:{pal:{o:'#1E4A20',g:'#3BBF5C',l:'#8EE59E'}, rows:`
+.........ooo
+........ollo
+.......oggo.
+.ooo..oggo..
+.oggooggo...
+..oggggo....
+...oggo.....
+....oo......`},
 signal:{pal:{k:'#3B2B20'}, rows:`
 ..........kk
 ..........kk
@@ -3717,8 +3738,21 @@ const store = {
   get(k, d){ try{ const v = localStorage.getItem('toyphone.' + k); return v == null ? d : JSON.parse(v); }catch(e){ return d; } },
   set(k, v){ try{ localStorage.setItem('toyphone.' + k, JSON.stringify(v)); return true; }catch(e){ return false; } }
 };
+/* Where the voice talks. A parent picks in settings. It starts on only where the voice is the point: a phone call
+   is the animal talking, and Find It is a spoken question a toddler can't read. Sounds and music always play. */
+const VOICE = [
+  {k:'calls', on:true, t:'Phone calls', d:'The animals talk when you call them and when they call you.'},
+  {k:'find', on:true, t:'Wild Tap: Find It', d:'Asks which animal to find. The game needs it.'},
+  {k:'menus', on:false, t:'Opening apps', d:'“Hi buddy!”, “Phone! Who do you want to call?”, “Tap the egg!”'},
+  {k:'names', on:false, t:'Animal names', d:'Says the animal after its sound, in Wild Tap, and when an egg hatches.'},
+  {k:'camera', on:false, t:'Camera and Photos', d:'Names the animals in view and in each picture.'},
+  {k:'numbers', on:false, t:'Keypad numbers', d:'Says each number you press.'},
+  {k:'music', on:false, t:'Music', d:'Names the instruments and songs.'}
+];
 const settings = Object.assign({incoming:true, vol:2}, store.get('settings', {}));
 settings.vol = clamp(settings.vol|0, 0, 3);
+settings.voice = Object.assign(Object.fromEntries(VOICE.map(v => [v.k, v.on])), settings.voice || {});
+const voiceOn = area => !area || !!settings.voice[area];
 const saveSettings = () => store.set('settings', settings);
 
 /* ---------- Sound: synth effects ----------
@@ -4006,18 +4040,20 @@ function speakable(text){
   SAY_AS.forEach(([re, w]) => { t = t.replace(re, m => m[0] === m[0].toUpperCase() ? w[0].toUpperCase() + w.slice(1) : w); });
   return t.replace(/([a-z])\1{2,}/gi, '$1$1');
 }
-function speakNow(text, pitch){
+function speakNow(text, pitch, vol){
   try{
     speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(speakable(text));
     if (voice){ u.voice = voice; u.lang = voice.lang; }
-    u.rate = .9; u.pitch = pitch || 1.15; u.volume = Math.min(1, VOLS[settings.vol] + .3);
+    u.rate = .9; u.pitch = pitch || 1.15; u.volume = vol ?? Math.min(1, VOLS[settings.vol] + .3);
     u.onend = u.onerror = () => { if (ctx && ctx.state !== 'running' && ctx.state !== 'closed') try{ ctx.resume().catch(() => {}); }catch(e){} };
     speechSynthesis.speak(u);
   }catch(e){}
 }
 let sayTimer = 0;
-function say(text, pitch){
+/* area: which settings checkbox this line belongs to (none = always, like the parent's Test sound) */
+function say(text, pitch, area){
+  if (!voiceOn(area)) return;
   if (!speechReady){ pending = [text, pitch]; return; }
   clearTimeout(sayTimer);
   const wait = Math.min(1500, fxEnd - performance.now());   // a sound is still playing: talk right after it
@@ -4035,7 +4071,9 @@ function unlock(){
   if (!speechReady){
     speechReady = true;
     const p = pending; pending = null;
-    if (p) speakNow(p[0], p[1]); else speakNow('Hi buddy! It\'s your phone!');
+    if (p) speakNow(p[0], p[1]);
+    else if (voiceOn('menus')) speakNow('Hi buddy! It\'s your phone!');
+    else speakNow(' ', 1, 0);   // a silent word: iPhone only lets the voice talk later if it spoke once during a touch
   }
   if (!unlocked){ unlocked = true; scheduleIncoming(); }
 }
@@ -4118,7 +4156,7 @@ updateClock(); setInterval(updateClock, 10000);
 /* ---------- Navigation ---------- */
 const APPS = ['home','phone','camera','photos','music','games','wildtap','dinobuddies'];
 let current = 'home';
-const APP_SAY = {phone:'Phone! Who do you want to call?', camera:'Camera! Slide to look around. Then press the big button!', games:'Games! Pick a game!'};   // Music has no voice: the music is the answer
+const APP_SAY = {phone:'Phone! Who do you want to call?', camera:'Camera! Slide to look around. Then press the big button!', music:'Music! Let\'s play!', games:'Games! Pick a game!'};
 function go(name, fromEl){
   if (!APPS.includes(name)) name = 'home';
   clearLater(); hush();
@@ -4133,11 +4171,11 @@ function go(name, fromEl){
 }
 function enterApp(name){
   if (name === 'home'){ if (incomingDue) later(() => maybeRing(), 3500); }
-  if (name === 'phone'){ showPhoneTab('contacts', true); say(APP_SAY.phone); }
-  if (name === 'camera'){ startCamera(); say(APP_SAY.camera); }
+  if (name === 'phone'){ showPhoneTab('contacts', true); say(APP_SAY.phone, 0, 'menus'); }
+  if (name === 'camera'){ startCamera(); say(APP_SAY.camera, 0, 'menus'); }
   if (name === 'photos'){ openPhotos(); }
-  if (name === 'music') showMusicTab(musicTab);
-  if (name === 'games') say(APP_SAY.games);
+  if (name === 'music'){ showMusicTab(musicTab, true); say(APP_SAY.music, 0, 'menus'); }
+  if (name === 'games') say(APP_SAY.games, 0, 'menus');
   if (name === 'wildtap') WildTap.enter();
   if (name === 'dinobuddies') DinoBuddies.enter();
 }
@@ -4167,7 +4205,7 @@ const FRIENDS = [ANIMALS[0], ANIMALS[7], ANIMALS[1]];
 FRIENDS.forEach(f => {
   const b = document.createElement('button'); b.className = 'friend'; b.setAttribute('aria-label', f.n);
   const s = document.createElement('span'); put(s, f.a); b.appendChild(s);
-  tap(b, () => { retrigger(b, 'go'); animalSound(f); popWord(b, f.snd.split(' ')[0].toUpperCase() + '!'); later(() => say(sp(f) + '!', f.p), 450); }, {bump:false});
+  tap(b, () => { retrigger(b, 'go'); animalSound(f); popWord(b, f.snd.split(' ')[0].toUpperCase() + '!'); later(() => say(sp(f) + '!', f.p, 'names'), 450); }, {bump:false});
   $('#friends').appendChild(b);
 });
 
@@ -4181,7 +4219,7 @@ function showPhoneTab(t, quiet){
   ptabs.forEach(b => b.classList.toggle('on', b.dataset.ptab === t));
   $('#contacts').hidden = t !== 'contacts'; $('#keypad').hidden = t !== 'keypad';
   if (t === 'contacts') fitContacts();
-  if (!quiet) say(t === 'contacts' ? 'Who do you want to call?' : 'Press the numbers!');
+  if (!quiet) say(t === 'contacts' ? 'Who do you want to call?' : 'Press the numbers!', 0, 'menus');
 }
 function faceHTML(el, c){
   el.style.setProperty('--c', c.c || '#FFD36E');
@@ -4230,6 +4268,7 @@ let digits = '';
     const [lo, hi] = DTMF[k]; beep(lo, .2, .08); beep(hi, .2, .08);
     retrigger(b, 'lit'); setTimeout(() => b.classList.remove('lit'), 220);
     digits = (digits + k).slice(-10); renderDial();
+    if (k >= '0' && k <= '9') say(NUMWORD[+k] + '!', 0, 'numbers');
   });
   $('#keys').appendChild(b);
 });
@@ -4238,6 +4277,7 @@ $('#dialCall').innerHTML = ICON.answer;
 tap($('#dialCall'), () => { FX.pop(); digits = ''; renderDial(); dial(rnd(CONTACTS)); });
 
 /* ---------- Calls ---------- */
+const NUMWORD = ['Zero','One','Two','Three','Four','Five','Six','Seven','Eight','Nine'];
 let call = null;   // {c, state:'dialing'|'ringing'|'talking'|'ending', timers, bus, src, t0, tick, queue, clip}
 const callEl = $('#call'), callFace = $('#callFace');
 $('#hangupBtn').innerHTML = ICON.hangup; $('#declineBtn').innerHTML = ICON.hangup; $('#answerBtn').innerHTML = ICON.answer;
@@ -4268,7 +4308,7 @@ function stopCallSounds(){
 function dial(c){
   if (call) return;
   openCall(c, 'dialing');
-  say('Calling ' + sp(c) + '!');
+  say('Calling ' + sp(c) + '!', 0, 'calls');
   call.bus = makeBus();
   into(call.bus, () => { for (let i=0;i<2;i++){ beep(440, 1, .06, 1.2 + i*2); beep(480, 1, .06, 1.2 + i*2); } });   // ringback: 2 rings
   callLater(connect, 4700);
@@ -4287,7 +4327,7 @@ function nextLine(c){
   return call.queue.shift();
 }
 function animalTalk(c, text){
-  say(text, c.p);
+  say(text, c.p, 'calls');
   callFace.classList.add('talk');
   callLater(() => callFace.classList.remove('talk'), talkMs(text));
 }
@@ -4323,7 +4363,7 @@ function endCall(words){
   FX.hangup();
   if (words){
     if (c.bye) callLater(() => playClip(c.bye), 350);
-    else callLater(() => say(words, c.p), 350);
+    else callLater(() => say(words, c.p, 'calls'), 350);
   }
   const w = document.createElement('div'); w.className = 'wave art'; w.innerHTML = ART.hand;
   const [fx, fy] = [callFace.offsetLeft + callFace.offsetWidth*.86, callFace.offsetTop + callFace.offsetHeight*.05];
@@ -4366,7 +4406,7 @@ function ringIn(c){
   });
   const loop = () => { if (speaking()) return callLater(loop, 500); bar(); callLater(loop, 2900); };   // ring between the words, not over them
   loop();
-  callLater(() => say(sp(c) + ' is calling you! Ring ring!', c.p), 2100);
+  callLater(() => say(sp(c) + ' is calling you! Ring ring!', c.p, 'calls'), 2100);
   callLater(() => endCall("Okay, I'll call you later. Bye bye!"), 26000);
 }
 
@@ -4756,7 +4796,7 @@ function setScene(k, speak){
   sizeCamera();
   const s = camScale(); cam.x = (WW - vfW/s) * (k === 'dino' ? .3 : .4); cam.y = (WH - vfH/s) / 2; clampCam();
   retrigger($('#flash'), 'go');
-  if (speak) say(SCENES[k].n + '!');
+  if (speak) say(SCENES[k].n + '!', 0, 'camera');
 }
 function startCamera(){
   sizeCamera(); setScene(cam.scene, false); showThumb();
@@ -4771,7 +4811,7 @@ function startCamera(){
     if (!cam.hinted && now - cam.enterT > 22000 && now - cam.shotAt > 12000){
       cam.hinted = true;
       const h = SCENES[cam.scene].animals.find(a => a.hidden && !foundHidden.has(a.n));
-      if (h) say('Can you find the hiding ' + h.n + '?');
+      if (h) say('Can you find the hiding ' + h.n + '?', 0, 'camera');
     }
   };
   cam.raf = requestAnimationFrame(loop);
@@ -4812,11 +4852,11 @@ function camTap(e){
   if (!hit) return;
   hit.hopT = t; if (hit.m === 'peek') hit.upUntil = t + 2.6;
   FX[hit.fx] && FX[hit.fx]();
-  if (hit.hidden){ foundHidden.add(hit.n); later(() => say('You found the ' + hit.n + '!'), 500); }
-  else later(() => say(article(hit.n).replace(/^./, ch => ch.toUpperCase()) + '!'), 500);
+  if (hit.hidden){ foundHidden.add(hit.n); later(() => say('You found the ' + hit.n + '!', 0, 'camera'), 500); }
+  else later(() => say(article(hit.n).replace(/^./, ch => ch.toUpperCase()) + '!', 0, 'camera'), 500);
 }
 $('#zoomBtn').insertAdjacentHTML('afterbegin', ICON.zoom);
-tap($('#zoomBtn'), () => { FX.pop(); cam.target = cam.target > 1.5 ? 1 : 2; $('#zoomTxt').textContent = cam.target > 1.5 ? '2×' : '1×'; });
+tap($('#zoomBtn'), () => { FX.pop(); cam.target = cam.target > 1.5 ? 1 : 2; $('#zoomTxt').textContent = cam.target > 1.5 ? '2×' : '1×'; say(cam.target > 1.5 ? 'Zoom in!' : 'Zoom out!', 0, 'camera'); });
 tap($('#shutter'), () => {
   FX.shutter(); retrigger($('#flash'), 'go'); retrigger(vf, 'shake');
   cam.shotAt = performance.now();
@@ -4829,7 +4869,7 @@ tap($('#shutter'), () => {
   const hid = animals.find(a => a.hidden && !foundHidden.has(a.n));
   let line = names.length ? 'You got a picture of ' + listWords(names.slice(0, 4).map(article)) + '!' : rnd(['Click! What a pretty picture!', 'Click! Nice picture!']);
   if (hid){ foundHidden.add(hid.n); line = 'Wow! You found the hiding ' + hid.n + '! ' + line; const [x, y] = rel(vf); confetti(x, y, 30); later(FX.cheer, 300); }
-  later(() => say(line), 420);
+  later(() => say(line, 0, 'camera'), 420);
 }, {throttle:500});
 function showThumb(fresh){
   const b = $('#lastShot'), p = Photos.list[0];
@@ -4838,7 +4878,7 @@ function showThumb(fresh){
   else b.innerHTML = ICON.photos;
   if (fresh) retrigger(b, 'new');
 }
-tap($('#lastShot'), () => { FX.pop(); if (!Photos.list.length) return say('Take a picture first!'); go('photos', $('#lastShot')); openViewer(0); });
+tap($('#lastShot'), () => { FX.pop(); if (!Photos.list.length) return say('Take a picture first!', 0, 'camera'); go('photos', $('#lastShot')); openViewer(0); });
 
 /* ======================= PHOTOS ======================= */
 /* An index in one key, each photo (a small PNG) in its own key. At most 40; the oldest goes first when full. */
@@ -4864,8 +4904,8 @@ const Photos = {
 function openPhotos(){
   renderGrid();
   if (!$('#viewer').hidden) return;
-  if (Photos.list.length) say(rnd(['Your pictures!', 'Look at all your pictures!']));
-  else say("No pictures yet! Tap the camera to take some!");
+  if (Photos.list.length) say(rnd(['Your pictures!', 'Look at all your pictures!']), 0, 'camera');
+  else say("No pictures yet! Tap the camera to take some!", 0, 'camera');
 }
 function renderGrid(){
   const g = $('#pgrid'); g.innerHTML = '';
@@ -4883,7 +4923,7 @@ tap($('#goCam'), () => { FX.pop(); go('camera', $('#goCam')); });
 let vIdx = 0;
 $('#vGrid').innerHTML = ICON.grid; $('#vPrev').innerHTML = ICON.left; $('#vNext').innerHTML = ICON.right;
 function openViewer(i){ if (!Photos.list.length) return; $('#viewer').hidden = false; showPhoto(i, 0); }
-function closeViewer(quiet){ $('#viewer').hidden = true; if (!quiet) say('All your pictures!'); }
+function closeViewer(quiet){ $('#viewer').hidden = true; if (!quiet) say('All your pictures!', 0, 'camera'); }
 function showPhoto(i, dir){
   const n = Photos.list.length; if (!n) return closeViewer(true);
   vIdx = ((i % n) + n) % n;
@@ -4891,7 +4931,7 @@ function showPhoto(i, dir){
   im.src = Photos.src(p.id) || '';
   im.style.transform = '';
   retrigger(im, dir < 0 ? 'in-l' : dir > 0 ? 'in-r' : 'hop');
-  say(photoLine(p.names));
+  say(photoLine(p.names), 0, 'camera');
 }
 tap($('#vGrid'), () => { FX.pop(); closeViewer(); });
 tap($('#vPrev'), () => { FX.swoosh(); showPhoto(vIdx - 1, -1); });
@@ -4905,7 +4945,7 @@ vstage.addEventListener('pointerup', e => {
   const dx = e.clientX - swipe.x; swipe = null; $('#vimg').style.transform = '';
   if (dx < -50){ FX.swoosh(); showPhoto(vIdx + 1, 1); }
   else if (dx > 50){ FX.swoosh(); showPhoto(vIdx - 1, -1); }
-  else { FX.pop(); retrigger($('#vimg'), 'hop'); say(photoLine(Photos.list[vIdx].names)); }
+  else { FX.pop(); retrigger($('#vimg'), 'hop'); say(photoLine(Photos.list[vIdx].names), 0, 'camera'); }
 });
 vstage.addEventListener('pointercancel', () => { swipe = null; $('#vimg').style.transform = ''; });
 
@@ -4930,11 +4970,13 @@ let musicTab = 'xylo';
 const mtabs = $$('[data-mtab]');
 mtabs[0].innerHTML = ICON.xylo;
 mtabs.forEach(b => tap(b, () => { FX.pop(); showMusicTab(b.dataset.mtab); }));
-function showMusicTab(t){
+const MUSIC_SAY = {xylo:'Xylophone!', drums:'Drums! Boom boom!', piano:'Animal piano!', songs:'Songs! Pick a song!'};
+function showMusicTab(t, quiet){
   if (t !== 'songs') stopSong();
   musicTab = t;
   mtabs.forEach(b => b.classList.toggle('on', b.dataset.mtab === t));
   ['xylo','drums','piano','songs'].forEach(k => { $('#' + k).hidden = k !== t; });
+  if (!quiet) say(MUSIC_SAY[t], 0, 'music');
 }
 function mallet(f, vol=.3, at=0){ synth({f, dur:1.2, vol, at}); synth({f:f*4, dur:.22, vol:vol*.16, at}); synth({f:f*2, dur:.45, type:'triangle', vol:vol*.12, at}); }
 
@@ -5004,6 +5046,7 @@ function markSong(s){ songPick = s; $$('.song').forEach(b => b.classList.toggle(
 markSong(SONGS[0]);
 function playSong(s){
   stopSong(); markSong(s);
+  say(s.n + '!', 0, 'music');
   const timers = [];
   song = {s, bus:null, timers};
   timers.push(setTimeout(() => {
@@ -5021,13 +5064,13 @@ function playSong(s){
       }
       at += dur;
     }));
-    timers.push(setTimeout(() => { if (!song || song.s !== s) return; dancer.classList.remove('l','r'); retrigger(dancer, 'bow'); FX.cheer(); const [x, y] = rel(dancer); confetti(x, y, 30); song = null; }, (at + .3)*1000));
-  }, 300));
+    timers.push(setTimeout(() => { if (!song || song.s !== s) return; dancer.classList.remove('l','r'); retrigger(dancer, 'bow'); FX.cheer(); const [x, y] = rel(dancer); confetti(x, y, 30); song = null; later(() => say('Yay! Great dancing!', 0, 'music'), 500); }, (at + .3)*1000));
+  }, voiceOn('music') ? 1700 : 300));   // with the voice on, the song waits for its title
 }
 function stopSong(){ if (!song) return; song.timers.forEach(clearTimeout); killBus(song.bus); song = null; dancer.classList.remove('l','r'); }
 $('#songPlay').innerHTML = ICON.play; $('#songStop').innerHTML = ICON.stop;
 tap($('#songPlay'), () => { FX.pop(); playSong(songPick); });
-tap($('#songStop'), () => { FX.boop(); stopSong(); });
+tap($('#songStop'), () => { FX.boop(); if (song){ stopSong(); say('Stop!', 0, 'music'); } });
 tap(dancer, () => { const s = songPick; FX[s.fx] && FX[s.fx](); retrigger(dancer, 'bow'); });
 
 /* ======================= GAMES ======================= */
@@ -5083,10 +5126,10 @@ const WildTap = (() => {
     const s = W[name] ? 'world' : name;
     SCREENS.forEach(k => { $('#wt-' + k).hidden = k !== s; });
     cur = name;
-    if (W[name]){ buildWorld(name); say(name === 'dino' ? 'Dinosaurs!' : W[name].title + '!'); }
+    if (W[name]){ buildWorld(name); say(name === 'dino' ? 'Dinosaurs!' : W[name].title + '!', 0, 'menus'); }
     if (name === 'find'){ stickerCount = 0; $('#wtStickers').innerHTML = ''; nChoices = 2; streak = 0; target = null; later(newRound, 400); }
-    if (name === 'egg'){ newEgg(); say('Tap the egg!'); }
-    if (name === 'bubbles'){ startBubbles(); say('Pop the bubbles!'); }
+    if (name === 'egg'){ newEgg(); say('Tap the egg!', 0, 'menus'); }
+    if (name === 'bubbles'){ startBubbles(); say('Pop the bubbles!', 0, 'menus'); }
   }
   /* inside Wild Tap, the grid button goes back to its menu; the phone's big home button still goes home */
   $$('#wildtap .wt-back').forEach(b => { b.innerHTML = ICON.grid; tap(b, () => { FX.boop(); show('menu'); }); });
@@ -5105,7 +5148,7 @@ const WildTap = (() => {
       tap(p, () => {
         retrigger(p, 'go');
         const len = FX[a.x] ? (FX[a.x]() || .5) : .5, line = taps++ % 2 === 0 ? a.s : a.f;
-        later(() => say(line), clamp(len*1000 - 250, 350, 1400));   // talk once the animal is (nearly) done
+        later(() => say(line, 0, 'names'), clamp(len*1000 - 250, 350, 1400));   // talk once the animal is (nearly) done
         if (a.x === 'boom' || a.x === 'bigroar') retrigger(scr, 'wt-shake');
         if (a.x === 'boom'){ const [x, y] = rel(p); confetti(x, y, 18); }
       }, {bump:false});
@@ -5115,7 +5158,7 @@ const WildTap = (() => {
 
   let target = null, nChoices = 2, streak = 0, locked = false, stickerCount = 0;
   $('#wtRepeat').innerHTML = EAR;
-  tap($('#wtRepeat'), () => { if (target) say('Where is the ' + spoken(target) + '?'); });
+  tap($('#wtRepeat'), () => { if (target) say('Where is the ' + spoken(target) + '?', 0, 'find'); });
   function newRound(){
     if (current !== 'wildtap' || cur !== 'find') return;
     locked = false;
@@ -5129,27 +5172,27 @@ const WildTap = (() => {
       tap(c, () => pick(a, c), {bump:false});
       box.appendChild(c);
     });
-    say('Where is the ' + spoken(target) + '?');
+    say('Where is the ' + spoken(target) + '?', 0, 'find');
   }
   function pick(a, el){
     if (locked) return;
     if (a === target){
       locked = true; el.classList.add('yes'); FX.cheer();
       const [x, y] = rel(el); confetti(x, y);
-      later(() => say('Yes! You found the ' + spoken(a) + '!'), 300);
+      later(() => say('Yes! You found the ' + spoken(a) + '!', 0, 'find'), 300);
       addSticker(a);
       streak++; if (streak % 3 === 0 && nChoices < 4) nChoices++;
       later(newRound, 2600);
     } else {
       retrigger(el, 'no'); FX.boop();
-      later(() => say('That’s the ' + spoken(a) + '. Can you find the ' + spoken(target) + '?'), 150);
+      later(() => say('That’s the ' + spoken(a) + '. Can you find the ' + spoken(target) + '?', 0, 'find'), 150);
     }
   }
   function addSticker(a){
     const st = $('#wtStickers');
     if (stickerCount >= 10){ st.innerHTML = ''; stickerCount = 0; }
     const s = document.createElement('span'); s.className = 's'; put(s, a.a); st.appendChild(s); stickerCount++;
-    if (stickerCount === 10) later(() => { const [x, y] = rel(st); confetti(x, y, 40); FX.cheer(); say('Wow! Ten animals! You are a super explorer!'); }, 900);
+    if (stickerCount === 10) later(() => { const [x, y] = rel(st); confetti(x, y, 40); FX.cheer(); say('Wow! Ten animals! You are a super explorer!', 0, 'find'); }, 900);
   }
 
   const EGGS = [['#F7EBD0','#E8A945'],['#D9F2C6','#5DA545'],['#DDEBFF','#3D8FE0'],['#FFE0E7','#E8506E'],['#EDE3FF','#8A6FD1']];
@@ -5169,14 +5212,14 @@ const WildTap = (() => {
     retrigger(eggwrap, 'wob'); FX.crack();
     if (cracks < CRACKS.length) $('.wt-cracks', eggwrap).style.backgroundImage = crackURL(cracks + 1);
     cracks++;
-    if (cracks === 2) say('Crack!');
+    if (cracks === 2) say('Crack!', 0, 'names');
     if (cracks > CRACKS.length){
       hatched = true;
       const b = rnd(HATCH);
       put($('#wtBaby'), b.a);
       eggwrap.classList.add('hatched'); FX.cheer();
       const [x, y] = rel(eggwrap); confetti(x, y, 34);
-      later(() => say(b.s || ('It’s a baby ' + spoken(b) + '!')), 400);
+      later(() => say(b.s || ('It’s a baby ' + spoken(b) + '!'), 0, 'names'), 400);
       later(() => { $('#wtNewegg').hidden = false; }, 1200);
     }
   }, {bump:false});
@@ -5211,7 +5254,7 @@ const WildTap = (() => {
   function stopBubbles(){ clearInterval(bubTimer); bubTimer = null; $('#wtPool').innerHTML = ''; }
 
   return {
-    enter(){ show('menu'); say('Wild Tap! Pick one!'); },
+    enter(){ show('menu'); say('Wild Tap! Pick one!', 0, 'menus'); },
     leave(){ stopBubbles(); }
   };
 })();
@@ -5288,7 +5331,7 @@ const DinoBuddies = (() => {
     const [x, y] = rel(eggEl); confetti(x, y, 36);
     sides.forEach(sd => { const [cx, cy] = rel(sd); confetti(cx, cy, 18); });
     dinoEls.forEach(el => retrigger(el, 'db-dance'));
-    say(rnd(['Hooray! Teamwork!','You did it together!','Yay, buddies!']) + ' A baby ' + d.n + '!');
+    say(rnd(['Hooray! Teamwork!','You did it together!','Yay, buddies!']) + ' A baby ' + d.n + '!', 0, 'names');
     setTimeout(() => {
       family.push(i); if (family.length > 8) family = [i];
       renderFamily(); setBuddy(d); store.set('dinobuddies', {family, buddy:i});
@@ -5298,7 +5341,7 @@ const DinoBuddies = (() => {
   }
   setBuddy(buddy); newEgg(); renderFamily();
   return {
-    enter(){ say('Dino Buddies! Tap tap tap! Help the egg hatch!'); },
+    enter(){ say('Dino Buddies! Tap tap tap! Help the egg hatch!', 0, 'menus'); },
     leave(){ $$('.db-treat', root).forEach(t => t.remove()); },
     fill: () => fill, family: () => family.length
   };
@@ -5317,7 +5360,16 @@ clock.addEventListener('pointerdown', e => {
 ['pointerup','pointercancel','pointerleave'].forEach(t => clock.addEventListener(t, clearHold));
 const volSeg = $('#volSeg');
 ['Quiet','Soft','Medium','Loud'].forEach((l, i) => { const b = document.createElement('button'); b.className = 'sbtn'; b.textContent = l; b.dataset.vol = i; volSeg.appendChild(b); });
+/* one checkbox per place the voice can talk; a scroll that starts on a row doesn't flip it */
+VOICE.forEach(v => {
+  const b = document.createElement('button'); b.className = 'vopt'; b.dataset.voice = v.k; b.setAttribute('role', 'checkbox');
+  b.innerHTML = `<span class="vbox">${ART.check}</span><span class="vtxt"><b></b><small></small></span>`;
+  b.querySelector('b').textContent = v.t; b.querySelector('small').textContent = v.d;
+  tapInScroll(b, () => { settings.voice[v.k] = !settings.voice[v.k]; saveSettings(); renderSettings(); });
+  $('#voiceList').appendChild(b);
+});
 function renderSettings(){
+  $$('[data-voice]').forEach(b => { const on = !!settings.voice[b.dataset.voice]; b.classList.toggle('on', on); b.setAttribute('aria-checked', String(on)); });
   $$('[data-incoming]').forEach(b => b.classList.toggle('on', (b.dataset.incoming === '1') === settings.incoming));
   $$('[data-vol]').forEach(b => b.classList.toggle('on', +b.dataset.vol === settings.vol));
   const n = Photos.list.length; $('#photoCount').textContent = n + (n === 1 ? ' photo' : ' photos');
