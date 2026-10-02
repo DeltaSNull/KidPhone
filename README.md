@@ -78,9 +78,17 @@ Every picture is pixel art placed one pixel at a time: no emoji, no vector drawi
 
 ## Put it on the phone
 
-1. **Host the folder over HTTPS** on your own server (recommended). Any static file server works: Caddy, nginx,
-   a NAS web server. Upload everything in this folder, including `assets/family/` if you add family contacts.
-   A public static host (GitHub Pages) is fine for this version, but never put the family clips and photos there.
+1. **Put it online over HTTPS.** Pick one:
+   - **GitHub Pages (public, easiest):** the workflow in `.github/workflows/deploy-pages.yml` publishes this folder
+     whenever it changes, at **https://deltasnull.github.io/Claude/**. One-time setup in the repository on GitHub:
+     **Settings → Pages → Build and deployment → Source: GitHub Actions**. On a free GitHub plan the repository must
+     be public for Pages to work (Settings → General → Danger Zone → Change visibility). To publish by hand:
+     Actions → *Deploy to GitHub Pages* → **Run workflow**. Only the toy is published: no tests, tools or
+     `assets/family/`. Anyone with the link can open it, so family contacts don't work there.
+   - **Your own server (private, needed for family contacts):** any static file server works (Caddy, nginx, a NAS
+     web server). Upload everything in this folder, including `assets/family/` if you add family contacts.
+
+   Every link in the page is relative, so it works at a domain's root or in a subfolder like `/Claude/`.
 2. On the iPhone, open the URL in Safari, then **Share → Add to Home Screen**. Opened from that icon, it runs full screen
    with no Safari bars, and it keeps working offline once loaded (the service worker caches it).
 3. **Guided Access**: Settings → Accessibility → Guided Access → on, and set a passcode. Open Toy Phone, then
@@ -132,6 +140,8 @@ The automated test runs in Chromium, so these need a person and the phone:
 | `assets/family/` | Private family contacts (see its README) |
 | `assets/sounds/` | Optional real animal recordings (see its README) |
 | `tests/smoke.cjs` | Playwright smoke test |
+| `tests/pages.cjs` | GitHub Pages check: builds the site like the workflow, serves it under `/Claude/` and opens it as an iPhone and an Android phone |
+| `../.github/workflows/deploy-pages.yml` | Publishes this folder to GitHub Pages |
 | `tools/make-icons.cjs` | Makes the home-screen icon PNGs from the `appIcon` sprite |
 | `tools/sprite-sheet.cjs` | Draws every sprite on one sheet (`screenshots/sprites.png`) |
 | `tools/make-artifact.cjs` | Builds the claude.ai artifact version (no PWA bits) |
@@ -141,6 +151,7 @@ The automated test runs in Chromium, so these need a person and the phone:
 ```sh
 npm install        # Playwright + the two pixel fonts for offline test rendering
 npm test           # iPhone portrait 390×844, landscape 844×390, and 390×664 (Safari with bars)
+npm run test:pages # the published site, served from a /Claude/ subfolder like GitHub Pages
 npm run sprites    # draws every sprite on screenshots/sprites.png
 npm run icons      # after editing the appIcon sprite
 npm run artifact   # writes dist/artifact.html

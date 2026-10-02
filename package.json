@@ -6,7 +6,8 @@
     "test": "node tests/smoke.cjs",
     "icons": "node tools/make-icons.cjs",
     "artifact": "node tools/make-artifact.cjs",
-    "sprites": "node tools/sprite-sheet.cjs"
+    "sprites": "node tools/sprite-sheet.cjs",
+    "test:pages": "node tests/pages.cjs"
   },
   "devDependencies": {
     "@fontsource/pixelify-sans": "5.3.0",
