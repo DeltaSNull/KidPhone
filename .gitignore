@@ -1,0 +1,8 @@
+node_modules/
+dist/
+tests/screenshots/
+
+# Private family voices and photos stay on the home server, never in git
+assets/family/*
+!assets/family/README.md
+!assets/family/family.example.json
