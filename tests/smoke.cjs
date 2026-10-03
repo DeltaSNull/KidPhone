@@ -585,8 +585,11 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   await tap('.gamecard[aria-label="ABC Snack"]'); await sleep(1500);
   for (let i = 0; i < 25 && !(await school()).snack.want; i++) await sleep(300);
   sc = await school();
-  check(sc.snack.want && sc.snack.mode === 'match' && sc.snack.choices.length === 2 && sc.snack.choices.includes(sc.snack.want) && 'SATIPN'.includes(sc.snack.want),
-    `ABC Snack: an animal wants a letter from the first group (s a t i p n), shown in its bubble, with 2 cookies ${JSON.stringify(sc.snack)}`);
+  check(sc.snack.want && sc.snack.mode === 'big' && sc.snack.choices.length === 2 && sc.snack.choices.includes(sc.snack.want) && 'SATIPN'.includes(sc.snack.want),
+    `ABC Snack: an animal asks for a big letter from the first group (s a t i p n), with 2 cookies ${JSON.stringify(sc.snack)}`);
+  for (let i = 0; i < 25 && !(await said()).some(t => t.includes(`Find the ${sc.snack.want}!`)); i++) await sleep(300);   // it waits for the intro line
+  check(await page.locator('#asWant .glyph').count() === 0 && (await said()).some(t => t.includes(`Find the ${sc.snack.want}!`)),
+    'the letter is asked for out loud, never shown in the bubble (the child has to know it)');
   await shot('30-abcsnack'); await fits('abc snack');
   const wrongL = sc.snack.choices.find(L => L !== sc.snack.want);
   await tap(`#asFoods .st-food[data-l="${wrongL}"]`); await sleep(1800);
@@ -595,14 +598,14 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   check((await school()).snack.fed === 1 && await page.locator('#asFed .s').count() === 1, 'the right cookie is eaten and earns a letter sticker');
   await home();
   await holdClock();
-  await tapSetting('[data-abc="case"]');
+  await tapSetting('[data-abc="little"]');
   check(/Letters known/.test(await page.locator('#abcNote').textContent()), 'parent settings show the letters learned');
   await tap('#doneBtn'); await sleep(300);
   await tap('[data-app="school"]'); await sleep(500); await tap('.gamecard[aria-label="ABC Snack"]'); await sleep(1500);
   for (let i = 0; i < 25 && !(await school()).snack.want; i++) await sleep(300);
   sc = await school();
   const labels = await page.$$eval('#asFoods .st-food', bs => bs.map(b => b.getAttribute('aria-label')));
-  check(sc.snack.level === 2 && (sc.snack.mode === 'case' ? labels.every(l => l.startsWith('little ')) : sc.snack.mode === 'listen'), `the "Big & little" setting asks for little letters or by name ${sc.snack.mode} ${JSON.stringify(labels)}`);
+  check(sc.snack.level === 1 && (sc.snack.mode === 'little' ? labels.every(l => l.startsWith('little ')) : sc.snack.mode === 'big'), `the "Little letters" setting asks mostly for little letters ${sc.snack.mode} ${JSON.stringify(labels)}`);
   await home();
   await holdClock(); await tapSetting('[data-abc="auto"]'); await tap('#doneBtn'); await sleep(300);
 

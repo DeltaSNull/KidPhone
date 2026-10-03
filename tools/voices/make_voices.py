@@ -35,15 +35,38 @@ VERSION = 4             # bump to re-record everything after changing the proces
 RESPELL = [(r'\bgrr+\b', 'Gurr'), (r'\bbrr+\b', 'Burr'), (r'\bla la la\b', 'Lah lah lah'), (r'\bpawoo\b', 'Pah-woo')]
 
 
-# A letter on its own ("Find the B!", "That's b!", "B is for bear!") is said as its name, not as the word "a" or a sound.
-LETTER_NAME = dict(A='ay', B='bee', C='see', D='dee', E='ee', F='eff', G='jee', H='aitch', I='eye', J='jay', K='kay', L='ell', M='em',
-                   N='en', O='oh', P='pee', Q='cue', R='ar', S='ess', T='tee', U='you', V='vee', W='double you', X='ex', Y='why', Z='zee')
+# A letter on its own ("Find the B!", "That's b!", "B is for bear!") is said as its name. Respelling doesn't work (the
+# speech front end reads "Ay" as "eye" and spells "Eff" out), and a bare "A is for" comes out as the word "a", so the
+# letter's name goes in as phonemes, spliced between the rest of the line.
+LONE_LETTER = re.compile(r"\b([A-Za-z])(?=[!?.,]| is for)")
+LETTER_IPA = dict(A='ˈeɪ', B='bˈiː', C='sˈiː', D='dˈiː', E='ˈiː', F='ˈɛf', G='dʒˈiː', H='ˈeɪtʃ', I='ˈaɪ', J='dʒˈeɪ', K='kˈeɪ', L='ˈɛl', M='ˈɛm',
+                  N='ˈɛn', O='ˈoʊ', P='pˈiː', Q='kjˈuː', R='ˈɑːɹ', S='ˈɛs', T='tˈiː', U='jˈuː', V='vˈiː', W='dˈʌbəljˌuː', X='ˈɛks', Y='wˈaɪ', Z='zˈiː')
 
 
 def tts_text(t):
     for a, b in RESPELL:
         t = re.sub(a, b, t, flags=re.I)
-    return re.sub(r"\b([A-Za-z])(?=[!?.,]| is for)", lambda m: LETTER_NAME[m.group(1).upper()].capitalize(), t)
+    return t
+
+
+def phonemes(k, text):
+    """the line as phonemes, with each lone letter's name put in exactly"""
+    ph = lambda t: k.tokenizer.phonemize(t, 'en-us')
+    out, pos = [], 0
+    for m in LONE_LETTER.finditer(text):
+        if text[pos:m.start()].strip():
+            out.append(ph(text[pos:m.start()]))
+        name = LETTER_IPA[m.group(1).upper()]
+        if out and out[-1].endswith('ðə') and name.lstrip('ˈ')[0] in 'eɛaoɑi':
+            out[-1] = out[-1][:-2] + 'ðɪ'   # "the" before a vowel sound: "thee A", "thee F"
+        out.append(name)
+        pos = m.end()
+    rest = text[pos:].lstrip()
+    if rest[:1] in ('!', '?', '.', ','):
+        out[-1] += rest[0]; rest = rest[1:]   # the punctuation after a letter stays with it
+    if rest.strip():
+        out.append(ph(rest))
+    return ' '.join(out)
 
 
 def voices_npz(path):
@@ -57,7 +80,7 @@ def voices_npz(path):
 
 
 def clip_name(who, text, spk):
-    key = f"{VERSION}|{who}|{text}|{spk['voice']}|{spk['speed']}|{spk['semis']}"
+    key = f"{VERSION}|{who}|{text}|{spk['voice']}|{spk['speed']}|{spk['semis']}" + ('|letters2' if LONE_LETTER.search(text) else '')   # (a new name for re-recorded letter lines, so no phone keeps an old copy)
     return hashlib.sha1(key.encode()).hexdigest()[:12] + '.mp3'
 
 
@@ -105,7 +128,7 @@ def trim(a, floor_db=-40.0, head=.02, tail=.08):
 
 
 def render(k, text, spk):
-    phon = k.tokenizer.phonemize(tts_text(text), 'en-us')
+    phon = phonemes(k, tts_text(text))
     a, sr = k.create(phon, voice=spk['voice'], speed=spk['speed'], is_phonemes=True, sentence_pause=.28, clause_pause=.12)
     assert sr == SR
     a = a.astype(np.float32)

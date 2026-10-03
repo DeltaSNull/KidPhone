@@ -51,16 +51,16 @@ Guided Access. It's one self-contained `index.html` (vanilla JS, no build step),
     Twinkle tune) with each letter lighting up in time. Words: apple, butterfly, cat, dog, elephant, frog, gorilla,
     hippo, iguana, jellyfish, kangaroo, lion, monkey, note, octopus, penguin, quack, rhino, star, tiger, umbrella,
     volcano, whale, xylophone, yo-yo, zebra.
-  - *ABC Snack*: Snack Time with letter cookies. An animal thinks of a letter; feed it that cookie. It grows with the
-    child: first **matching** the letter shown in the bubble (even the little one can match shapes), then
-    **listening** (the bubble shows an ear, and the voice says "Find the T!"), then **big and little** (the bubble shows
-    T, the cookies are little letters). Six right on the first try in a row moves up from matching (eight from
-    listening); three misses in a row steps back. Letters come in the order phonics programs teach them (s a t i p n, then c k e h r m d, ...), a few at a
-    time; a new group joins once most of the current ones are known. A wrong cookie is never a loss: a head shake, the
-    voice names the cookie that was tapped ("That's N!") and asks again, and after two tries the right one glows. Look-
-    alikes (b and d, p and q) stay apart until big-and-little. Every right cookie: "Yum! T is for tiger!"
-  - Parents see the stage and the letters learned in settings, and can fix the stage (Match, Listen, Big & little)
-    instead of letting it grow.
+  - *ABC Snack*: Snack Time with letter cookies. An animal asks for a letter out loud ("Find the T!"); its thought
+    bubble shows an ear, never the letter, so the child has to know it (tap the bubble to hear it again). It grows with
+    the child: big letters by name, then (after eight right on the first try in a row) mostly little letters by name;
+    three misses in a row steps back. Letters come in the order phonics programs teach them (s a t i p n, then
+    c k e h r m d, ...), a few at a time; a new group joins once most of the current ones are known. A wrong cookie is
+    never a loss: a head shake, the voice names the cookie that was tapped ("That's N!") and asks again, and after two
+    tries the right one glows. Look-alikes (b and d, p and q) stay apart until the child knows most letters. Every
+    right cookie: "Yum! T is for tiger!"
+  - Parents see the stage and the letters learned in settings, and can fix it at big or little letters instead of
+    letting it grow.
 ## Animal voices
 
 Most animals are **real recordings** from [Wikimedia Commons](https://commons.wikimedia.org/), all public domain, CC0,
@@ -226,8 +226,8 @@ Hold the clock in the top-left corner for **3 seconds**. A quick tap only wiggle
 - Incoming calls on/off
 - Volume (Quiet / Soft / Medium / Loud)
 - Sound when the phone is on silent (on by default)
-- **ABC Snack**: Grows (the default), or fixed at Match, Listen or Big & little, with the current stage and the letters
-  the child knows (picked right on the first try three times, by name or big-to-little)
+- **ABC Snack**: Grows (the default), or fixed at Big letters or Little letters, with the current stage and the letters
+  the child knows (picked right by name on the first try three times)
 - **Camera**: Both (the default: the pretend safari plus the phone's camera), Real (the phone's camera only) or
   Pretend (no real camera), with a note on whether the camera is allowed and how to allow it
 - **Voice**: a checkbox for each place the talking voice can speak. Animal sounds and music always play.
@@ -271,7 +271,8 @@ The automated test runs in Chromium, so these need a person and the phone:
       animal sounds keep playing while the camera is on
 - [ ] The camera turns off (the green dot goes away) when you go home, lock the phone or switch apps
 - [ ] The letter names in School sound right ("Find the B!", "That's Q!", "A is for apple!"). The voice model is given
-      the names spelled out (bee, cue, ay), and a speech recognizer heard them, but listen once
+      each letter's name as exact phonemes (respelling made "A" sound like "eye"), and a speech recognizer heard them,
+      but listen once
 - [ ] Listen to *If You're Happy and You Know It*. Its melody was written from memory, so check it by ear
       (notes live in the `SONGS` list in `index.html`)
 
