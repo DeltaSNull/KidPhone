@@ -90,6 +90,9 @@ async function run(browser, origin, name) {
   check(pwa.start === origin + BASE && pwa.scope === origin + BASE, `manifest start_url and scope are ${BASE}`);
   check(pwa.icons.every(i => i.ok), `home-screen icons load (${pwa.icons.length})`);
   check(await page.evaluate(() => [...document.querySelectorAll('img.px')].every(i => i.complete && i.naturalWidth > 0)), 'every pixel sprite loads');
+  const v = await page.evaluate(async () => { const t = window.__toyPhone.voice(); const f = Object.values(await (await fetch('assets/voice/voice.json')).json().then(j => j.clips))[0][0];
+    const r = await fetch('assets/voice/' + f); return { loaded: t.loaded, clips: t.clips, clip: r.ok && (await r.arrayBuffer()).byteLength }; });
+  check(v.loaded && v.clips > 500 && v.clip > 900, `the recorded voice loads from ${BASE} (${v.clips} lines; a clip is ${v.clip} bytes)`);
 
   /* touch: open apps with real taps, then home */
   await tap('[data-app=phone]'); await sleep(900);
@@ -120,7 +123,8 @@ async function run(browser, origin, name) {
 (async () => {
   const site = gatherSite();
   const published = fs.readdirSync(site, { recursive: true }).map(String).sort();
-  console.log('published: ' + published.join(', '));
+  const byDir = {}; published.filter(f => path.extname(f)).forEach(f => { const d = path.dirname(f); byDir[d] = (byDir[d] || 0) + 1; });
+  console.log('published: ' + Object.entries(byDir).map(([d, n]) => `${d === '.' ? '(top)' : d} ${n}`).join(', '));
   check(published.includes('index.html'), 'index.html is the entry point');
   check(!published.some(f => /^(tests|tools|node_modules|dist)\b|^assets\/family\/|package/.test(f)), 'only the toy is published (no tests, tools or family files)');
   const srv = await serve(site);

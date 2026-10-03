@@ -11,3 +11,5 @@ assets/family/*
 assets/sounds/*
 !assets/sounds/README.md
 !assets/sounds/sounds.example.json
+__pycache__/
+.venv/

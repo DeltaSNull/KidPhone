@@ -1,5 +1,5 @@
 /* Offline support for the self-hosted toy phone.
-   Network first, so an updated index.html shows up on the next launch;
+   Network first, so an updated index.html shows up on the next launch (voice clips, which never change, cache first);
    the cached copy is used only when the server can't be reached (car, park, Wi-Fi down). */
 const CACHE = 'toy-phone-v2';
 const CORE = ['./', 'index.html', 'manifest.webmanifest', 'icons/icon-180.png'];
@@ -16,6 +16,14 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
   const req = e.request;
   if (req.method !== 'GET') return;
+  // recorded voice clips are named by their content and never change: from the cache first, the network only once
+  if (/\/assets\/voice\/[0-9a-f]+\.mp3$/.test(new URL(req.url).pathname)) {
+    e.respondWith(caches.match(req).then(hit => hit || fetch(req).then(res => {
+      if (res.ok) { const copy = res.clone(); caches.open(CACHE).then(c => c.put(req, copy)); }
+      return res;
+    })));
+    return;
+  }
   e.respondWith(
     fetch(req)
       .then(res => {

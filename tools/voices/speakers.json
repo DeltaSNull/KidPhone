@@ -1,0 +1,16 @@
+{
+  "_about": "Who says what. voice: a Kokoro voice. speed: talking speed (1 = normal; big animals a little slower). semis: pitch shift in semitones; kept at 0 because even 1 semitone doubled the transcription errors (see README, Casting). Change one, run make_voices.py, and only that speaker is re-recorded.",
+  "n": { "name": "Narrator", "voice": "af_heart", "speed": 0.93, "semis": 0 },
+  "lion": { "name": "Lion", "voice": "am_michael", "speed": 0.92, "semis": 0 },
+  "elephant": { "name": "Elephant", "voice": "bm_george", "speed": 0.9, "semis": 0 },
+  "giraffe": { "name": "Giraffe", "voice": "af_bella", "speed": 0.94, "semis": 0 },
+  "zebra": { "name": "Zebra", "voice": "af_sarah", "speed": 1.0, "semis": 0 },
+  "monkey": { "name": "Monkey", "voice": "am_puck", "speed": 1.06, "semis": 0 },
+  "penguin": { "name": "Penguin", "voice": "bf_emma", "speed": 1.03, "semis": 0 },
+  "hippo": { "name": "Hippo", "voice": "am_echo", "speed": 0.94, "semis": 0 },
+  "trex": { "name": "T. rex", "voice": "am_onyx", "speed": 0.9, "semis": 0 },
+  "longneck": { "name": "Long neck", "voice": "bm_fable", "speed": 0.88, "semis": 0 },
+  "trike": { "name": "Triceratops", "voice": "af_kore", "speed": 0.98, "semis": 0 },
+  "stego": { "name": "Stegosaurus", "voice": "af_aoede", "speed": 0.96, "semis": 0 },
+  "ptero": { "name": "Pterodactyl", "voice": "af_nova", "speed": 1.02, "semis": 0 }
+}

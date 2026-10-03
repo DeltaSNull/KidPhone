@@ -43,7 +43,9 @@ Guided Access. It's one self-contained `index.html` (vanilla JS, no build step),
 
 The animals' calls are modeled on the real animals: a buzzing "vocal cord" source shaped by throat and mouth
 resonances, with the real call's pitch swoops, growl (roughness) and breath. Each stays under about 2 seconds and
-mid-volume, and the animal finishes its call before it talks.
+mid-volume, and the animal finishes its call before it talks. Every call was measured (integrated loudness, rendered
+offline) and trimmed to the same level, within about 2 dB of each other (they were 12.5 dB apart), so a frog or a chick
+isn't a whisper next to an elephant. Tones and noise bursts start from silence, with no click. A real recording in `assets/sounds/` replaces a synthesized call everywhere it's used.
 
 | Animal | Its call |
 | --- | --- |
@@ -65,6 +67,40 @@ mid-volume, and the animal finishes its call before it talks.
 
 The camera scenes and Wild Tap use the same voices (plus a leopard and tiger growl, parrot squawk, flamingo honk,
 gorilla chest beats, frog ribbit, owl hoot and more).
+
+## The voice
+
+Everything the toy says is recorded ahead of time with natural-sounding neural voices (Kokoro, an open
+text-to-speech model) rather than read out by the phone's built-in speech voice. A narrator does the prompts and
+games, and every animal on the phone has its own voice:
+
+| Who | Voice | Talking speed |
+| --- | --- | --- |
+| Narrator | American woman (`af_heart`) | 0.93 |
+| Lion | American man (`am_michael`) | 0.92 |
+| Elephant | British man (`bm_george`) | 0.9 |
+| Giraffe | American woman (`af_bella`) | 0.94 |
+| Zebra | American woman (`af_sarah`) | 1 |
+| Monkey | American man (`am_puck`) | 1.06 |
+| Penguin | British woman (`bf_emma`) | 1.03 |
+| Hippo | American man (`am_echo`) | 0.94 |
+| T. rex | American man (`am_onyx`) | 0.9 |
+| Long neck | British man (`bm_fable`) | 0.88 |
+| Triceratops | American woman (`af_kore`) | 0.98 |
+| Stegosaurus | American woman (`af_aoede`) | 0.96 |
+| Pterodactyl | American woman (`af_nova`) | 1.02 |
+
+- **Calls** sound like calls: the animal's voice goes through a gentle phone-line filter, and the phone itself
+  ("Calling Lion!", "Lion is calling you! Ring ring!") speaks in the narrator's voice.
+- **One level**: every clip is brought to the same loudness, a little above the animal calls, and plays through the
+  same sound engine as the animals, so it follows the volume setting and never cuts them off.
+- **Offline**: clips are small MP3s (`assets/voice/`, about 6 MB in all), fetched in the background after the first
+  tap and kept by the offline cache.
+- **Family names** (a contact you add) have no recording, so those lines use the phone's own voice when the silent
+  switch setting is off, and are skipped when it's on (the phone's voice would silence the sound effects).
+
+[`tools/voices/`](tools/voices/README.md) records them. It reads every line from `index.html`, so new lines get
+recorded the next time it runs, and `npm test` fails if any line the toy can say has no recording.
 
 **Real recordings:** a synthesizer only gets so close. To use real recordings (for example, ones you make at the zoo),
 drop them in `assets/sounds/` and list them in `sounds.json`. See [`assets/sounds/README.md`](assets/sounds/README.md).
@@ -118,10 +154,8 @@ Every picture is pixel art placed one pixel at a time: no emoji, no vector drawi
    with no Safari bars, and it keeps working offline once loaded (the service worker caches it).
 3. **Guided Access**: Settings → Accessibility → Guided Access → on, and set a passcode. Open Toy Phone, then
    triple-click the side button to start. Triple-click and enter the passcode to leave.
-4. **Nicer voice**: Settings → Accessibility → Read & Speak → Voices → English (on iOS 18 and earlier it's
-   *Spoken Content* instead of *Read & Speak*). Download an *Enhanced* or *Premium* voice, such as Samantha (Enhanced),
-   then reload the page. The page prefers a downloaded Enhanced or Premium voice, and the parent settings panel shows
-   which voice it's using. If it still says the basic Samantha, Safari isn't offering the downloaded voice to web pages.
+4. **Silent switch**: with the parent setting *Sound when the phone is on silent* on (the default), the toy plays even
+   when the ring/silent switch is set to silent. Turn it off to have the toy follow the switch like other web pages.
 
 Home-screen apps keep their own storage, so photos taken there don't show up in Safari's copy, and the reverse.
 
@@ -131,6 +165,7 @@ Hold the clock in the top-left corner for **3 seconds**. A quick tap only wiggle
 
 - Incoming calls on/off
 - Volume (Quiet / Soft / Medium / Loud)
+- Sound when the phone is on silent (on by default)
 - **Voice**: a checkbox for each place the talking voice can speak. Animal sounds and music always play.
 
   | Checkbox | What the voice says | Starts |
@@ -145,7 +180,7 @@ Hold the clock in the top-left corner for **3 seconds**. A quick tap only wiggle
 
 - Clear photos, with a confirm step built into the page
 - Ring now and Test sound, for checking the phone
-- Which speech voice is in use, and how many family contacts loaded
+- Whether the sound engine is running, whether the recorded voice loaded, and how many family contacts loaded
 
 ## Family contacts
 
@@ -158,9 +193,10 @@ so private voices and faces stay on your server.
 The automated test runs in Chromium, so these need a person and the phone:
 
 - [ ] Sound plays on the very first tap
-- [ ] The animal calls, drums and ringtones play, and keep playing after the voice talks. If the voice works but the
-      sound effects are quiet, flip the ring/silent switch to ring (parent settings shows whether the sound engine is on)
-- [ ] The speech voice sounds right (Enhanced voice downloaded?)
+- [ ] The animal calls, drums and ringtones play, and keep playing after the voice talks
+- [ ] With the ring/silent switch on silent, the animals and the voice still play (the setting is on by default)
+- [ ] The voices sound right: the narrator, and each animal on a call (they were checked here by transcribing every
+      clip with a speech recognizer, not by ear)
 - [ ] The animal calls sound right on the phone's speaker. They were checked here with spectrograms, not by ear
 - [ ] Guided Access session: nothing leads out of the page
 - [ ] Portrait and landscape
@@ -177,6 +213,8 @@ The automated test runs in Chromium, so these need a person and the phone:
 | `sw.js` | Offline cache: network first, so updates show up on the next launch |
 | `assets/family/` | Private family contacts (see its README) |
 | `assets/sounds/` | Optional real animal recordings (see its README) |
+| `assets/voice/` | The recorded voice: one MP3 per line, and `voice.json` listing them |
+| `tools/voices/` | Records the voice (see its README) |
 | `tests/smoke.cjs` | Playwright smoke test |
 | `tests/pages.cjs` | GitHub Pages check: builds the site like the workflow, serves it under `/KidPhone/` and opens it as an iPhone and an Android phone |
 | `.github/workflows/deploy-pages.yml` | Publishes the toy to GitHub Pages |
@@ -208,12 +246,13 @@ console error. Screenshots go to `tests/screenshots/`.
 - Photos are stored in `localStorage` as small pixel-art PNGs (a few KB each, one pixel per art pixel). If the phone runs out of room, the oldest
   photo is dropped first. Clearing Safari's website data deletes them. The sample photos from an older version are swapped
   for pixel ones the first time this version runs; photos the kids took are kept.
-- **Sound effects and the voice on iPhone.** The page sets its audio session to `ambient` so the sound effects mix with
-  the speech voice. With `playback`, the effects would also play through the silent switch, but on iPhone every spoken
-  sentence then takes the speaker from the sound effects and Safari doesn't give it back, so the animals go quiet. The
-  catch: like most web pages, the effects follow the ring/silent switch. If iOS pauses the sound engine anyway (a phone
-  call, Siri), sounds asked for meanwhile are held and play on the next touch, and an engine that won't restart is
-  replaced. The voice waits for a sound to finish rather than talking over it.
+- **Sound on iPhone.** The phone's built-in speech voice and Safari's `playback` audio session (which plays through the
+  silent switch) don't mix: each spoken sentence takes the speaker away from the sound effects and Safari never gives
+  it back. That's why the voice is recorded clips played by the toy's own sound engine. With the silent-switch setting
+  on, the session is `playback` and the built-in speech voice is never used. With it off, the session is `ambient`
+  (everything follows the switch) and the speech voice may fill in for a family name. If iOS pauses the sound engine
+  anyway (a phone call, Siri), sounds asked for meanwhile are held and play on the next touch, and an engine that won't
+  restart is replaced. The voice waits for a sound to finish rather than talking over it.
 - A call nobody hangs up says goodbye by itself after 3 minutes (`CALL_MAX_MS`), so a forgotten phone doesn't chat all afternoon.
 - In portrait, the 8 xylophone bars and 8 piano keys are about 66px tall but span the full width. Every other kid control is 80px or more.
 - With five app icons, the three animals on the home-screen hill only show on tall portrait screens (800px or more).

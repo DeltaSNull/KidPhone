@@ -760,6 +760,9 @@ img[src^="data:image/jpeg"],.face img{image-rendering:auto}
         <div class="srow"><span>Incoming calls</span>
           <div class="seg"><button class="sbtn" data-incoming="1">On</button><button class="sbtn" data-incoming="0">Off</button></div></div>
         <div class="srow"><span>Volume</span><div class="seg" id="volSeg"></div></div>
+        <div class="srow"><span>Sound when the phone is on silent</span>
+          <div class="seg"><button class="sbtn" data-silent="1">On</button><button class="sbtn" data-silent="0">Off</button></div>
+          <span class="vhint">On: the toy plays even with the ring/silent switch set to silent. Off: it follows the switch.</span></div>
         <div class="srow"><span>Voice</span><span class="vhint">Where the talking voice speaks. Animal sounds and music always play.</span></div>
         <div class="vlist" id="voiceList"></div>
         <div class="srow"><span id="photoCount">Photos</span><button class="sbtn danger" id="clearBtn">Clear photos</button></div>
@@ -4094,7 +4097,7 @@ const VOICE = [
   {k:'numbers', on:false, t:'Keypad numbers', d:'Says each number you press.'},
   {k:'music', on:false, t:'Music', d:'Names the instruments and songs.'}
 ];
-const settings = Object.assign({incoming:true, vol:2}, store.get('settings', {}));
+const settings = Object.assign({incoming:true, vol:2, silent:true}, store.get('settings', {}));
 settings.vol = clamp(settings.vol|0, 0, 3);
 settings.voice = Object.assign(Object.fromEntries(VOICE.map(v => [v.k, v.on])), settings.voice || {});
 const voiceOn = area => !area || !!settings.voice[area];
@@ -4102,18 +4105,24 @@ const saveSettings = () => store.set('settings', settings);
 
 /* ---------- Sound: synth effects ----------
    iPhone notes, learned the hard way:
-   - The audio session is "ambient", so the sound effects mix with the speech voice. ("playback" would also play
-     through the silent switch, but then every spoken sentence takes the speaker away from the sound effects and Safari
-     never gives it back: the animals go quiet and only the voice is left.) So the effects follow the ring/silent switch.
+   - The phone's own speech voice and "playback" mode don't mix: each spoken sentence takes the speaker away from the
+     sound effects and Safari never gives it back. So the toy's voice is recorded clips played by this same engine,
+     and in "playback" mode (plays through the silent switch, the parent setting) the phone's speech voice is never used.
+     With the setting off the session is "ambient": everything follows the ring/silent switch, and the speech voice
+     can fill in for a line with no clip (a family name).
    - Safari only starts sound when a finger lifts (touchend/click), and a phone call or Siri can pause it. A sound asked
      for while the engine isn't running is held for a moment and played as soon as it runs again. Every touch checks
      the engine; one that won't restart is replaced with a new one. */
 const VOLS = [.25, .45, .7, 1];
+/* Safari's audio session: "playback" plays through the silent switch. Only with the recorded voice loaded, since in that
+   mode the phone's speech voice can't be used (a copy without clip files, like the artifact, stays "ambient" and speaks). */
+const playback = () => { try{ return !!(settings.silent && navigator.audioSession && VB.map); }catch(e){ return false; } };   // (VB comes later in the file)
+function setSession(){ try{ if (navigator.audioSession) navigator.audioSession.type = playback() ? 'playback' : 'ambient'; }catch(e){} }
 let ctx = null, master = null, OUT = null, held = [], stuck = 0, rebuilds = 0, fxEnd = 0;
 function audio(){
   if (!ctx){
     try{
-      try{ if (navigator.audioSession) navigator.audioSession.type = 'ambient'; }catch(e){}
+      setSession();
       const c = ctx = new (window.AudioContext || window.webkitAudioContext)();
       const comp = c.createDynamicsCompressor();  // two kids mashing at once never clips
       comp.threshold.value = -16; comp.knee.value = 10; comp.ratio.value = 4; comp.attack.value = .004; comp.release.value = .25;
@@ -4155,7 +4164,7 @@ function synth(o){
   if (hold(() => synth(o))) return;
   const c = ctx;
   const t = c.currentTime + (o.at || 0), dur = o.dur || .3, vol = o.vol ?? .2, f = o.f || 440, f1 = o.f1 ?? f, atk = o.atk || .015;
-  const osc = c.createOscillator(), g = c.createGain();
+  const osc = c.createOscillator(), g = c.createGain(); g.gain.value = 0;   // silent until its envelope starts: a gain is 1 until then, which clicked
   osc.type = o.type || 'sine';
   osc.frequency.setValueAtTime(f, t);
   if (f1 !== f) osc.frequency.exponentialRampToValueAtTime(Math.max(f1, 20), t + dur);
@@ -4178,7 +4187,7 @@ function noise(dur, ftype='lowpass', f0=800, f1=f0, vol=.3, delay=0){
   if (hold(() => noise(dur, ftype, f0, f1, vol, delay))) return;
   const c = ctx;
   makeNoise(c);
-  const t = c.currentTime + delay, s = c.createBufferSource(), fl = c.createBiquadFilter(), g = c.createGain();
+  const t = c.currentTime + delay, s = c.createBufferSource(), fl = c.createBiquadFilter(), g = c.createGain(); g.gain.value = 0;   // (no click at the start)
   s.buffer = noiseBuf; fl.type = ftype; fl.frequency.setValueAtTime(f0, t); fl.frequency.exponentialRampToValueAtTime(Math.max(f1,20), t+dur);
   g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(vol, t+.02); g.gain.exponentialRampToValueAtTime(.0001, t+dur);
   s.connect(fl); fl.connect(g); g.connect(dest()); s.start(t); s.stop(t+dur+.05);
@@ -4336,7 +4345,7 @@ const FX = {
   tweet(at=0){ tone(2000,2700,.08,'sine',.16,at); tone(2200,2900,.08,'sine',.16,at+.12); tone(2000,2800,.1,'sine',.14,at+.26); return at + .36; },
   flutter(at=0){ [0,.07,.14,.21].forEach(d => noise(.05,'bandpass',1800,1400,.16,at+d)); return at + .26; },
   flick(at=0){ tone(1400,2400,.05,'sine',.15,at); tone(1400,2400,.05,'sine',.15,at+.1); return at + .15; },
-  snap(at=0){ noise(.05,'highpass',2500,2000,.36,at); noise(.05,'highpass',2500,2000,.36,at+.16); return at + .21; },
+  snap(at=0){ noise(.08,'highpass',2500,1800,.36,at); noise(.08,'highpass',2500,1800,.36,at+.17); return at + .25; },   // two jaw snaps
   peep(at=0){ [0,.15,.3].forEach(d => tone(2600,3300,.09,'sine',.16,at+d)); return at + .4; },
   boing(at=0){ [0,.3,.6].forEach(d => tone(180,620,.25,'sine',.3,at+d)); return at + .85; },
   boom(at=0){ noise(1.6,'lowpass',320,60,.7,at); tone(60,30,1.4,'sine',.6,at); return at + 1.6; },
@@ -4351,8 +4360,34 @@ const FX = {
   swoosh(){ noise(.25,'bandpass',600,2400,.18); }
 };
 
-/* Real recordings win: list them in assets/sounds/sounds.json (see the README there) and that animal plays the file instead. */
-const SOUND_FILES = {}, soundBufs = {};
+/* Real recordings win: list them in assets/sounds/sounds.json (see the README there), by sound ("roar") or by animal
+   ("lion": that animal's sound), and the recording plays everywhere that sound is used: calls, Wild Tap, the camera,
+   the games. A sound with no recording keeps its synthesized version. */
+const SOUND_FILES = {}, soundBufs = {}, REC = {};
+const FX_SYNTH = {...FX};
+function playRec(buf, at = 0){
+  busy(at + buf.duration);
+  if (hold(() => playRec(buf, at))) return at + buf.duration;
+  const s = ctx.createBufferSource(); s.buffer = buf; s.connect(dest()); s.start(ctx.currentTime + at); return at + buf.duration;
+}
+/* Level trims in dB, measured (integrated loudness of each sound rendered offline): every animal call lands near the
+   same loudness, so a frog or a chick isn't a whisper next to an elephant (the noisy huff and snap get a little less,
+   so a loud burst never clips). Only the outermost sound is trimmed (the
+   giraffe's hum ends in the crunch sound; the crunch isn't trimmed twice). */
+const FX_TRIM = {trumpet:-4, munch:2.1, neigh:-2.1, ooh:-3.1, hippo:2.2, huff:4.5, stego:2.4, screech:-1.3, snort:8, growl:3.4, squawk:1.8,
+  thump:2.9, ribbit:6.8, hoot:-2.4, yawn:-2.4, woof:-1.1, meow:-2.2, quack:-1.3, tweet:8, peep:7.1, snap:4.5, splash:7.9, crunch:8, flick:8,
+  flutter:8, boing:4.1, stomp:2};
+let fxDepth = 0;
+Object.keys(FX_SYNTH).forEach(k => { FX[k] = (at = 0) => {
+  if (REC[k]) return playRec(REC[k], at);
+  const db = fxDepth ? 0 : FX_TRIM[k] || 0, c = db && audio();
+  if (!c) return FX_SYNTH[k](at);
+  const g = c.createGain(); g.gain.value = 10 ** (db / 20); g.connect(dest());
+  let end; fxDepth++;
+  try{ into(g, () => { end = FX_SYNTH[k](at); }); } finally { fxDepth--; }
+  setTimeout(() => { try{ g.disconnect(); }catch(e){} }, ((end || at + 3) + 1) * 1000);
+  return end;
+}; });
 async function loadSounds(){
   try{
     if (location.protocol === 'file:') return;
@@ -4362,17 +4397,14 @@ async function loadSounds(){
     Object.entries(j || {}).forEach(([id, f]) => {
       if (typeof f !== 'string') return;
       const url = /^(data:|blob:|https?:|\/)/.test(f) ? f : 'assets/sounds/' + f;
-      SOUND_FILES[id] = url; loadClip(url).then(buf => { if (buf) soundBufs[id] = buf; });
+      const fx = FX_SYNTH[id] ? id : (ANIMALS.find(a => a.id === id) || {}).fx;
+      SOUND_FILES[id] = url; loadClip(url).then(buf => { if (!buf) return; soundBufs[id] = buf; if (fx) REC[fx] = buf; });
     });
   }catch(e){}
 }
 function animalSound(a, at=0){
   const buf = a.id && soundBufs[a.id];
-  if (buf){
-    busy(at + buf.duration);
-    if (hold(() => animalSound(a, at))) return at + buf.duration;
-    const s = ctx.createBufferSource(); s.buffer = buf; s.connect(dest()); s.start(ctx.currentTime + at); return at + buf.duration;
-  }
+  if (buf) return playRec(buf, at);
   return (a.fx && FX[a.fx]) ? (FX[a.fx](at) || at + .8) : at;
 }
 
@@ -4385,7 +4417,8 @@ function pickVoice(){
     const score = v => voiceTier(v)*10 + (/samantha|karen|moira|ava|zoe|google us/i.test(v.name) ? 4 : 0) + (/en-US/i.test(v.lang) ? 2 : 0) + (v.localService ? 1 : 0);
     voice = speechSynthesis.getVoices().filter(v => /^en/i.test(v.lang)).sort((x, y) => score(y) - score(x))[0] || null;
     const vn = $('#voiceNote');
-    if (vn) vn.textContent = voice && voiceTier(voice)
+    if (vn && VB.map) vn.textContent = 'Voice: recorded natural voices, a narrator and one for each animal on the phone. Turn each place it talks on or off above.';
+    else if (vn) vn.textContent = voice && voiceTier(voice)
       ? `Voice: ${voice.name}${/enhanced|premium/i.test(voice.name) ? '' : voiceTier(voice) > 1 ? ' (Premium)' : ' (Enhanced)'}. That's the natural-sounding kind.`
       : `Voice: ${voice ? voice.name : 'device default'}, the basic built-in version. For a more natural voice, download an Enhanced or Premium English voice in Settings → Accessibility → Read & Speak → Voices (called Spoken Content on iOS 18 and earlier), then reload this page.`;
   }catch(e){}
@@ -4409,17 +4442,118 @@ function speakNow(text, pitch, vol){
     speechSynthesis.speak(u);
   }catch(e){}
 }
+/* ---------- Voice: recorded lines ----------
+   Every line the toy says is rendered ahead of time with a neural voice (tools/voices): a narrator, and a character
+   voice for each animal on the phone. A line plays sentence by sentence, one small clip per sentence, through the sound
+   engine: it mixes with the animals, follows the volume setting, and never takes the speaker away from them. On a call
+   the animal's voice goes through a gentle phone-line filter. A line with a sentence that has no clip (a family name,
+   or the artifact build, which has no clip files) uses the phone's own voice instead. */
+const normLine = t => String(t).replace(/[’‘]/g, "'").replace(/\bT\. rex\b/g, 'T rex').replace(/\s+/g, ' ').trim();
+const sentences = t => (normLine(t).match(/[^.!?]+[.!?]*/g) || []).map(x => x.trim()).filter(Boolean);
+const VB = {map:null, bufs:new Map(), loading:new Map(), srcs:[], until:0, seq:0, fallbacks:[], played:0, log:[], last:null, warmed:false};
+const VOICE_GAP = .14;   // seconds between sentences
+async function loadVoiceBank(){
+  try{
+    if (location.protocol === 'file:') return;
+    const r = await fetch('assets/voice/voice.json', {cache:'no-cache'});
+    if (r.ok) VB.map = (await r.json()).clips || null;
+    if (VB.map){ setSession(); if (unlocked) setTimeout(warmVoices, 3000); }
+  }catch(e){}
+}
+/* After the first touch, quietly fetch the narrator's clips a few at a time: lines are then ready the moment they're
+   needed, and the offline cache keeps them. (Fetched, not decoded: decoding waits until a line is said.) */
+function warmVoices(){
+  if (!VB.map || VB.warmed || location.protocol === 'file:') return; VB.warmed = true;
+  const files = [...new Set(Object.entries(VB.map).filter(([k]) => k.startsWith('n|')).map(([, v]) => v[0]))];
+  let i = 0;
+  const next = () => { if (i >= files.length) return; fetch('assets/voice/' + files[i++]).then(r => r.arrayBuffer()).catch(() => {}).then(() => setTimeout(next, 40)); };
+  for (let n = 0; n < 3; n++) next();
+}
+/* who: a speaker id, an animal contact, or nothing (a number is an old pitch value) = the narrator */
+const whoId = who => typeof who === 'string' ? who : who && typeof who === 'object' && who.id && !who.family ? who.id : 'n';
+/* The clips for a line in one voice, or null. Whole lines are recorded as one clip (natural rhythm between sentences);
+   a line the toy puts together ("Hooray!" + "A baby T rex!") is covered by the longest recorded runs of its sentences.
+   An animal line nobody recorded in that animal's voice can use the narrator's. */
+function lineClips(text, who){
+  if (!VB.map) return null;
+  const ss = sentences(text); if (!ss.length) return null;
+  for (const id of [...new Set([whoId(who), 'n'])]){
+    const list = []; let i = 0;
+    while (i < ss.length){
+      let j = ss.length, hit = null;
+      for (; j > i; j--){ hit = VB.map[id + '|' + ss.slice(i, j).join(' ')]; if (hit) break; }
+      if (!hit) break;
+      list.push(hit); i = j;
+    }
+    if (i === ss.length) return {id, list};
+  }
+  return null;
+}
+function lineMs(text, who){
+  const c = lineClips(text, who);
+  return c ? c.list.reduce((t, x) => t + x[1], 0) + (c.list.length - 1)*VOICE_GAP*1000 : talkMs(normLine(text));
+}
+function voiceBuf(file){
+  const b = VB.bufs.get(file);
+  if (b){ VB.bufs.delete(file); VB.bufs.set(file, b); return Promise.resolve(b); }   // most recently used stays
+  if (!VB.loading.has(file)) VB.loading.set(file, fetch('assets/voice/' + file).then(r => { if (!r.ok) throw new Error('missing'); return r.arrayBuffer(); })
+    .then(buf => new Promise((res, rej) => { const c = audio(); if (!c) return rej(); c.decodeAudioData(buf, res, rej); }))
+    .then(buf => { VB.loading.delete(file); VB.bufs.set(file, buf); if (VB.bufs.size > 40) VB.bufs.delete(VB.bufs.keys().next().value); return buf; },
+          e => { VB.loading.delete(file); throw e; }));
+  return VB.loading.get(file);
+}
+/* fetch ahead (no decoding), so a line is ready the moment it's needed */
+function prefetchLines(texts, who){ texts.forEach(t => { const c = lineClips(t, who); if (c) c.list.forEach(x => { if (!VB.bufs.has(x[0]) && !VB.loading.has(x[0])) voiceBuf(x[0]).catch(() => {}); }); }); }
+/* the voice's path to the speaker: straight to the mix, or through a phone line for whoever is on a call */
+const voiceChains = new WeakMap();
+function voiceOut(phone){
+  const c = ctx, m = master; let ch = voiceChains.get(c);
+  if (!ch){
+    const direct = c.createGain(); direct.gain.value = .66; direct.connect(m);   // clips are at -16 LUFS: this puts the voice ~3 dB over the animal calls
+    const hp = c.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 260; hp.Q.value = .7;
+    const mid = c.createBiquadFilter(); mid.type = 'peaking'; mid.frequency.value = 2300; mid.Q.value = .9; mid.gain.value = 3.5;
+    const lp = c.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 5200; lp.Q.value = .6;
+    const line = c.createGain(); line.gain.value = .8;
+    hp.connect(mid); mid.connect(lp); lp.connect(line); line.connect(m);
+    ch = {direct, phone:hp}; voiceChains.set(c, ch);
+  }
+  return phone ? ch.phone : ch.direct;
+}
+function stopVoice(){ VB.seq++; VB.srcs.forEach(x => { try{ x.stop(); }catch(e){} }); VB.srcs = []; VB.until = 0; }
+function playLine(clips, who, text){
+  const seq = ++VB.seq;
+  Promise.all(clips.list.map(x => voiceBuf(x[0]))).then(bufs => {
+    if (seq !== VB.seq) return;   // a newer line, or hush, took over
+    const go = () => {
+      if (seq !== VB.seq) return;
+      const c = ctx, phone = !!(call && call.c && whoId(who) === call.c.id && clips.id !== 'n');
+      const out = voiceOut(phone); let t = c.currentTime + .03;
+      bufs.forEach(b => { const x = c.createBufferSource(); x.buffer = b; x.connect(out); x.start(t); VB.srcs.push(x); x.onended = () => { VB.srcs = VB.srcs.filter(y => y !== x); }; t += b.duration + VOICE_GAP; });
+      VB.until = performance.now() + (t - c.currentTime)*1000; VB.played++; VB.last = {id:clips.id, phone, text:normLine(text)};
+    };
+    if (!hold(go)) go();
+  }).catch(() => { if (seq === VB.seq && !playback()) speakNow(text, pitchOf(who)); });   // a clip didn't load (offline before it was ever fetched)
+}
+const pitchOf = who => typeof who === 'number' && who ? who : who && who.p ? who.p : 1.15;
+function speakLine(text, who){
+  stopVoice(); try{ speechSynthesis.cancel(); }catch(e){}
+  VB.log.push(normLine(text)); if (VB.log.length > 300) VB.log.shift();
+  const clips = lineClips(text, who);
+  if (clips) return playLine(clips, who, text);
+  if (VB.map && VB.fallbacks.length < 50) VB.fallbacks.push(normLine(text));
+  if (!playback()) speakNow(text, pitchOf(who));   // (in playback mode the speech voice would silence the sound effects)
+}
 let sayTimer = 0;
-/* area: which settings checkbox this line belongs to (none = always, like the parent's Test sound) */
-function say(text, pitch, area){
+/* area: which settings checkbox this line belongs to (none = always, like the parent's Test sound). who: see whoId */
+function say(text, who, area){
   if (!voiceOn(area)) return;
-  if (!speechReady){ pending = [text, pitch]; return; }
+  if (!speechReady){ pending = [text, who]; return; }
   clearTimeout(sayTimer);
   const wait = Math.min(1500, fxEnd - performance.now());   // a sound is still playing: talk right after it
-  if (wait > 40) sayTimer = setTimeout(() => speakNow(text, pitch), wait + 120); else speakNow(text, pitch);
+  if (wait > 40) sayTimer = setTimeout(() => speakLine(text, who), wait + 120); else speakLine(text, who);
 }
-function hush(){ pending = null; clearTimeout(sayTimer); try{ speechSynthesis.cancel(); }catch(e){} }
-const speaking = () => { try{ return speechSynthesis.speaking; }catch(e){ return false; } };
+function hush(){ pending = null; clearTimeout(sayTimer); stopVoice(); try{ speechSynthesis.cancel(); }catch(e){} }
+const speaking = () => { if (performance.now() < VB.until) return true; try{ return speechSynthesis.speaking; }catch(e){ return false; } };
 const talkMs = text => 900 + text.length * 68;   // rough speaking time at rate .9
 
 /* iPhone only unlocks sound and speech when a finger lifts (touchend/click, not pointerdown),
@@ -4430,11 +4564,11 @@ function unlock(){
   if (!speechReady){
     speechReady = true;
     const p = pending; pending = null;
-    if (p) speakNow(p[0], p[1]);
-    else if (voiceOn('menus')) speakNow('Hi buddy! It\'s your phone!');
-    else speakNow(' ', 1, 0);   // a silent word: iPhone only lets the voice talk later if it spoke once during a touch
+    if (p) speakLine(p[0], p[1]);
+    else if (voiceOn('menus')) speakLine('Hi buddy! It\'s your phone!');
+    else if (!playback()) speakNow(' ', 1, 0);   // a silent word: iPhone only lets the speech voice talk later if it spoke once during a touch
   }
-  if (!unlocked){ unlocked = true; scheduleIncoming(); }
+  if (!unlocked){ unlocked = true; scheduleIncoming(); setTimeout(warmVoices, 3000); }
 }
 document.addEventListener('touchend', unlock, {capture:true, passive:true});
 document.addEventListener('click', unlock, true);
@@ -4568,7 +4702,7 @@ const FRIENDS = [ANIMALS[0], ANIMALS[7], ANIMALS[1]];
 FRIENDS.forEach(f => {
   const b = document.createElement('button'); b.className = 'friend'; b.setAttribute('aria-label', f.n);
   const s = document.createElement('span'); put(s, f.a); b.appendChild(s);
-  tap(b, () => { retrigger(b, 'go'); animalSound(f); popWord(b, f.snd.split(' ')[0].toUpperCase() + '!'); later(() => say(sp(f) + '!', f.p, 'names'), 450); }, {bump:false});
+  tap(b, () => { retrigger(b, 'go'); animalSound(f); popWord(b, f.snd.split(' ')[0].toUpperCase() + '!'); later(() => say(sp(f) + '!', f, 'names'), 450); }, {bump:false});
   $('#friends').appendChild(b);
 });
 
@@ -4660,7 +4794,11 @@ function openCall(c, state){
   setCallState(state);
   callEl.hidden = false;
   if (c.clips && c.clips.length) c.clips.forEach(loadClip);
+  else prefetchLines(callLines(c), c);
+  prefetchLines(['Calling ' + sp(c) + '!', sp(c) + ' is calling you! Ring ring!']);
 }
+const BYES = ['Bye bye!', 'Okay, bye bye!', "Okay, I'll call you later. Bye bye!", 'I have to go eat my dinner now. Bye bye, buddy!'];
+const callLines = c => [...c.lines, ...FILLERS.map(f => f(c)), ...BYES];
 function stopCallSounds(){
   if (!call) return;
   call.timers.forEach(clearTimeout); call.timers.clear();
@@ -4690,20 +4828,20 @@ function nextLine(c){
   return call.queue.shift();
 }
 function animalTalk(c, text){
-  say(text, c.p, 'calls');
+  say(text, c, 'calls');
   callFace.classList.add('talk');
-  callLater(() => callFace.classList.remove('talk'), talkMs(text));
+  callLater(() => callFace.classList.remove('talk'), lineMs(text, c) + 300);
 }
 const CALL_MAX_MS = 3*60*1000;   // a forgotten call says goodbye by itself after 3 minutes
 function talk(first){
   if (!call || call.state !== 'talking') return;
   const c = call.c;
-  if (performance.now() - call.started > CALL_MAX_MS){ animalTalk(c, "I have to go eat my dinner now. Bye bye, buddy!"); callLater(() => endCall(), 4200); return; }
+  if (performance.now() - call.started > CALL_MAX_MS){ animalTalk(c, BYES[3]); callLater(() => endCall(), 4200); return; }
   if (c.family && c.clips && c.clips.length){
     const url = first ? c.clips[0] : (c.clips.length > 1 ? rnd(c.clips.slice(1)) : c.clips[0]);
     playClip(url).then(dur => {
       if (!call || call.state !== 'talking') return;
-      if (dur == null){ const t = first ? c.lines[0] : nextLine(c); animalTalk(c, t); callLater(talk, Math.max(6000, talkMs(t) + 2200)); return; }
+      if (dur == null){ const t = first ? c.lines[0] : nextLine(c); animalTalk(c, t); callLater(talk, Math.max(6000, lineMs(t, c) + 2200)); return; }
       callFace.classList.add('talk'); callLater(() => callFace.classList.remove('talk'), dur*1000);
       callLater(talk, Math.max(6000, dur*1000 + 2500));
     });
@@ -4714,10 +4852,10 @@ function talk(first){
   let d = 0;
   if (withFx){ d = animalSound(c) * 1000 + 200; callFace.classList.add('talk'); }
   callLater(() => animalTalk(c, text), d);
-  callLater(talk, Math.max(6000, d + talkMs(text) + 2000));
+  callLater(talk, Math.max(5200, d + lineMs(text, c) + 1800));
 }
-function hangUp(){ if (call && call.state !== 'ending') endCall('Bye bye!'); }
-function decline(){ if (call && call.state === 'ringing') endCall('Okay, bye bye!'); }
+function hangUp(){ if (call && call.state !== 'ending') endCall(BYES[0]); }
+function decline(){ if (call && call.state === 'ringing') endCall(BYES[1]); }
 function endCall(words){
   if (!call) return;
   const c = call.c;
@@ -4726,7 +4864,7 @@ function endCall(words){
   FX.hangup();
   if (words){
     if (c.bye) callLater(() => playClip(c.bye), 350);
-    else callLater(() => say(words, c.p, 'calls'), 350);
+    else callLater(() => say(words, c, 'calls'), 350);
   }
   const w = document.createElement('div'); w.className = 'wave art'; w.innerHTML = ART.hand;
   const [fx, fy] = [callFace.offsetLeft + callFace.offsetWidth*.86, callFace.offsetTop + callFace.offsetHeight*.05];
@@ -4769,8 +4907,8 @@ function ringIn(c){
   });
   const loop = () => { if (speaking()) return callLater(loop, 500); bar(); callLater(loop, 2900); };   // ring between the words, not over them
   loop();
-  callLater(() => say(sp(c) + ' is calling you! Ring ring!', c.p, 'calls'), 2100);
-  callLater(() => endCall("Okay, I'll call you later. Bye bye!"), 26000);
+  callLater(() => say(sp(c) + ' is calling you! Ring ring!', 0, 'calls'), 2100);   // the phone announces who it is
+  callLater(() => endCall(BYES[2]), 26000);
 }
 
 /* Family voice clips play through Web Audio, so they work after the first tap without new permission. */
@@ -5130,12 +5268,15 @@ function inShot(sc, x0, y0, vw, vh, t, allUp){
   return out.sort((u, v) => u.x - v.x).map(o => o.a);
 }
 const article = n => (/^[aeiou]/i.test(n) ? 'an ' : 'a ') + n;
-function listWords(words){ return words.length < 2 ? words.join('') : words.slice(0, -1).join(', ') + ' and ' + words[words.length-1]; }
+const PRETTY = ['What a pretty picture!', 'Ooh, a nice picture!', 'I love this picture!'];
+const anA = n => article(n).replace(/^./, ch => ch.toUpperCase()) + '!';   // "A lion!"
+/* "A lion! A giraffe!": one short sentence per animal (at most three) */
 function photoLine(names){
-  if (!names || !names.length) return rnd(['What a pretty picture!', 'Ooh, a nice picture!', 'I love this picture!']);
-  return listWords(names.slice(0, 4).map(article)).replace(/^./, ch => ch.toUpperCase()) + '!';
+  if (!names || !names.length) return rnd(PRETTY);
+  return [...new Set(names)].slice(0, 3).map(anA).join(' ');
 }
 
+const CLICKS = ['Click! What a pretty picture!', 'Click! Nice picture!'];
 const cam = {scene:'savanna', x:0, y:0, zoom:1, target:1, vx:0, vy:0, raf:0, last:0, shotAt:0, hinted:false, enterT:0};
 const vf = $('#vf'), vfc = $('#vfc'), vg = vfc.getContext('2d');
 let vfW = 0, vfH = 0, dpr = 1;
@@ -5216,7 +5357,7 @@ function camTap(e){
   hit.hopT = t; if (hit.m === 'peek') hit.upUntil = t + 2.6;
   FX[hit.fx] && FX[hit.fx]();
   if (hit.hidden){ foundHidden.add(hit.n); later(() => say('You found the ' + hit.n + '!', 0, 'camera'), 500); }
-  else later(() => say(article(hit.n).replace(/^./, ch => ch.toUpperCase()) + '!', 0, 'camera'), 500);
+  else later(() => say(anA(hit.n), 0, 'camera'), 500);
 }
 $('#zoomBtn').insertAdjacentHTML('afterbegin', ICON.zoom);
 tap($('#zoomBtn'), () => { FX.pop(); cam.target = cam.target > 1.5 ? 1 : 2; $('#zoomTxt').textContent = cam.target > 1.5 ? '2×' : '1×'; say(cam.target > 1.5 ? 'Zoom in!' : 'Zoom out!', 0, 'camera'); });
@@ -5230,7 +5371,8 @@ tap($('#shutter'), () => {
   if (src) Photos.add(src, {names, scene:cam.scene, px:true});
   showThumb(true);
   const hid = animals.find(a => a.hidden && !foundHidden.has(a.n));
-  let line = names.length ? 'You got a picture of ' + listWords(names.slice(0, 4).map(article)) + '!' : rnd(['Click! What a pretty picture!', 'Click! Nice picture!']);
+  const uniq = [...new Set(names)];
+  let line = uniq.length === 1 ? 'You got a picture of ' + article(uniq[0]) + '!' : uniq.length ? 'You got a picture! ' + photoLine(uniq) : rnd(CLICKS);
   if (hid){ foundHidden.add(hid.n); line = 'Wow! You found the hiding ' + hid.n + '! ' + line; const [x, y] = rel(vf); confetti(x, y, 30); later(FX.cheer, 300); }
   later(() => say(line, 0, 'camera'), 420);
 }, {throttle:500});
@@ -5486,6 +5628,9 @@ const WildTap = (() => {
     {n:'Penguin', a:ART.penguin, s:'It’s a baby penguin! Squawk!'},
     {n:'Chick', a:ART.chick, s:'It’s a baby chick! Peep peep!'}];
   const spoken = a => a.sp || a.n;
+  const WHERE = a => 'Where is the ' + spoken(a) + '?', FOUND = a => 'Yes! You found the ' + spoken(a) + '!';
+  const THATS = a => 'That’s the ' + spoken(a) + '.', FIND = a => 'Can you find the ' + spoken(a) + '?';
+  const BABY = b => b.s || ('It’s a baby ' + spoken(b) + '!'), TEN = 'Wow! Ten animals! You are a super explorer!';
   const SCREENS = ['menu','world','find','egg','bubbles'];
   let cur = 'menu';
   function show(name){
@@ -5525,7 +5670,7 @@ const WildTap = (() => {
 
   let target = null, nChoices = 2, streak = 0, locked = false, stickerCount = 0;
   $('#wtRepeat').innerHTML = EAR;
-  tap($('#wtRepeat'), () => { if (target) say('Where is the ' + spoken(target) + '?', 0, 'find'); });
+  tap($('#wtRepeat'), () => { if (target) say(WHERE(target), 0, 'find'); });
   function newRound(){
     if (current !== 'wildtap' || cur !== 'find') return;
     locked = false;
@@ -5539,27 +5684,27 @@ const WildTap = (() => {
       tap(c, () => pick(a, c), {bump:false});
       box.appendChild(c);
     });
-    say('Where is the ' + spoken(target) + '?', 0, 'find');
+    say(WHERE(target), 0, 'find');
   }
   function pick(a, el){
     if (locked) return;
     if (a === target){
       locked = true; el.classList.add('yes'); FX.cheer();
       const [x, y] = rel(el); confetti(x, y);
-      later(() => say('Yes! You found the ' + spoken(a) + '!', 0, 'find'), 300);
+      later(() => say(FOUND(a), 0, 'find'), 300);
       addSticker(a);
       streak++; if (streak % 3 === 0 && nChoices < 4) nChoices++;
       later(newRound, 2600);
     } else {
       retrigger(el, 'no'); FX.boop();
-      later(() => say('That’s the ' + spoken(a) + '. Can you find the ' + spoken(target) + '?', 0, 'find'), 150);
+      later(() => say(THATS(a) + ' ' + FIND(target), 0, 'find'), 150);
     }
   }
   function addSticker(a){
     const st = $('#wtStickers');
     if (stickerCount >= 10){ st.innerHTML = ''; stickerCount = 0; }
     const s = document.createElement('span'); s.className = 's'; put(s, a.a); st.appendChild(s); stickerCount++;
-    if (stickerCount === 10) later(() => { const [x, y] = rel(st); confetti(x, y, 40); FX.cheer(); say('Wow! Ten animals! You are a super explorer!', 0, 'find'); }, 900);
+    if (stickerCount === 10) later(() => { const [x, y] = rel(st); confetti(x, y, 40); FX.cheer(); say(TEN, 0, 'find'); }, 900);
   }
 
   const EGGS = [['#F7EBD0','#E8A945'],['#D9F2C6','#5DA545'],['#DDEBFF','#3D8FE0'],['#FFE0E7','#E8506E'],['#EDE3FF','#8A6FD1']];
@@ -5586,7 +5731,7 @@ const WildTap = (() => {
       put($('#wtBaby'), b.a);
       eggwrap.classList.add('hatched'); FX.cheer();
       const [x, y] = rel(eggwrap); confetti(x, y, 34);
-      later(() => say(b.s || ('It’s a baby ' + spoken(b) + '!'), 0, 'names'), 400);
+      later(() => say(BABY(b), 0, 'names'), 400);
       later(() => { $('#wtNewegg').hidden = false; }, 1200);
     }
   }, {bump:false});
@@ -5622,6 +5767,8 @@ const WildTap = (() => {
 
   return {
     enter(){ show('menu'); say('Wild Tap! Pick one!', 0, 'menus'); },
+    lines: () => ['Wild Tap! Pick one!', 'Safari!', 'Zoo!', 'Dinosaurs!', 'Tap the egg!', 'Pop the bubbles!', 'Crack!', TEN,
+      ...Object.values(W).flatMap(w => w.list.flatMap(a => [a.s, a.f])), ...ALL.flatMap(a => [WHERE(a), FOUND(a), THATS(a), FIND(a)]), ...HATCH.map(BABY)],
     leave(){ stopBubbles(); }
   };
 })();
@@ -5650,7 +5797,8 @@ const DinoBuddies = (() => {
   const DINOS = [{n:'T rex', a:ART.trex}, {n:'long neck', a:ART.longneck}, {n:'Triceratops', a:ART.trike}, {n:'Stegosaurus', a:ART.stego}, {n:'Pterodactyl', a:ART.ptero}];
   const TREATS = [ART.star,ART.starBright,ART.heartYellow,ART.heartGreen,ART.strawberry,ART.blueberry,ART.leaf,ART.flower,ART.watermelon,ART.banana];
   const EGGS = [['#FFF6E0','#FFC83D'],['#EAF7DF','#7CC96B'],['#E3F1FF','#5BB8E8'],['#FFE6EC','#F27A93'],['#F0E8FF','#9C82DD']];
-  const goal = () => solo ? 16 : 24;   // treats to hatch an egg: fewer when one kid does all the tapping
+  const goal = () => solo ? 16 : 24;
+  const CHEER1 = ['Hooray!','You did it!','Yay!'], CHEER2 = ['Hooray! Teamwork!','You did it together!','Yay, buddies!'];   // treats to hatch an egg: fewer when one kid does all the tapping
   const root = $('#dinobuddies'), eggEl = $('#dbEgg'), babyEl = $('#dbBaby'), famEl = $('#dbFamily');
   const sides = $$('.db-side', root), dinoEls = sides.map(s => s.querySelector('.db-dino'));
   const saved = store.get('dinobuddies', {}) || {};   // the hatched family is remembered between visits
@@ -5717,7 +5865,7 @@ const DinoBuddies = (() => {
     const [x, y] = rel(eggEl); confetti(x, y, 36);
     sides.forEach(sd => { if (!sd.offsetWidth) return; const [cx, cy] = rel(sd); confetti(cx, cy, 18); });
     dinoEls.forEach(el => retrigger(el, 'db-dance'));
-    say(rnd(solo ? ['Hooray!','You did it!','Yay!'] : ['Hooray! Teamwork!','You did it together!','Yay, buddies!']) + ' A baby ' + d.n + '!', 0, 'names');
+    say(rnd(solo ? CHEER1 : CHEER2) + ' A baby ' + d.n + '!', 0, 'names');
     setTimeout(() => {
       family.push(i); if (family.length > 8) family = [i];
       renderFamily(); setBuddy(d); store.set('dinobuddies', {family, buddy:i});
@@ -5733,7 +5881,8 @@ const DinoBuddies = (() => {
   return {
     enter(){ who.show(); say('Dino Buddies! One player, or two?', 0, 'menus'); },
     leave(){ $$('.db-treat', root).forEach(t => t.remove()); who.hide(); },
-    fill: () => fill, family: () => family.length, players: () => solo ? 1 : 2
+    fill: () => fill, family: () => family.length, players: () => solo ? 1 : 2,
+    lines: () => ['Dino Buddies! Tap tap tap! Help the egg hatch!', 'Dino Buddies! One player, or two?', ...CHEER1, ...CHEER2, ...DINOS.map(d => 'A baby ' + d.n + '!')]
   };
 })();
 
@@ -5754,6 +5903,7 @@ const SnackTime = (() => {
     {a:'cow', n:'cow', food:'flower', w:'a flower', fp:'flowers', x:'moo', m:[.21,.54]}
   ];
   const FOOD = Object.fromEntries(SNACKS.map(s => [s.food, s.w.replace(/^(a|some) /, '')]));
+  const WANTS = s => `The ${s.n} wants ${s.w}!`, YUM = s => `Yum! The ${s.n} loves ${s.fp}!`;
   const root = $('#snacktime'), scene = $('#stScene'), animalEl = $('#stAnimal'), think = $('#stThink'), wantEl = $('#stWant'), foodsEl = $('#stFoods'), fedEl = $('#stFed');
   let cur = null, queue = [], fed = 0, misses = 0, eating = true, quietUntil = 0;
   const steps = () => [0,.16,.32,.48,.64].forEach(d => tone(190, 150, .07, 'sine', .14, d));   // pitter-patter feet
@@ -5762,7 +5912,7 @@ const SnackTime = (() => {
   const call = (s, at = 0) => s.x ? FX[s.x](at) : yum(at);
   function act(cls){ animalEl.classList.remove('in', 'out', 'hop', 'nope', 'chomp'); void animalEl.offsetWidth; animalEl.classList.add(cls); }
   /* waits for the voice to finish a line (like the hello), so it never cuts one off */
-  const wants = (tries = 0) => { if (!cur || eating) return; if (speaking() && tries < 15){ later(() => wants(tries + 1), 300); return; } say(`The ${cur.n} wants ${cur.w}!`, 0, 'names'); };
+  const wants = (tries = 0) => { if (!cur || eating) return; if (speaking() && tries < 15){ later(() => wants(tries + 1), 300); return; } say(WANTS(cur), 0, 'names'); };
   function arrive(){
     const prev = cur;
     if (!queue.length) queue = shuffle(SNACKS).filter(s => s !== prev);
@@ -5811,7 +5961,7 @@ const SnackTime = (() => {
     const end = s.x === 'munch' ? FX.munch(0) : call(s, FX.crunch(0) + .05);
     fed++; addSticker(s);
     later(() => { act('hop'); hearts(); }, 700);
-    say(`Yum! The ${s.n} loves ${s.fp}!`, 0, 'names');
+    say(YUM(s), 0, 'names');
     const party = fed % 5 === 0, stay = end*1000 + (party ? 2000 : 500);
     if (party) later(celebrate, end*1000 + 100);
     later(() => { act('out'); steps(); }, stay);
@@ -5833,7 +5983,8 @@ const SnackTime = (() => {
   return {
     enter(){ say('Snack Time! The animals are hungry!', 0, 'menus'); cur = null; arrive(); },
     leave(){ $$('.st-bite', root).forEach(t => t.remove()); eating = true; },
-    state: () => ({want: cur && !eating ? cur.food : null, animal: cur && cur.a, fed, choices: foodsEl.children.length})
+    state: () => ({want: cur && !eating ? cur.food : null, animal: cur && cur.a, fed, choices: foodsEl.children.length}),
+    lines: () => ['Snack Time! The animals are hungry!', 'Hooray! Five full tummies!', ...SNACKS.flatMap(s => [WANTS(s), YUM(s)])]
   };
 })();
 
@@ -5884,6 +6035,7 @@ const PaintPals = (() => {
     page:null, mask:null, left:0, done:false, shown:false, flip:false, ptr:new Map(), step:i ? 6 : 2, lastNote:0, lastSpark:0, lastDrop:0, quietUntil:0}));
   const nameOf = n => NAME[n] || n;
   const an = n => (/^[aeiou]/i.test(n) ? 'an ' : 'a ') + n;
+  const ONE = n => an(nameOf(n)).replace(/^a/, 'A') + '!', TWO = (a, b) => `Beautiful! ${an(nameOf(a)).replace(/^a/, 'A')} and ${an(nameOf(b))}!`;
   const here = () => current === 'paintpals';
   /* each side has its own instrument on one pentatonic scale, wandering up and down while a finger paints */
   function note(s){
@@ -5988,7 +6140,7 @@ const PaintPals = (() => {
     retrigger(s.easel, 'pp-hop');
     s.quietUntil = performance.now() + (FX[CALL[s.page.name]](.1) || 1)*1000;
     const [x, y] = rel(s.easel); confetti(x, y, 22);
-    say(`${an(nameOf(s.page.name)).replace(/^a/, 'A')}!`, 0, 'names');
+    say(ONE(s.page.name), 0, 'names');
     const other = S[1 - s.i];
     if (players === 1) later(meet, 1700);
     else if (other.shown) later(meet, 1700);
@@ -6001,12 +6153,12 @@ const PaintPals = (() => {
     active().forEach(s => { retrigger(s.easel, 'pp-dance'); const [x, y] = rel(s.easel); confetti(x, y, 30); });
     if (players === 1){
       const a = S[0].page.name;
-      say(`Beautiful! ${an(nameOf(a)).replace(/^a/, 'A')}!`, 0, 'names');
+      say('Beautiful! ' + ONE(a), 0, 'names');
       later(() => { gallery.push(a); gallery = gallery.slice(-8); renderGallery(); rounds++; party = false; newRound(); }, 2800);
       return;
     }
     const [a, b] = S.map(s => s.page.name);
-    say(`Beautiful! ${an(nameOf(a)).replace(/^a/, 'A')} and ${an(nameOf(b))}!`, 0, 'names');
+    say(TWO(a, b), 0, 'names');
     const t1 = FX[CALL[a]](.5) || 1.5, t2 = FX[CALL[b]](t1 + .15) || t1 + 1;
     later(() => {
       gallery.push(a, b); gallery = gallery.slice(-8); renderGallery();
@@ -6044,6 +6196,7 @@ const PaintPals = (() => {
   return {
     enter(){ who.show(); say('Paint Pals! One player, or two?', 0, 'menus'); },
     leave(){ $$('.pp-drop, .pp-spark', root).forEach(d => d.remove()); S.forEach(s => s.ptr.clear()); who.hide(); },
+    lines: () => ['Paint Pals! Rub your picture to paint it!', 'Paint Pals! One player, or two?', 'Beautiful!', ...PAIRS.flat().map(ONE), ...PAIRS.flatMap(([a, b]) => [TWO(a, b), TWO(b, a)])],
     state: () => ({players, painted: active().map(s => +(1 - s.left/s.page.paintable.length).toFixed(3)), done: active().map(s => s.done), names: active().map(s => s.page.name), rounds, gallery: gallery.length})
   };
 })();
@@ -6072,6 +6225,7 @@ VOICE.forEach(v => {
 function renderSettings(){
   $$('[data-voice]').forEach(b => { const on = !!settings.voice[b.dataset.voice]; b.classList.toggle('on', on); b.setAttribute('aria-checked', String(on)); });
   $$('[data-incoming]').forEach(b => b.classList.toggle('on', (b.dataset.incoming === '1') === settings.incoming));
+  $$('[data-silent]').forEach(b => b.classList.toggle('on', (b.dataset.silent === '1') === settings.silent));
   $$('[data-vol]').forEach(b => b.classList.toggle('on', +b.dataset.vol === settings.vol));
   const n = Photos.list.length; $('#photoCount').textContent = n + (n === 1 ? ' photo' : ' photos');
   $('#clearBtn').disabled = !n;
@@ -6081,12 +6235,14 @@ function openSettings(){ hush(); $('#confirmClear').hidden = true; renderSetting
 function showSound(){
   const n = $('#soundNote'); if (!n) return;
   const st = ctx ? ctx.state : '';
-  n.textContent = (st === 'running' ? 'Sound effects: on.' : st ? 'Sound effects: paused by the phone. Any tap starts them again.' : 'Sound effects: they start with the first tap.')
-    + ' If the voice talks but the animals and drums are quiet, flip the ring/silent switch to ring: iPhone keeps web page sound effects quiet in silent mode.'
+  n.textContent = (st === 'running' ? 'Sound: on.' : st ? 'Sound: paused by the phone. Any tap starts it again.' : 'Sound: it starts with the first tap.')
+    + (playback() ? ' It plays even when the phone is on silent.' : settings.silent ? ' This copy can\'t play through the silent switch: if it\'s quiet, flip the ring/silent switch to ring.'
+      : ' It follows the ring/silent switch: if it\'s quiet, flip the switch to ring.')
     + (rebuilds ? ` (Restarted ${rebuilds} time${rebuilds > 1 ? 's' : ''}.)` : '');
 }
 function closeSettings(){ $('#settings').hidden = true; }
 $$('[data-incoming]').forEach(b => tap(b, () => { settings.incoming = b.dataset.incoming === '1'; saveSettings(); renderSettings(); scheduleIncoming(); }));
+$$('[data-silent]').forEach(b => tap(b, () => { settings.silent = b.dataset.silent === '1'; saveSettings(); setSession(); renderSettings(); showSound(); FX.cheer(); }));
 $$('[data-vol]').forEach(b => tap(b, () => { settings.vol = +b.dataset.vol; saveSettings(); if (master) master.gain.value = VOLS[settings.vol]; renderSettings(); FX.cheer(); }));
 tap($('#clearBtn'), () => { if (Photos.list.length) $('#confirmClear').hidden = false; });
 tap($('#noClear'), () => { $('#confirmClear').hidden = true; });
@@ -6116,10 +6272,29 @@ try{ if ('serviceWorker' in navigator && location.protocol === 'https:' && !/cla
 buildContacts();
 loadFamily();
 loadSounds();
+loadVoiceBank();
 seedPhotos();
 window.claude?.hot?.snapshot?.(() => ({ app: current, scene: cam.scene }));
 const start = (data) => { if (data && data.scene && SCENES[data.scene]) cam.scene = data.scene; if (data && data.app && data.app !== 'home') go(data.app); };
 window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? {});
+/* Every line the toy can say, for tools/voices to record: the narrator's lines, then each animal's own phone lines */
+function voiceLines(){
+  const N = [
+    "Hi buddy! It's your phone!", ...Object.values(APP_SAY), 'Who do you want to call?', 'Press the numbers!', ...NUMWORD.map(w => w + '!'),
+    ...ANIMALS.flatMap(c => ['Calling ' + sp(c) + '!', sp(c) + ' is calling you! Ring ring!']), ...BYES,   // (a family contact with no goodbye clip gets the narrator's)
+    ...Object.values(SCENES).flatMap(sc => [sc.n + '!', ...sc.animals.flatMap(a => [anA(a.n), 'You got a picture of ' + article(a.n) + '!',
+      ...(a.hidden ? ['Can you find the hiding ' + a.n + '?', 'You found the ' + a.n + '!', 'Wow! You found the hiding ' + a.n + '!'] : [])])]),
+    'You got a picture!', ...CLICKS, ...PRETTY, 'Zoom in!', 'Zoom out!', 'Take a picture first!', 'Your pictures!', 'Look at all your pictures!',
+    'No pictures yet! Tap the camera to take some!', 'All your pictures!',
+    ...Object.values(MUSIC_SAY), ...SONGS.map(x => x.n + '!'), 'Yay! Great dancing!', 'Stop!', 'Hello! This is how loud I am.',
+    ...WildTap.lines(), ...DinoBuddies.lines(), ...SnackTime.lines(), ...PaintPals.lines()
+  ];
+  /* the narrator records whole lines and their sentences (for lines put together at play time); animals record whole lines */
+  const out = new Map(), put1 = (who, x) => out.set(who + '|' + x, {who, s:x});
+  N.forEach(t => { const ss = sentences(t); put1('n', ss.join(' ')); ss.forEach(x => put1('n', x)); });
+  ANIMALS.forEach(c => [...callLines(c), sp(c) + '!'].forEach(t => put1(c.id, sentences(t).join(' '))));
+  return [...out.values()];
+}
 /* test hook: render one sound into an offline buffer (used by the tests to check every animal call) */
 async function renderFx(name, secs=3){
   const prev = [ctx, master, noiseBuf], off = new OfflineAudioContext(1, 44100*secs, 44100);
@@ -6128,7 +6303,10 @@ async function renderFx(name, secs=3){
   const buf = await off.startRendering();
   return {len, data:Array.from(buf.getChannelData(0))};
 }
-window.__toyPhone = { go, renderFx, speakable,
+window.__toyPhone = { go, renderFx, speakable, voiceLines, lineMs,
+  voice: () => ({loaded: !!VB.map, clips: VB.map ? Object.keys(VB.map).length : 0, played: VB.played, fallbacks: VB.fallbacks.slice(), log: VB.log.slice(), last: VB.last}),
+  recorded: () => Object.keys(REC), trims: FX_TRIM,
+  voiceMissing: () => voiceLines().filter(l => !(VB.map && VB.map[l.who + '|' + l.s])).map(l => l.who + '|' + l.s),
   panorama: (k, w=1600) => Promise.resolve().then(() => { const cv = document.createElement('canvas'); cv.width = w; cv.height = Math.round(w * WH / WW); renderScene(cv.getContext('2d'), SCENES[k], 0, 0, w / WW, cv.width, cv.height, 3, true); return cv.toDataURL('image/png'); }), dino: () => ({fill:DinoBuddies.fill(), family:DinoBuddies.family()}), snack: () => SnackTime.state(), paint: () => PaintPals.state(), fx: () => Object.keys(FX), ringIn: () => maybeRing(true), sound: () => ({state: ctx ? ctx.state : 'none', rebuilds, held: held.length}),
   pauseSound: () => { if (ctx) Object.defineProperty(ctx, 'state', {configurable:true, get: () => 'interrupted'}); }, photos: () => Photos.list.length, call: () => call && call.state, contacts: () => CONTACTS.length };
 })();

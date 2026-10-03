@@ -47,6 +47,22 @@ function wavDataUri(seconds = 0.8) {
 }
 const FAMILY_PHOTO = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#8FD8F5"/><circle cx="50" cy="42" r="22" fill="#F2C9A0"/><rect x="22" y="66" width="56" height="40" rx="20" fill="#3D8FE0"/><circle cx="42" cy="40" r="3"/><circle cx="58" cy="40" r="3"/><path d="M42 50 Q50 57 58 50" stroke="#000" stroke-width="3" fill="none"/></svg>');
 
+/* Integrated loudness (LUFS, ITU-R BS.1770: K-weighting, 400 ms blocks, absolute and relative gates), for mono samples */
+function lufs(x, fs) {
+  const biquad = (b, a, s) => { const y = new Float64Array(s.length); let x1 = 0, x2 = 0, y1 = 0, y2 = 0;
+    for (let i = 0; i < s.length; i++) { const v = b[0] * s[i] + b[1] * x1 + b[2] * x2 - a[1] * y1 - a[2] * y2; x2 = x1; x1 = s[i]; y2 = y1; y1 = v; y[i] = v; } return y; };
+  let K = Math.tan(Math.PI * 1681.974450955533 / fs), Q = 0.7071752369554196, Vh = 10 ** (3.999843853973347 / 20), Vb = Vh ** 0.4996667741545416, a0 = 1 + K / Q + K * K;
+  let y = biquad([(Vh + Vb * K / Q + K * K) / a0, 2 * (K * K - Vh) / a0, (Vh - Vb * K / Q + K * K) / a0], [1, 2 * (K * K - 1) / a0, (1 - K / Q + K * K) / a0], x);
+  K = Math.tan(Math.PI * 38.13547087602444 / fs); Q = 0.5003270373238773; a0 = 1 + K / Q + K * K;
+  y = biquad([1, -2, 1], [1, 2 * (K * K - 1) / a0, (1 - K / Q + K * K) / a0], y);
+  const n = Math.round(0.4 * fs), step = Math.round(0.1 * fs), z = [];
+  for (let i = 0; i + n <= y.length; i += step) { let e = 0; for (let j = i; j < i + n; j++) e += y[j] * y[j]; z.push(e / n); }
+  const L = v => -0.691 + 10 * Math.log10(v), mean = a => a.reduce((t, v) => t + v, 0) / a.length;
+  const g1 = z.filter(v => L(v) > -70); if (!g1.length) return -Infinity;
+  const g2 = g1.filter(v => L(v) > L(mean(g1)) - 10);
+  return L(mean(g2));
+}
+
 /* record what the page plays and says */
 function instrument() {
   window.__osc = 0; window.__said = []; window.__decoded = 0;
@@ -95,7 +111,7 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   const drag = async (from, to, steps = 10) => { await touch('touchStart', [from]); for (let i = 1; i <= steps; i++) { await touch('touchMove', [[from[0] + (to[0] - from[0]) * i / steps, from[1] + (to[1] - from[1]) * i / steps]]); await sleep(16); } await touch('touchEnd', []); await sleep(150); };
   const shot = async n => page.screenshot({ path: path.join(OUT, `${name}-${n}.png`) });
   const state = () => page.evaluate(() => window.__toyPhone.call());
-  const said = () => page.evaluate(() => window.__said.slice());
+  const said = () => page.evaluate(() => window.__said.concat(window.__toyPhone.voice().log));   // the phone's speech voice and the recorded clips
   const osc = () => page.evaluate(() => window.__osc);
   const visible = sel => page.locator(sel).first().isVisible();
   const home = async () => { await tap('#homeBtn'); await sleep(2200); };
@@ -125,6 +141,10 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   const tile = await page.locator('.appicon .tile').first().boundingBox();
   check(tile.width >= 120 && tile.height >= 120, `app icons are at least 120px (${Math.round(tile.width)})`);
   check(await page.evaluate(() => !document.querySelector('a[href^="tel:"]')), 'no tel: links');
+  const vb = await page.evaluate(() => window.__toyPhone.voice());
+  check(vb.loaded && vb.clips > 500, `the recorded voice loads (${vb.clips} lines)`);
+  const missing = await page.evaluate(() => window.__toyPhone.voiceMissing());
+  check(!missing.length, `every line the toy can say has a recorded clip ${missing.length} missing ${JSON.stringify(missing.slice(0, 4))}`);
   let before = await osc();
   if (await visible('.friend')) { await tapAll('.friend'); check(await osc() > before, 'home friends make sounds'); }
   if (name === 'portrait') {
@@ -135,6 +155,16 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
       if (!(r.p > 0.1 && r.p < 0.99 && r.len > 0.2 && r.len < 2.5)) bad.push(`${n} peak ${r.p.toFixed(2)} len ${r.len}`);
     }
     check(!bad.length, `all ${calls.length} animal calls render, are audible and don't clip ${bad.join(', ')}`);
+    /* every animal call at about the same loudness (they're trimmed to ~-23 LUFS), so none is a whisper or a blast */
+    const loud = [], rec = await page.evaluate(() => window.__toyPhone.recorded());
+    for (const n of calls.filter(n => !rec.includes(n))) {   // (a dropped-in recording plays instead of the synthesized call)
+      const d = await page.evaluate(n => window.__toyPhone.renderFx(n, 3).then(r => r.data), n);
+      let end = d.length; while (end > 0 && Math.abs(d[end - 1]) < 1e-4) end--;
+      const x = Float64Array.from(d.slice(0, Math.max(end, 22050)));
+      loud.push([n, lufs(x, 44100)]);
+    }
+    const lv = loud.map(v => v[1]), spread = Math.max(...lv) - Math.min(...lv);
+    check(spread <= 3, `animal calls are within 3 dB of each other in loudness (spread ${spread.toFixed(1)} dB: ${loud.sort((a, b) => a[1] - b[1]).filter((v, i, a) => i === 0 || i === a.length - 1).map(v => v[0] + ' ' + v[1].toFixed(1)).join(', ')})`);
   }
   if (family) check(await page.evaluate(() => window.__decoded) >= 1, 'a recording listed in sounds.json is loaded');
 
@@ -152,6 +182,8 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   await sleep(3000);   // the lion roars first (up to ~2s), then says hello
   const s1 = await said();
   check(s1.includes('Calling Lion!') && s1.some(s => /It's Lion/.test(s)), 'Lion says hello');
+  const v1 = await page.evaluate(() => window.__toyPhone.voice().last);
+  check(v1 && v1.id === 'lion' && v1.phone, `Lion talks in his own recorded voice, through the phone line ${JSON.stringify(v1)}`);
   check(/^\d\d:\d\d$/.test(await page.locator('#callTime').textContent()), 'call timer runs');
   await shot('3-call');
   await fits('call');
@@ -210,6 +242,8 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   await tapAll('[data-vol]');
   await tap('[data-incoming="1"]'); await tap('[data-incoming="0"]');
   check(await page.evaluate(() => JSON.parse(localStorage.getItem('toyphone.settings')).incoming) === false, 'incoming calls setting is saved');
+  await tap('[data-silent="0"]'); check(await page.evaluate(() => JSON.parse(localStorage.getItem('toyphone.settings')).silent) === false, 'the silent-switch setting turns off');
+  await tap('[data-silent="1"]'); check(await page.evaluate(() => JSON.parse(localStorage.getItem('toyphone.settings')).silent) === true, 'and back on (the default)');
   check(await page.evaluate(() => JSON.parse(localStorage.getItem('toyphone.settings')).vol) === 3, 'volume setting is saved');
   await tap('#testSound');
   await tap('#testRing'); await sleep(1500);
@@ -396,6 +430,7 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   // --- SNACK TIME (one player): give the animal the food it is thinking of
   await tap('[data-app="games"]'); await sleep(500);
   await tap('.gamecard[aria-label="Snack Time"]'); await sleep(1500);
+  for (let i = 0; i < 20 && !(await said()).some(s => / wants /.test(s)); i++) await sleep(300);   // it waits for the intro line to finish
   let snack = await page.evaluate(() => window.__toyPhone.snack());
   check(!!snack.want && snack.choices === 2, `Snack Time: an animal walks in thinking of a food, with 2 to choose from (${snack.animal} wants ${snack.want})`);
   check((await said()).some(s => / wants /.test(s)), 'Snack Time says what the animal wants (Animal names is on)');
@@ -507,6 +542,8 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   check(!broken, `every pixel sprite on the page has loaded (${broken} not)`);
   const garbled = (await said()).filter(t => /\b[A-Z]{2,}\b/.test(t) || /([a-z])\1\1/i.test(t));
   check(!garbled.length, `spoken lines have no ALL-CAPS or stretched words (the voice would spell them out) ${JSON.stringify(garbled.slice(0, 3))}`);
+  const fb = (await page.evaluate(() => window.__toyPhone.voice())).fallbacks.filter(t => !/Daddy/.test(t));
+  check(!fb.length, `every line said during the run was a recorded clip (only family names use the phone's voice) ${JSON.stringify(fb.slice(0, 4))}`);
   const real = errors.filter(e => family || !/404|Failed to load resource/.test(e));
   check(!real.length, `no console errors ${real.length ? JSON.stringify(real.slice(0, 5)) : ''}`);
   await context.close();
@@ -524,6 +561,10 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
     return [...(r.some(x => x.length !== r[0].length) ? [`${n}: uneven rows`] : []), ...[...new Set(r.join(''))].filter(c => c !== '.' && !keys.has(c)).map(c => `${n}: no color for ${c}`)];
   });
   const count = (pix.match(/^\w+:\{pal:/gm) || []).length;
+  const vj = JSON.parse(fs.readFileSync(path.join(ROOT, 'assets', 'voice', 'voice.json'), 'utf8'));
+  const vbad = Object.entries(vj.clips).filter(([k, [f, ms]]) => { const fp = path.join(ROOT, 'assets', 'voice', f); return !fs.existsSync(fp) || fs.statSync(fp).size < 900 || ms < 200 || ms > 15000; });
+  const vfiles = fs.readdirSync(path.join(ROOT, 'assets', 'voice')).filter(f => f.endsWith('.mp3'));
+  check(!vbad.length && vfiles.length === new Set(Object.values(vj.clips).map(v => v[0])).size, `all ${vfiles.length} voice clips are on disk, sized and timed sensibly, with none left over ${JSON.stringify(vbad.slice(0, 3))}`);
   check(count > 80 && !bad.length, `all ${count} pixel sprites are well formed ${bad.slice(0, 5).join(', ')}`);
   const srv = await serve();
   const base = `http://127.0.0.1:${srv.address().port}`;

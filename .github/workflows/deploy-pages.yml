@@ -37,6 +37,8 @@ jobs:
           # Real animal recordings, if you commit any. assets/family (voices and photos) is left out on purpose:
           # this site is public, so family contacts only work on a private server (see assets/family/README.md).
           cp -R assets/sounds _site/assets/sounds
+          # The recorded voice: every line the toy says (tools/voices makes these)
+          cp -R assets/voice _site/assets/voice
           ls -R _site
 
       - uses: actions/configure-pages@v5
