@@ -58,7 +58,7 @@ img[src^="data:image/png"]{image-rendering:-webkit-optimize-contrast; image-rend
 .art{line-height:1}
 .art > .px{width:1.15em; height:1.15em}
 /* frames: notched pixel corners, a light rim, a darker lip and a drop shadow, stretched to fit (border-image) */
-.tab,.contact,.dial,.key,.callbtn,.thumb,.pic,.song,.wt-tile,.wt-back,.wt-pad,.wt-choice,.wt-stickers,.wt-newegg,.st-food,.pp-easel,.sheet,.sbtn,.vopt,.confirm,.bar,.pad,.pkey,.vstage img,.pkey.blk::after{
+.tab,.contact,.dial,.key,.callbtn,.thumb,.pic,.song,.wt-tile,.wt-back,.wt-pad,.wt-choice,.wt-stickers,.wt-newegg,.st-food,.pp-easel,.who-btn,.sheet,.sbtn,.vopt,.confirm,.bar,.pad,.pkey,.vstage img,.pkey.blk::after{
   border-style:solid; border-color:transparent; border-width:9px 9px 15px; border-image:var(--fr, var(--f-paper)) 9 9 15 fill / 9px 9px 15px stretch;
   border-radius:0!important; box-shadow:none!important; background:none!important}
 .word,.wt-word,.nm,.gname,.gplay,.calltime,#zoomTxt{border-style:solid; border-color:transparent; border-width:6px 6px 9px; border-image:var(--tg, var(--t-paper)) 6 6 9 fill / 6px 6px 9px stretch; border-radius:0!important; box-shadow:none!important; background:none!important}
@@ -329,7 +329,9 @@ img[src^="data:image/jpeg"],.face img{image-rendering:auto}
 .gamecard .gname{padding:0 6px; font-size:21px; white-space:nowrap}
 .gplay{display:flex; align-items:center; gap:1px; padding:0 6px 0 2px; font-size:14px; white-space:nowrap; color:#5A4A3E}
 .gplay .px{width:24px; height:32px}
-.gplay span{margin-left:4px}
+.gplay > span{margin-left:4px}
+.gplay .both{display:flex; flex-direction:column; line-height:1.1}   /* "1 or 2" over "players", so it fits beside two kids */
+.gplay b,.who-lbl b{font-family:var(--digits); font-weight:400; font-size:.78em}   /* the 8-bit digits: Pixelify's 2 reads like an 8 */
 .gamecard .gart{flex:1; min-width:0; display:flex; justify-content:center; align-items:flex-end; gap:4px; pointer-events:none}
 .gamecard .art{font-size:calc(var(--a) * .7)} .gamecard .art.big{font-size:var(--a)} .gamecard .art.mid{font-size:calc(var(--a) * .85)} .gamecard .art.sm{font-size:calc(var(--a) * .55)}
 .gamecard .flip{transform:scaleX(-1)}
@@ -426,6 +428,7 @@ img[src^="data:image/jpeg"],.face img{image-rendering:auto}
 .db-b{background:var(--db-lagoon)}
 .db-dino{font-size:clamp(84px,22vmin,180px); line-height:1; pointer-events:none; transform-origin:50% 90%; display:grid; place-items:center}
 .db-dino .px{width:1.15em; height:1.15em; display:block}
+.solo .db-dino{font-size:clamp(110px,40vmin,230px)}   /* one player has the whole screen: a bigger dino */
 .db-b .db-dino{transform:scaleX(-1)}
 .db-dino.db-hop{animation:db-hop .38s cubic-bezier(.3,1.6,.5,1)}
 .db-b .db-dino.db-hop{animation:db-hopb .38s cubic-bezier(.3,1.6,.5,1)}
@@ -518,6 +521,22 @@ img[src^="data:image/jpeg"],.face img{image-rendering:auto}
 .pp-drop{position:absolute; left:0; top:0; width:20px; height:20px; pointer-events:none; z-index:6; will-change:transform; box-shadow:0 0 0 3px #3B2B20}
 .pp-spark{position:absolute; left:0; top:0; margin:-13px 0 0 -13px; font-size:22px; line-height:1; pointer-events:none; z-index:6; animation:pp-spark .6s steps(6) forwards}
 @keyframes pp-spark{from{transform:translateY(0) scale(1); opacity:1}to{transform:translateY(-40px) scale(.4); opacity:0}}
+
+/* ---------- One player or two? Dino Buddies and Paint Pals ask first: one kid or two kids, the last choice glows ---------- */
+.who{position:absolute; inset:0; z-index:10; display:flex; flex-direction:column; gap:12px; padding:12px 16px 16px; background:#FFF1DC}
+.who-title{flex:none; margin:0; font-size:clamp(28px,8vw,42px); font-weight:700; line-height:1; color:#fff; text-shadow:3px 0 0 var(--ink),-3px 0 0 var(--ink),0 3px 0 var(--ink),0 -3px 0 var(--ink),0 6px 0 var(--ink); letter-spacing:1px}
+.who-btns{flex:1; min-height:0; display:grid; grid-template-rows:1fr 1fr; gap:16px}
+@media (orientation:landscape){ .who-btns{grid-template-rows:none; grid-template-columns:1fr 1fr} }
+.who-btn{display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; min-height:0; --fr:var(--f-cream)}
+.who-btn.last{--fr:var(--f-lit)}
+.who-kids{display:flex; gap:14px; pointer-events:none}
+.who-kids .px{width:96px; height:128px}   /* 8 screen pixels per sprite pixel */
+@media (orientation:portrait) and (max-height:740px){ .who-kids .px{width:72px; height:96px} }
+.who-lbl{font-size:24px; pointer-events:none}
+/* one player: the one side fills the screen, next to the nest or the shelf */
+.app.db.solo, .app.pp.solo{grid-template-rows:minmax(0,1fr) auto}
+@media (orientation:landscape){ .app.db.solo, .app.pp.solo{grid-template-rows:none; grid-template-columns:minmax(0,1fr) auto} }
+.solo .db-b, .solo .pp-b{display:none}
 
 /* ---------- Parent settings ---------- */
 #settings{position:absolute; inset:0; z-index:50; display:grid; place-items:center; padding:12px; background:rgba(59,43,32,.5)}
@@ -3958,7 +3977,8 @@ const BGS = [
   ['#wt-menu', BG.wtMenu], ['#wt-world', BG.wtWorld], ['#wt-find', BG.grad(['#FFDCE3', '#FFC7D2', '#FFB3C2'])], ['#wt-egg', BG.wtEgg], ['#wt-bubbles', BG.bubbles],
   ['.db-a', BG.dbSide('#A6E39A', '#6CC46A', '#3E9447')], ['.db-b', BG.dbSide('#A9DDF7', '#5BB8E8', '#2F86C4')], ['.db-mid', BG.sand],
   ['#stScene', BG.snack], ['.st-foods', BG.picnic],
-  ['.pp-a', BG.ppSide('#FFE4CC', '#FFC99E', ['#FF9F43', '#E8506E', '#FFC83D'], 3)], ['.pp-b', BG.ppSide('#E6DFFC', '#C9BCF5', ['#8A6FD1', '#3D8FE0', '#5CC9B5'], 9)], ['.pp-mid', BG.wood]
+  ['.pp-a', BG.ppSide('#FFE4CC', '#FFC99E', ['#FF9F43', '#E8506E', '#FFC83D'], 3)], ['.pp-b', BG.ppSide('#E6DFFC', '#C9BCF5', ['#8A6FD1', '#3D8FE0', '#5CC9B5'], 9)], ['.pp-mid', BG.wood],
+  ['#dinobuddies .who', BG.split], ['#paintpals .who', BG.paint]
 ];
 const bgKey = new WeakMap();
 function paintBG(el, fn, force){
@@ -5418,17 +5438,17 @@ tap(dancer, () => { const s = songPick; FX[s.fx] && FX[s.fx](); retrigger(dancer
 
 /* ======================= GAMES ======================= */
 /* The picker. To add a game later: add its <section class="app"> above, a card here, and enter/leave hooks in enterApp/leaveApp.
-   p: how many players it is made for; the card says so, with a little kid for each. */
+   p: how many players it can be; the card says so, with a little kid for each. A game for 1 or 2 asks when it opens. */
 const GAMES = [
-  {id:'wildtap', n:'Wild Tap', p:1, cls:'g-wild', art:`<span class="art">${ART.elephant}</span><span class="art big">${ART.lion}</span><span class="art">${ART.giraffe}</span>`},
-  {id:'snacktime', n:'Snack Time', p:1, cls:'g-feed', art:`<span class="art">${ART.banana}</span><span class="art big">${ART.monkey}</span><span class="art">${ART.watermelon}</span>`},
-  {id:'dinobuddies', n:'Dino Buddies', p:2, cls:'g-dino', art:`<span class="art mid">${ART.trex}</span><span class="art sm">${ART.egg}</span><span class="art mid flip">${ART.trex}</span>`},
-  {id:'paintpals', n:'Paint Pals', p:2, cls:'g-paint', art:`<span class="art mid flip">${ppHalf('giraffe')}</span><span class="art sm">${ART.brush}</span><span class="art mid">${ppHalf('lion')}</span>`}
+  {id:'wildtap', n:'Wild Tap', p:[1], cls:'g-wild', art:`<span class="art">${ART.elephant}</span><span class="art big">${ART.lion}</span><span class="art">${ART.giraffe}</span>`},
+  {id:'snacktime', n:'Snack Time', p:[1], cls:'g-feed', art:`<span class="art">${ART.banana}</span><span class="art big">${ART.monkey}</span><span class="art">${ART.watermelon}</span>`},
+  {id:'dinobuddies', n:'Dino Buddies', p:[1,2], cls:'g-dino', art:`<span class="art mid">${ART.trex}</span><span class="art sm">${ART.egg}</span><span class="art mid flip">${ART.trex}</span>`},
+  {id:'paintpals', n:'Paint Pals', p:[1,2], cls:'g-paint', art:`<span class="art mid flip">${ppHalf('giraffe')}</span><span class="art sm">${ART.brush}</span><span class="art mid">${ppHalf('lion')}</span>`}
 ];
 GAMES.forEach(g => {
   const b = document.createElement('button'); b.className = 'gamecard ' + g.cls; b.setAttribute('aria-label', g.n);
-  const who = g.p > 1 ? '2 players' : '1 player';
-  b.innerHTML = `<span class="gtext"><span class="gname">${g.n}</span><span class="gplay" data-players="${g.p}">${ART.kidA}${g.p > 1 ? ART.kidB : ''}<span>${who}</span></span></span><span class="gart">${g.art}</span>`;
+  const two = g.p.includes(2), who = g.p.length > 1 ? '<span class="both"><span><b>1</b> or <b>2</b></span> <span>players</span></span>' : two ? '<span><b>2</b> players</span>' : '<span><b>1</b> player</span>';
+  b.innerHTML = `<span class="gtext"><span class="gname">${g.n}</span><span class="gplay" data-players="${g.p.join(' ')}">${ART.kidA}${two ? ART.kidB : ''}${who}</span></span><span class="gart">${g.art}</span>`;
   tap(b, () => { FX.pop(); retrigger(b, 'go'); go(g.id, b); }, {bump:false});
   $('#gameList').appendChild(b);
 });
@@ -5607,15 +5627,34 @@ const WildTap = (() => {
 })();
 
 /* ---------- Dino Buddies: two kids, one half each; every tap flies a treat into the shared egg ---------- */
+/* One player or two? The split-screen games ask first with two big buttons: one kid, or two kids. The last choice glows. */
+function whoPicker(root, title, key, onPick){
+  const el = document.createElement('div'); el.className = 'who'; el.hidden = true;
+  el.innerHTML = `<h1 class="who-title"></h1><div class="who-btns">${[1, 2].map(n =>
+    `<button class="who-btn" data-n="${n}" aria-label="${n} player${n > 1 ? 's' : ''}"><span class="who-kids">${ART.kidA}${n > 1 ? ART.kidB : ''}</span><span class="who-lbl"><b>${n}</b> player${n > 1 ? 's' : ''}</span></button>`).join('')}</div>`;
+  el.querySelector('.who-title').textContent = title;
+  root.appendChild(el);
+  $$('.who-btn', el).forEach(b => tap(b, () => {
+    const n = +b.dataset.n, all = store.get('players', {}) || {};
+    all[key] = n; store.set('players', all);
+    FX.pop(); el.hidden = true; onPick(n);
+  }, {bump:false}));
+  return {
+    last: () => (store.get('players', {}) || {})[key] || 2,
+    show(){ const last = this.last(); $$('.who-btn', el).forEach(b => b.classList.toggle('last', +b.dataset.n === last)); el.hidden = false; },
+    hide(){ el.hidden = true; }
+  };
+}
+
 const DinoBuddies = (() => {
   const DINOS = [{n:'T rex', a:ART.trex}, {n:'long neck', a:ART.longneck}, {n:'Triceratops', a:ART.trike}, {n:'Stegosaurus', a:ART.stego}, {n:'Pterodactyl', a:ART.ptero}];
   const TREATS = [ART.star,ART.starBright,ART.heartYellow,ART.heartGreen,ART.strawberry,ART.blueberry,ART.leaf,ART.flower,ART.watermelon,ART.banana];
   const EGGS = [['#FFF6E0','#FFC83D'],['#EAF7DF','#7CC96B'],['#E3F1FF','#5BB8E8'],['#FFE6EC','#F27A93'],['#F0E8FF','#9C82DD']];
-  const GOAL = 24;
+  const goal = () => solo ? 16 : 24;   // treats to hatch an egg: fewer when one kid does all the tapping
   const root = $('#dinobuddies'), eggEl = $('#dbEgg'), babyEl = $('#dbBaby'), famEl = $('#dbFamily');
   const sides = $$('.db-side', root), dinoEls = sides.map(s => s.querySelector('.db-dino'));
   const saved = store.get('dinobuddies', {}) || {};   // the hatched family is remembered between visits
-  let fill = 0, hatching = false, buddy = DINOS[clamp(saved.buddy | 0, 0, DINOS.length - 1)];
+  let solo = false, fill = 0, hatching = false, buddy = DINOS[clamp(saved.buddy | 0, 0, DINOS.length - 1)];
   let family = Array.isArray(saved.family) ? saved.family.filter(i => DINOS[i]).slice(0, 8) : [];
   const lastTap = [0, 0];
   /* each side plays its own instrument on the same pentatonic scale, so two kids mashing at once still sounds like music */
@@ -5633,7 +5672,7 @@ const DinoBuddies = (() => {
   let shell = '#FFF6E0', yolk = '#FFC83D';
   function newEgg(){ [shell, yolk] = rnd(EGGS); fill = 0; drawEgg(); eggEl.classList.remove('db-gone'); }
   function drawEgg(){
-    const p = Math.min(1, fill / GOAL);
+    const p = Math.min(1, fill / goal());
     eggEl.style.backgroundImage = dbEggURL(shell, yolk, lit(yolk, .45), p);   // the bottom ~27% of the egg sits behind the nest
   }
   function renderFamily(){ famEl.innerHTML = ''; family.forEach(i => { const s = document.createElement('span'); put(s, DINOS[i].a); famEl.appendChild(s); }); }
@@ -5667,8 +5706,8 @@ const DinoBuddies = (() => {
   function land(){
     if (hatching || current !== 'dinobuddies') return;
     fill++; drawEgg(); tink(); retrigger(eggEl, 'db-wig');
-    if (fill === Math.round(GOAL/2)) crack();
-    if (fill >= GOAL) hatch();
+    if (fill === Math.round(goal()/2)) crack();
+    if (fill >= goal()) hatch();
   }
   function hatch(){
     hatching = true; crack(); cheer();
@@ -5676,9 +5715,9 @@ const DinoBuddies = (() => {
     eggEl.classList.add('db-gone');
     put(babyEl, d.a); retrigger(babyEl, 'db-show');
     const [x, y] = rel(eggEl); confetti(x, y, 36);
-    sides.forEach(sd => { const [cx, cy] = rel(sd); confetti(cx, cy, 18); });
+    sides.forEach(sd => { if (!sd.offsetWidth) return; const [cx, cy] = rel(sd); confetti(cx, cy, 18); });
     dinoEls.forEach(el => retrigger(el, 'db-dance'));
-    say(rnd(['Hooray! Teamwork!','You did it together!','Yay, buddies!']) + ' A baby ' + d.n + '!', 0, 'names');
+    say(rnd(solo ? ['Hooray!','You did it!','Yay!'] : ['Hooray! Teamwork!','You did it together!','Yay, buddies!']) + ' A baby ' + d.n + '!', 0, 'names');
     setTimeout(() => {
       family.push(i); if (family.length > 8) family = [i];
       renderFamily(); setBuddy(d); store.set('dinobuddies', {family, buddy:i});
@@ -5686,11 +5725,15 @@ const DinoBuddies = (() => {
       newEgg(); hatching = false;
     }, 2700);
   }
+  const who = whoPicker(root, 'Dino Buddies', 'dinobuddies', n => {
+    solo = n === 1; root.classList.toggle('solo', solo); drawEgg();
+    say('Dino Buddies! Tap tap tap! Help the egg hatch!', 0, 'menus');
+  });
   setBuddy(buddy); newEgg(); renderFamily();
   return {
-    enter(){ say('Dino Buddies! Tap tap tap! Help the egg hatch!', 0, 'menus'); },
-    leave(){ $$('.db-treat', root).forEach(t => t.remove()); },
-    fill: () => fill, family: () => family.length
+    enter(){ who.show(); say('Dino Buddies! One player, or two?', 0, 'menus'); },
+    leave(){ $$('.db-treat', root).forEach(t => t.remove()); who.hide(); },
+    fill: () => fill, family: () => family.length, players: () => solo ? 1 : 2
   };
 })();
 
@@ -5836,7 +5879,7 @@ const PaintPals = (() => {
   const root = $('#paintpals'), galEl = $('#ppGallery');
   const saved = store.get('paintpals', {}) || {};
   let gallery = Array.isArray(saved.gallery) ? saved.gallery.filter(n => PIX[n]).slice(-8) : [];
-  let pairNo = saved.next | 0, rounds = 0, party = false;
+  let pairNo = saved.next | 0, soloNo = saved.solo | 0, rounds = 0, party = false, players = 2, loaded = 0;
   const S = $$('.pp-side', root).map((el, i) => ({el, i, cv:el.querySelector('canvas'), easel:el.querySelector('.pp-easel'), hand:el.querySelector('.pp-hand'),
     page:null, mask:null, left:0, done:false, shown:false, flip:false, ptr:new Map(), step:i ? 6 : 2, lastNote:0, lastSpark:0, lastDrop:0, quietUntil:0}));
   const nameOf = n => NAME[n] || n;
@@ -5864,12 +5907,18 @@ const PaintPals = (() => {
     s.el.setAttribute('aria-label', nameOf(name));
     draw(s); size(s);
   }
+  /* two players get a pair; one player paints the same animals one at a time, on one big page */
   function newRound(){
-    const pair = PAIRS[pairNo % PAIRS.length]; pairNo++;
-    const [a, b] = Math.random() < .5 ? pair : [pair[1], pair[0]];
-    load(S[0], a); load(S[1], b);
-    store.set('paintpals', {gallery, next:pairNo});
+    loaded = players;
+    if (players === 1){ load(S[0], PAIRS.flat()[soloNo % (PAIRS.length*2)]); soloNo++; }
+    else {
+      const pair = PAIRS[pairNo % PAIRS.length]; pairNo++;
+      const [a, b] = Math.random() < .5 ? pair : [pair[1], pair[0]];
+      load(S[0], a); load(S[1], b);
+    }
+    store.set('paintpals', {gallery, next:pairNo, solo:soloNo});
   }
+  const active = () => players === 1 ? [S[0]] : S;
   function renderGallery(){ galEl.innerHTML = ''; gallery.forEach(n => { const sp = document.createElement('span'); put(sp, ART[n]); galEl.appendChild(sp); }); }
   /* where a finger is, in picture pixels (mirrored when the picture is) */
   function at(s, e){
@@ -5941,14 +5990,21 @@ const PaintPals = (() => {
     const [x, y] = rel(s.easel); confetti(x, y, 22);
     say(`${an(nameOf(s.page.name)).replace(/^a/, 'A')}!`, 0, 'names');
     const other = S[1 - s.i];
-    if (other.shown) later(meet, 1700);
+    if (players === 1) later(meet, 1700);
+    else if (other.shown) later(meet, 1700);
     else later(() => { if (!other.done && !other.ptr.size) other.hand.hidden = false; }, 4000);   // nudge the other side
   }
-  /* both done: the two animals dance and call to each other, then go up on the shelf */
+  /* both done: the two animals dance and call to each other, then go up on the shelf (one player: the one animal dances) */
   function meet(){
     if (party) return;
     party = true; FX.cheer();
-    S.forEach(s => { retrigger(s.easel, 'pp-dance'); const [x, y] = rel(s.easel); confetti(x, y, 30); });
+    active().forEach(s => { retrigger(s.easel, 'pp-dance'); const [x, y] = rel(s.easel); confetti(x, y, 30); });
+    if (players === 1){
+      const a = S[0].page.name;
+      say(`Beautiful! ${an(nameOf(a)).replace(/^a/, 'A')}!`, 0, 'names');
+      later(() => { gallery.push(a); gallery = gallery.slice(-8); renderGallery(); rounds++; party = false; newRound(); }, 2800);
+      return;
+    }
     const [a, b] = S.map(s => s.page.name);
     say(`Beautiful! ${an(nameOf(a)).replace(/^a/, 'A')} and ${an(nameOf(b))}!`, 0, 'names');
     const t1 = FX[CALL[a]](.5) || 1.5, t2 = FX[CALL[b]](t1 + .15) || t1 + 1;
@@ -5976,15 +6032,19 @@ const PaintPals = (() => {
     ['pointerup', 'pointercancel'].forEach(t => s.el.addEventListener(t, e => s.ptr.delete(e.pointerId)));
   });
   if (typeof ResizeObserver === 'function') S.forEach(s => new ResizeObserver(() => size(s)).observe(s.el));
+  const who = whoPicker(root, 'Paint Pals', 'paintpals', n => {
+    players = n; root.classList.toggle('solo', n === 1);
+    say('Paint Pals! Rub your picture to paint it!', 0, 'menus');
+    /* a different number of players, or left during a celebration: new pictures. Otherwise carry on where they were */
+    if (loaded !== n || party || active().every(s => s.shown)){ party = false; newRound(); }
+    S.forEach(size);
+  });
+  players = who.last(); root.classList.toggle('solo', players === 1);
   newRound(); renderGallery();
   return {
-    enter(){
-      say('Paint Pals! Rub your picture to paint it!', 0, 'menus');
-      if (party || S.every(s => s.shown)){ party = false; newRound(); }   // left during a celebration: start the next pair
-      S.forEach(size);
-    },
-    leave(){ $$('.pp-drop, .pp-spark', root).forEach(d => d.remove()); S.forEach(s => s.ptr.clear()); },
-    state: () => ({painted: S.map(s => +(1 - s.left/s.page.paintable.length).toFixed(3)), done: S.map(s => s.done), names: S.map(s => s.page.name), rounds, gallery: gallery.length})
+    enter(){ who.show(); say('Paint Pals! One player, or two?', 0, 'menus'); },
+    leave(){ $$('.pp-drop, .pp-spark', root).forEach(d => d.remove()); S.forEach(s => s.ptr.clear()); who.hide(); },
+    state: () => ({players, painted: active().map(s => +(1 - s.left/s.page.paintable.length).toFixed(3)), done: active().map(s => s.done), names: active().map(s => s.page.name), rounds, gallery: gallery.length})
   };
 })();
 

@@ -322,7 +322,7 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   check((await said()).some(s => /Pick a game/.test(s)), 'games speaks its prompt');
   check(await page.locator('.gamecard').count() === 4, 'games list shows all four games');
   const notes = await page.$$eval('.gamecard', cs => cs.map(c => c.getAttribute('aria-label') + ': ' + c.querySelector('.gplay').textContent.trim()));
-  check(JSON.stringify(notes) === JSON.stringify(['Wild Tap: 1 player', 'Snack Time: 1 player', 'Dino Buddies: 2 players', 'Paint Pals: 2 players']), `each game card says how many players ${JSON.stringify(notes)}`);
+  check(JSON.stringify(notes) === JSON.stringify(['Wild Tap: 1 player', 'Snack Time: 1 player', 'Dino Buddies: 1 or 2 players', 'Paint Pals: 1 or 2 players']), `each game card says how many players ${JSON.stringify(notes)}`);
   await shot('16-games');
   await fits('games');
   await tap('.gamecard[aria-label="Wild Tap"]'); await sleep(600);
@@ -362,7 +362,11 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   check(await page.locator('.wt-bub').count() === 0, 'leaving Wild Tap stops the bubbles');
   await tap('[data-app="games"]'); await sleep(500);
   await tap('.gamecard[aria-label="Dino Buddies"]'); await sleep(600);
-  check(await visible('.db-a'), 'Dino Buddies opens');
+  check(await visible('#dinobuddies .who'), 'Dino Buddies asks: one player or two?');
+  await shot('22a-dinobuddies-who');
+  await fits('dino buddies: one player or two');
+  await tap('#dinobuddies .who-btn[data-n="2"]'); await sleep(300);
+  check(await visible('.db-a') && await visible('.db-b'), 'Dino Buddies opens with a side for each player');
   const da = await page.locator('.db-a').boundingBox(), db = await page.locator('.db-b').boundingBox();
   const inside = r => [r.x + r.width * (0.25 + 0.5 * Math.random()), r.y + r.height * (0.25 + 0.5 * Math.random())];
   for (let i = 0; i < 13; i++) { await touch('touchStart', [inside(da), inside(db)]); await sleep(30); await touch('touchEnd', []); await sleep(150); }
@@ -373,6 +377,20 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   check((await page.evaluate(() => window.__toyPhone.dino())).family >= 1, 'Dino Buddies: both kids tapping at once hatch the shared egg');
   check((await said()).some(s => /A baby/.test(s)), 'Dino Buddies says which baby hatched');
   check(!!(await page.evaluate(() => localStorage.getItem('toyphone.dinobuddies'))), 'the hatched family is remembered');
+  await home();
+  // one player: one dino and the nest, and a smaller egg
+  await tap('[data-app="games"]'); await sleep(500);
+  await tap('.gamecard[aria-label="Dino Buddies"]'); await sleep(600);
+  check(await page.locator('#dinobuddies .who-btn.last[data-n="2"]').count() === 1, 'Dino Buddies remembers the last choice (2 players glows)');
+  await tap('#dinobuddies .who-btn[data-n="1"]'); await sleep(300);
+  check(await visible('.db-a') && !(await visible('.db-b')), 'Dino Buddies, 1 player: one side fills the screen');
+  const famBefore = (await page.evaluate(() => window.__toyPhone.dino())).family;
+  for (let i = 0; i < 18; i++) { await tap('.db-a'); await sleep(40); }
+  await sleep(900);
+  await shot('22b-dinobuddies-solo');
+  await fits('dino buddies, 1 player');
+  await sleep(3200);
+  check((await page.evaluate(() => window.__toyPhone.dino())).family > famBefore, 'Dino Buddies, 1 player: one kid tapping alone hatches the egg');
   await home();
 
   // --- SNACK TIME (one player): give the animal the food it is thinking of
@@ -402,7 +420,9 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   // --- PAINT PALS (two players): both kids rub their own picture at the same time
   await tap('[data-app="games"]'); await sleep(500);
   await tap('.gamecard[aria-label="Paint Pals"]'); await sleep(700);
-  check(await visible('.pp-a') && await visible('.pp-b'), 'Paint Pals opens with a picture for each player');
+  check(await visible('#paintpals .who'), 'Paint Pals asks: one player or two?');
+  await tap('#paintpals .who-btn[data-n="2"]'); await sleep(400);
+  check(await visible('.pp-a') && await visible('.pp-b'), 'Paint Pals, 2 players: a picture for each player');
   const pc = await page.$$eval('.pp-cv', cs => cs.map(c => { const r = c.getBoundingClientRect(); return [r.x, r.y, r.width, r.height]; }));
   check(pc.every(b => b[2] >= 120 && b[2] % 32 === 0), `Paint Pals: each picture is big and pixel-sharp (${pc.map(b => b[2]).join(', ')}px)`);
   const corners = await page.$$eval('.pp-side', ss => ss.map(s => { const r = s.getBoundingClientRect(); return [r.x + 6, r.y + 6]; }));
@@ -430,6 +450,28 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   check(pp.rounds === 1 && pp.gallery >= 2 && !pp.done.some(Boolean), `Paint Pals: when both are done, the pair goes up on the shelf and a new pair arrives ${JSON.stringify(pp)}`);
   check((await said()).some(s => /^Beautiful!/.test(s)), 'Paint Pals names the finished pair');
   check(!!(await page.evaluate(() => localStorage.getItem('toyphone.paintpals'))), 'the painting shelf is remembered');
+  await home();
+  // one player: one big picture, then the next animal
+  await tap('[data-app="games"]'); await sleep(500);
+  await tap('.gamecard[aria-label="Paint Pals"]'); await sleep(700);
+  await tap('#paintpals .who-btn[data-n="1"]'); await sleep(500);
+  check(await visible('.pp-a') && !(await visible('.pp-b')), 'Paint Pals, 1 player: one picture fills the screen');
+  const solo = await page.$eval('.pp-a .pp-cv', c => { const r = c.getBoundingClientRect(); return [r.x, r.y, r.width, r.height]; });
+  check(solo[2] >= pc[0][2] && solo[2] % 32 === 0, `Paint Pals, 1 player: the picture is at least as big (${solo[2]}px)`);
+  for (let r = 0; r < 9; r++) {
+    const fy = (r + .5) / 9, pt = t => [solo[0] + solo[2] * t, solo[1] + solo[3] * fy];
+    await touch('touchStart', [pt(.02)]);
+    for (let i = 1; i <= 14; i++) { await touch('touchMove', [pt(.02 + .96 * i / 14)]); await sleep(12); }
+    await touch('touchEnd', []); await sleep(40);
+  }
+  await sleep(900);
+  await shot('27-paintpals-solo');
+  await fits('paint pals, 1 player');
+  pp = await page.evaluate(() => window.__toyPhone.paint());
+  check(pp.players === 1 && pp.done[0], 'Paint Pals, 1 player: rubbing alone finishes the picture');
+  await sleep(5000);
+  pp = await page.evaluate(() => window.__toyPhone.paint());
+  check(pp.rounds === 2 && pp.gallery >= 3 && !pp.done[0], `Paint Pals, 1 player: the animal goes up on the shelf and the next one arrives ${JSON.stringify(pp)}`);
   await home();
 
   // --- clearing photos (parent) leaves a friendly empty album

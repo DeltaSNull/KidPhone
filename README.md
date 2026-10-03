@@ -15,7 +15,8 @@ Guided Access. It's one self-contained `index.html` (vanilla JS, no build step),
 - **Music**: a pentatonic xylophone, drum pads, an animal piano (every key is an animal sound in tune), and
   4 songs with a dancing animal: Twinkle Twinkle, Old MacDonald, The Wheels on the Bus, If You're Happy and You Know It.
 - **Games**: a controller icon that opens a game picker. Each card says who it's for: "1 player" with one little kid, or
-  "2 players" with two.
+  "1 or 2 players" with two (numbers are in the 8-bit digit font, so a 2 never reads as an 8). A game for 1 or 2 asks
+  first, with two big buttons: one kid, or two kids. The last choice glows.
   - *Wild Tap Safari* (1 player): Safari, Zoo and Dino sound boards, Find It, egg hatching and bubble popping.
     Its grid button goes back to the Wild Tap menu.
   - *Snack Time* (1 player): a hungry animal walks in, thinking of a food in a thought bubble. Tap that food on the picnic
@@ -25,14 +26,16 @@ Guided Access. It's one self-contained `index.html` (vanilla JS, no build step),
     shows the food, so the game works with the voice off (with Animal names on, it also says "The panda wants some bamboo!").
     Eleven animals: monkey and banana, penguin and fish, puppy and bone, panda and bamboo, giraffe and leaf, chick and corn,
     turtle and strawberry, parrot and blueberry, frog and fly, hippo and watermelon, cow and flower.
-  - *Dino Buddies* (2 players): the split-screen game for both boys. Every tap on either half flies a treat into one
-    shared egg. The hatched family is remembered between visits.
-  - *Paint Pals* (2 players): split screen again, with a coloring page of an animal on each half. Rubbing a finger over it
+  - *Dino Buddies* (1 or 2 players): the split-screen game for both boys. Every tap on either half flies a treat into one
+    shared egg. With 1 player, one big dino fills the screen and the egg needs fewer treats (16 instead of 24).
+    The hatched family is remembered between visits.
+  - *Paint Pals* (1 or 2 players): split screen again, with a coloring page of an animal on each half. Rubbing a finger over it
     paints it in its real colors, each half with its own notes on one shared scale, so two kids painting at once still
     sounds like music. Tapping beside the picture flings a blob of paint onto it, so the little one can tap instead of
     rub. When a picture is nearly painted it finishes itself and the animal calls out. When both are done, the two
     animals dance and call to each other, go up on the shelf in the middle (remembered between visits), and a new pair
     arrives: lion and giraffe, puppy and kitty, monkey and parrot, cow and chick, T. rex and long neck, and seven more.
+    With 1 player, one big coloring page fills the screen and the same animals come one at a time.
 
 ## Animal voices
 
@@ -191,7 +194,8 @@ npm run artifact   # writes dist/artifact.html
 
 The test taps every button on every screen, places and hangs up calls, takes photos, plays every instrument and a song,
 plays every Wild Tap screen, hatches a Dino Buddies egg with two fingers at once, feeds Snack Time animals (wrong food
-first), paints both Paint Pals pictures with two fingers at once until the pair goes up on the shelf, opens parent settings
+first), paints both Paint Pals pictures with two fingers at once until the pair goes up on the shelf, plays Dino Buddies
+and Paint Pals again as 1 player, opens parent settings
 with a 3-second hold, mashes 250 random touches (some two-handed), then checks the home button still gets home. It also
 renders all 24 animal calls offline to check each is audible, under 2.5 seconds and not clipping, and it fails on any
 console error. Screenshots go to `tests/screenshots/`.
