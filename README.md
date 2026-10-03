@@ -12,8 +12,11 @@ Guided Access. It's one self-contained `index.html` (vanilla JS, no build step),
 - **Camera**: a pretend safari camera. Drag to look around a pixel-art panorama (savanna, jungle, dino valley) about
   3 screens wide. The shutter flashes, clicks and saves a small pixel-art PNG, and (if a parent turns it on) the voice says what's in the shot.
   Each scene has two hidden animals to find. 1×/2× zoom, and the last-photo thumbnail opens Photos.
+  A parent can also turn on **the phone's real camera** (see [The real camera](#the-real-camera)): photos with fun looks,
+  and selfies in pixel-art animal costumes.
 - **Photos**: the kids' pictures, newest first. Big arrows and swipe, and (if a parent turns it on) the voice names the animals.
-  Starts with 4 sample photos. Keeps the newest 40. There's no delete button for kids.
+  A selfie in a costume makes that animal's sound when it comes up.
+  Starts with 4 sample photos. Keeps the newest 60. There's no delete button for kids.
 - **Music**: a pentatonic xylophone, drum pads, an animal piano (every key is an animal sound in tune), and
   4 songs with a dancing animal: Twinkle Twinkle, Old MacDonald, The Wheels on the Bus, If You're Happy and You Know It.
 - **Games**: a controller icon that opens a game picker. Each card says who it's for: "1 player" with one little kid, or
@@ -122,6 +125,32 @@ on `pointerdown` with sound and motion, there are no failure states, and two kid
 ![Portrait screens](screenshots/portrait.jpg)
 ![Landscape screens](screenshots/landscape.jpg)
 
+## The real camera
+
+Off until a parent picks it in settings (**Camera: Pretend / Real / Both**). It's laid out like a phone camera, in the
+toy's own pixel style: a big live picture, the shutter under it, and along the bottom the last photo, the modes and a
+flip button. With **Both**, the modes are the pretend safari, Photo and Selfie; with **Real**, just Photo and Selfie.
+
+- **Photo**: the back camera. 1×, 2× and 3× buttons sit on the bottom edge of the picture (the camera's own zoom where
+  the phone offers it, otherwise the picture is enlarged). Swipe across the picture to change the look:
+  Normal, Pixel, Comic, Rainbow, Mirror, Sunny, Ocean, Black and white, Upside down. A tap shows a focus square.
+- **Selfie**: the front camera, shown as a mirror. A strip of round bubbles runs through the shutter ring, like the
+  lens strip in Snapchat: slide it, tap a bubble, or swipe across the picture. The one in the ring is on. First come
+  the costumes, pixel-art animal heads with a hole for the face: lion, T. rex, elephant (trunk hat and floppy ears),
+  giraffe, monkey, zebra and stegosaurus. Each one makes its animal's sound when it goes on. Then the same looks as
+  Photo mode.
+- **The photo is what the kids saw**: the same code draws the live picture and the saved photo (look and costume
+  included), at 640 pixels on the long side, saved as a JPEG.
+- **Privacy**: photos stay on the phone, in Safari's storage for this page (IndexedDB), and never go anywhere. The site
+  has no server. Clear photos (settings) deletes them, and so does clearing Safari's website data.
+- **Only while it's on screen**: the camera runs only while the Camera app is open, and stops when the kids leave it,
+  the phone locks or the toy goes to the background (the green camera dot goes away). It asks for pictures only, never
+  the microphone: on an iPhone, using the microphone moves all sound to the earpiece.
+- **Permission**: Safari asks the first time. Choosing Real or Both in settings asks right then, so the question comes
+  while a parent is holding the phone. To stop Safari asking again: tap the page menu (**aA**) next to the web
+  address, then **Website Settings › Camera › Allow**. If the camera is refused or missing, the pretend camera shows
+  instead, and settings say what happened and how to allow it.
+
 ## Pixel art
 
 Every picture is pixel art placed one pixel at a time: no emoji, no vector drawings, no photos except your family's.
@@ -176,6 +205,8 @@ Hold the clock in the top-left corner for **3 seconds**. A quick tap only wiggle
 - Incoming calls on/off
 - Volume (Quiet / Soft / Medium / Loud)
 - Sound when the phone is on silent (on by default)
+- **Camera**: Pretend (the default), Real (the phone's camera) or Both, with a note on whether the camera is allowed
+  and how to allow it
 - **Voice**: a checkbox for each place the talking voice can speak. Animal sounds and music always play.
 
   | Checkbox | What the voice says | Starts |
@@ -211,6 +242,10 @@ The automated test runs in Chromium, so these need a person and the phone:
 - [ ] Guided Access session: nothing leads out of the page
 - [ ] Portrait and landscape
 - [ ] Two kids tapping at once
+- [ ] The real camera (settings: Camera: Both): Safari's question comes when you pick it, Allow sticks, the back and
+      front cameras show, the costumes line up with a face at arm's length, photos save and survive a reload, and the
+      animal sounds keep playing while the camera is on
+- [ ] The camera turns off (the green dot goes away) when you go home, lock the phone or switch apps
 - [ ] Listen to *If You're Happy and You Know It*. Its melody was written from memory, so check it by ear
       (notes live in the `SONGS` list in `index.html`)
 
@@ -249,12 +284,14 @@ first), paints both Paint Pals pictures with two fingers at once until the pair 
 and Paint Pals again as 1 player, opens parent settings
 with a 3-second hold, mashes 250 random touches (some two-handed), then checks the home button still gets home. It also
 renders all 24 animal calls offline to check each is audible, under 2.5 seconds and not clipping, and it fails on any
-console error. Screenshots go to `tests/screenshots/`.
+console error. It also turns on the real camera, with Chromium's fake camera standing in, and checks both cameras,
+zoom, looks, the costume strip, saved photos, that the camera stops off screen and that a refused camera falls back
+to the pretend one. Screenshots go to `tests/screenshots/`.
 
 ## Notes
 
-- Photos are stored in `localStorage` as small pixel-art PNGs (a few KB each, one pixel per art pixel). If the phone runs out of room, the oldest
-  photo is dropped first. Clearing Safari's website data deletes them. The sample photos from an older version are swapped
+- Pretend photos are stored in `localStorage` as small pixel-art PNGs (a few KB each, one pixel per art pixel); real camera
+  photos are JPEGs (about 50 KB) in IndexedDB. If the phone runs out of room, the oldest photo is dropped first. Clearing Safari's website data deletes them. The sample photos from an older version are swapped
   for pixel ones the first time this version runs; photos the kids took are kept.
 - **Sound on iPhone.** The phone's built-in speech voice and Safari's `playback` audio session (which plays through the
   silent switch) don't mix: each spoken sentence takes the speaker away from the sound effects and Safari never gives
@@ -267,4 +304,5 @@ console error. Screenshots go to `tests/screenshots/`.
 - In portrait, the 8 xylophone bars and 8 piano keys are about 66px tall but span the full width. Every other kid control is 80px or more.
 - With five app icons, the three animals on the home-screen hill only show on tall portrait screens (800px or more).
 - Every picture is a pixel sprite in `index.html`, so the toy looks the same on every phone, and walking animals always face the way they walk. The test fails if an emoji or an SVG sneaks back in, or if a sprite has uneven rows or a letter with no color.
-- Camera and microphone ideas (selfie stickers, talk-back calls) need this self-hosted HTTPS setup. claude.ai artifacts block both.
+- The real camera needs the toy's own https address (GitHub Pages or your own server). Anywhere it can't reach a camera
+  (the claude.ai preview, a plain `file://` copy), the pretend camera shows instead.

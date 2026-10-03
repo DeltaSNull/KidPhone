@@ -76,7 +76,7 @@ img[src^="data:image/png"]{image-rendering:-webkit-optimize-contrast; image-rend
   padding:var(--gap) max(var(--gap),env(safe-area-inset-right,0px)) 0 max(var(--gap),env(safe-area-inset-left,0px));
   background:var(--case); image-rendering:-webkit-optimize-contrast; image-rendering:pixelated;
 }
-img[src^="data:image/jpeg"],.face img{image-rendering:auto}
+img[src^="data:image/jpeg"],img[src^="blob:"],.face img{image-rendering:auto}
 @media (orientation:landscape){
   #device{grid-template-rows:none; grid-template-columns:minmax(0,1fr) auto; padding:var(--gap) 0 var(--gap) max(var(--gap),env(safe-area-inset-left,0px))}
 }
@@ -240,6 +240,67 @@ img[src^="data:image/jpeg"],.face img{image-rendering:auto}
 .zoombtn{width:80px; height:80px; display:grid; place-items:center; position:relative; --disc:var(--d-sun)}
 .zoombtn .px{width:46%; height:46%; margin-top:-6px}
 .zoombtn b{position:absolute; right:-4px; bottom:-6px; padding:0 2px; font-size:20px; line-height:1}
+
+/* The real camera (a parent turns it on in settings). Laid out like a phone camera: a big picture with the zoom
+   buttons on its bottom edge, the shutter under it, then the last photo, the modes and the flip button, all in the
+   toy's own pixel look. In selfie mode a strip of costumes and looks runs through the shutter ring: slide it, tap one,
+   or swipe across the picture. */
+#camVideo,#camFx{position:absolute; inset:0; width:100%; height:100%; display:block; object-fit:cover; background:#22324F}
+#camVideo{transform:scale(var(--cz,1)); transition:transform .25s}
+#camera.cam-selfie #camVideo{transform:scaleX(-1)}
+#camFx.pix{image-rendering:pixelated}
+#camCostume{position:absolute; z-index:2; pointer-events:none; max-width:none; image-rendering:pixelated}
+#camCostume.on{animation:costumeIn .4s cubic-bezier(.3,1.6,.5,1)}
+@keyframes costumeIn{from{transform:scale(.55) translateY(-18%); opacity:0}}
+#camera.cam-real #vfc,#camera.cam-real .corner,#camera:not(.cam-real) #camVideo,#camera:not(.cam-real) #camFx{display:none}
+#camera.cam-ix{grid-template-columns:minmax(0,1fr) auto minmax(0,1fr); grid-template-rows:auto minmax(0,1fr) auto auto;
+  grid-template-areas:"scenes scenes scenes" "vf vf vf" "sl shut sr" "thumb modes flip"; column-gap:6px}
+#camera.cam-ix .camctrls{display:contents}
+#camera.cam-ix .camscenes{grid-area:scenes}
+#camera.cam-ix .vf{grid-area:vf}
+#camera.cam-ix .shutter{grid-area:shut; justify-self:center; z-index:2}
+#camera.cam-ix .zoombtn{grid-area:sr; justify-self:center; align-self:center}
+#camera.cam-ix .thumb{grid-area:thumb; justify-self:start; align-self:center; width:76px; height:76px}
+#camera.cam-ix .cmodes{grid-area:modes; justify-self:center; align-self:center}
+#camera.cam-ix .flipbtn{grid-area:flip; justify-self:end; align-self:center}
+#camera.cam-ix .lenses{grid-row:3; grid-column:1 / -1}
+#camera.lens-on .shutter{--disc:var(--d-ring)}
+.flipbtn{width:76px; height:76px; display:grid; place-items:center; background:var(--d-glass) center/100% 100% no-repeat}
+.flipbtn .px{width:48%; height:48%; margin-top:-6px}
+.flipbtn.spin .px{animation:spin .45s cubic-bezier(.3,1.3,.5,1)}
+@keyframes spin{from{transform:rotate(-180deg)}}
+.cmodes{display:flex; gap:2px; border-style:solid; border-color:transparent; border-width:9px 9px 15px; border-image:var(--f-dark) 9 9 15 fill / 9px 9px 15px stretch}
+.cmode{width:var(--cm,72px); height:52px; display:grid; place-items:center}
+.cmode.on{border-style:solid; border-color:transparent; border-width:6px 6px 9px; border-image:var(--t-sun) 6 6 9 fill / 6px 6px 9px stretch}
+.cmode .px{width:32px; height:32px; margin-top:-2px}
+.czooms{position:absolute; left:50%; bottom:12px; translate:-50% 0; z-index:3; display:flex; align-items:center; gap:6px}
+.czoom{width:60px; height:60px; display:grid; place-items:center; padding-top:3px; font-family:var(--digits); font-size:13px; color:#FFFDF6;
+  background:var(--d-dark) center/100% 100% no-repeat; transition:transform .2s}
+.czoom.on{background-image:var(--d-sun); color:var(--ink); transform:scale(1.12)}
+.lenses{position:relative; min-height:102px; overflow:hidden; touch-action:none; --lb:64px; --lg:18px;
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent); mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent)}
+.ltrack{position:absolute; left:0; top:50%; display:flex; align-items:center; gap:var(--lg); will-change:transform; transition:transform .3s cubic-bezier(.25,1.25,.5,1)}
+.ltrack.drag{transition:none}
+.lens{flex:none; width:var(--lb); height:var(--lb); display:grid; place-items:center; background:var(--d-paper) center/100% 100% no-repeat; transition:transform .25s}
+.lens .px{width:64%; height:64%; margin-top:-8%}
+.lens.on{transform:scale(1.32)}
+.focus{position:absolute; width:66px; height:66px; margin:-33px 0 0 -33px; z-index:3; pointer-events:none;
+  box-shadow:inset 0 0 0 3px #FFC83D, 0 0 0 2px rgba(59,43,32,.45); animation:focusIn .9s ease-out forwards}
+@keyframes focusIn{0%{transform:scale(1.6); opacity:0}20%{transform:scale(1); opacity:1}70%{opacity:1}100%{opacity:0}}
+@media (orientation:landscape){
+  #camera.cam-ix{grid-template-columns:auto minmax(0,1fr) auto auto; grid-template-rows:minmax(0,1fr) auto minmax(0,1fr);
+    grid-template-areas:"scenes vf flip zoom" "scenes vf modes shut" "scenes vf thumb ."; column-gap:8px; row-gap:6px}
+  #camera.cam-ix .zoombtn{grid-area:zoom; align-self:end}
+  #camera.cam-ix .thumb,#camera.cam-ix .flipbtn{width:clamp(60px,18vh,76px); height:clamp(60px,18vh,76px); justify-self:center}
+  #camera.cam-ix .thumb{align-self:start}
+  #camera.cam-ix .flipbtn{align-self:end}
+  #camera.cam-ix .lenses{grid-row:1 / -1; grid-column:4; min-height:0; min-width:102px;
+    -webkit-mask-image:linear-gradient(180deg,transparent,#000 12%,#000 88%,transparent); mask-image:linear-gradient(180deg,transparent,#000 12%,#000 88%,transparent)}
+  .ltrack{left:50%; top:0; flex-direction:column}
+  .cmodes{flex-direction:column}
+  .cmode{width:58px; height:50px}
+  .czooms{left:auto; right:12px; bottom:auto; top:50%; translate:0 -50%; flex-direction:column}
+}
 
 /* ---------- Photos ---------- */
 #photos{background:#FFEDAE}
@@ -615,7 +676,12 @@ img[src^="data:image/jpeg"],.face img{image-rendering:auto}
         <div class="camscenes" id="camScenes"></div>
         <div class="vf" id="vf">
           <canvas id="vfc"></canvas>
+          <!-- the real camera (a parent turns it on): the picture, a canvas for looks, and the costume on top -->
+          <video id="camVideo" playsinline muted autoplay disablepictureinpicture></video>
+          <canvas id="camFx" hidden></canvas>
+          <img id="camCostume" alt="" draggable="false" hidden>
           <div class="corner c1"></div><div class="corner c2"></div><div class="corner c3"></div><div class="corner c4"></div>
+          <div class="czooms" id="camZooms" hidden></div>
           <div class="flash" id="flash"></div>
         </div>
         <div class="camctrls">
@@ -623,6 +689,9 @@ img[src^="data:image/jpeg"],.face img{image-rendering:auto}
           <button class="shutter" id="shutter" aria-label="Take a picture"></button>
           <button class="zoombtn" id="zoomBtn" aria-label="Zoom"><b id="zoomTxt">1×</b></button>
         </div>
+        <div class="lenses" id="lenses" hidden><div class="ltrack" id="ltrack"></div></div>
+        <div class="cmodes" id="camModes" hidden></div>
+        <button class="flipbtn" id="flipBtn" aria-label="Flip the camera" hidden></button>
       </section>
 
       <!-- PHOTOS -->
@@ -763,6 +832,10 @@ img[src^="data:image/jpeg"],.face img{image-rendering:auto}
         <div class="srow"><span>Sound when the phone is on silent</span>
           <div class="seg"><button class="sbtn" data-silent="1">On</button><button class="sbtn" data-silent="0">Off</button></div>
           <span class="vhint">On: the toy plays even with the ring/silent switch set to silent. Off: it follows the switch.</span></div>
+        <div class="srow"><span>Camera</span>
+          <div class="seg"><button class="sbtn" data-camera="pretend">Pretend</button><button class="sbtn" data-camera="real">Real</button><button class="sbtn" data-camera="both">Both</button></div>
+          <span class="vhint">Pretend: drag around a pixel-art safari. Real: the phone's own camera, with fun looks, and animal costumes for selfies. Both: the kids switch between them. Photos stay on this phone.</span>
+          <span class="vhint" id="camNote"></span></div>
         <div class="srow"><span>Voice</span><span class="vhint">Where the talking voice speaks. Animal sounds and music always play.</span></div>
         <div class="vlist" id="voiceList"></div>
         <div class="srow"><span id="photoCount">Photos</span><button class="sbtn danger" id="clearBtn">Clear photos</button></div>
@@ -3825,6 +3898,11 @@ const shutterURL = () => once('shutter', () => { const n = 32, P = new Pix(n + 2
   P.ell(cx, r + 2, r, r, 's').ell(cx, r, r, r, 'o').ell(cx, r, r - 1, r - 1, 'c').shade('c', 'D', null, 2);
   P.ell(cx, r, r*.7, r*.7, 'O').ell(cx, r, r*.7 - 1, r*.7 - 1, 'r').shade('r', 'R', 'l', 2).ell(cx - r*.25, r*.66, r*.14, r*.1, 'w');
   return pxURL(P.canvas({s:SHADOW, o:'#5A4A3E', c:'#FFFDF6', D:'#E2D8C6', O:'#8E2626', r:'#F04E4E', R:'#C93636', l:'#FF8A80', w:'#FFFFFF'})); });
+/* the selfie shutter: the same white rim with nothing in the middle, so the chosen costume shows through it */
+const ringURL = () => once('ring', () => { const n = 32, P = new Pix(n + 2, n + 2), r = n/2, cx = r + 1;
+  P.ell(cx, r + 2, r, r, 's').ell(cx, r, r, r, 'o').ell(cx, r, r - 1, r - 1, 'c').shade('c', 'D', null, 2).ell(cx, r, r*.72, r*.72, 'o').ell(cx, r, r*.72 - 1, r*.72 - 1, '.');
+  P.each(0, 0, n + 2, n + 2, (x, y) => { if (P.get(x, y) === code('s') && Math.hypot(x + .5 - cx, y + .5 - r) < r*.72) P.set(x, y, '.'); });
+  return pxURL(P.canvas({s:SHADOW, o:'#5A4A3E', c:'#FFFDF6', D:'#E2D8C6'})); });
 const bubbleURL = () => once('bubble', () => { const n = 24, P = new Pix(n, n), r = n/2;
   P.ell(r, r, r, r, 'o').ell(r, r, r - 1, r - 1, 'f');
   P.each(0, 0, n, n, (x, y) => { const d = Math.hypot(x + .5 - r, y + .5 - r); if (d <= r - 1 && d > r - 2.2 && x + y > n*.95) P.set(x, y, 'e'); });
@@ -4005,9 +4083,9 @@ function repaint(el){ const fn = bgFor.get(el); if (fn) paintBG(el, fn); }
   Object.entries(F).forEach(([k, v]) => r.setProperty('--f-' + k, v));
   r.setProperty('--b-paper', bezelURL('#FFFDF6', '#5A4A3E'));
   r.setProperty('--t-paper', tagURL('#FFFDF6', '#5A4A3E')); r.setProperty('--t-sun', tagURL('#FFC83D', INK));
-  const D = {sun:discURL('#FFC83D', 28, '#7A4A0A'), go:discURL('#3BBF5C', 28, '#16502A'), stop:discURL('#F04E4E', 28, '#6A1A1A'), paper:discURL('#FFFDF6', 28, '#5A4A3E'), glass:discURL('#D9F0FF', 28, '#2A5A8A'), berry:discURL('#E8506E', 28, '#6E1832')};
+  const D = {sun:discURL('#FFC83D', 28, '#7A4A0A'), go:discURL('#3BBF5C', 28, '#16502A'), stop:discURL('#F04E4E', 28, '#6A1A1A'), paper:discURL('#FFFDF6', 28, '#5A4A3E'), glass:discURL('#D9F0FF', 28, '#2A5A8A'), berry:discURL('#E8506E', 28, '#6E1832'), dark:discURL('#3A2C22', 28, '#1A120C')};
   Object.entries(D).forEach(([k, v]) => r.setProperty('--d-' + k, v));
-  r.setProperty('--d-shutter', shutterURL()); r.setProperty('--bubble', bubbleURL()); r.setProperty('--nest', nestURL()); r.setProperty('--think', thinkURL());
+  r.setProperty('--d-shutter', shutterURL()); r.setProperty('--d-ring', ringURL()); r.setProperty('--bubble', bubbleURL()); r.setProperty('--nest', nestURL()); r.setProperty('--think', thinkURL());
 })();
 
 /* ---------- Contacts: who you can call ---------- */
@@ -4097,7 +4175,8 @@ const VOICE = [
   {k:'numbers', on:false, t:'Keypad numbers', d:'Says each number you press.'},
   {k:'music', on:false, t:'Music', d:'Names the instruments and songs.'}
 ];
-const settings = Object.assign({incoming:true, vol:2, silent:true}, store.get('settings', {}));
+const settings = Object.assign({incoming:true, vol:2, silent:true, camera:'pretend'}, store.get('settings', {}));
+if (!['pretend','real','both'].includes(settings.camera)) settings.camera = 'pretend';
 settings.vol = clamp(settings.vol|0, 0, 3);
 settings.voice = Object.assign(Object.fromEntries(VOICE.map(v => [v.k, v.on])), settings.voice || {});
 const voiceOn = area => !area || !!settings.voice[area];
@@ -4329,7 +4408,7 @@ const FX = {
     [0,.28].forEach(d => vox({at:at+d, vol:.26, f0:[[0,480],[.08,520],[.2,430]], amp:[[0,0],[.03,1],[.2,0]], form:[{f:700, q:5}, {f:1600, q:6, g:.8}, {f:2900, q:6, g:.3}], rough:.3, roughHz:60, noise:.15, drive:3}));
     return at + .5;
   },
-  thump(at=0){ [0,.12,.24,.36,.48,.58].forEach(d => { noise(.09,'bandpass',800,600,.65,at+d); tone(400,300,.09,'triangle',.3,at+d); tone(140,100,.1,'sine',.14,at+d); }); return at + .7; },   // gorilla chest beats: hollow pok-pok-pok
+  thump(at=0){ [0,.12,.24,.36,.48,.58].forEach(d => { noise(.09,'bandpass',800,600,.65,at+d); tone(400,300,.09,'triangle',.3,at+d); tone(140,100,.1,'sine',.07,at+d); }); return at + .7; },   // gorilla chest beats: hollow pok-pok-pok
   ribbit(at=0){ [[0,280],[.2,340]].forEach(([d, f]) => vox({at:at+d, vol:.5, f0:[[0,f],[.12,f*.92]], amp:[[0,0],[.02,1],[.12,0]], form:[{f:800, q:4}, {f:1900, q:5, g:.4}], rough:1, roughHz:60, noise:.1})); return at + .35; },
   hoot(at=0){ [[0,.24],[.36,.16],[.6,.45]].forEach(([d, len]) => vox({at:at+d, type:'triangle', vol:.2, f0:[[0,500],[len,450]], amp:[[0,0],[.05,1],[len,0]], form:[{f:520, q:3}, {f:1000, q:4, g:.45}], noise:.12})); return at + 1.05; },
   yawn(at=0){ return vox({at, type:'triangle', vol:.15, f0:[[0,1400],[.2,2200],[.55,1500]], amp:[[0,0],[.08,1],[.55,0]], form:[{f:2000, q:2}], vib:40, vibHz:6, noise:.05}); },   // sloth: a high, whistly "ah-eee"
@@ -4683,7 +4762,7 @@ function go(name, fromEl){
 function enterApp(name){
   if (name === 'home'){ if (incomingDue) later(() => maybeRing(), 3500); }
   if (name === 'phone'){ showPhoneTab('contacts', true); say(APP_SAY.phone, 0, 'menus'); }
-  if (name === 'camera'){ startCamera(); say(APP_SAY.camera, 0, 'menus'); }
+  if (name === 'camera'){ startCamera(); say(CAM_SAY[cam.mode] || APP_SAY.camera, 0, 'menus'); }
   if (name === 'photos'){ openPhotos(); }
   if (name === 'music'){ showMusicTab(musicTab, true); say(APP_SAY.music, 0, 'menus'); }
   if (name === 'games') say(APP_SAY.games, 0, 'menus');
@@ -5295,7 +5374,7 @@ function photoLine(names){
 }
 
 const CLICKS = ['Click! What a pretty picture!', 'Click! Nice picture!'];
-const cam = {scene:'savanna', x:0, y:0, zoom:1, target:1, vx:0, vy:0, raf:0, last:0, shotAt:0, hinted:false, enterT:0};
+const cam = {mode:'safari', scene:'savanna', x:0, y:0, zoom:1, target:1, vx:0, vy:0, raf:0, last:0, shotAt:0, hinted:false, enterT:0};
 const vf = $('#vf'), vfc = $('#vfc'), vg = vfc.getContext('2d');
 let vfW = 0, vfH = 0, dpr = 1;
 const foundHidden = new Set();
@@ -5320,8 +5399,18 @@ function setScene(k, speak){
   retrigger($('#flash'), 'go');
   if (speak) say(SCENES[k].n + '!', 0, 'camera');
 }
+/* opening the Camera: the mode the kids used last (of the ones a parent allows), pretend or real */
 function startCamera(){
-  sizeCamera(); setScene(cam.scene, false); showThumb();
+  if (realBroken()) real.state = 'off';   // each time the camera opens it tries again (a parent may have allowed it since)
+  const modes = camModes(), saved = store.get('camMode', '');
+  cam.mode = modes.includes(saved) ? saved : modes[0];
+  sizeCamera(); showThumb();
+  setCamMode(cam.mode, false);
+}
+function stopCamera(){ stopPretend(); closeStream(); stopFx(); vswipe = null; }
+/* the pretend camera: a pixel-art world to drag around */
+function startPretend(){
+  sizeCamera(); setScene(cam.scene, false);
   cancelAnimationFrame(cam.raf); cam.last = performance.now();
   const loop = now => {
     cam.raf = requestAnimationFrame(loop);
@@ -5338,13 +5427,14 @@ function startCamera(){
   };
   cam.raf = requestAnimationFrame(loop);
 }
-function stopCamera(){ cancelAnimationFrame(cam.raf); cam.raf = 0; drag = null; }
+function stopPretend(){ cancelAnimationFrame(cam.raf); cam.raf = 0; drag = null; }
 
 /* drag to pan (one finger steers; other fingers can tap animals) */
 let drag = null;
 vf.addEventListener('pointerdown', e => {
   e.preventDefault(); keepAwake();
   const [rx, ry] = relPt(e); ripple(rx, ry);
+  if (cam.mode !== 'safari') return realDown(e);
   if (drag) return;
   drag = {id:e.pointerId, x0:e.clientX, y0:e.clientY, lx:e.clientX, ly:e.clientY, lt:performance.now(), moved:false, vx:0, vy:0};
   cam.vx = cam.vy = 0;
@@ -5364,8 +5454,8 @@ function endDrag(e, cancelled){
   else if (performance.now() - drag.lt < 80){ cam.vx = drag.vx; cam.vy = cam.zoom > 1.01 ? drag.vy : 0; }
   drag = null;
 }
-vf.addEventListener('pointerup', e => endDrag(e, false));
-vf.addEventListener('pointercancel', e => endDrag(e, true));
+vf.addEventListener('pointerup', e => cam.mode !== 'safari' ? realUp(e) : endDrag(e, false));
+vf.addEventListener('pointercancel', e => { vswipe = null; endDrag(e, true); });
 function camTap(e){
   const r = vf.getBoundingClientRect(), s = camScale(), t = performance.now()/1000;
   const wx = cam.x + (e.clientX - r.left)/s, wy = cam.y + (e.clientY - r.top)/s;
@@ -5380,6 +5470,7 @@ function camTap(e){
 $('#zoomBtn').insertAdjacentHTML('afterbegin', ICON.zoom);
 tap($('#zoomBtn'), () => { FX.pop(); cam.target = cam.target > 1.5 ? 1 : 2; $('#zoomTxt').textContent = cam.target > 1.5 ? '2×' : '1×'; say(cam.target > 1.5 ? 'Zoom in!' : 'Zoom out!', 0, 'camera'); });
 tap($('#shutter'), () => {
+  if (cam.mode !== 'safari') return realShutter();
   FX.shutter(); retrigger($('#flash'), 'go'); retrigger(vf, 'shake');
   cam.shotAt = performance.now();
   const t = cam.shotAt/1000, sc = SCENES[cam.scene], s = camScale();
@@ -5404,16 +5495,23 @@ function showThumb(fresh){
 tap($('#lastShot'), () => { FX.pop(); if (!Photos.list.length) return say('Take a picture first!', 0, 'camera'); go('photos', $('#lastShot')); openViewer(0); });
 
 /* ======================= PHOTOS ======================= */
-/* An index in one key, each photo (a small PNG) in its own key. At most 40; the oldest goes first when full. */
-const MAX_PHOTOS = 40;
+/* An index in one key, each pixel photo (a small PNG) in its own key; real camera photos (JPEGs, much bigger) in the
+   page's database (IndexedDB). At most 60; the oldest goes first when full. */
+const MAX_PHOTOS = 60;
 const mem = new Map();   // fallback when the phone refuses storage
 const Photos = {
   list: (store.get('photos', []) || []).filter(p => p && p.id),
-  src(id){ if (mem.has(id)) return mem.get(id); try{ return localStorage.getItem('toyphone.photo.' + id); }catch(e){ return null; } },
+  src(id){ if (mem.has(id)) return mem.get(id); const u = PhotoDB.url(id); if (u) return u; try{ return localStorage.getItem('toyphone.photo.' + id); }catch(e){ return null; } },
   saveIndex(){ store.set('photos', this.list); },
-  dropOldest(){ const old = this.list.pop(); if (!old) return false; mem.delete(old.id); try{ localStorage.removeItem('toyphone.photo.' + old.id); }catch(e){} this.saveIndex(); return true; },
+  dropOldest(){ const old = this.list.pop(); if (!old) return false; mem.delete(old.id); if (old.db) PhotoDB.del(old.id); try{ localStorage.removeItem('toyphone.photo.' + old.id); }catch(e){} this.saveIndex(); return true; },
+  newId: () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+  addBlob(blob, meta){
+    const id = this.newId();
+    while (this.list.length >= MAX_PHOTOS) this.dropOldest();
+    return PhotoDB.put(id, blob).then(() => { this.list.unshift({id, t:Date.now(), db:true, ...meta}); this.saveIndex(); });
+  },
   add(src, meta){
-    const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    const id = this.newId();
     while (this.list.length >= MAX_PHOTOS) this.dropOldest();
     for (;;){
       try{ localStorage.setItem('toyphone.photo.' + id, src); break; }
@@ -5422,8 +5520,39 @@ const Photos = {
     this.list.unshift({id, t:Date.now(), ...meta});
     if (!store.set('photos', this.list)){ this.dropOldest(); this.saveIndex(); }
   },
-  clear(){ this.list.forEach(p => { try{ localStorage.removeItem('toyphone.photo.' + p.id); }catch(e){} }); this.list = []; mem.clear(); this.saveIndex(); }
+  clear(){ this.list.forEach(p => { try{ localStorage.removeItem('toyphone.photo.' + p.id); }catch(e){} }); this.list = []; mem.clear(); PhotoDB.clear(); this.saveIndex(); }
 };
+/* The database for real photos: each a JPEG file, shown through a blob: address made once when the toy starts.
+   A photo whose file is gone (the phone cleared the website's data) drops out of the album. */
+const PhotoDB = (() => {
+  let db = null; const urls = new Map();
+  const req = r => new Promise((res, rej) => { r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
+  const os = mode => db.transaction('photos', mode).objectStore('photos');
+  const ready = new Promise(res => {
+    try{
+      const r = indexedDB.open('toyphone', 1);
+      r.onupgradeneeded = () => r.result.createObjectStore('photos');
+      r.onsuccess = async () => {
+        db = r.result;
+        for (const p of Photos.list.filter(p => p.db)){ try{ const b = await req(os('readonly').get(p.id)); if (b) urls.set(p.id, URL.createObjectURL(b)); }catch(e){} }
+        res(true);
+      };
+      r.onerror = r.onblocked = () => res(false);
+    }catch(e){ res(false); }
+  });
+  ready.then(() => {
+    const keep = Photos.list.filter(p => !p.db || urls.has(p.id));
+    if (keep.length !== Photos.list.length){ Photos.list = keep; Photos.saveIndex(); }
+    if (current === 'photos') renderGrid();
+    if (current === 'camera') showThumb();
+  });
+  return {
+    ready, ok: () => !!db, url: id => urls.get(id) || null,
+    put: (id, blob) => req(os('readwrite').put(blob, id)).then(() => { urls.set(id, URL.createObjectURL(blob)); }),
+    del: id => { const u = urls.get(id); if (u){ URL.revokeObjectURL(u); urls.delete(id); } try{ if (db) os('readwrite').delete(id); }catch(e){} },
+    clear: () => { urls.forEach(u => URL.revokeObjectURL(u)); urls.clear(); try{ if (db) os('readwrite').clear(); }catch(e){} }
+  };
+})();
 function openPhotos(){
   renderGrid();
   if (!$('#viewer').hidden) return;
@@ -5444,6 +5573,7 @@ function renderGrid(){
 $('#goCam').innerHTML = ICON.camera;
 tap($('#goCam'), () => { FX.pop(); go('camera', $('#goCam')); });
 let vIdx = 0;
+const photoSound = p => { const a = p && p.costume && ANIMALS.find(x => x.id === p.costume); if (a) animalSound(a); };   // a selfie in a lion costume roars
 $('#vGrid').innerHTML = ICON.grid; $('#vPrev').innerHTML = ICON.left; $('#vNext').innerHTML = ICON.right;
 function openViewer(i){ if (!Photos.list.length) return; $('#viewer').hidden = false; showPhoto(i, 0); }
 function closeViewer(quiet){ $('#viewer').hidden = true; if (!quiet) say('All your pictures!', 0, 'camera'); }
@@ -5454,6 +5584,7 @@ function showPhoto(i, dir){
   im.src = Photos.src(p.id) || '';
   im.style.transform = '';
   retrigger(im, dir < 0 ? 'in-l' : dir > 0 ? 'in-r' : 'hop');
+  photoSound(p);
   say(photoLine(p.names), 0, 'camera');
 }
 tap($('#vGrid'), () => { FX.pop(); closeViewer(); });
@@ -5468,7 +5599,7 @@ vstage.addEventListener('pointerup', e => {
   const dx = e.clientX - swipe.x; swipe = null; $('#vimg').style.transform = '';
   if (dx < -50){ FX.swoosh(); showPhoto(vIdx + 1, 1); }
   else if (dx > 50){ FX.swoosh(); showPhoto(vIdx - 1, -1); }
-  else { FX.pop(); retrigger($('#vimg'), 'hop'); say(photoLine(Photos.list[vIdx].names), 0, 'camera'); }
+  else { FX.pop(); retrigger($('#vimg'), 'hop'); photoSound(Photos.list[vIdx]); say(photoLine(Photos.list[vIdx].names), 0, 'camera'); }
 });
 vstage.addEventListener('pointercancel', () => { swipe = null; $('#vimg').style.transform = ''; });
 
@@ -5486,6 +5617,420 @@ function seedPhotos(){
   store.set('seeded', true);
   if (current === 'photos') renderGrid();
   if (current === 'camera') showThumb();
+}
+
+/* ======================= REAL CAMERA ======================= */
+/* A parent can turn on the phone's own camera (settings: Camera). It asks for pictures only, never the microphone (on an
+   iPhone, asking for the microphone moves all sound to the earpiece). The camera runs only while the Camera app is open
+   and the toy is on screen, and photos stay on this phone. If the camera is refused or missing, the pretend camera shows
+   instead and settings say how to allow it.
+   Photo mode is the back camera, with 1x, 2x and 3x zoom; swipe across the picture to change the look.
+   Selfie mode is the front camera, as a mirror, with a strip of animal costumes and looks through the shutter ring. */
+const camEl = $('#camera'), camVideo = $('#camVideo'), camFx = $('#camFx'), camCos = $('#camCostume');
+const fxg = camFx.getContext('2d', {willReadFrequently:true});
+const real = {stream:null, facing:'', seq:0, pending:null, pendingFacing:'', state:'off', ok:false, err:'', zoom:1, cz:1, hw:null, look:0, lens:0, raf:0, last:0};
+const CAM_MODES = {pretend:['safari'], real:['photo','selfie'], both:['safari','photo','selfie']};
+const canCamera = () => !!(window.isSecureContext && navigator.mediaDevices && navigator.mediaDevices.getUserMedia) && !/claude\.ai|claudeusercontent/.test(location.hostname);   // (the claude.ai preview can't have it)
+const realBroken = () => ['blocked','missing','unsupported'].includes(real.state);
+const camModes = () => realBroken() || !canCamera() ? ['safari'] : CAM_MODES[settings.camera] || ['safari'];
+const MODE_NAME = {safari:'Pretend safari', photo:'Photo', selfie:'Selfie'};
+const MODE_SAY = {safari:'Safari!', photo:'Camera!', selfie:'Selfie!'};
+const CAM_SAY = {safari:APP_SAY.camera, photo:'Camera! Press the big button to take a picture!', selfie:"Look, it's you! Slide to dress up!"};
+
+/* ----- pictures for the buttons, painted with the same pixel tools as everything else ----- */
+const pixImg = (key, w, h, draw, pal) => once('pi' + key, () => { const P = new Pix(w, h); draw(P); return `<img class="px" src="${pxURL(P.canvas(pal), 4).slice(5, -2)}" alt="" draggable="false">`; });
+const turned = (name, how) => once('tn' + name + how, () => { const s = PX.canvas(name), c = document.createElement('canvas'); c.width = s.width; c.height = s.height;
+  const g = c.getContext('2d'); g.translate(c.width, c.height); g.rotate(Math.PI); g.drawImage(s, 0, 0); return `<img class="px" src="${pxURL(c, 4).slice(5, -2)}" alt="" draggable="false">`; });
+const FLIP_ICON = pixImg('flip', 18, 18, P => {
+  P.ell(9, 9, 7.5, 7.5, 'b').ell(9, 9, 4.6, 4.6, '.').rect(0, 7, 18, 4, '.');
+  P.poly([[.5, 7.5], [7.5, 7.5], [4, 11.5]], 'b').poly([[10.5, 10.5], [17.5, 10.5], [14, 6.5]], 'b');
+  P.outline('o');
+}, {b:'#3D8FE0', o:'#163E70'});
+const SAFARI_ICON = pixImg('msafari', 18, 18, P => {
+  P.ell(14, 4, 3, 3, 'y').ell(9, 16, 8, 2.4, 's');
+  P.tube(8, 15, 9.5, 10, 8, 6, 1.1, 1, 't');
+  P.ell(4.5, 6.5, 3.8, 1.7, 'g').ell(11.5, 6, 3.8, 1.7, 'g').ell(8, 4.4, 2.2, 2.6, 'g').ell(5, 9, 2.6, 1.3, 'g');
+  P.shade('g', 'G', null, 1).outline('o');
+}, {y:'#FFC83D', s:'#F2CD6A', t:'#8E5A2B', g:'#5CC05A', G:'#3E8E41', o:'#3B2B20'});
+const PHOTO_ICON = pixImg('mphoto', 18, 18, P => {
+  P.rect(2, 5, 14, 10, 'k').rect(5, 3, 5, 3, 'k').ell(9, 10, 4, 4, 'r').ell(9, 10, 2.6, 2.6, 'l').set(8, 9, 'w').rect(13, 6, 2, 1, 'y');
+  P.outline('o');
+}, {k:'#82CBFF', r:'#2C4E9E', l:'#5BB8F5', w:'#FFFFFF', y:'#FFC83D', o:'#163E70'});
+const MODE_ICON = {safari:SAFARI_ICON, photo:PHOTO_ICON, selfie:ART.smiley};
+
+/* ----- looks: each turns a frame of the picture into something else. The same code draws the live picture and the
+   photo, so the photo is what the kids saw. fn works on the pixels; mirror, flipV and px change how the frame is drawn ----- */
+const PIX_W = 56;   // the pixel look: this many blocks across the picture
+const LOOKS = {
+  normal:{n:'Normal'},
+  pixel:{n:'Pixel', say:'Pixel!', px:true, fn:pixelFx, icon:() => pixImg('lpixel', 16, 16, P => { const c = 'rygbpo'; for (let i=0;i<16;i++) P.rect(1 + (i % 4)*3.6, 1 + Math.floor(i/4)*3.6, 3, 3, c[(i*5 + Math.floor(i/4)) % 6]); },
+    {r:'#F0524F', y:'#FFC83D', g:'#7CC96B', b:'#3D8FE0', p:'#8A6FD1', o:'#FF9F43'})},
+  comic:{n:'Comic', say:'Comic!', fn:comicFx, icon:() => pixImg('lcomic', 16, 16, P => { const pts = []; for (let i=0;i<16;i++){ const a = i/16*Math.PI*2, r = i % 2 ? 4 : 7.6; pts.push([8 + Math.cos(a)*r, 8 + Math.sin(a)*r]); } P.poly(pts, 'y').ell(8, 8, 3, 3, 'r').outline('o'); },
+    {y:'#FFE14D', r:'#F0524F', o:'#3B2B20'})},
+  rainbow:{n:'Rainbow', say:'Rainbow!', fn:rainbowFx, icon:() => pixImg('lrainbow', 16, 16, P => { 'roygbp'.split('').forEach((c, i) => P.ell(8, 13, 7.5 - i, 7.5 - i, c)); P.ell(8, 13, 1.5, 1.5, '.').rect(0, 13, 16, 3, '.'); },
+    {r:'#F0524F', o:'#FF9F43', y:'#FFC83D', g:'#7CC96B', b:'#3D8FE0', p:'#8A6FD1'})},
+  mirror:{n:'Mirror', say:'Mirror!', mirror:true, icon:() => ART.butterfly},
+  sunny:{n:'Sunny', say:'Sunny!', fn:tintFx([1.12, 1.02, .8], [16, 6, -10], 1.3), icon:() => pixImg('lsunny', 16, 16, P => { for (let i=0;i<8;i++){ const a = i/8*Math.PI*2; P.line(8 + Math.cos(a)*5, 8 + Math.sin(a)*5, 8 + Math.cos(a)*7.4, 8 + Math.sin(a)*7.4, 'r'); } P.ell(8, 8, 4.2, 4.2, 'y').shade('y', 'Y', null, 1); },
+    {y:'#FFD23F', Y:'#F2A71B', r:'#FF9F43'})},
+  ocean:{n:'Ocean', say:'Ocean!', fn:tintFx([.76, .98, 1.18], [-8, 10, 26], 1.15), icon:() => pixImg('locean', 16, 16, P => { P.rect(0, 7, 16, 9, 'b'); for (let x=0;x<16;x++){ const y = Math.round(6 + Math.sin(x*.8)*1.4); P.rect(x, y, 1, 7 - y + 1, 'b'); P.set(x, y, 'w'); P.set(x, y + 5, 'l'); } },
+    {b:'#3D8FE0', l:'#82CBFF', w:'#FFFFFF'})},
+  gray:{n:'Black and white', say:'Black and white!', fn:grayFx, icon:() => pixImg('lgray', 16, 16, P => { P.ell(8, 8, 7, 7, 'k'); P.each(8, 0, 16, 16, (x, y) => { if (P.get(x, y)) P.set(x, y, 'w'); }); P.outline('o'); },
+    {k:'#3A3A3A', w:'#F2F2F2', o:'#1A1A1A'})},
+  upside:{n:'Upside down', say:'Upside down!', flipV:true, icon:() => turned('smiley', 180)}
+};
+const LOOK_ORDER = ['normal','pixel','comic','rainbow','mirror','sunny','ocean','gray','upside'];
+function pixelFx(d){   // bolder colors in a few flat steps, like the toy's own pictures
+  for (let i=0;i<d.length;i+=4){ const m = (d[i] + d[i+1] + d[i+2])/3; for (let k=0;k<3;k++) d[i+k] = Math.round((m + (d[i+k] - m)*1.35)/51)*51; }
+}
+function comicFx(d, w, h){   // flat poster colors with ink lines along the edges
+  const L = new Float32Array(w*h);
+  for (let i=0, j=0; i<d.length; i+=4, j++) L[j] = d[i]*.3 + d[i+1]*.59 + d[i+2]*.11;
+  for (let y=0;y<h;y++) for (let x=0;x<w;x++){
+    const j = y*w + x, i = j*4, gx = x > 0 && x < w - 1 ? L[j + 1] - L[j - 1] : 0, gy = y > 0 && y < h - 1 ? L[j + w] - L[j - w] : 0;
+    if (gx*gx + gy*gy > 2200){ d[i] = 44; d[i+1] = 32; d[i+2] = 38; continue; }
+    for (let k=0;k<3;k++){ const v = L[j] + (d[i+k] - L[j])*1.7; d[i+k] = v < 70 ? 46 : v < 135 ? 118 : v < 200 ? 196 : 252; }
+  }
+}
+const hueMat = (c, s) => [.213 + c*.787 - s*.213, .715 - c*.715 - s*.715, .072 - c*.072 + s*.928, .213 - c*.213 + s*.143, .715 + c*.285 + s*.14, .072 - c*.072 - s*.283,
+  .213 - c*.213 - s*.787, .715 - c*.715 + s*.715, .072 + c*.928 + s*.072];
+function rainbowFx(d, w, h, t){   // every color slides around the rainbow, in bands that drift across the picture
+  const M = new Float32Array(w*9);
+  for (let x=0;x<w;x++){ const a = (t*.7 + x/w*1.2)*Math.PI*2; M.set(hueMat(Math.cos(a), Math.sin(a)), x*9); }
+  for (let y=0;y<h;y++) for (let x=0;x<w;x++){
+    const i = (y*w + x)*4, o = x*9, m = (d[i] + d[i+1] + d[i+2])/3, r = m + (d[i] - m)*1.6, g = m + (d[i+1] - m)*1.6, b = m + (d[i+2] - m)*1.6 + 30;
+    d[i] = r*M[o] + g*M[o+1] + b*M[o+2]; d[i+1] = r*M[o+3] + g*M[o+4] + b*M[o+5]; d[i+2] = r*M[o+6] + g*M[o+7] + b*M[o+8];
+  }
+}
+function tintFx(mul, add, sat){ return d => { for (let i=0;i<d.length;i+=4){ const m = (d[i] + d[i+1] + d[i+2])/3; for (let k=0;k<3;k++) d[i+k] = (m + (d[i+k] - m)*sat)*mul[k] + add[k]; } }; }
+function grayFx(d){ for (let i=0;i<d.length;i+=4){ const v = (d[i]*.3 + d[i+1]*.59 + d[i+2]*.11 - 128)*1.18 + 132; d[i] = d[i+1] = d[i+2] = v; } }
+
+/* ----- costumes: pixel-art animal heads with a hole for the face, drawn on a 64 x 72 grid ----- */
+const COS_W = 64, COS_H = 72, FACE = [32, 40, 17.5, 21.5];   // the face hole: center and radii
+const COSTUMES = ['lion','trex','elephant','giraffe','monkey','zebra','stego'];
+const COSTUME_NAME = {lion:'lion', trex:'T rex', elephant:'elephant', giraffe:'giraffe', monkey:'monkey', zebra:'zebra', stego:'stegosaurus'};
+const hole = P => P.ell(FACE[0], FACE[1], FACE[2], FACE[3], '.');
+const holeY = (x, top) => FACE[1] + (top ? -1 : 1)*FACE[3]*Math.sqrt(Math.max(0, 1 - ((x - FACE[0])/FACE[2])**2));
+const rotPts = (cx, cy, a, pts) => pts.map(([u, v]) => [cx + u*Math.cos(a) - v*Math.sin(a), cy + u*Math.sin(a) + v*Math.cos(a)]);
+const COSTUME_ART = {
+  lion:[P => {
+    for (let i=0;i<24;i++){ const a = i/24*Math.PI*2; P.ell(32 + Math.cos(a)*26.5, 39 + Math.sin(a)*29.5, 5.6, 5.6, 'm'); }
+    P.ell(32, 39, 27.5, 30.5, 'm').ell(32, 40, 22.5, 26.5, 'M');
+    hole(P); P.shade('m', 'd', 'l', 2);
+    for (let i=0;i<28;i++){ const a = i/28*Math.PI*2, c = Math.cos(a), sn = Math.sin(a);   // strands of mane
+      for (let r=21;r<31;r+=.5){ const x = 32 + c*r*1.05, y = 39.5 + sn*r*1.12; if ([code('m'), code('l')].includes(P.get(x, y)) && (i % 2 || r > 25)) P.set(x, y, 'd'); } }
+    P.ell(13, 14, 6.4, 6.4, 'e').ell(51, 14, 6.4, 6.4, 'e').ell(13, 14, 3.3, 3.3, 'p').ell(51, 14, 3.3, 3.3, 'p');
+    P.shade('e', 'E', null, 1).outline('o');
+  }, {m:'#E8943E', d:'#B8622A', l:'#F7BC52', M:'#C2611F', e:'#F4B64A', E:'#D9862F', p:'#FF9E8E', o:'#3B2314'}],
+  trex:[P => {
+    P.ell(32, 23, 31, 21, 'g').rect(1, 22, 13, 40, 'g').rect(50, 22, 13, 40, 'g').ell(32, 62, 28, 9, 'g').ell(32, 66, 22, 5, 'y');
+    for (let x=6;x<60;x+=7) P.poly([[x, 6 + Math.abs(x - 32)*.25], [x + 3.5, -1 + Math.abs(x - 32)*.25], [x + 7, 6 + Math.abs(x - 32)*.25]], 'G');
+    hole(P);
+    P.ell(19, 13, 4, 3.4, 'w').ell(45, 13, 4, 3.4, 'w').ell(20, 13.5, 1.8, 2, 'k').ell(44, 13.5, 1.8, 2, 'k').rect(14, 8, 10, 2, 'G').rect(40, 8, 10, 2, 'G');
+    P.set(28, 5, 'k').set(29, 5, 'k').set(35, 5, 'k').set(36, 5, 'k');
+    for (let x=19;x<=43;x+=6){ const y = holeY(x + 2, true); P.poly([[x, y - 1], [x + 4.4, y - 1], [x + 2.2, y + 4.2]], 'w'); }
+    for (let x=21;x<=40;x+=6){ const y = holeY(x + 2, false); P.poly([[x, y + 1], [x + 4.4, y + 1], [x + 2.2, y - 3.8]], 'w'); }
+    P.shade('g', 'G', 'L', 2).outline('o');
+  }, {g:'#7CC96B', G:'#4FA84C', L:'#A6E39A', y:'#D9F2A0', w:'#FFFDF6', k:'#1E1410', o:'#24561F'}],
+  elephant:[P => {
+    P.ell(8, 38, 11, 18.5, 'g').ell(56, 38, 11, 18.5, 'g').ell(9, 39, 6.6, 13.5, 'p').ell(55, 39, 6.6, 13.5, 'p');
+    P.ell(32, 24, 24, 15.5, 'g');
+    P.tube(32, 14, 31, 3, 41, 3.5, 4, 2.2, 'g').ell(41.5, 3.6, 2.4, 2.4, 'G');   // a trunk curling up from the forehead, like a costume hat
+    hole(P); P.shade('g', 'G', 'L', 2);
+    [[22, 21], [26, 18], [38, 18], [42, 21]].forEach(([x, y]) => P.line(x, y, x + 3, y, 'G'));   // wrinkles
+    P.outline('o');
+  }, {g:'#A8B4C2', G:'#7E8A9A', L:'#D3DCE6', p:'#F2A7B5', o:'#3B4250'}],
+  giraffe:[P => {
+    P.rect(21, 5, 4, 14, 'y').rect(39, 5, 4, 14, 'y').ell(23, 5, 3.6, 3.6, 'b').ell(41, 5, 3.6, 3.6, 'b');
+    P.shape(10, 22, -.45, 11, (u, v) => (u/9.5)**2 + (v/4)**2 <= 1, 'y').shape(54, 22, .45, 11, (u, v) => (u/9.5)**2 + (v/4)**2 <= 1, 'y');
+    P.shape(10.5, 22, -.45, 8, (u, v) => (u/6)**2 + (v/2)**2 <= 1, 'p').shape(53.5, 22, .45, 8, (u, v) => (u/6)**2 + (v/2)**2 <= 1, 'p');
+    P.ell(32, 25, 21, 13, 'y');
+    [[23, 17, 3.2, 2.6], [33, 13.5, 3, 2], [42, 18, 2.6, 2.6], [27, 24, 2.2, 2], [38, 25, 2.4, 2]].forEach(([x, y, rx, ry]) => P.ell(x, y, rx, ry, 's'));
+    hole(P); P.shade('y', 'Y', 'l', 2).outline('o');
+  }, {y:'#F4C542', Y:'#D9A43E', l:'#FFE08A', b:'#8E5A2B', s:'#B8752F', p:'#F2A0A0', o:'#4A2E14'}],
+  monkey:[P => {
+    P.ell(10, 38, 9.5, 9.5, 'b').ell(54, 38, 9.5, 9.5, 'b').ell(10, 38, 5.6, 5.6, 'p').ell(54, 38, 5.6, 5.6, 'p');
+    P.ell(32, 25, 21.5, 14, 'b').poly([[26, 12], [29, 2], [32, 9], [35, 1], [38, 12]], 'b');
+    hole(P); P.shade('b', 'B', 'l', 2).outline('o');
+  }, {b:'#9A6436', B:'#74491F', l:'#C08A5A', p:'#F2C9A0', o:'#3B2314'}],
+  zebra:[P => {
+    P.shape(17, 13, -.35, 12, (u, v) => (u/4.8)**2 + (v/9.5)**2 <= 1, 'w').shape(47, 13, .35, 12, (u, v) => (u/4.8)**2 + (v/9.5)**2 <= 1, 'w');
+    P.shape(17, 14, -.35, 8, (u, v) => (u/2.2)**2 + (v/6)**2 <= 1, 'p').shape(47, 14, .35, 8, (u, v) => (u/2.2)**2 + (v/6)**2 <= 1, 'p');
+    P.ell(32, 24, 24.5, 16, 'w').ell(9, 38, 4, 9, 'w').ell(55, 38, 4, 9, 'w');
+    P.each(4, 8, 60, 50, (x, y) => { if (P.get(x, y) === code('w') && Math.floor((Math.atan2(y + .5 - 42, x + .5 - 32) + Math.PI)*16/Math.PI) % 2) P.set(x, y, 'k'); });   // stripes fanning out around the face
+    for (let y=0;y<15;y++) P.rect(28, y, 8, 1, Math.floor(y/2) % 2 ? 'k' : 'w');   // the mane, standing up
+    hole(P); P.outline('o');
+  }, {w:'#FFFDF6', k:'#2A2430', p:'#F2A0A0', o:'#1A1418'}],
+  stego:[P => {
+    [[11, 22, -.8, 7], [20, 12, -.4, 8.5], [32, 8, 0, 9.5], [44, 12, .4, 8.5], [53, 22, .8, 7]].forEach(([x, y, a, h], i) =>
+      P.poly(rotPts(x, y, a, [[0, -h], [h*.62, 0], [0, h*.55], [-h*.62, 0]]), i % 2 ? 'r' : 'R'));
+    P.ell(32, 27, 21.5, 12.5, 'g');
+    hole(P); P.shade('g', 'G', 'L', 2).shade('r', 'q', null, 1).shade('R', 'q', null, 1).outline('o');
+  }, {r:'#FF9F43', R:'#F0524F', q:'#B8452A', g:'#7CC96B', G:'#4FA84C', L:'#A6E39A', o:'#24561F'}]
+};
+const costumeCanvas = id => once('cos' + id, () => { const P = new Pix(COS_W, COS_H), [draw, pal] = COSTUME_ART[id]; draw(P); return P.canvas(pal); });
+const costumeURL = id => once('cosu' + id, () => pxURL(costumeCanvas(id), 4).slice(5, -2));
+/* where a costume goes: as wide as the picture allows, the face hole a little above the middle (where a face is in a selfie) */
+function costumeBox(W, H){ const w = Math.min(W*.98, H*.92*COS_W/COS_H), h = w*COS_H/COS_W; return {x:(W - w)/2, y:H*.48 - h*FACE[1]/COS_H, w, h}; }
+
+/* ----- the selfie strip: no costume, then the costumes, then the looks ----- */
+const LENSES = [{id:'none', look:'normal'}, ...COSTUMES.map(c => ({id:c, costume:c})), ...LOOK_ORDER.slice(1).map(k => ({id:k, look:k}))];
+const animalOf = id => ANIMALS.find(a => a.id === id);
+const lensName = L => L.costume ? COSTUME_NAME[L.costume] : L.look === 'normal' ? 'No costume' : LOOKS[L.look].n;
+const lensIcon = L => L.costume ? ART[L.costume] : L.look === 'normal' ? pixImg('lnone', 16, 16, P => { P.ell(8, 8, 5, 5, 'r').shade('r', 'R', 'l', 1).outline('o'); }, {r:'#F04E4E', R:'#C93636', l:'#FF8A80', o:'#8E2626'}) : LOOKS[L.look].icon();
+const curLens = () => LENSES[real.lens] || LENSES[0];
+const curLook = () => cam.mode === 'selfie' ? curLens().look || 'normal' : cam.mode === 'photo' ? LOOK_ORDER[real.look] : 'normal';
+const curCostume = () => cam.mode === 'selfie' ? curLens().costume || null : null;
+const needsFx = () => { const L = LOOKS[curLook()]; return !!(L.px || L.fn || L.mirror || L.flipV); };
+
+/* ----- the camera itself ----- */
+function openStream(facing){
+  if (real.stream && real.facing === facing && real.stream.active) return Promise.resolve(true);
+  if (real.pending && real.pendingFacing === facing) return real.pending;
+  closeStream();
+  if (!canCamera()){ real.state = 'unsupported'; return Promise.resolve(false); }
+  const my = ++real.seq; real.state = 'starting'; real.pendingFacing = facing;
+  const p = Promise.resolve().then(() => navigator.mediaDevices.getUserMedia({audio:false, video:{facingMode:{ideal:facing}, width:{ideal:1280}, height:{ideal:720}}})).then(async s => {
+    if (my !== real.seq){ s.getTracks().forEach(t => t.stop()); return false; }   // the kids moved on while it was starting
+    real.stream = s; real.facing = facing; real.state = 'live'; real.ok = true; real.pending = null;
+    camVideo.srcObject = s;
+    try{ await camVideo.play(); }catch(e){}
+    const tr = s.getVideoTracks()[0]; let caps = {};
+    try{ caps = tr && tr.getCapabilities ? tr.getCapabilities() : {}; }catch(e){}
+    real.hw = caps && caps.zoom && caps.zoom.max >= 2 ? caps.zoom : null;
+    if (tr) tr.addEventListener('ended', () => {   // the phone took the camera away (another app, a call): try again in a moment
+      if (real.stream !== s) return;
+      closeStream(); if (current === 'camera' && cam.mode !== 'safari' && document.visibilityState === 'visible') later(startReal, 800);
+    });
+    return true;
+  }, e => {
+    if (my !== real.seq) return false;
+    real.pending = null; real.err = (e && e.name) || String(e);
+    real.state = real.err === 'NotAllowedError' || real.err === 'SecurityError' ? 'blocked' : 'missing';
+    return false;
+  });
+  real.pending = p;
+  return p;
+}
+function closeStream(){
+  real.seq++; real.pending = null;
+  if (real.stream) real.stream.getTracks().forEach(t => { try{ t.stop(); }catch(e){} });
+  real.stream = null; real.facing = '';
+  try{ camVideo.pause(); }catch(e){}
+  camVideo.srcObject = null;
+  if (real.state === 'live' || real.state === 'starting') real.state = 'off';
+}
+async function startReal(){
+  const mode = cam.mode; if (mode === 'safari') return;
+  updateLookUI(); placeLenses();
+  const ok = await openStream(mode === 'selfie' ? 'user' : 'environment');
+  renderCamNote();
+  if (cam.mode !== mode || current !== 'camera') return;
+  if (!ok){ if (realBroken()) setCamMode('safari'); return; }   // refused or no camera: the pretend camera instead
+  applyZoom(); startFx();
+}
+/* while the settings sheet is up: ask for the camera now, so Safari's question comes while a parent is there */
+async function probeCamera(){
+  if (current === 'camera'){ startCamera(); return; }
+  real.state = 'off';
+  await openStream('environment');
+  if (current !== 'camera') closeStream();
+  renderCamNote();
+}
+
+function setCamMode(m, speak){
+  const modes = camModes(); if (!modes.includes(m)) m = modes[0];
+  cam.mode = m;
+  if (modes.length > 1) store.set('camMode', m);
+  camLayout();
+  if (m === 'safari'){ closeStream(); stopFx(); if (!cam.raf) startPretend(); }
+  else { stopPretend(); startReal(); }
+  if (speak) say(MODE_SAY[m], 0, 'camera');
+}
+function camLayout(){
+  const modes = camModes(), m = cam.mode, isReal = m !== 'safari';
+  camEl.classList.toggle('cam-ix', modes.length > 1 || isReal);
+  camEl.classList.toggle('cam-real', isReal);
+  ['safari','photo','selfie'].forEach(k => camEl.classList.toggle('cam-' + k, m === k));
+  $('#camScenes').hidden = isReal; $('#zoomBtn').hidden = isReal;
+  $('#camZooms').hidden = m !== 'photo'; $('#lenses').hidden = m !== 'selfie'; $('#flipBtn').hidden = !isReal;
+  const mb = $('#camModes'); mb.hidden = modes.length < 2; mb.innerHTML = '';
+  mb.style.setProperty('--cm', modes.length > 2 ? '54px' : '76px');
+  if (modes.length > 1) modes.forEach(k => {
+    const b = document.createElement('button'); b.className = 'cmode' + (k === m ? ' on' : ''); b.dataset.mode = k; b.setAttribute('aria-label', MODE_NAME[k]); b.innerHTML = MODE_ICON[k];
+    tap(b, () => { if (cam.mode !== k){ FX.swoosh(); setCamMode(k, true); } });
+    mb.appendChild(b);
+  });
+  renderZooms(); updateLookUI();
+  if (m === 'selfie') placeLenses();
+}
+
+/* zoom: the camera's own zoom where the phone offers it, otherwise the picture is enlarged (and the photo cropped to match) */
+const ZOOMS = [1, 2, 3];
+function renderZooms(){
+  const z = $('#camZooms');
+  if (!z.children.length) ZOOMS.forEach(v => {
+    const b = document.createElement('button'); b.className = 'czoom'; b.dataset.z = v; b.textContent = v + '×'; b.setAttribute('aria-label', 'Zoom ' + v);
+    tap(b, () => { FX.pop(); if (real.zoom === v) return; real.zoom = v; applyZoom(); renderZooms(); say(v > 1 ? 'Zoom in!' : 'Zoom out!', 0, 'camera'); });
+    z.appendChild(b);
+  });
+  [...z.children].forEach(b => b.classList.toggle('on', +b.dataset.z === real.zoom));
+}
+function applyZoom(){
+  const tr = real.stream && real.stream.getVideoTracks()[0], want = cam.mode === 'photo' ? real.zoom : 1;
+  let css = want;
+  if (tr && real.hw && cam.mode === 'photo'){ try{ tr.applyConstraints({advanced:[{zoom:clamp(want, real.hw.min, real.hw.max)}]}).catch(() => {}); css = 1; }catch(e){} }
+  real.cz = css; camVideo.style.setProperty('--cz', css);
+}
+
+/* ----- drawing a frame: the picture as it fills the viewfinder (object-fit: cover), zoomed, mirrored for a selfie ----- */
+function drawFrame(g, w, h, flipV){
+  const v = camVideo, vw = v.videoWidth, vh = v.videoHeight; if (!vw || !vh) return false;
+  const s = Math.max(w/vw, h/vh)*(cam.mode === 'photo' ? real.cz : 1), sw = w/s, sh = h/s;
+  g.save();
+  if (cam.mode === 'selfie'){ g.translate(w, 0); g.scale(-1, 1); }
+  if (flipV){ g.translate(w, h); g.rotate(Math.PI); }
+  g.drawImage(v, (vw - sw)/2, (vh - sh)/2, sw, sh, 0, 0, w, h);
+  g.restore();
+  return true;
+}
+function renderLook(g, w, h, look, t){
+  const L = LOOKS[look];
+  if (!drawFrame(g, w, h, !!L.flipV)) return;
+  if (L.mirror){ g.save(); g.translate(w, 0); g.scale(-1, 1); g.drawImage(g.canvas, 0, 0, Math.ceil(w/2), h, 0, 0, Math.ceil(w/2), h); g.restore(); }
+  if (L.fn){ const im = g.getImageData(0, 0, w, h); L.fn(im.data, w, h, t); g.putImageData(im, 0, 0); }
+}
+function sizeFx(){
+  const L = LOOKS[curLook()], w = L.px ? PIX_W : Math.max(2, Math.round(vfW*.5)), h = Math.max(2, Math.round(w*vfH/vfW));
+  if (camFx.width !== w || camFx.height !== h){ camFx.width = w; camFx.height = h; }
+  camFx.classList.toggle('pix', !!L.px);
+}
+function startFx(){
+  updateLookUI(); cancelAnimationFrame(real.raf);
+  const loop = now => {
+    real.raf = requestAnimationFrame(loop);
+    if (!needsFx() || camVideo.readyState < 2) return;
+    if (now - real.last < 30) return;   // about 30 frames a second is plenty
+    real.last = now;
+    try{ renderLook(fxg, camFx.width, camFx.height, curLook(), now/1000); }catch(e){}
+  };
+  real.raf = requestAnimationFrame(loop);
+}
+function stopFx(){ cancelAnimationFrame(real.raf); real.raf = 0; }
+function updateLookUI(){
+  camFx.hidden = cam.mode === 'safari' || !needsFx();
+  sizeFx(); updateCostume();
+  camEl.classList.toggle('lens-on', cam.mode === 'selfie' && curLens().id !== 'none');
+}
+function updateCostume(fresh){
+  const id = curCostume(); camCos.hidden = !id;
+  if (!id) return;
+  if (camCos.dataset.id !== id){ camCos.src = costumeURL(id); camCos.dataset.id = id; }
+  const b = costumeBox(vfW, vfH);
+  Object.assign(camCos.style, {left:b.x + 'px', top:b.y + 'px', width:b.w + 'px', height:b.h + 'px'});
+  if (fresh) retrigger(camCos, 'on');
+}
+
+/* ----- the selfie strip: slide it, tap a bubble, or swipe across the picture ----- */
+const LB = 64, LG = 18;   // a bubble and the gap between bubbles (as in the stylesheet)
+const ltrack = $('#ltrack'), lensBox = $('#lenses');
+LENSES.forEach((L, i) => { const b = document.createElement('button'); b.className = 'lens'; b.dataset.i = i; b.setAttribute('aria-label', lensName(L)); b.innerHTML = lensIcon(L); ltrack.appendChild(b); });
+const lensAxis = () => innerWidth > innerHeight ? 'y' : 'x';
+let lensDrag = null;
+function placeLenses(off = 0){
+  if (lensBox.hidden) return;
+  const ax = lensAxis(), bR = lensBox.getBoundingClientRect(), sR = $('#shutter').getBoundingClientRect();
+  const center = ax === 'x' ? sR.left + sR.width/2 - bR.left : sR.top + sR.height/2 - bR.top, pos = center - LB/2 - real.lens*(LB + LG) + off;
+  ltrack.style.transform = ax === 'x' ? `translate(${pos}px,-50%)` : `translate(-50%,${pos}px)`;
+  [...ltrack.children].forEach((b, i) => b.classList.toggle('on', i === real.lens && !lensDrag));
+}
+const axisPos = e => lensAxis() === 'x' ? e.clientX : e.clientY;
+lensBox.addEventListener('pointerdown', e => {
+  e.preventDefault(); keepAwake(); if (lensDrag) return;
+  lensDrag = {id:e.pointerId, p0:axisPos(e), moved:false, i0:real.lens};
+  try{ lensBox.setPointerCapture(e.pointerId); }catch(err){}
+  ltrack.classList.add('drag'); placeLenses();
+});
+lensBox.addEventListener('pointermove', e => {
+  if (!lensDrag || e.pointerId !== lensDrag.id) return;
+  const d = axisPos(e) - lensDrag.p0; if (Math.abs(d) > 10) lensDrag.moved = true;
+  placeLenses(clamp(d, -(LENSES.length - 1 - lensDrag.i0)*(LB + LG) - 30, lensDrag.i0*(LB + LG) + 30));
+});
+lensBox.addEventListener('pointerup', e => {
+  if (!lensDrag || e.pointerId !== lensDrag.id) return;
+  const d = axisPos(e) - lensDrag.p0, under = lensDrag.moved ? null : document.elementFromPoint(e.clientX, e.clientY), hit = under && under.closest('.lens');
+  const i = hit ? +hit.dataset.i : clamp(Math.round(lensDrag.i0 - d/(LB + LG)), 0, LENSES.length - 1);
+  lensDrag = null; ltrack.classList.remove('drag');
+  setLens(i); if (i === real.lens) placeLenses();
+});
+lensBox.addEventListener('pointercancel', () => { lensDrag = null; ltrack.classList.remove('drag'); placeLenses(); });
+function setLens(i, quiet){
+  i = clamp(i, 0, LENSES.length - 1);
+  const changed = i !== real.lens; real.lens = i;
+  placeLenses(); updateLookUI();
+  if (!changed) return;
+  updateCostume(true);
+  if (quiet) return;
+  const L = LENSES[i];
+  if (L.costume){ const a = animalOf(L.costume); if (a) animalSound(a); later(() => say(`You're ${article(COSTUME_NAME[L.costume])}!`, 0, 'camera'), 250); }
+  else { FX.pop(); if (L.look !== 'normal'){ popWord(vf, LOOKS[L.look].n); say(LOOKS[L.look].say, 0, 'camera'); } }
+}
+function setLook(i){
+  real.look = (i + LOOK_ORDER.length) % LOOK_ORDER.length; updateLookUI();
+  const k = LOOK_ORDER[real.look]; FX.swoosh(); popWord(vf, LOOKS[k].n);
+  if (k !== 'normal') say(LOOKS[k].say, 0, 'camera');
+}
+/* a swipe across the picture steps to the next costume or look; a tap shows a focus square, like a real camera */
+let vswipe = null;
+function realDown(e){ if (!vswipe) vswipe = {id:e.pointerId, x:e.clientX, y:e.clientY}; }
+function realUp(e){
+  if (!vswipe || e.pointerId !== vswipe.id) return;
+  const dx = e.clientX - vswipe.x, dy = e.clientY - vswipe.y; vswipe = null;
+  if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)){ const d = dx < 0 ? 1 : -1; if (cam.mode === 'selfie') setLens(real.lens + d); else setLook(real.look + d); return; }
+  const r = vf.getBoundingClientRect(), f = document.createElement('div'); f.className = 'focus';
+  f.style.left = (e.clientX - r.left) + 'px'; f.style.top = (e.clientY - r.top) + 'px';
+  vf.appendChild(f); f.addEventListener('animationend', () => f.remove()); FX.tick();
+}
+$('#flipBtn').innerHTML = FLIP_ICON;
+tap($('#flipBtn'), () => { FX.swoosh(); retrigger($('#flipBtn'), 'spin'); setCamMode(cam.mode === 'selfie' ? 'photo' : 'selfie', true); }, {throttle:600});
+
+/* ----- taking the picture: the frame as the kids see it, the look, the costume, saved as a JPEG ----- */
+function realSnapshot(){
+  if (!camVideo.videoWidth || vfW < 2) return null;
+  const a = vfW/vfH, W = a < 1 ? Math.round(640*a) : 640, H = a < 1 ? 640 : Math.round(640/a), look = curLook(), L = LOOKS[look], t = performance.now()/1000;
+  const c = document.createElement('canvas'); c.width = W; c.height = H;
+  const g = c.getContext('2d', {willReadFrequently:true});
+  if (L.px){
+    const s = document.createElement('canvas'); s.width = PIX_W; s.height = Math.max(2, Math.round(PIX_W*vfH/vfW));
+    renderLook(s.getContext('2d', {willReadFrequently:true}), s.width, s.height, look, t);
+    g.imageSmoothingEnabled = false; g.drawImage(s, 0, 0, W, H);
+  } else renderLook(g, W, H, look, t);
+  const id = curCostume();
+  if (id){ const b = costumeBox(W, H); g.imageSmoothingEnabled = false; g.drawImage(costumeCanvas(id), b.x, b.y, b.w, b.h); }
+  return c;
+}
+function realShutter(){
+  if (!real.stream || !camVideo.videoWidth) return;
+  FX.shutter(); retrigger($('#flash'), 'go'); retrigger(vf, 'shake');
+  const c = realSnapshot(); if (!c) return;
+  const id = curCostume(), look = curLook();
+  const meta = {real:true, names:id ? [COSTUME_NAME[id]] : [], ...(id ? {costume:id} : {}), ...(look !== 'normal' ? {look} : {}), ...(cam.mode === 'selfie' ? {selfie:true} : {})};
+  const fallback = () => { try{ Photos.add(c.toDataURL('image/jpeg', .76), meta); }catch(e){} showThumb(true); };
+  if (c.toBlob && PhotoDB.ok()) c.toBlob(b => { if (b) Photos.addBlob(b, meta).then(() => showThumb(true), fallback); else fallback(); }, 'image/jpeg', .82);
+  else fallback();
+  later(() => say(rnd(CLICKS), 0, 'camera'), 420);
+}
+
+/* ----- settings: what the parent sees about the camera ----- */
+function renderCamNote(){
+  $$('[data-camera]').forEach(b => b.classList.toggle('on', b.dataset.camera === settings.camera));
+  const n = $('#camNote'); if (!n) return;
+  const allow = 'in Safari, tap the page menu (aA) by the web address, then Website Settings › Camera › Allow';
+  n.textContent = settings.camera === 'pretend' ? ''
+    : !canCamera() ? "This copy can't reach the camera: it needs the toy's own https web address, in Safari or from the Home Screen. The pretend camera shows instead."
+    : real.state === 'blocked' ? `The camera is blocked, so the pretend camera shows instead. To allow it, ${allow}. Then open the Camera again.`
+    : real.state === 'missing' ? 'No camera answered (another app may be using it), so the pretend camera shows for now. It tries again each time the Camera opens.'
+    : real.ok ? `Camera allowed. If Safari asks again another day: ${allow}.`
+    : `Safari asks the first time. To skip the question: ${allow}.`;
 }
 
 /* ======================= MUSIC ======================= */
@@ -6245,6 +6790,7 @@ function renderSettings(){
   $$('[data-incoming]').forEach(b => b.classList.toggle('on', (b.dataset.incoming === '1') === settings.incoming));
   $$('[data-silent]').forEach(b => b.classList.toggle('on', (b.dataset.silent === '1') === settings.silent));
   $$('[data-vol]').forEach(b => b.classList.toggle('on', +b.dataset.vol === settings.vol));
+  renderCamNote();
   const n = Photos.list.length; $('#photoCount').textContent = n + (n === 1 ? ' photo' : ' photos');
   $('#clearBtn').disabled = !n;
 }
@@ -6260,6 +6806,12 @@ function showSound(){
 }
 function closeSettings(){ $('#settings').hidden = true; }
 $$('[data-incoming]').forEach(b => tap(b, () => { settings.incoming = b.dataset.incoming === '1'; saveSettings(); renderSettings(); scheduleIncoming(); }));
+$$('[data-camera]').forEach(b => tap(b, () => {
+  settings.camera = b.dataset.camera; saveSettings(); FX.cheer();
+  if (realBroken()) real.state = 'off';
+  renderSettings();
+  if (current === 'camera') startCamera(); else if (settings.camera !== 'pretend') probeCamera();
+}));
 $$('[data-silent]').forEach(b => tap(b, () => { settings.silent = b.dataset.silent === '1'; saveSettings(); setSession(); renderSettings(); showSound(); FX.cheer(); }));
 $$('[data-vol]').forEach(b => tap(b, () => { settings.vol = +b.dataset.vol; saveSettings(); if (master) master.gain.value = VOLS[settings.vol]; renderSettings(); FX.cheer(); }));
 tap($('#clearBtn'), () => { if (Photos.list.length) $('#confirmClear').hidden = false; });
@@ -6276,11 +6828,12 @@ document.addEventListener('touchmove', e => { if (!inScroll(e)) e.preventDefault
 let lastTouch = 0;
 document.addEventListener('touchend', e => { const now = Date.now(); if (now - lastTouch < 350 && !inScroll(e)) e.preventDefault(); lastTouch = now; }, {passive:false});
 document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'visible'){ keepAwake(); updateClock(); }
-  else { stopSong(); if (call){ stopCallSounds(); closeCall(); } }
+  if (document.visibilityState === 'visible'){ keepAwake(); updateClock(); if (current === 'camera' && cam.mode !== 'safari') startReal(); }
+  else { stopSong(); if (call){ stopCallSounds(); closeCall(); } closeStream(); stopFx(); }   // the camera never runs off screen
 });
 let resizeT = 0;
-window.addEventListener('resize', () => { clearTimeout(resizeT); resizeT = setTimeout(() => { fitContacts(); if (current === 'camera') sizeCamera(); if (!bgWatch) paintBackgrounds(); }, 120); });
+window.addEventListener('resize', () => { clearTimeout(resizeT); resizeT = setTimeout(() => { fitContacts(); if (current === 'camera'){ sizeCamera(); if (cam.mode !== 'safari'){ updateLookUI(); placeLenses(); } } if (!bgWatch) paintBackgrounds(); }, 120); });
+window.addEventListener('pagehide', () => closeStream());
 paintBackgrounds(); if (bgWatch) bgFor.forEach((fn, el) => bgWatch.observe(el));
 
 /* Offline after the first visit when self-hosted over HTTPS (artifacts and file:// skip this). */
@@ -6304,6 +6857,7 @@ function voiceLines(){
       ...(a.hidden ? ['Can you find the hiding ' + a.n + '?', 'You found the ' + a.n + '!', 'Wow! You found the hiding ' + a.n + '!'] : [])])]),
     'You got a picture!', ...CLICKS, ...PRETTY, 'Zoom in!', 'Zoom out!', 'Take a picture first!', 'Your pictures!', 'Look at all your pictures!',
     'No pictures yet! Tap the camera to take some!', 'All your pictures!',
+    ...Object.values(CAM_SAY), ...Object.values(MODE_SAY), ...COSTUMES.map(c => `You're ${article(COSTUME_NAME[c])}!`), ...LOOK_ORDER.slice(1).map(k => LOOKS[k].say),
     ...Object.values(MUSIC_SAY), ...SONGS.map(x => x.n + '!'), 'Yay! Great dancing!', 'Stop!', 'Hello! This is how loud I am.',
     ...WildTap.lines(), ...DinoBuddies.lines(), ...SnackTime.lines(), ...PaintPals.lines()
   ];
@@ -6327,7 +6881,14 @@ window.__toyPhone = { go, renderFx, speakable, voiceLines, lineMs,
   recorded: () => Object.keys(REC), trims: FX_TRIM,
   voiceMissing: () => voiceLines().filter(l => !(VB.map && VB.map[l.who + '|' + l.s])).map(l => l.who + '|' + l.s),
   panorama: (k, w=1600) => Promise.resolve().then(() => { const cv = document.createElement('canvas'); cv.width = w; cv.height = Math.round(w * WH / WW); renderScene(cv.getContext('2d'), SCENES[k], 0, 0, w / WW, cv.width, cv.height, 3, true); return cv.toDataURL('image/png'); }), dino: () => ({fill:DinoBuddies.fill(), family:DinoBuddies.family()}), snack: () => SnackTime.state(), paint: () => PaintPals.state(), fx: () => Object.keys(FX), ringIn: () => maybeRing(true), sound: () => ({state: ctx ? ctx.state : 'none', rebuilds, held: held.length}),
-  pauseSound: () => { if (ctx) Object.defineProperty(ctx, 'state', {configurable:true, get: () => 'interrupted'}); }, photos: () => Photos.list.length, call: () => call && call.state, contacts: () => CONTACTS.length };
+  pauseSound: () => { if (ctx) Object.defineProperty(ctx, 'state', {configurable:true, get: () => 'interrupted'}); }, photos: () => Photos.list.length, call: () => call && call.state,
+  cam: () => ({mode:cam.mode, modes:camModes(), state:real.state, facing:real.facing, tracks:real.stream ? real.stream.getTracks().filter(t => t.readyState === 'live').length : 0,
+    playing:camVideo.readyState >= 2 && camVideo.videoWidth > 0, look:curLook(), lens:curLens().id, costume:curCostume(), zoom:real.zoom, fx:!camFx.hidden}),
+  costumeSheet: () => { const c = document.createElement('canvas'), k = 4, ids = COSTUMES; c.width = ids.length*(COS_W + 4)*k; c.height = (COS_H + 4)*k + 24*k; const g = c.getContext('2d'); g.fillStyle = '#5BA0D8'; g.fillRect(0, 0, c.width, c.height); g.imageSmoothingEnabled = false;
+    ids.forEach((id, i) => { g.fillStyle = '#E8C9A8'; g.beginPath(); g.ellipse(((COS_W + 4)*i + 2 + FACE[0])*k, (2 + FACE[1])*k, FACE[2]*k, FACE[3]*k, 0, 0, Math.PI*2); g.fill(); g.drawImage(costumeCanvas(id), ((COS_W + 4)*i + 2)*k, 2*k, COS_W*k, COS_H*k); });
+    return c.toDataURL(); },
+  camLook: i => setLook(i), camLens: i => setLens(i),
+  photoInfo: () => Photos.list.slice(0, 3).map(p => ({db:!!p.db, real:!!p.real, costume:p.costume || null, look:p.look || null, src:String(Photos.src(p.id) || '').slice(0, 16)})), contacts: () => CONTACTS.length };
 })();
 </script>
 </body>

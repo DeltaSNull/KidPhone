@@ -134,7 +134,7 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
     const r = await page.evaluate(() => {
       const vw = innerWidth, vh = innerHeight, small = [], off = [];
       document.querySelectorAll('button').forEach(b => {
-        const s = b.getBoundingClientRect(); if (!s.width || b.closest('[hidden]') || b.closest('.sheet')) return;
+        const s = b.getBoundingClientRect(); if (!s.width || b.closest('[hidden]') || b.closest('.sheet') || b.closest('.ltrack')) return;   // (the selfie strip slides: only part of it shows)
         if (s.left < -1 || s.top < -1 || s.right > vw + 1 || s.bottom > vh + 1) off.push(b.getAttribute('aria-label') || b.className);
         if (Math.min(s.width, s.height) < 76) small.push(`${b.getAttribute('aria-label') || b.className} ${Math.round(s.width)}x${Math.round(s.height)}`);
       });
@@ -334,6 +334,82 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   await touch('touchStart', [[pic.x + pic.width / 2, pic.y + pic.height / 2]]); await sleep(60); await touch('touchEnd', []); await sleep(400);
   check(await visible('#viewer'), 'tapping a thumbnail opens it');
   await home();
+
+  // --- REAL CAMERA (a parent turns it on; Chromium's fake camera stands in for the phone's)
+  const holdClock = async () => { const [x, y] = await center('#clock'); await touch('touchStart', [[x, y]]); await sleep(3300); await touch('touchEnd', []); await sleep(300); };
+  const cam = () => page.evaluate(() => window.__toyPhone.cam());
+  const portraitView = viewport.height > viewport.width;
+  const tapSetting = async sel => { await page.evaluate(sel => document.querySelector(sel).scrollIntoView({ block: 'center' }), sel); await sleep(150); await tap(sel); };   // clear of the sticky header
+  await holdClock();
+  check(await page.evaluate(() => document.querySelector('[data-camera="pretend"]').classList.contains('on')), 'the camera setting starts on Pretend');
+  await tapSetting('[data-camera="both"]'); await sleep(1500);
+  check(await page.evaluate(() => JSON.parse(localStorage.getItem('toyphone.settings')).camera) === 'both', 'the camera setting is saved');
+  const camNote = await page.locator('#camNote').textContent();
+  check(/allowed/i.test(camNote) && (await cam()).tracks === 0, `choosing a real camera asks for it right away, while a parent is there, then lets it go (${camNote.slice(0, 40)})`);
+  await tap('#doneBtn'); await sleep(300);
+  await tap('[data-app="camera"]'); await sleep(1500);
+  let cs = await cam();
+  check(cs.mode === 'safari' && cs.modes.join() === 'safari,photo,selfie' && await page.locator('.cmode').count() === 3, `with Both, the camera opens on pretend and offers photo and selfie (${cs.modes})`);
+  await fits('camera with both');
+  await tap('[data-mode="photo"]'); await sleep(1500);
+  cs = await cam();
+  check(cs.mode === 'photo' && cs.state === 'live' && cs.facing === 'environment' && cs.tracks === 1 && cs.playing, `photo mode shows the back camera, live ${JSON.stringify(cs)}`);
+  await shot('9b-real-photo');
+  await fits('real camera');
+  await tap('.czoom[data-z="2"]'); await sleep(300);
+  check((await cam()).zoom === 2, 'the 2x zoom button zooms');
+  const rv = await page.locator('#vf').boundingBox();
+  const swipeVf = () => drag([rv.x + rv.width * 0.8, rv.y + rv.height * 0.4], [rv.x + rv.width * 0.2, rv.y + rv.height * 0.4], 6);
+  await swipeVf(); await sleep(500);
+  cs = await cam();
+  check(cs.look === 'pixel' && cs.fx, `swiping the picture changes the look (${cs.look})`);
+  let nPhotos = await page.evaluate(() => window.__toyPhone.photos());
+  await tap('#shutter'); await sleep(1200);
+  let newest = (await page.evaluate(() => window.__toyPhone.photoInfo()))[0];
+  check(await page.evaluate(() => window.__toyPhone.photos()) === nPhotos + 1 && newest.real && newest.db && newest.look === 'pixel' && newest.src.startsWith('blob:'),
+    `the shutter saves a real photo, with its look, in the photo database ${JSON.stringify(newest)}`);
+  await tap('#flipBtn'); await sleep(1500);
+  cs = await cam();
+  check(cs.mode === 'selfie' && cs.facing === 'user' && cs.tracks === 1 && cs.playing && cs.look === 'normal', `the flip button turns to the selfie camera ${JSON.stringify(cs)}`);
+  check(await visible('#lenses') && await page.locator('.lens').count() >= 15, 'selfie mode shows the strip of costumes and looks');
+  before = await osc();
+  await tap('.lens[data-i="1"]'); await sleep(900);
+  cs = await cam();
+  check(cs.costume === 'lion' && await visible('#camCostume') && await osc() > before, `tapping a costume puts it on, and the animal roars (${cs.lens})`);
+  const lb = await page.locator('#lenses').boundingBox(), sb = await page.locator('#shutter').boundingBox();
+  if (portraitView) { const y = lb.y + lb.height / 2, x = sb.x + sb.width + 30; await drag([x, y], [x - 164, y], 8); }
+  else { const x = lb.x + lb.width / 2, y = sb.y + sb.height + 30; await drag([x, y], [x, y - 164], 8); }
+  await sleep(700);
+  cs = await cam();
+  check(cs.costume === 'elephant', `sliding the strip two bubbles over picks the elephant (${cs.lens})`);
+  await shot('9c-selfie-costume');
+  await fits('selfie');
+  await swipeVf(); await sleep(700);
+  check((await cam()).costume === 'giraffe', 'swiping across the picture moves to the next costume');
+  nPhotos = await page.evaluate(() => window.__toyPhone.photos());
+  await tap('#shutter'); await sleep(1200);
+  newest = (await page.evaluate(() => window.__toyPhone.photoInfo()))[0];
+  check(await page.evaluate(() => window.__toyPhone.photos()) === nPhotos + 1 && newest.costume === 'giraffe', `a selfie is saved with its costume ${JSON.stringify(newest)}`);
+  await home();
+  cs = await cam();
+  check(cs.tracks === 0 && cs.state !== 'live', 'leaving the Camera turns the camera off');
+  await tap('[data-app="camera"]'); await sleep(1500);
+  cs = await cam();
+  check(cs.mode === 'selfie' && cs.tracks === 1, `the Camera opens again in the last mode (${cs.mode})`);
+  const setVis = v => page.evaluate(v => { Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => v }); document.dispatchEvent(new Event('visibilitychange')); }, v);
+  await setVis('hidden'); await sleep(300);
+  check((await cam()).tracks === 0, 'the camera turns off when the toy goes off screen');
+  await setVis('visible'); await sleep(1500);
+  check((await cam()).tracks === 1, 'and back on when it comes back');
+  await home();
+  await page.evaluate(() => { const md = navigator.mediaDevices; md.__gum = md.getUserMedia; md.getUserMedia = () => Promise.reject(Object.assign(new Error('denied'), { name: 'NotAllowedError' })); });
+  await tap('[data-app="camera"]'); await sleep(1200);
+  cs = await cam();
+  check(cs.mode === 'safari' && cs.state === 'blocked' && await visible('#vfc') && await page.locator('#camModes').isHidden(), `a refused camera falls back to the pretend one ${JSON.stringify(cs)}`);
+  await home(); await holdClock();
+  check(/blocked/i.test(await page.locator('#camNote').textContent()), 'settings then say the camera is blocked and how to allow it');
+  await page.evaluate(() => { const md = navigator.mediaDevices; md.getUserMedia = md.__gum; });
+  await tapSetting('[data-camera="pretend"]'); await tap('#doneBtn'); await sleep(300);
 
   // --- MUSIC
   await tap('[data-app="music"]'); await sleep(600);
@@ -605,7 +681,8 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   check(count > 80 && !bad.length, `all ${count} pixel sprites are well formed ${bad.slice(0, 5).join(', ')}`);
   const srv = await serve();
   const base = `http://127.0.0.1:${srv.address().port}`;
-  const browser = await chromium.launch({ args: ['--autoplay-policy=no-user-gesture-required'] });
+  // a fake camera (a moving test picture) stands in for the phone's, and its permission question is answered yes
+  const browser = await chromium.launch({ args: ['--autoplay-policy=no-user-gesture-required', '--use-fake-device-for-media-stream', '--use-fake-ui-for-media-stream'] });
   try {
     if (process.env.ONLY !== 'landscape') await run(browser, base, 'portrait', { width: 390, height: 844 });
     if (process.env.ONLY !== 'portrait') await run(browser, base, 'landscape', { width: 844, height: 390 });
