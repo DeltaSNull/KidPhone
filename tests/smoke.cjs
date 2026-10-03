@@ -14,7 +14,7 @@ const failures = [];
 const warnings = [];
 const check = (ok, msg) => { if (!ok) failures.push(msg); console.log((ok ? '  ok   ' : '  FAIL ') + msg); };
 
-/* ---------- tiny static server for the toy-phone folder ---------- */
+/* ---------- tiny static server for the toy ---------- */
 const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.json': 'application/json', '.png': 'image/png', '.svg': 'image/svg+xml', '.webmanifest': 'application/manifest+json' };
 function serve() {
   return new Promise(res => {

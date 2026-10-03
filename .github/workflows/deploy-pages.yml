@@ -1,0 +1,49 @@
+# Publishes the toy phone to GitHub Pages at https://deltasnull.github.io/KidPhone/
+# The site is plain HTML, CSS and JavaScript with relative paths, so there is no build: this copies the files
+# the page needs into _site and deploys that. Tests, tools and the private family folder are never published.
+# One-time setup: Settings > Pages > Build and deployment > Source: "GitHub Actions".
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths-ignore: ['README.md', 'tests/**', 'tools/**', 'screenshots/**']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# one deployment at a time; a newer push waits rather than cancelling one that is half done
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Gather the site
+        run: |
+          mkdir -p _site/assets
+          cp index.html manifest.webmanifest sw.js _site/
+          cp -R icons _site/icons
+          # Real animal recordings, if you commit any. assets/family (voices and photos) is left out on purpose:
+          # this site is public, so family contacts only work on a private server (see assets/family/README.md).
+          cp -R assets/sounds _site/assets/sounds
+          ls -R _site
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,5 +1,5 @@
 /* GitHub Pages check. Runs the "Gather the site" step from .github/workflows/deploy-pages.yml, serves the result
-   under /Claude/ the way GitHub Pages serves a project site (https://<user>.github.io/<repo>/), then opens it as an
+   under /KidPhone/ the way GitHub Pages serves a project site (https://<user>.github.io/<repo>/), then opens it as an
    iPhone (Safari) and as an Android phone (Chrome): every file the page asks for must load from the subpath, taps
    must work, and the offline cache must work from the subpath too. Run: npm run test:pages */
 const { chromium } = require('playwright');
@@ -9,26 +9,28 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 
-const REPO = path.resolve(__dirname, '..', '..');
-const BASE = '/Claude/';   // the repository name
+const REPO = path.resolve(__dirname, '..');
+const BASE = '/KidPhone/';   // the repository name
 const OPTIONAL = ['assets/sounds/sounds.json', 'assets/family/family.json'];   // the page asks for these; a 404 means "none"
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const failures = [];
 const check = (ok, msg) => { if (!ok) failures.push(msg); console.log((ok ? '  ok   ' : '  FAIL ') + msg); };
 
-/* the workflow's own copy step, so this checks exactly what gets published */
+/* the workflow's own copy step, run on a copy of what a checkout holds (the files git tracks or would add), so this
+   checks exactly what gets published */
 function gatherSite() {
   const yml = fs.readFileSync(path.join(REPO, '.github', 'workflows', 'deploy-pages.yml'), 'utf8');
   const m = yml.match(/- name: Gather the site\n +run: \|\n((?: {10}.*\n|\n)+)/);
   if (!m) throw new Error('no "Gather the site" step in deploy-pages.yml');
   const script = m[1].split('\n').map(l => l.slice(10)).join('\n');
-  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'toy-phone-pages-'));
-  fs.symlinkSync(path.join(REPO, 'toy-phone'), path.join(tmp, 'toy-phone'));
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'kidphone-pages-'));
+  const files = execFileSync('git', ['ls-files', '-z', '--cached', '--others', '--exclude-standard'], { cwd: REPO }).toString().split('\0').filter(f => f && fs.existsSync(path.join(REPO, f)));
+  files.forEach(f => { fs.mkdirSync(path.join(tmp, path.dirname(f)), { recursive: true }); fs.copyFileSync(path.join(REPO, f), path.join(tmp, f)); });
   execFileSync('bash', ['-euo', 'pipefail', '-c', script], { cwd: tmp, stdio: ['ignore', 'ignore', 'inherit'] });
   return path.join(tmp, '_site');
 }
 
-/* GitHub Pages in miniature: only BASE exists, /Claude redirects to /Claude/, folders serve index.html */
+/* GitHub Pages in miniature: only BASE exists, /KidPhone redirects to /KidPhone/, folders serve index.html */
 const TYPES = { '.html': 'text/html', '.js': 'application/javascript', '.json': 'application/json', '.png': 'image/png', '.webmanifest': 'application/manifest+json', '.md': 'text/markdown' };
 function serve(dir) {
   return new Promise(res => {
@@ -62,7 +64,7 @@ async function run(browser, origin, name) {
   const bad = [], errors = [];
   page.on('response', r => {
     const u = new URL(r.url());
-    if (u.origin !== origin || (r.status() >= 300 && r.status() < 400)) return;   // other sites (Google Fonts) and the /Claude redirect
+    if (u.origin !== origin || (r.status() >= 300 && r.status() < 400)) return;   // other sites (Google Fonts) and the /KidPhone redirect
     if (!u.pathname.startsWith(BASE)) bad.push(`${u.pathname} (outside ${BASE}: an absolute path)`);
     else if (r.status() >= 400 && !OPTIONAL.includes(u.pathname.slice(BASE.length))) bad.push(`${u.pathname} ${r.status()}`);
   });
