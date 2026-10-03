@@ -265,8 +265,8 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   await shot('5-settings');
   // voice checkboxes: on only where the voice is the point (calls, Find It); the rest start off
   const voiceBoxes = await page.$$eval('[data-voice]', bs => Object.fromEntries(bs.map(b => [b.dataset.voice, b.getAttribute('aria-checked')])));
-  check(JSON.stringify(voiceBoxes) === JSON.stringify({ calls: 'true', find: 'true', menus: 'false', names: 'false', camera: 'false', numbers: 'false', music: 'false' }),
-    `voice checkboxes start on for calls and Find It only ${JSON.stringify(voiceBoxes)}`);
+  check(JSON.stringify(voiceBoxes) === JSON.stringify({ calls: 'true', find: 'true', menus: 'false', names: 'false', camera: 'false', school: 'true', numbers: 'false', music: 'false' }),
+    `voice checkboxes start on for calls, Find It and School only ${JSON.stringify(voiceBoxes)}`);
   for (const k of ['menus', 'names', 'camera']) await tap(`[data-voice="${k}"]`);   // turn these on: the checks below hear them
   await tap('[data-voice="numbers"]'); await tap('[data-voice="numbers"]');      // on and off again
   const savedVoice = await page.evaluate(() => JSON.parse(localStorage.getItem('toyphone.settings')).voice);
@@ -463,8 +463,8 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   // --- GAMES: the picker, then every game
   await tap('[data-app="games"]'); await sleep(600);
   check((await said()).some(s => /Pick a game/.test(s)), 'games speaks its prompt');
-  check(await page.locator('.gamecard').count() === 4, 'games list shows all four games');
-  const notes = await page.$$eval('.gamecard', cs => cs.map(c => c.getAttribute('aria-label') + ': ' + c.querySelector('.gplay').textContent.trim()));
+  check(await page.locator('#gameList .gamecard').count() === 4, 'games list shows all four games');
+  const notes = await page.$$eval('#gameList .gamecard', cs => cs.map(c => c.getAttribute('aria-label') + ': ' + c.querySelector('.gplay').textContent.trim()));
   check(JSON.stringify(notes) === JSON.stringify(['Wild Tap: 1 player', 'Snack Time: 1 player', 'Dino Buddies: 1 or 2 players', 'Paint Pals: 1 or 2 players']), `each game card says how many players ${JSON.stringify(notes)}`);
   await shot('16-games');
   await fits('games');
@@ -561,6 +561,51 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   check(!!snack.want, `Snack Time: the next animal walks in (${snack.animal})`);
   await home();
 
+  // --- SCHOOL: letters (ABC Zoo, ABC Snack)
+  const school = () => page.evaluate(() => window.__toyPhone.school());
+  await tap('[data-app="school"]'); await sleep(600);
+  check(await page.locator('#schoolList .gamecard').count() === 2, 'School shows its learning games');
+  await shot('28-school'); await fits('school');
+  await tap('.gamecard[aria-label="ABC Zoo"]'); await sleep(700);
+  check(await page.locator('.az-tile').count() === 26, 'ABC Zoo shows all 26 letters');
+  before = await osc();
+  await tap('.az-tile[data-l="M"]'); await sleep(2600);
+  let sc = await school();
+  check(sc.zoo.letter === 'M' && await osc() > before, `tapping a letter shows it and its picture makes its sound (${sc.zoo.letter})`);
+  check((await said()).includes('M is for monkey!'), 'and the voice says "M is for monkey!"');
+  await shot('29-abczoo'); await fits('abc zoo');
+  await tap('#azCase'); await sleep(300);
+  check((await school()).zoo.small && await page.locator('.az-tile img').count() === 26, 'the case button shows the little letters');
+  await tap('#azSong'); await sleep(1500);
+  check((await school()).zoo.singing, 'the song button sings the ABCs, lighting each letter');
+  await tap('#azSong'); await sleep(300);
+  check(!(await school()).zoo.singing, 'and tapping it again stops');
+  await tap('#abczoo .sc-back'); await sleep(500);
+  check(await visible('#school'), 'the back button goes back to School');
+  await tap('.gamecard[aria-label="ABC Snack"]'); await sleep(1500);
+  for (let i = 0; i < 25 && !(await school()).snack.want; i++) await sleep(300);
+  sc = await school();
+  check(sc.snack.want && sc.snack.mode === 'match' && sc.snack.choices.length === 2 && sc.snack.choices.includes(sc.snack.want) && 'SATIPN'.includes(sc.snack.want),
+    `ABC Snack: an animal wants a letter from the first group (s a t i p n), shown in its bubble, with 2 cookies ${JSON.stringify(sc.snack)}`);
+  await shot('30-abcsnack'); await fits('abc snack');
+  const wrongL = sc.snack.choices.find(L => L !== sc.snack.want);
+  await tap(`#asFoods .st-food[data-l="${wrongL}"]`); await sleep(1800);
+  check((await said()).some(t => t.startsWith(`That's ${wrongL}!`)) && (await school()).snack.fed === 0, `a wrong cookie: the voice names it ("That's ${wrongL}!") and asks again`);
+  await tap(`#asFoods .st-food[data-l="${sc.snack.want}"]`); await sleep(1500);
+  check((await school()).snack.fed === 1 && await page.locator('#asFed .s').count() === 1, 'the right cookie is eaten and earns a letter sticker');
+  await home();
+  await holdClock();
+  await tapSetting('[data-abc="case"]');
+  check(/Letters known/.test(await page.locator('#abcNote').textContent()), 'parent settings show the letters learned');
+  await tap('#doneBtn'); await sleep(300);
+  await tap('[data-app="school"]'); await sleep(500); await tap('.gamecard[aria-label="ABC Snack"]'); await sleep(1500);
+  for (let i = 0; i < 25 && !(await school()).snack.want; i++) await sleep(300);
+  sc = await school();
+  const labels = await page.$$eval('#asFoods .st-food', bs => bs.map(b => b.getAttribute('aria-label')));
+  check(sc.snack.level === 2 && (sc.snack.mode === 'case' ? labels.every(l => l.startsWith('little ')) : sc.snack.mode === 'listen'), `the "Big & little" setting asks for little letters or by name ${sc.snack.mode} ${JSON.stringify(labels)}`);
+  await home();
+  await holdClock(); await tapSetting('[data-abc="auto"]'); await tap('#doneBtn'); await sleep(300);
+
   // --- PAINT PALS (two players): both kids rub their own picture at the same time
   await tap('[data-app="games"]'); await sleep(500);
   await tap('.gamecard[aria-label="Paint Pals"]'); await sleep(700);
@@ -649,7 +694,7 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   check(await page.evaluate(() => document.querySelectorAll('svg').length === 0), 'no vector pictures on the page: every picture is pixel art');
   const broken = await page.evaluate(() => [...document.querySelectorAll('img.px')].filter(i => !i.complete || !i.naturalWidth).length);
   check(!broken, `every pixel sprite on the page has loaded (${broken} not)`);
-  const garbled = (await said()).filter(t => /\b[A-Z]{2,}\b/.test(t) || /([a-z])\1\1/i.test(t));
+  const garbled = (await said()).filter(t => /\b(?!ABCs?\b)[A-Z]{2,}\b/.test(t) || /([a-z])\1\1/i.test(t));   // (ABC is meant to be spelled out)
   check(!garbled.length, `spoken lines have no ALL-CAPS or stretched words (the voice would spell them out) ${JSON.stringify(garbled.slice(0, 3))}`);
   const fb = (await page.evaluate(() => window.__toyPhone.voice())).fallbacks.filter(t => !/Daddy/.test(t));
   check(!fb.length, `every line said during the run was a recorded clip (only family names use the phone's voice) ${JSON.stringify(fb.slice(0, 4))}`);

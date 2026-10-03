@@ -3,7 +3,7 @@
 **Play it:** https://deltasnull.github.io/KidPhone/
 
 A pretend phone for a 1.5-year-old and a 3.5-year-old, made to run on Dad's iPhone in Safari under
-Guided Access. It's one self-contained `index.html` (vanilla JS, no build step), drawn entirely in pixel art, with five apps:
+Guided Access. It's one self-contained `index.html` (vanilla JS, no build step), drawn entirely in pixel art, with six apps:
 
 - **Phone**: animal and dinosaur contacts, a keypad with real touch-tones, and outgoing calls (ringback, then the
   animal answers, makes its call and chats every ~6 seconds until hang-up). Animals also call in every
@@ -42,6 +42,25 @@ Guided Access. It's one self-contained `index.html` (vanilla JS, no build step),
     arrives: lion and giraffe, puppy and kitty, monkey and parrot, cow and chick, T. rex and long neck, and seven more.
     With 1 player, one big coloring page fills the screen and the same animals come one at a time.
 
+- **School**: learning games, made for a home-school morning. Letters are drawn in a school-print pixel alphabet (circles
+  and sticks, the way children learn to write them: one-story a and g, a crossed t, a tailed q), each letter always in
+  its own color. A grid button in each game goes back to the School menu.
+  - *ABC Zoo*: all 26 letters. Tap one to see it big and little, with a word and picture for it; the picture makes its
+    sound, then the voice says "L is for lion!" Tap the big letters to hear the letter again, or the picture for its word.
+    A button switches the board between big and little letters, and the song button plays the ABC song (the Twinkle
+    Twinkle tune) with each letter lighting up in time. Words: apple, butterfly, cat, dog, elephant, frog, gorilla,
+    hippo, iguana, jellyfish, kangaroo, lion, monkey, note, octopus, penguin, quack, rhino, star, tiger, umbrella,
+    volcano, whale, xylophone, yo-yo, zebra.
+  - *ABC Snack*: Snack Time with letter cookies. An animal thinks of a letter; feed it that cookie. It grows with the
+    child: first **matching** the letter shown in the bubble (even the little one can match shapes), then
+    **listening** (the bubble shows an ear, and the voice says "Find the T!"), then **big and little** (the bubble shows
+    T, the cookies are little letters). Six right on the first try in a row moves up from matching (eight from
+    listening); three misses in a row steps back. Letters come in the order phonics programs teach them (s a t i p n, then c k e h r m d, ...), a few at a
+    time; a new group joins once most of the current ones are known. A wrong cookie is never a loss: a head shake, the
+    voice names the cookie that was tapped ("That's N!") and asks again, and after two tries the right one glows. Look-
+    alikes (b and d, p and q) stay apart until big-and-little. Every right cookie: "Yum! T is for tiger!"
+  - Parents see the stage and the letters learned in settings, and can fix the stage (Match, Listen, Big & little)
+    instead of letting it grow.
 ## Animal voices
 
 Most animals are **real recordings** from [Wikimedia Commons](https://commons.wikimedia.org/), all public domain, CC0,
@@ -207,6 +226,8 @@ Hold the clock in the top-left corner for **3 seconds**. A quick tap only wiggle
 - Incoming calls on/off
 - Volume (Quiet / Soft / Medium / Loud)
 - Sound when the phone is on silent (on by default)
+- **ABC Snack**: Grows (the default), or fixed at Match, Listen or Big & little, with the current stage and the letters
+  the child knows (picked right on the first try three times, by name or big-to-little)
 - **Camera**: Both (the default: the pretend safari plus the phone's camera), Real (the phone's camera only) or
   Pretend (no real camera), with a note on whether the camera is allowed and how to allow it
 - **Voice**: a checkbox for each place the talking voice can speak. Animal sounds and music always play.
@@ -218,6 +239,7 @@ Hold the clock in the top-left corner for **3 seconds**. A quick tap only wiggle
   | Opening apps | "Hi buddy!", "Phone! Who do you want to call?", "Tap the egg!" | off |
   | Animal names | The animal's name after its sound, Wild Tap facts, hatched babies, what each Snack Time animal wants, finished paintings | off |
   | Camera and Photos | The animals in view and in each picture | off |
+  | School | Letter names and words in the School games | on (the games need it) |
   | Keypad numbers | Each number pressed | off |
   | Music | Instrument and song names | off |
 
@@ -248,6 +270,8 @@ The automated test runs in Chromium, so these need a person and the phone:
       front cameras show, the costumes line up with a face at arm's length, photos save and survive a reload, and the
       animal sounds keep playing while the camera is on
 - [ ] The camera turns off (the green dot goes away) when you go home, lock the phone or switch apps
+- [ ] The letter names in School sound right ("Find the B!", "That's Q!", "A is for apple!"). The voice model is given
+      the names spelled out (bee, cue, ay), and a speech recognizer heard them, but listen once
 - [ ] Listen to *If You're Happy and You Know It*. Its melody was written from memory, so check it by ear
       (notes live in the `SONGS` list in `index.html`)
 
@@ -303,7 +327,8 @@ to the pretend one. Screenshots go to `tests/screenshots/`.
   anyway (a phone call, Siri), sounds asked for meanwhile are held and play on the next touch, and an engine that won't
   restart is replaced. The voice waits for a sound to finish rather than talking over it.
 - A call nobody hangs up says goodbye by itself after 3 minutes (`CALL_MAX_MS`), so a forgotten phone doesn't chat all afternoon.
-- In portrait, the 8 xylophone bars and 8 piano keys are about 66px tall but span the full width. Every other kid control is 80px or more.
+- In portrait, the 8 xylophone bars and 8 piano keys are about 66px tall but span the full width, and the ABC Zoo
+  letters are about 53px (26 of them share the screen). Every other kid control is 80px or more.
 - With five app icons, the three animals on the home-screen hill only show on tall portrait screens (800px or more).
 - Every picture is a pixel sprite in `index.html`, so the toy looks the same on every phone, and walking animals always face the way they walk. The test fails if an emoji or an SVG sneaks back in, or if a sprite has uneven rows or a letter with no color.
 - The real camera needs the toy's own https address (GitHub Pages or your own server). Anywhere it can't reach a camera

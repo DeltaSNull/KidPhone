@@ -35,10 +35,15 @@ VERSION = 4             # bump to re-record everything after changing the proces
 RESPELL = [(r'\bgrr+\b', 'Gurr'), (r'\bbrr+\b', 'Burr'), (r'\bla la la\b', 'Lah lah lah'), (r'\bpawoo\b', 'Pah-woo')]
 
 
+# A letter on its own ("Find the B!", "That's b!", "B is for bear!") is said as its name, not as the word "a" or a sound.
+LETTER_NAME = dict(A='ay', B='bee', C='see', D='dee', E='ee', F='eff', G='jee', H='aitch', I='eye', J='jay', K='kay', L='ell', M='em',
+                   N='en', O='oh', P='pee', Q='cue', R='ar', S='ess', T='tee', U='you', V='vee', W='double you', X='ex', Y='why', Z='zee')
+
+
 def tts_text(t):
     for a, b in RESPELL:
         t = re.sub(a, b, t, flags=re.I)
-    return t
+    return re.sub(r"\b([A-Za-z])(?=[!?.,]| is for)", lambda m: LETTER_NAME[m.group(1).upper()].capitalize(), t)
 
 
 def voices_npz(path):
