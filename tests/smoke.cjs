@@ -128,7 +128,7 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   let before = await osc();
   if (await visible('.friend')) { await tapAll('.friend'); check(await osc() > before, 'home friends make sounds'); }
   if (name === 'portrait') {
-    const calls = ['roar','bigroar','trumpet','munch','neigh','ooh','bray','hippo','bellow','huff','stego','screech','snort','growl','squawk','honk','thump','ribbit','hoot','yawn','moo'];
+    const calls = ['roar','bigroar','trumpet','munch','neigh','ooh','bray','hippo','bellow','huff','stego','screech','snort','growl','squawk','honk','thump','ribbit','hoot','yawn','moo','woof','meow','quack'];
     const bad = [];
     for (const n of calls) {
       const r = await page.evaluate(n => window.__toyPhone.renderFx(n, 3).then(r => { let p = 0; for (const v of r.data) p = Math.max(p, Math.abs(v)); return { p, len: r.len }; }), n);
@@ -317,10 +317,12 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   check((await said()).length === saidMusic, `the voice stays quiet in Music: the music is the answer ${JSON.stringify((await said()).slice(saidMusic))}`);
   await home();
 
-  // --- GAMES: the picker, then both games
+  // --- GAMES: the picker, then every game
   await tap('[data-app="games"]'); await sleep(600);
   check((await said()).some(s => /Pick a game/.test(s)), 'games speaks its prompt');
-  check(await page.locator('.gamecard').count() === 2, 'games list shows Wild Tap and Dino Buddies');
+  check(await page.locator('.gamecard').count() === 4, 'games list shows all four games');
+  const notes = await page.$$eval('.gamecard', cs => cs.map(c => c.getAttribute('aria-label') + ': ' + c.querySelector('.gplay').textContent.trim()));
+  check(JSON.stringify(notes) === JSON.stringify(['Wild Tap: 1 player', 'Snack Time: 1 player', 'Dino Buddies: 2 players', 'Paint Pals: 2 players']), `each game card says how many players ${JSON.stringify(notes)}`);
   await shot('16-games');
   await fits('games');
   await tap('.gamecard[aria-label="Wild Tap"]'); await sleep(600);
@@ -371,6 +373,63 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   check((await page.evaluate(() => window.__toyPhone.dino())).family >= 1, 'Dino Buddies: both kids tapping at once hatch the shared egg');
   check((await said()).some(s => /A baby/.test(s)), 'Dino Buddies says which baby hatched');
   check(!!(await page.evaluate(() => localStorage.getItem('toyphone.dinobuddies'))), 'the hatched family is remembered');
+  await home();
+
+  // --- SNACK TIME (one player): give the animal the food it is thinking of
+  await tap('[data-app="games"]'); await sleep(500);
+  await tap('.gamecard[aria-label="Snack Time"]'); await sleep(1500);
+  let snack = await page.evaluate(() => window.__toyPhone.snack());
+  check(!!snack.want && snack.choices === 2, `Snack Time: an animal walks in thinking of a food, with 2 to choose from (${snack.animal} wants ${snack.want})`);
+  check((await said()).some(s => / wants /.test(s)), 'Snack Time says what the animal wants (Animal names is on)');
+  await shot('23-snacktime');
+  await fits('snack time');
+  const wrong = await page.evaluate(w => [...document.querySelectorAll('#stFoods .st-food')].map(b => b.dataset.food).find(f => f !== w), snack.want);
+  await tap(`#stFoods .st-food[data-food="${wrong}"]`); await sleep(500);
+  check((await page.evaluate(() => window.__toyPhone.snack())).fed === 0, 'Snack Time: a wrong food only gets a head shake');
+  await tap(`#stFoods .st-food[data-food="${wrong}"]`); await sleep(500);
+  check(await page.locator(`#stFoods .st-food.hint[data-food="${snack.want}"]`).count() === 1, 'Snack Time: after two tries the right food glows');
+  before = await osc();
+  await tap(`#stFoods .st-food[data-food="${snack.want}"]`); await sleep(1300);
+  check((await page.evaluate(() => window.__toyPhone.snack())).fed === 1 && await page.locator('#stFed .s').count() === 1, 'Snack Time: the right food is eaten and earns a sticker');
+  check(await osc() > before + 2, 'Snack Time: eating makes munching and animal sounds');
+  await shot('24-snacktime-fed');
+  await sleep(4800);
+  check((await said()).some(s => /^Yum! The \w+ loves/.test(s)), 'Snack Time says yum (after the munching)');
+  snack = await page.evaluate(() => window.__toyPhone.snack());
+  check(!!snack.want, `Snack Time: the next animal walks in (${snack.animal})`);
+  await home();
+
+  // --- PAINT PALS (two players): both kids rub their own picture at the same time
+  await tap('[data-app="games"]'); await sleep(500);
+  await tap('.gamecard[aria-label="Paint Pals"]'); await sleep(700);
+  check(await visible('.pp-a') && await visible('.pp-b'), 'Paint Pals opens with a picture for each player');
+  const pc = await page.$$eval('.pp-cv', cs => cs.map(c => { const r = c.getBoundingClientRect(); return [r.x, r.y, r.width, r.height]; }));
+  check(pc.every(b => b[2] >= 120 && b[2] % 32 === 0), `Paint Pals: each picture is big and pixel-sharp (${pc.map(b => b[2]).join(', ')}px)`);
+  const corners = await page.$$eval('.pp-side', ss => ss.map(s => { const r = s.getBoundingClientRect(); return [r.x + 6, r.y + 6]; }));
+  await touch('touchStart', corners); await sleep(30); await touch('touchEnd', []); await sleep(700);
+  let pp = await page.evaluate(() => window.__toyPhone.paint());
+  check(pp.painted.every(v => v > 0), `Paint Pals: a tap beside the picture flings paint onto it ${JSON.stringify(pp.painted)}`);
+  const sweep = async (r, rows) => {
+    const fy = (r + .5) / rows, pt = (b, t) => [b[0] + b[2] * t, b[1] + b[3] * fy];
+    await touch('touchStart', [pt(pc[0], .02), pt(pc[1], .02)]);
+    for (let i = 1; i <= 14; i++) { await touch('touchMove', [pt(pc[0], .02 + .96 * i / 14), pt(pc[1], .02 + .96 * i / 14)]); await sleep(12); }
+    await touch('touchEnd', []); await sleep(40);
+  };
+  for (let r = 0; r < 3; r++) await sweep(r, 9);
+  pp = await page.evaluate(() => window.__toyPhone.paint());
+  check(pp.painted.every(v => v > .1) && !pp.done.some(Boolean), `Paint Pals: two fingers rubbing at once paint both pictures ${JSON.stringify(pp.painted)}`);
+  await shot('25-paintpals');
+  await fits('paint pals');
+  for (let r = 3; r < 9; r++) await sweep(r, 9);
+  await sleep(900);
+  pp = await page.evaluate(() => window.__toyPhone.paint());
+  check(pp.done.every(Boolean) && pp.painted.every(v => v === 1), 'Paint Pals: a nearly painted picture finishes itself');
+  await shot('26-paintpals-done');
+  await sleep(7000);
+  pp = await page.evaluate(() => window.__toyPhone.paint());
+  check(pp.rounds === 1 && pp.gallery >= 2 && !pp.done.some(Boolean), `Paint Pals: when both are done, the pair goes up on the shelf and a new pair arrives ${JSON.stringify(pp)}`);
+  check((await said()).some(s => /^Beautiful!/.test(s)), 'Paint Pals names the finished pair');
+  check(!!(await page.evaluate(() => localStorage.getItem('toyphone.paintpals'))), 'the painting shelf is remembered');
   await home();
 
   // --- clearing photos (parent) leaves a friendly empty album

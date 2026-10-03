@@ -58,10 +58,10 @@ img[src^="data:image/png"]{image-rendering:-webkit-optimize-contrast; image-rend
 .art{line-height:1}
 .art > .px{width:1.15em; height:1.15em}
 /* frames: notched pixel corners, a light rim, a darker lip and a drop shadow, stretched to fit (border-image) */
-.tab,.contact,.dial,.key,.callbtn,.thumb,.pic,.song,.wt-tile,.wt-back,.wt-pad,.wt-choice,.wt-stickers,.wt-newegg,.sheet,.sbtn,.vopt,.confirm,.bar,.pad,.pkey,.vstage img,.pkey.blk::after{
+.tab,.contact,.dial,.key,.callbtn,.thumb,.pic,.song,.wt-tile,.wt-back,.wt-pad,.wt-choice,.wt-stickers,.wt-newegg,.st-food,.pp-easel,.sheet,.sbtn,.vopt,.confirm,.bar,.pad,.pkey,.vstage img,.pkey.blk::after{
   border-style:solid; border-color:transparent; border-width:9px 9px 15px; border-image:var(--fr, var(--f-paper)) 9 9 15 fill / 9px 9px 15px stretch;
   border-radius:0!important; box-shadow:none!important; background:none!important}
-.word,.wt-word,.nm,.gname,.calltime,#zoomTxt{border-style:solid; border-color:transparent; border-width:6px 6px 9px; border-image:var(--tg, var(--t-paper)) 6 6 9 fill / 6px 6px 9px stretch; border-radius:0!important; box-shadow:none!important; background:none!important}
+.word,.wt-word,.nm,.gname,.gplay,.calltime,#zoomTxt{border-style:solid; border-color:transparent; border-width:6px 6px 9px; border-image:var(--tg, var(--t-paper)) 6 6 9 fill / 6px 6px 9px stretch; border-radius:0!important; box-shadow:none!important; background:none!important}
 /* cards with their own painted picture get an edge with a see-through middle */
 .vf,.stage,.gamecard{border-style:solid; border-color:transparent; border-width:9px 9px 15px; border-image:var(--b-paper) 9 9 15 / 9px 9px 15px stretch; border-radius:0!important; box-shadow:none!important; background-clip:padding-box!important}
 /* round buttons */
@@ -320,21 +320,28 @@ img[src^="data:image/jpeg"],.face img{image-rendering:auto}
 
 /* ---------- Games: a picker, then each game fills the screen ---------- */
 #games{background:#8FDB8E}
-.gamelist{flex:1; min-height:0; display:grid; grid-template-columns:1fr; grid-auto-rows:minmax(0,1fr); gap:16px}
-@media (orientation:landscape){ .gamelist{grid-template-columns:repeat(2,1fr)} }
-.gamecard{position:relative; min-height:0; overflow:hidden; display:grid; place-items:center}
-.gamecard .gart{display:flex; align-items:flex-end; gap:6px; margin-bottom:34px; pointer-events:none}
-.gamecard .gname{position:absolute; left:50%; bottom:8px; translate:-50% 0; padding:0 8px; font-size:22px; white-space:nowrap}
+.gamelist{flex:1; min-height:0; display:grid; grid-template-columns:minmax(0,1fr); grid-auto-rows:minmax(0,1fr); gap:14px}
+@media (orientation:landscape){ .gamelist{grid-template-columns:repeat(2,minmax(0,1fr))} }
+/* a card: the name and a "1 player / 2 players" note on the left, the picture on the right. --a sizes the picture to the card */
+.gamecard{position:relative; min-height:0; overflow:hidden; display:flex; align-items:center; gap:8px; padding:0 4px; text-align:left; container-type:size; --a:min(13vw,13vh)}
+@supports (width:1cqw){ .gamecard{--a:clamp(28px, min(calc((100cqw - 172px) / 2.8), 72cqh), 110px)} }
+.gtext{flex:none; width:160px; display:flex; flex-direction:column; align-items:flex-start; gap:4px; pointer-events:none}
+.gamecard .gname{padding:0 6px; font-size:21px; white-space:nowrap}
+.gplay{display:flex; align-items:center; gap:1px; padding:0 6px 0 2px; font-size:14px; white-space:nowrap; color:#5A4A3E}
+.gplay .px{width:24px; height:32px}
+.gplay span{margin-left:4px}
+.gamecard .gart{flex:1; min-width:0; display:flex; justify-content:center; align-items:flex-end; gap:4px; pointer-events:none}
+.gamecard .art{font-size:calc(var(--a) * .7)} .gamecard .art.big{font-size:var(--a)} .gamecard .art.mid{font-size:calc(var(--a) * .85)} .gamecard .art.sm{font-size:calc(var(--a) * .55)}
+.gamecard .flip{transform:scaleX(-1)}
 .g-wild{background:#FFC57A}
-.g-wild .art{font-size:clamp(52px,min(12vh,18vw),104px)} .g-wild .art:nth-child(odd){font-size:clamp(38px,min(8vh,12vw),72px)}
+.g-feed{background:#BFE9FF}
 .g-dino{background:#A6E39A}
-.g-dino .gart{align-items:center}
-.g-dino .art{font-size:clamp(56px,min(13vh,19vw),108px)} .g-dino .flip{transform:scaleX(-1)}
-.g-dino .art.gegg{font-size:clamp(34px,min(7vh,10vw),54px)}
+.g-paint{background:#FFF1DC}
+.g-dino .gart,.g-paint .gart{align-items:center}
 .gamecard.go{animation:hop .45s cubic-bezier(.3,1.6,.5,1)}
 
 /* ---------- Game: Wild Tap Safari (the first game, moved in whole) ---------- */
-.app.wt, .app.db{padding:0; gap:0}
+.app.wt, .app.db, .app.st, .app.pp{padding:0; gap:0}
 .wt{--savanna:#E8A945; --dusk:#5B4A9E}
 .wt-screen{position:absolute; inset:0; display:flex; flex-direction:column; padding:12px 16px 16px; gap:12px}
 #wt-menu{background:var(--sky)}
@@ -446,6 +453,71 @@ img[src^="data:image/jpeg"],.face img{image-rendering:auto}
 .db-family .px{width:1.15em; height:1.15em}
 @keyframes db-arrive{from{transform:scale(0)}}
 .db-treat{position:absolute; left:0; top:0; width:56px; height:56px; display:grid; place-items:center; font-size:44px; line-height:1; pointer-events:none; z-index:6; will-change:transform}
+
+/* ---------- Game: Snack Time (one player): each hungry animal thinks of a food; give it that one ---------- */
+.app.st{display:grid; grid-template-rows:minmax(0,1fr) auto; overflow:hidden}
+@media (orientation:landscape){ .app.st{grid-template-rows:none; grid-template-columns:auto minmax(0,1fr)} .st-foods{order:-1} }
+.st-scene{position:relative; overflow:hidden; display:flex; flex-direction:column; gap:6px; padding:10px 12px 0; min-height:0; min-width:0}
+.st-fed{flex:none} .st-fed:empty{visibility:hidden}
+.st-stand{flex:1; position:relative; min-height:0; container-type:size}
+/* the animal and its thought bubble are sized in em, so both scale with the space they have */
+.st-spot{position:absolute; inset:0; font-size:clamp(80px, min(42vw, 22vh), 200px)}
+@supports (width:1cqw){ .st-spot{font-size:clamp(70px, min(46cqw, 49cqh), 240px)} }
+@media (orientation:landscape){ .st-spot{font-size:clamp(70px, min(26vw, 46vh), 200px)} @supports (width:1cqw){ .st-spot{font-size:clamp(70px, min(40cqw, 70cqh), 240px)} } }
+.st-animal{position:absolute; right:7%; bottom:5%; line-height:1; transform-origin:50% 100%}
+.st-animal .px{width:1.15em; height:1.15em; display:block}
+.st-animal.in{animation:st-in .9s linear both}
+.st-animal.out{animation:st-out .8s linear forwards}
+.st-animal.hop{animation:hop .5s 2}
+.st-animal.nope{animation:st-nope .3s 2}
+.st-animal.chomp{animation:st-chomp .22s 3}
+@keyframes st-in{0%{transform:translateX(150%)}20%{transform:translate(112%,-5%)}40%{transform:translateX(75%)}60%{transform:translate(37%,-5%)}80%{transform:none}90%{transform:scale(1.06,.94)}100%{transform:none}}
+@keyframes st-out{0%{transform:none}20%{transform:translate(-40%,-5%)}40%{transform:translateX(-90%)}60%{transform:translate(-140%,-5%)}80%{transform:translateX(-190%)}100%{transform:translate(-240%,-5%)}}
+@keyframes st-nope{0%,100%{transform:none}25%{transform:translateX(-5%)}75%{transform:translateX(5%)}}
+@keyframes st-chomp{50%{transform:scale(1.05,.93)}}
+.st-think{position:absolute; right:calc(7% + .62em); bottom:calc(5% + 1.12em); width:1em; height:.8em; display:grid; place-items:center; padding:0 .12em .14em 0;
+  background:var(--think) center/100% 100% no-repeat; transform:scale(0); transform-origin:85% 100%; transition:transform .35s cubic-bezier(.3,1.6,.5,1)}
+@media (orientation:landscape){ .st-think{right:calc(7% + 1.18em); bottom:calc(5% + .42em)} }
+.st-think.on{transform:scale(1)}
+.st-think.wig{animation:wig .3s 2}
+.st-want{font-size:.5em; line-height:1} .st-want .px{width:1.15em; height:1.15em; display:block}
+.st-foods{--fs:clamp(100px,18vh,150px); display:flex; justify-content:center; align-items:center; gap:14px; padding:12px 14px 16px; min-height:calc(var(--fs) + 28px)}
+@media (orientation:landscape){ .st-foods{--fs:clamp(88px,27vh,130px); flex-direction:column; padding:10px 10px 10px 14px; min-height:0; min-width:calc(var(--fs) + 24px)} }
+.st-food{flex:0 1 var(--fs); height:var(--fs); display:grid; place-items:center; animation:st-deal .45s cubic-bezier(.3,1.6,.5,1) backwards; --fr:var(--f-cream)}
+@media (orientation:landscape){ .st-food{width:var(--fs); height:auto; min-height:0; align-self:stretch} .st-foods.n2 .st-food{flex-basis:calc(var(--fs) * 1.1)} }
+.st-food .art{font-size:calc(var(--fs) * .5)}
+.st-food.yes{--fr:var(--f-lit); animation:wt-bounce .6s cubic-bezier(.3,1.6,.5,1)}
+.st-food.no{animation:wt-wiggle .45s}
+.st-food.hint{--fr:var(--f-lit); animation:st-hint 1.1s ease-in-out infinite}
+.st-food.off{opacity:.4}
+@keyframes st-hint{50%{transform:scale(1.07)}}
+@keyframes st-deal{from{transform:scale(0)}}
+.st-bite{position:absolute; left:0; top:0; width:64px; height:64px; display:grid; place-items:center; font-size:56px; line-height:1; pointer-events:none; z-index:6; will-change:transform}
+
+/* ---------- Game: Paint Pals (two players): each kid rubs color into their own animal; then the two meet ---------- */
+.app.pp{display:grid; grid-template-rows:minmax(0,1fr) auto minmax(0,1fr); overflow:hidden; background:#FFF1DC}
+@media (orientation:landscape){ .app.pp{grid-template-rows:none; grid-template-columns:minmax(0,1fr) auto minmax(0,1fr)} }
+.pp-side{position:relative; overflow:hidden; display:grid; place-items:center; min-height:0; min-width:0; touch-action:none}
+.pp-a{background:#FFD9B8} .pp-b{background:#DCD3FA}
+.pp-easel{position:relative; pointer-events:none; transform-origin:50% 100%}
+.pp-cv{display:block; width:128px; height:128px; image-rendering:pixelated}
+.pp-cv.flip{transform:scaleX(-1)}
+.pp-easel.pp-hop{animation:hop .5s 2}
+.pp-easel.pp-dance{animation:db-dance .5s step-end 4}
+.pp-star{position:absolute; right:-22px; top:-24px; font-size:46px; line-height:1; transform:scale(0); transition:transform .45s cubic-bezier(.3,1.7,.5,1)}
+.pp-done .pp-star{transform:scale(1)}
+.pp-hand{position:absolute; left:50%; top:50%; margin:-36px 0 0 -30px; font-size:62px; line-height:1; animation:pp-rub 1.5s ease-in-out infinite}
+@keyframes pp-rub{0%,100%{transform:translate(-34%,14%)}50%{transform:translate(34%,-14%)}}
+.pp-mid{position:relative; z-index:3; display:flex; align-items:center; justify-content:center; gap:12px; padding:6px 14px; background:#B5773E; box-shadow:0 -6px 0 rgba(59,43,32,.2) inset, 0 6px 0 rgba(59,43,32,.2) inset}
+@media (orientation:landscape){ .pp-mid{flex-direction:column; padding:12px 8px; box-shadow:6px 0 0 rgba(59,43,32,.16) inset, -6px 0 0 rgba(59,43,32,.16) inset} }
+.pp-brush{flex:none; font-size:clamp(40px,10vmin,58px); line-height:1}
+.pp-gallery{display:flex; flex-wrap:wrap; justify-content:center; align-content:center; gap:2px; min-width:0; min-height:36px; flex:1; font-size:clamp(24px,6vmin,36px); line-height:1}
+@media (orientation:landscape){ .pp-gallery{flex:none; width:clamp(70px,16vmin,100px); max-height:calc(100% - 90px); overflow:hidden} }
+.pp-gallery span{display:inline-grid; place-items:center; animation:db-arrive .5s cubic-bezier(.3,1.6,.5,1)}
+.pp-gallery .px{width:1.15em; height:1.15em}
+.pp-drop{position:absolute; left:0; top:0; width:20px; height:20px; pointer-events:none; z-index:6; will-change:transform; box-shadow:0 0 0 3px #3B2B20}
+.pp-spark{position:absolute; left:0; top:0; margin:-13px 0 0 -13px; font-size:22px; line-height:1; pointer-events:none; z-index:6; animation:pp-spark .6s steps(6) forwards}
+@keyframes pp-spark{from{transform:translateY(0) scale(1); opacity:1}to{transform:translateY(-40px) scale(.4); opacity:0}}
 
 /* ---------- Parent settings ---------- */
 #settings{position:absolute; inset:0; z-index:50; display:grid; place-items:center; padding:12px; background:rgba(59,43,32,.5)}
@@ -621,6 +693,32 @@ img[src^="data:image/jpeg"],.face img{image-rendering:auto}
           <div class="db-family" id="dbFamily" aria-label="Baby dinosaurs hatched"></div>
         </section>
         <section class="db-side db-b" data-side="1" aria-label="Blue side"><div class="db-dino"></div></section>
+      </section>
+
+      <!-- GAME: Snack Time (one player: give each hungry animal the food it is thinking of) -->
+      <section class="app st" id="snacktime" hidden aria-label="Snack Time">
+        <div class="st-scene" id="stScene">
+          <div class="wt-stickers st-fed" id="stFed" aria-label="Animals fed"></div>
+          <div class="st-stand"><div class="st-spot">
+            <div class="st-think" id="stThink" role="button" aria-label="What it wants"><span class="st-want" id="stWant"></span></div>
+            <div class="st-animal" id="stAnimal" role="button"></div>
+          </div></div>
+        </div>
+        <div class="st-foods" id="stFoods" aria-label="Snacks"></div>
+      </section>
+
+      <!-- GAME: Paint Pals (two kids, one picture each, painted by rubbing) -->
+      <section class="app pp" id="paintpals" hidden aria-label="Paint Pals">
+        <section class="pp-side pp-a" aria-label="Orange side">
+          <div class="pp-easel"><canvas class="pp-cv"></canvas><span class="pp-star" data-art="starBright"></span><span class="pp-hand" data-art="hand"></span></div>
+        </section>
+        <section class="pp-mid" aria-label="Paintings">
+          <span class="pp-brush" data-art="brush"></span>
+          <div class="pp-gallery" id="ppGallery" aria-label="Finished paintings"></div>
+        </section>
+        <section class="pp-side pp-b" aria-label="Purple side">
+          <div class="pp-easel"><canvas class="pp-cv"></canvas><span class="pp-star" data-art="starBright"></span><span class="pp-hand" data-art="hand"></span></div>
+        </section>
       </section>
     </div>
 
@@ -2921,6 +3019,171 @@ odNldo......................oddo
 ................................
 ................................
 ................................`},
+bone:{pal:{o:'#6B5A44',b:'#F6EEDC',d:'#D9CBAE',l:'#FFFFFF'}, rows:`
+................................
+......................o.........
+....................oodoo.......
+...................ollbldo......
+..................olbbbbddo.....
+..................olbbbbddo.....
+..................odbbbbbdooo...
+...................odbbbbblldo..
+...................oolbbbbbbddo.
+..................ollbbbbbbbddo.
+.................olbbbbbbbbbddo.
+................olbbbbdddbbdddo.
+...............olbbbbddddddddo..
+..............olbbbbdddoooddo...
+.............olbbbddddo...oo....
+...........oolbbbddddo..........
+..........ollbbbdddoo...........
+....ooo..olbbbbdddo.............
+...olldoolbbbbdddo..............
+..olbbbllbbbbdddo...............
+.olbbbbbbbbbdddo................
+.olbbbbbbbbdddo.................
+.olbbbbbbbdddo..................
+.odddbbbbbddo...................
+..odddbbbbbdo...................
+...ooolbbbbddo..................
+.....olbbbdddo..................
+.....oddddddo...................
+......odddddo...................
+.......ooooo....................
+................................
+................................`},
+bamboo:{pal:{o:'#1E4A20',g:'#7CC96B',G:'#4FA84C',l:'#B4E68E',r:'#3E8A3A',f:'#5DB35A',F:'#3F9447'}, rows:`
+................................
+..........ooooo.................
+.........olllgGo................
+.........olgggGo................
+.........olgggGo................
+.........olgggGo................
+.........olgggGo................
+.......ooolgggGo..oooo..........
+.....oofffrrrrro.ollgGooo.......
+....offffflllllo.olggGfffoo.....
+...offfffolgggGo.olggGfffffo....
+...offfffolgggGo.olggGofffffo...
+..offfffoolgggGo.olggGofffffo...
+..offfoo.olgggGo.olggGoofffffo..
+...ooo...olgggGo.orrrro.oofffo..
+.........orrrrro.ollllo...ooo...
+......oooolllllo.olggGo.........
+....ooFFFFlgggGo.olggGo.........
+...oFFFFFolgggGo.olggGo.........
+...oFFFFFolgggGo.olggGo.........
+..oFFFFooolgggGo.olggGo.........
+...oooo..olgggGo.orrrro.........
+.........orrrrro.ollllo.........
+.........olllllo.olggGo.........
+.........olgggGo.olggGo.........
+.........olgggGo.olggGo.........
+.........olgggGo.olggGo.........
+.........olgggGo.olggGo.........
+.........olgggGo.olggGo.........
+.........oggggGo.ogggGo.........
+.........oGGGGGo.oGGGGo.........
+..........ooooo...oooo..........`},
+corn:{pal:{o:'#5A3A08',y:'#FFD23F',Y:'#E8A91E',l:'#FFF0A0',g:'#7CC96B',G:'#3F9E44'}, rows:`
+................................
+.............oooooo.............
+............olllllYo............
+...........olyyyyyyYo...........
+...........oYyYyYyYYo...........
+..........olyyyyyyyyYo..........
+..........oYyYyYyYyYYo..........
+.........olyyyyyyyyyyYo.........
+.........oYyYyYyYyYyYYo.........
+.........olyyyyyyyyyyYo.........
+.........olYyYyYyYyYyYo.........
+........olyyyyyyyyyyyyYo........
+........olYyYyYyYyYyYyYo........
+.......oGlyyyyyyyyyyyyYGo.......
+......ogGYyYyYyYyYyYyYYgGo......
+......oggGlyyyyyyyyyyYggGo......
+......oGgGYyYyYyYyYyYYggGo......
+.......oGgGyyyyyyyyyyggGo.......
+........ogGYyYyYyYyYygGo........
+........oGgGyyyyyyyyggGo........
+.........oGGYyYyYyYggGo.........
+..........ogGyyyyyggGo..........
+..........oGgGyYygggGo..........
+...........oggGYgggGo...........
+...........oGggggggGo...........
+............oGggggGo............
+.............ogGGGo.............
+.............oGGGGo.............
+..............oGGo..............
+..............oGGo..............
+..............oGGo..............
+...............oo...............`},
+fly:{pal:{o:'#1A1E2E',b:'#4A5A8A',B:'#2E3A62',l:'#7A8CC0',w:'#E4F6FF99',W:'#9CCBEA',k:'#1A1E2E',g:'#FFFFFF',m:'#FF8A8A'}, rows:`
+................................
+................................
+...........WWW..................
+.........WWwwwWW....W...........
+........WwwwwwwwW.WWwWW.........
+........WwwwwwwwWWwwwwwW........
+.......WwwwwwwwwwwwwwwwwW.......
+.......WwwwwwwwwwwwwwwwwW.......
+.......WwwwwwwwwwwwwwwwwwW......
+......WwwwwwwwwwwwwwwwwwwW......
+.......WwwwwwwwwwwwwwwwwwW......
+.......WwwwwwwwwwwwwwwwwwW......
+.......WwwwwwwwwwwwwwwwwwW......
+.......oWwwwwwwwWwwwwwwwW.......
+......olllBwwlllllllBwwwW.......
+.....olbbbbllbbbbbbbblBW........
+....oggbbggbbbbbbbbbbbBBo.......
+....ogkbbkgbbbbbbbbbbbbBo.......
+...oBbbbbbbbbbbbbbbbbbbBBo......
+....olbbbbbbbbbbbbbbbbbBBo......
+....oBbbbbbbbbbbbbbbbbbBBo......
+.....oBBmmbbbbbbbbbbbbBBBo......
+......oBBBbbbbbbbbbbbbBBo.......
+.......oooBBbbbbbbbbBBBBo.......
+..........oBBBBBBBBBBBBo........
+...........ooBBBBBBBBoo.........
+............kooooooook..........
+............k...k....k..........
+...........k....k.....k.........
+...........k....k.....k.........
+................k...............
+................................`},
+brush:{pal:{o:'#2B1D12',h:'#C98A4B',H:'#9A6436',m:'#C9CED8',M:'#8E96A6',n:'#FFFFFF',r:'#F0524F',y:'#FFC83D',b:'#3D8FE0'}, rows:`
+................................
+................................
+................................
+....oo..........................
+...obbo.o.......................
+..obbbboro......................
+..obbbbyyyo.....................
+...obbyyyyro....................
+....oyyyyyrro...................
+...oryyyyyrrro..................
+...oryyyyrrroo..................
+...orrrrrrrrnMo.................
+....orrrrrrmmmMo................
+.....orrronmmmmMo...............
+......ooooMmmmmmMo..............
+..........oMmmmmMo..............
+..rr.......oMmmmMHo.............
+.rrrr.......oMMMMhHo............
+.rrrr........ooHhhhHo...........
+..rr...........oHhhhHo..........
+.....yy.........oHhhhHo.........
+....yyyy.........oHhhhHo........
+....yyyy..........oHhhhHo.......
+.....yy..bb........oHhhhHo......
+........bbbb........oHhhhHo.....
+........bbbb.........oHhhhHo....
+.........bb...........oHhhhHo...
+.......................oHhhhHo..
+........................oHhhHo..
+.........................oHHo...
+..........................oo....
+................................`},
 /* App icons: 32x32 tiles */
 appPhone:{pal:{O:'#6E1832',M:'#FF8FA6',L:'#FFC2CE',B:'#E8506E',T:'#B83355',S:'#FFFFFF',q:'#7A1F38',y:'#FFE27A',Y:'#E8B23C',w:'#FFF8D6'}, rows:`
 ....OOOOOOOOOOOOOOOOOOOOOOOO....
@@ -3121,7 +3384,7 @@ HHHHHHHodddddddqqdddddddoHHHHHHH
 HHHHHHHHoddddddddddddddoHHHHHHHH
 HHHHHHHHHooooooooooooooHHHHHHHHH
 HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH`},
-/* Buttons and status bar: 16x16 and smaller */
+/* Buttons, checkmarks, player badges and status bar: 16x16 and smaller */
 home:{pal:{o:'#3B2B20',r:'#E8506E',R:'#B83355',l:'#FF8FA6',w:'#FFF6E0',W:'#E8D9BC',y:'#FFC83D',Y:'#D99A1E',c:'#9A6436'}, rows:`
 ..........oo....
 .......oo.occo..
@@ -3356,6 +3619,40 @@ check:{pal:{o:'#1E4A20',g:'#3BBF5C',l:'#8EE59E'}, rows:`
 ..oggggo....
 ...oggo.....
 ....oo......`},
+kidA:{pal:{o:'#3B2B20',s:'#FFCB9A',h:'#7A4A28',k:'#2A1A12',t:'#FF9F43',p:'#4A5A8A'}, rows:`
+...oooooo...
+..ohhhhhho..
+.ohhhhhhhho.
+.ohhsssshho.
+.ohssssssho.
+.ohskssksho.
+.ohssssssho.
+..osssssso..
+..oossssoo..
+.otttttttto.
+.otttttttto.
+.otttttttto.
+..otttttto..
+..oppooppo..
+..oppooppo..
+...oo..oo...`},
+kidB:{pal:{o:'#3B2B20',s:'#FFCB9A',h:'#7A4A28',k:'#2A1A12',t:'#3D8FE0',p:'#4A5A8A'}, rows:`
+...oooooo...
+..ohhhhhho..
+.ohhhhhhhho.
+.ohhsssshho.
+.ohssssssho.
+.ohskssksho.
+.ohssssssho.
+..osssssso..
+..oossssoo..
+.otttttttto.
+.otttttttto.
+.otttttttto.
+..otttttto..
+..oppooppo..
+..oppooppo..
+...oo..oo...`},
 signal:{pal:{k:'#3B2B20'}, rows:`
 ..........kk
 ..........kk
@@ -3553,6 +3850,22 @@ const nestURL = () => once('nest', () => { const P = new Pix(40, 16);
   P.outline('o');
   return pxURL(P.canvas({n:'#9A6436', N:'#74491F', l:'#C08A5A', o:'#4A2E14'}), 1); });
 
+/* Snack Time: a thought cloud, with two little puffs trailing down to the animal's head */
+const thinkURL = () => once('think', () => { const P = new Pix(42, 34);
+  P.ell(11, 13, 9, 8, 'w').ell(21, 9.5, 10, 8.5, 'w').ell(30, 13, 9, 8, 'w').ell(20, 18, 14, 7, 'w').ell(9, 18.5, 7, 5, 'w').ell(31, 18.5, 7, 5, 'w');
+  P.ell(34, 27, 2.6, 2.3, 'w').ell(38.6, 31, 1.6, 1.5, 'w');
+  P.shade('w', 'b', null, 2).outline('o');
+  return pxURL(P.canvas({w:'#FFFFFF', b:'#DCEAF4', o:'#4A5A6A'})); });
+/* a picnic blanket: woven gingham, the half-tone squares dithered between two pinks */
+const gingham = (x, y, n = 5) => { const i = Math.floor(x/n) & 1, j = Math.floor(y/n) & 1; return i && j ? '#E0574A' : (i || j) ? (bay(x, y) < .5 ? '#F2958A' : '#F7B3A9') : '#FFF6EC'; };
+/* lumpy paint splats with a few drips around them, at steady pseudo-random spots */
+const splats = (w, h, cols, seed, n = 6, size = .12) => {
+  const S = Array.from({length:n}, (_, i) => [sr(seed + i*3.1)*w, sr(seed + i*7.3 + 2)*h, (.55 + sr(seed + i*1.7 + 4)*.6)*size*Math.min(w, h) + 2, cols[i % cols.length]]);
+  return (x, y) => { for (const [cx, cy, r, c] of S){ const dx = x + .5 - cx, dy = y + .5 - cy, d = Math.hypot(dx, dy);
+    if (d < r*(.8 + .2*Math.sin(Math.atan2(dy, dx)*5 + cx))) return c;
+    if (d < r*1.7 && sr(Math.floor(x/2)*13.1 + Math.floor(y/2)*7.7 + cx) < .05) return c; } return null; };
+};
+
 /* Backgrounds: each one is painted to fit its box, pixel by pixel, and repainted when the box changes size */
 class Paper {
   constructor(w, h){ this.w = w; this.h = h; this.c = document.createElement('canvas'); this.c.width = w; this.c.height = h; this.g = this.c.getContext('2d'); this.im = this.g.createImageData(w, h); }
@@ -3624,16 +3937,28 @@ const BG = {
   dbSide(top, bottom, mound){ return (w, h) => { const p = new Paper(w, h).ramp([top, bottom]);
     const P = new Pix(w, h); P.ell(w*.12, h, w*.3, h*.22, 'm').ell(w*.92, h*.96, w*.24, h*.18, 'm').shade('m', 'M', null, 1).outline('o');
     return p.put(P.canvas({m:mound, M:dim(mound, .15), o:dim(mound, .5)}), 0, 0); }; },
-  sand(w, h){ return new Paper(w, h).ramp(['#F6D898', '#F3D08A', '#EBC47A']).dots((x, y) => sr(x*3.1 + y*7.7) < .05 ? '#D9B068' : sr(x*5.3 + y*2.9) < .03 ? '#FFF0C0' : null); }
+  sand(w, h){ return new Paper(w, h).ramp(['#F6D898', '#F3D08A', '#EBC47A']).dots((x, y) => sr(x*3.1 + y*7.7) < .05 ? '#D9B068' : sr(x*5.3 + y*2.9) < .03 ? '#FFF0C0' : null); },
+  feed(w, h){ const top = Math.floor(h*.55);
+    return new Paper(w, h).ramp(['#CBEEFF', '#B4E3FA', '#A2D9F5'], 0, top).dots((x, y) => y < top ? null : y === top ? '#B8382D' : gingham(x, y - top - 1)).put(cloudArt(.4), w*.66, h*.06); },
+  paint(w, h){ return new Paper(w, h).ramp(['#FFF8EC', '#FFF1DC', '#FFE8C8']).dots(splats(w, h, ['#FF9F43', '#8A6FD1', '#5CC9B5', '#E8506E', '#FFC83D', '#3D8FE0'], 7, 6, .16)); },
+  snack(w, h){ const g = Math.floor(h*.62), p = new Paper(w, h).ramp(['#9FDCF7', '#BDE8FA', '#D6F2FF'], 0, g);
+    p.put(hillArt(w, h - g, x => 3 + 2.5*Math.sin(x*.05 + 2), ['#C2EBA6', '#A2D982', '#8ACC6C', '#77BE5B'], 11), 0, g);
+    const s = sunArt(Math.max(6, Math.round(Math.min(w, h)*.06)));
+    return p.put(s, w - s.width - 4, Math.max(18, h*.12)).put(cloudArt(.5), w*.04, Math.max(20, h*.18)); },
+  picnic(w, h){ return new Paper(w, h).ramp(['#FFF6EC']).dots((x, y) => y < 2 ? (y ? '#E0574A' : '#B8382D') : gingham(x + 2, y - 2)); },
+  ppSide(top, bottom, cols, seed){ return (w, h) => new Paper(w, h).ramp([top, bottom]).dots(splats(w, h, cols, seed, 7, .11)); },
+  wood(w, h){ return new Paper(w, h).ramp(['#C98A4E', '#B5773E', '#A56A34']).dots((x, y) => { const v = (y + Math.round(2*Math.sin(x*.09 + y*.7)) + 64) % 7; return v === 0 ? '#8E5A2A' : v === 3 && bay(x, y) < .25 ? '#D49A60' : null; }); }
 };
 /* which element gets which background */
 const BGS = [
   ['#device', BG.device], ['#home', BG.home], ['#phone', BG.grad(['#D6F7EE', '#B8EEDF', '#9AE3CF', '#86DCC8'])], ['#call', BG.call],
   ['#camera', BG.grad(['#6CBDF5', '#4FA3E6', '#3A8EDA', '#2F7FD0'])], ['#photos', BG.grad(['#FFF6D2', '#FFEDAE', '#FFE59A', '#FFDF8A'])],
   ['.viewer', BG.grad(['#FFF6D2', '#FFEDAE', '#FFE59A', '#FFDF8A'])], ['#music', BG.grad(['#F0E8FF', '#DCCEFA', '#CAB8F6', '#BBA6F2'])], ['.stage', BG.stage],
-  ['#games', BG.stripey(['#B0EBAA', '#8FDB8E', '#6CCB78', '#4FB86A'], '#C2F2BC')], ['.g-wild', BG.wild], ['.g-dino', BG.split],
+  ['#games', BG.stripey(['#B0EBAA', '#8FDB8E', '#6CCB78', '#4FB86A'], '#C2F2BC')], ['.g-wild', BG.wild], ['.g-feed', BG.feed], ['.g-dino', BG.split], ['.g-paint', BG.paint],
   ['#wt-menu', BG.wtMenu], ['#wt-world', BG.wtWorld], ['#wt-find', BG.grad(['#FFDCE3', '#FFC7D2', '#FFB3C2'])], ['#wt-egg', BG.wtEgg], ['#wt-bubbles', BG.bubbles],
-  ['.db-a', BG.dbSide('#A6E39A', '#6CC46A', '#3E9447')], ['.db-b', BG.dbSide('#A9DDF7', '#5BB8E8', '#2F86C4')], ['.db-mid', BG.sand]
+  ['.db-a', BG.dbSide('#A6E39A', '#6CC46A', '#3E9447')], ['.db-b', BG.dbSide('#A9DDF7', '#5BB8E8', '#2F86C4')], ['.db-mid', BG.sand],
+  ['#stScene', BG.snack], ['.st-foods', BG.picnic],
+  ['.pp-a', BG.ppSide('#FFE4CC', '#FFC99E', ['#FF9F43', '#E8506E', '#FFC83D'], 3)], ['.pp-b', BG.ppSide('#E6DFFC', '#C9BCF5', ['#8A6FD1', '#3D8FE0', '#5CC9B5'], 9)], ['.pp-mid', BG.wood]
 ];
 const bgKey = new WeakMap();
 function paintBG(el, fn, force){
@@ -3659,7 +3984,7 @@ function repaint(el){ const fn = bgFor.get(el); if (fn) paintBG(el, fn); }
   r.setProperty('--t-paper', tagURL('#FFFDF6', '#5A4A3E')); r.setProperty('--t-sun', tagURL('#FFC83D', INK));
   const D = {sun:discURL('#FFC83D', 28, '#7A4A0A'), go:discURL('#3BBF5C', 28, '#16502A'), stop:discURL('#F04E4E', 28, '#6A1A1A'), paper:discURL('#FFFDF6', 28, '#5A4A3E'), glass:discURL('#D9F0FF', 28, '#2A5A8A'), berry:discURL('#E8506E', 28, '#6E1832')};
   Object.entries(D).forEach(([k, v]) => r.setProperty('--d-' + k, v));
-  r.setProperty('--d-shutter', shutterURL()); r.setProperty('--bubble', bubbleURL()); r.setProperty('--nest', nestURL());
+  r.setProperty('--d-shutter', shutterURL()); r.setProperty('--bubble', bubbleURL()); r.setProperty('--nest', nestURL()); r.setProperty('--think', thinkURL());
 })();
 
 /* ---------- Contacts: who you can call ---------- */
@@ -3744,7 +4069,7 @@ const VOICE = [
   {k:'calls', on:true, t:'Phone calls', d:'The animals talk when you call them and when they call you.'},
   {k:'find', on:true, t:'Wild Tap: Find It', d:'Asks which animal to find. The game needs it.'},
   {k:'menus', on:false, t:'Opening apps', d:'“Hi buddy!”, “Phone! Who do you want to call?”, “Tap the egg!”'},
-  {k:'names', on:false, t:'Animal names', d:'Says the animal after its sound, in Wild Tap, and when an egg hatches.'},
+  {k:'names', on:false, t:'Animal names', d:'Names the animals in the games: after each sound in Wild Tap, a hatched egg, what each Snack Time animal wants, a finished painting.'},
   {k:'camera', on:false, t:'Camera and Photos', d:'Names the animals in view and in each picture.'},
   {k:'numbers', on:false, t:'Keypad numbers', d:'Says each number you press.'},
   {k:'music', on:false, t:'Music', d:'Names the instruments and songs.'}
@@ -3974,6 +4299,20 @@ const FX = {
   hoot(at=0){ [[0,.24],[.36,.16],[.6,.45]].forEach(([d, len]) => vox({at:at+d, type:'triangle', vol:.2, f0:[[0,410],[len,370]], amp:[[0,0],[.05,1],[len,0]], form:[{f:420, q:3}, {f:800, q:4, g:.2}], noise:.12})); return at + 1.05; },
   yawn(at=0){ return vox({at, type:'triangle', vol:.15, f0:[[0,1400],[.2,2200],[.55,1500]], amp:[[0,0],[.08,1],[.55,0]], form:[{f:2000, q:2}], vib:40, vibHz:6, noise:.05}); },   // sloth: a high, whistly "ah-eee"
   moo(at=0){ return vox({at, vol:.42, f0:[[0,118],[.2,135],[.9,112],[1.1,96]], amp:[[0,0],[.15,.9],[.85,.8],[1.1,0]], form:[{f:[[0,260],[.3,560],[1.1,430]], q:4}, {f:[[0,800],[.3,950],[1.1,850]], q:5, g:.4}], rough:.3, roughHz:25, noise:.2}); },
+  woof(at=0){   // dog: two quick, bright barks
+    [0,.3].forEach(d => vox({at:at+d, vol:.4, f0:[[0,380],[.04,520],[.16,330]], amp:[[0,0],[.015,1],[.06,.8],[.17,0]],
+      form:[{f:[[0,700],[.05,1100],[.17,700]], q:3}, {f:1800, q:4, g:.6}, {f:3000, q:5, g:.25}], rough:.5, roughHz:55, noise:.45, drive:3}));
+    return at + .5;
+  },
+  meow(at=0){   // cat: "mee-ow", the mouth opening and then closing
+    return vox({at, vol:.3, f0:[[0,560],[.18,760],[.45,700],[.72,470]], amp:[[0,0],[.06,.8],[.3,1],[.62,.7],[.75,0]],
+      form:[{f:[[0,600],[.3,1200],[.75,700]], q:4}, {f:[[0,2400],[.3,1900],[.75,1300]], q:5, g:.5}], vib:20, vibHz:6, noise:.12});
+  },
+  quack(at=0){   // duck: two nasal quacks
+    [0,.3].forEach(d => vox({at:at+d, vol:.32, f0:[[0,300],[.05,380],[.2,270]], amp:[[0,0],[.02,1],[.15,.7],[.21,0]],
+      form:[{f:1000, q:6}, {f:1700, q:7, g:.9}, {f:2700, q:7, g:.45}], rough:.4, roughHz:70, noise:.15, drive:4}));
+    return at + .55;
+  },
   tweet(at=0){ tone(2000,2700,.08,'sine',.16,at); tone(2200,2900,.08,'sine',.16,at+.12); tone(2000,2800,.1,'sine',.14,at+.26); return at + .36; },
   flutter(at=0){ [0,.07,.14,.21].forEach(d => noise(.05,'bandpass',1800,1400,.16,at+d)); return at + .26; },
   flick(at=0){ tone(1400,2400,.05,'sine',.15,at); tone(1400,2400,.05,'sine',.15,at+.1); return at + .15; },
@@ -4154,7 +4493,7 @@ function updateClock(){ const d = new Date(); $('#clockTxt').textContent = ((d.g
 updateClock(); setInterval(updateClock, 10000);
 
 /* ---------- Navigation ---------- */
-const APPS = ['home','phone','camera','photos','music','games','wildtap','dinobuddies'];
+const APPS = ['home','phone','camera','photos','music','games','wildtap','dinobuddies','snacktime','paintpals'];
 let current = 'home';
 const APP_SAY = {phone:'Phone! Who do you want to call?', camera:'Camera! Slide to look around. Then press the big button!', music:'Music! Let\'s play!', games:'Games! Pick a game!'};
 function go(name, fromEl){
@@ -4178,6 +4517,8 @@ function enterApp(name){
   if (name === 'games') say(APP_SAY.games, 0, 'menus');
   if (name === 'wildtap') WildTap.enter();
   if (name === 'dinobuddies') DinoBuddies.enter();
+  if (name === 'snacktime') SnackTime.enter();
+  if (name === 'paintpals') PaintPals.enter();
 }
 function leaveApp(name){
   if (name === 'camera') stopCamera();
@@ -4185,6 +4526,8 @@ function leaveApp(name){
   if (name === 'photos') closeViewer(true);
   if (name === 'wildtap') WildTap.leave();
   if (name === 'dinobuddies') DinoBuddies.leave();
+  if (name === 'snacktime') SnackTime.leave();
+  if (name === 'paintpals') PaintPals.leave();
 }
 $('#homeBtn').innerHTML = ICON.home;
 tap($('#homeBtn'), () => {
@@ -5074,14 +5417,18 @@ tap($('#songStop'), () => { FX.boop(); if (song){ stopSong(); say('Stop!', 0, 'm
 tap(dancer, () => { const s = songPick; FX[s.fx] && FX[s.fx](); retrigger(dancer, 'bow'); });
 
 /* ======================= GAMES ======================= */
-/* The picker. To add a game later: add its <section class="app"> above, a card here, and enter/leave hooks in enterApp/leaveApp. */
+/* The picker. To add a game later: add its <section class="app"> above, a card here, and enter/leave hooks in enterApp/leaveApp.
+   p: how many players it is made for; the card says so, with a little kid for each. */
 const GAMES = [
-  {id:'wildtap', n:'Wild Tap', cls:'g-wild', art:`<span class="art">${ART.elephant}</span><span class="art">${ART.lion}</span><span class="art">${ART.giraffe}</span>`},
-  {id:'dinobuddies', n:'Dino Buddies', cls:'g-dino', art:`<span class="art">${ART.trex}</span><span class="art gegg">${ART.egg}</span><span class="art flip">${ART.trex}</span>`}
+  {id:'wildtap', n:'Wild Tap', p:1, cls:'g-wild', art:`<span class="art">${ART.elephant}</span><span class="art big">${ART.lion}</span><span class="art">${ART.giraffe}</span>`},
+  {id:'snacktime', n:'Snack Time', p:1, cls:'g-feed', art:`<span class="art">${ART.banana}</span><span class="art big">${ART.monkey}</span><span class="art">${ART.watermelon}</span>`},
+  {id:'dinobuddies', n:'Dino Buddies', p:2, cls:'g-dino', art:`<span class="art mid">${ART.trex}</span><span class="art sm">${ART.egg}</span><span class="art mid flip">${ART.trex}</span>`},
+  {id:'paintpals', n:'Paint Pals', p:2, cls:'g-paint', art:`<span class="art mid flip">${ppHalf('giraffe')}</span><span class="art sm">${ART.brush}</span><span class="art mid">${ppHalf('lion')}</span>`}
 ];
 GAMES.forEach(g => {
   const b = document.createElement('button'); b.className = 'gamecard ' + g.cls; b.setAttribute('aria-label', g.n);
-  b.innerHTML = `<span class="gart">${g.art}</span><span class="gname">${g.n}</span>`;
+  const who = g.p > 1 ? '2 players' : '1 player';
+  b.innerHTML = `<span class="gtext"><span class="gname">${g.n}</span><span class="gplay" data-players="${g.p}">${ART.kidA}${g.p > 1 ? ART.kidB : ''}<span>${who}</span></span></span><span class="gart">${g.art}</span>`;
   tap(b, () => { FX.pop(); retrigger(b, 'go'); go(g.id, b); }, {bump:false});
   $('#gameList').appendChild(b);
 });
@@ -5347,6 +5694,300 @@ const DinoBuddies = (() => {
   };
 })();
 
+/* ---------- Snack Time (one player): an animal walks in thinking of a food; give it that food ----------
+   No wrong answers stick: a wrong food gets a gentle head shake, and after two tries the right one glows. */
+const SnackTime = (() => {
+  const SNACKS = [   // m: where the mouth is, as a fraction of the picture
+    {a:'monkey', n:'monkey', food:'banana', w:'a banana', fp:'bananas', x:'ooh', m:[.47,.5]},
+    {a:'penguin', n:'penguin', food:'fish', w:'a fish', fp:'fish', x:'bray', m:[.27,.34]},
+    {a:'dog', n:'puppy', food:'bone', w:'a bone', fp:'bones', x:'woof', m:[.19,.56]},
+    {a:'panda', n:'panda', food:'bamboo', w:'some bamboo', fp:'bamboo', x:'', m:[.47,.49]},
+    {a:'giraffe', n:'giraffe', food:'leaf', w:'a leaf', fp:'leaves', x:'munch', m:[.1,.19]},
+    {a:'chick', n:'chick', food:'corn', w:'some corn', fp:'corn', x:'peep', m:[.11,.39]},
+    {a:'turtle', n:'turtle', food:'strawberry', w:'a strawberry', fp:'strawberries', x:'', m:[.1,.6]},
+    {a:'parrot', n:'parrot', food:'blueberry', w:'a blueberry', fp:'blueberries', x:'squawk', m:[.21,.4]},
+    {a:'frog', n:'frog', food:'fly', w:'a fly', fp:'flies', x:'ribbit', m:[.5,.6]},
+    {a:'hippo', n:'hippo', food:'watermelon', w:'some watermelon', fp:'watermelon', x:'hippo', m:[.1,.65]},
+    {a:'cow', n:'cow', food:'flower', w:'a flower', fp:'flowers', x:'moo', m:[.21,.54]}
+  ];
+  const FOOD = Object.fromEntries(SNACKS.map(s => [s.food, s.w.replace(/^(a|some) /, '')]));
+  const root = $('#snacktime'), scene = $('#stScene'), animalEl = $('#stAnimal'), think = $('#stThink'), wantEl = $('#stWant'), foodsEl = $('#stFoods'), fedEl = $('#stFed');
+  let cur = null, queue = [], fed = 0, misses = 0, eating = true, quietUntil = 0;
+  const steps = () => [0,.16,.32,.48,.64].forEach(d => tone(190, 150, .07, 'sine', .14, d));   // pitter-patter feet
+  const uhuh = () => { tone(392, 370, .15, 'triangle', .13); tone(330, 300, .22, 'triangle', .13, .19); };   // a soft "nuh-uh", never a buzzer
+  const yum = at => { tone(523, 784, .14, 'triangle', .14, at); tone(659, 1047, .2, 'triangle', .13, at + .13); return at + .35; };
+  const call = (s, at = 0) => s.x ? FX[s.x](at) : yum(at);
+  function act(cls){ animalEl.classList.remove('in', 'out', 'hop', 'nope', 'chomp'); void animalEl.offsetWidth; animalEl.classList.add(cls); }
+  /* waits for the voice to finish a line (like the hello), so it never cuts one off */
+  const wants = (tries = 0) => { if (!cur || eating) return; if (speaking() && tries < 15){ later(() => wants(tries + 1), 300); return; } say(`The ${cur.n} wants ${cur.w}!`, 0, 'names'); };
+  function arrive(){
+    const prev = cur;
+    if (!queue.length) queue = shuffle(SNACKS).filter(s => s !== prev);
+    cur = queue.shift(); misses = 0; eating = true;
+    put(animalEl, ART[cur.a]); animalEl.setAttribute('aria-label', cur.n);
+    think.classList.remove('on'); put(wantEl, ART[cur.food]);
+    foodsEl.innerHTML = '';
+    act('in'); steps();
+    later(() => { think.classList.add('on'); FX.pop(); deal(); eating = false; wants(); }, 950);
+  }
+  /* two foods to choose from at first, three once a few animals are fed */
+  function deal(){
+    const n = fed < 3 ? 2 : 3;
+    const picks = shuffle([cur.food, ...shuffle(SNACKS.map(s => s.food).filter(f => f !== cur.food)).slice(0, n - 1)]);
+    foodsEl.innerHTML = ''; foodsEl.classList.toggle('n2', n === 2);
+    picks.forEach((f, i) => {
+      const b = document.createElement('button'); b.className = 'st-food'; b.dataset.food = f; b.setAttribute('aria-label', FOOD[f]);
+      b.style.animationDelay = i*.07 + 's'; b.innerHTML = `<span class="art">${ART[f]}</span>`;
+      tap(b, () => pick(b, f), {bump:false});
+      foodsEl.appendChild(b);
+    });
+  }
+  function pick(b, f){
+    if (eating || !cur) return;
+    if (f !== cur.food){
+      misses++; uhuh(); retrigger(b, 'no'); act('nope'); retrigger(think, 'wig');
+      if (misses >= 2) foodsEl.querySelector(`[data-food="${cur.food}"]`)?.classList.add('hint');
+      return;
+    }
+    eating = true; b.classList.remove('hint'); retrigger(b, 'yes'); FX.pop(); think.classList.remove('on');
+    $$('.st-food', foodsEl).forEach(o => { if (o !== b) o.classList.add('off'); });
+    const s = cur, a = root.getBoundingClientRect(), fr = b.getBoundingClientRect(), ar = animalEl.getBoundingClientRect();
+    const x0 = fr.left - a.left + fr.width/2, y0 = fr.top - a.top + fr.height/2, x1 = ar.left - a.left + ar.width*s.m[0], y1 = ar.top - a.top + ar.height*s.m[1];
+    const mx = (x0 + x1)/2, my = Math.min(y0, y1) - 60;
+    const t = document.createElement('div'); t.className = 'st-bite art'; t.innerHTML = ART[s.food];
+    root.appendChild(t); FX.swoosh();
+    t.animate([
+      {transform:`translate(${x0-32}px,${y0-32}px) scale(1)`},
+      {transform:`translate(${mx-32}px,${my-32}px) scale(1.2)`, offset:.5},
+      {transform:`translate(${x1-32}px,${y1-32}px) scale(.35)`}
+    ], {duration:650, easing:'ease-in-out', fill:'forwards'}).onfinish = () => { t.remove(); eat(s); };
+  }
+  function eat(s){
+    if (cur !== s || current !== 'snacktime') return;
+    act('chomp');
+    const end = s.x === 'munch' ? FX.munch(0) : call(s, FX.crunch(0) + .05);
+    fed++; addSticker(s);
+    later(() => { act('hop'); hearts(); }, 700);
+    say(`Yum! The ${s.n} loves ${s.fp}!`, 0, 'names');
+    const party = fed % 5 === 0, stay = end*1000 + (party ? 2000 : 500);
+    if (party) later(celebrate, end*1000 + 100);
+    later(() => { act('out'); steps(); }, stay);
+    later(arrive, stay + 850);
+  }
+  function hearts(){
+    const [x, y] = rel(animalEl), r = animalEl.getBoundingClientRect();
+    for (let i=0;i<5;i++) later(() => flyNote(x + (Math.random() - .5)*r.width*.7, y - r.height*.3, rnd([ART.heart, ART.heart, ART.heartYellow, ART.heartGreen])), i*110);
+  }
+  function addSticker(s){ if (fedEl.children.length >= 10) fedEl.innerHTML = ''; const sp = document.createElement('span'); sp.className = 's art'; sp.innerHTML = ART[s.a]; fedEl.appendChild(sp); }
+  function celebrate(){
+    FX.cheer(); const [x, y] = rel(scene); confetti(x, y, 44);
+    [...fedEl.children].forEach((sp, i) => later(() => retrigger(sp, 's'), i*70));
+    say('Hooray! Five full tummies!', 0, 'names');
+  }
+  /* tap the animal for its call, or the bubble to hear what it wants */
+  tap(animalEl, () => { const now = performance.now(); if (eating || !cur || now < quietUntil) return; act('hop'); quietUntil = now + call(cur)*1000; }, {bump:false});
+  tap(think, () => { if (eating || !cur) return; FX.pop(); retrigger(think, 'wig'); hush(); wants(); }, {bump:false});
+  return {
+    enter(){ say('Snack Time! The animals are hungry!', 0, 'menus'); cur = null; arrive(); },
+    leave(){ $$('.st-bite', root).forEach(t => t.remove()); eating = true; },
+    state: () => ({want: cur && !eating ? cur.food : null, animal: cur && cur.a, fed, choices: foodsEl.children.length})
+  };
+})();
+
+/* ---------- Paint Pals (two players): each kid gets a coloring page; rubbing (or tapping) paints it in its real colors.
+   When both pictures are done, the two animals meet, then go up on the gallery shelf and a new pair arrives. ---------- */
+/* a sprite as a coloring page: the outline and eyes show from the start, every other pixel is a pale gray waiting for paint */
+function ppPage(name){
+  const s = PIX[name], rows = s.rows.trim().split('\n'), h = rows.length, w = rows[0].length;
+  const col = new Uint8ClampedArray(w*h*4), ghost = new Uint8ClampedArray(w*h*4), can = new Uint8Array(w*h), paintable = [];
+  rows.forEach((r, y) => [...r].forEach((ch, x) => {
+    if (ch === '.' || !s.pal[ch]) return;
+    const i = y*w + x, c = rgbOf(s.pal[ch]); col.set(c, i*4);
+    if ('okg'.includes(ch)){ ghost.set(c, i*4); return; }
+    const g = .3*c[0] + .59*c[1] + .11*c[2], k = .74;
+    ghost.set([g + (255 - g)*k, g + (253 - g)*k, g + (246 - g)*k, c[3]], i*4); can[i] = 1; paintable.push(i);
+  }));
+  return {name, w, h, col, ghost, can, paintable};
+}
+function ppDraw(page, mask, g){
+  const im = g.createImageData(page.w, page.h);
+  for (let i=0;i<page.w*page.h;i++) im.data.set((mask[i] ? page.col : page.ghost).subarray(i*4, i*4 + 4), i*4);
+  g.putImageData(im, 0, 0);
+}
+/* for the game card: a picture painted part way, along a wavy brush stroke */
+function ppHalf(name){
+  const p = ppPage(name), c = document.createElement('canvas'); c.width = p.w; c.height = p.h;
+  const mask = new Uint8Array(p.w*p.h); p.paintable.forEach(i => { const x = i % p.w, y = Math.floor(i / p.w); if (x + y*.35 + 1.6*Math.sin(y*.9) < p.w*.66) mask[i] = 1; });
+  ppDraw(p, mask, c.getContext('2d'));
+  const o = document.createElement('canvas'); o.width = p.w*4; o.height = p.h*4;
+  const g = o.getContext('2d'); g.imageSmoothingEnabled = false; g.drawImage(c, 0, 0, o.width, o.height);
+  return `<img class="px" src="${o.toDataURL('image/png')}" alt="" draggable="false">`;
+}
+const PaintPals = (() => {
+  const PAIRS = [['lion','giraffe'], ['dog','cat'], ['monkey','parrot'], ['cow','chick'], ['trex','longneck'], ['elephant','hippo'], ['frog','duck'],
+    ['owl','sloth'], ['penguin','whale'], ['tiger','gorilla'], ['flamingo','crab'], ['trike','stego']];   // (no zebra: its stripes are outline, so there is little to paint)
+  const CALL = {lion:'roar', dog:'woof', cat:'meow', monkey:'ooh', parrot:'squawk', cow:'moo', chick:'peep', trex:'bigroar', longneck:'bellow',
+    elephant:'trumpet', giraffe:'munch', frog:'ribbit', duck:'quack', owl:'hoot', sloth:'yawn', penguin:'bray', whale:'splash', tiger:'growl', gorilla:'thump',
+    hippo:'hippo', flamingo:'honk', crab:'snap', trike:'huff', stego:'stego'};
+  const NAME = {trex:'T rex', longneck:'long neck', trike:'Triceratops', stego:'Stegosaurus', dog:'puppy', cat:'kitty'};
+  const FACES_RIGHT = new Set(['trex']);   // every other sprite looks left
+  const DONE = .86, R = 2.6;   // most of it painted: the rest fills itself in. R: how wide a finger paints, in picture pixels
+  const PENTA = [262,294,330,392,440,523,587,659,784,880];
+  const root = $('#paintpals'), galEl = $('#ppGallery');
+  const saved = store.get('paintpals', {}) || {};
+  let gallery = Array.isArray(saved.gallery) ? saved.gallery.filter(n => PIX[n]).slice(-8) : [];
+  let pairNo = saved.next | 0, rounds = 0, party = false;
+  const S = $$('.pp-side', root).map((el, i) => ({el, i, cv:el.querySelector('canvas'), easel:el.querySelector('.pp-easel'), hand:el.querySelector('.pp-hand'),
+    page:null, mask:null, left:0, done:false, shown:false, flip:false, ptr:new Map(), step:i ? 6 : 2, lastNote:0, lastSpark:0, lastDrop:0, quietUntil:0}));
+  const nameOf = n => NAME[n] || n;
+  const an = n => (/^[aeiou]/i.test(n) ? 'an ' : 'a ') + n;
+  const here = () => current === 'paintpals';
+  /* each side has its own instrument on one pentatonic scale, wandering up and down while a finger paints */
+  function note(s){
+    const now = performance.now(); if (now - s.lastNote < 85) return; s.lastNote = now;
+    s.step += (Math.random() < .5 ? -1 : 1) * (Math.random() < .8 ? 1 : 2);
+    if (s.step < 0) s.step = 1; if (s.step >= PENTA.length) s.step = PENTA.length - 2;
+    const f = PENTA[s.step];
+    if (s.i === 0) tone(f, f, .22, 'triangle', .16); else { tone(f*2, f*2, .3, 'sine', .09); tone(f, f, .18, 'sine', .06); }
+  }
+  const draw = s => ppDraw(s.page, s.mask, s.cv.getContext('2d'));
+  function size(s){
+    const w = s.el.clientWidth, h = s.el.clientHeight; if (!w || !h || !s.page) return;
+    const k = Math.max(2, Math.floor(Math.min(w - 48, h - 56) / s.page.w));   // whole screen pixels per picture pixel, so it stays crisp
+    s.cv.style.width = k*s.page.w + 'px'; s.cv.style.height = k*s.page.h + 'px';
+  }
+  function load(s, name){
+    s.page = ppPage(name); s.mask = new Uint8Array(s.page.w*s.page.h); s.left = s.page.paintable.length; s.done = s.shown = false; s.ptr.clear();
+    s.flip = s.i === 0 ? !FACES_RIGHT.has(name) : FACES_RIGHT.has(name);   // the two animals face each other
+    s.cv.width = s.page.w; s.cv.height = s.page.h; s.cv.classList.toggle('flip', s.flip);
+    s.el.classList.remove('pp-done'); s.easel.classList.remove('pp-hop', 'pp-dance'); s.hand.hidden = false;
+    s.el.setAttribute('aria-label', nameOf(name));
+    draw(s); size(s);
+  }
+  function newRound(){
+    const pair = PAIRS[pairNo % PAIRS.length]; pairNo++;
+    const [a, b] = Math.random() < .5 ? pair : [pair[1], pair[0]];
+    load(S[0], a); load(S[1], b);
+    store.set('paintpals', {gallery, next:pairNo});
+  }
+  function renderGallery(){ galEl.innerHTML = ''; gallery.forEach(n => { const sp = document.createElement('span'); put(sp, ART[n]); galEl.appendChild(sp); }); }
+  /* where a finger is, in picture pixels (mirrored when the picture is) */
+  function at(s, e){
+    const r = s.cv.getBoundingClientRect(); let x = (e.clientX - r.left)/r.width*s.page.w;
+    if (s.flip) x = s.page.w - x;
+    return [x, (e.clientY - r.top)/r.height*s.page.h];
+  }
+  function dab(s, x, y, r){
+    const {w, h, can} = s.page; let n = 0;
+    for (let j=Math.max(0, Math.floor(y - r)); j<=Math.min(h - 1, Math.floor(y + r)); j++)
+      for (let i=Math.max(0, Math.floor(x - r)); i<=Math.min(w - 1, Math.floor(x + r)); i++){
+        const k = j*w + i; if (!can[k] || s.mask[k] || Math.hypot(i + .5 - x, j + .5 - y) > r) continue;
+        s.mask[k] = 1; n++;
+      }
+    s.left -= n; return n;
+  }
+  function stroke(s, a, b, e){
+    const steps = Math.max(1, Math.ceil(Math.hypot(b[0] - a[0], b[1] - a[1]) / .8)); let n = 0;
+    for (let t=1;t<=steps;t++) n += dab(s, a[0] + (b[0] - a[0])*t/steps, a[1] + (b[1] - a[1])*t/steps, R);
+    if (!n) return;
+    draw(s); note(s); sparkle(s, e); progress(s);
+  }
+  function sparkle(s, e){
+    const now = performance.now(); if (now - s.lastSpark < 140) return; s.lastSpark = now;
+    const a = root.getBoundingClientRect(), d = document.createElement('div'); d.className = 'pp-spark art'; d.innerHTML = rnd([ART.starBright, ART.star]);
+    d.style.left = (e.clientX - a.left + (Math.random() - .5)*34) + 'px'; d.style.top = (e.clientY - a.top - 14) + 'px';
+    root.appendChild(d); d.addEventListener('animationend', () => d.remove());
+  }
+  /* a tap beside the picture flings a blob of paint onto a bare spot (little fingers tap more than they rub) */
+  function fling(s, e){
+    const now = performance.now(); if (now - s.lastDrop < 110) return; s.lastDrop = now;
+    const page = s.page, open = page.paintable.filter(i => !s.mask[i]); if (!open.length) return;
+    const k = rnd(open), cx = k % page.w + .5, cy = Math.floor(k / page.w) + .5;
+    const r = s.cv.getBoundingClientRect(), a = root.getBoundingClientRect();
+    const tx = r.left - a.left + (s.flip ? page.w - cx : cx)/page.w*r.width, ty = r.top - a.top + cy/page.h*r.height;
+    const x = e.clientX - a.left, y = e.clientY - a.top, mx = (x + tx)/2, my = Math.min(y, ty) - 50;
+    const d = document.createElement('div'); d.className = 'pp-drop'; d.style.background = `rgb(${page.col[k*4]},${page.col[k*4 + 1]},${page.col[k*4 + 2]})`;
+    root.appendChild(d); noise(.12, 'bandpass', 1800, 900, .1);
+    d.animate([
+      {transform:`translate(${x-10}px,${y-10}px) scale(.5)`},
+      {transform:`translate(${mx-10}px,${my-10}px) scale(1.3)`, offset:.5},
+      {transform:`translate(${tx-10}px,${ty-10}px) scale(1)`}
+    ], {duration:420, easing:'ease-in', fill:'forwards'}).onfinish = () => {
+      d.remove();
+      if (s.page !== page || s.done || party) return;
+      if (dab(s, cx, cy, 3.2)){ draw(s); tone(640, 220, .1, 'sine', .2); progress(s); }
+    };
+  }
+  function progress(s){ if (!s.done && s.left <= s.page.paintable.length*(1 - DONE)) finish(s); }
+  /* nearly there: the last bare pixels fill in by themselves with a run of twinkles */
+  function finish(s){
+    s.done = true; s.ptr.clear();
+    const page = s.page, rest = shuffle(page.paintable.filter(i => !s.mask[i])), per = Math.max(1, Math.ceil(rest.length / 12));
+    let f = 0;
+    const fill = setInterval(() => {
+      if (s.page !== page){ clearInterval(fill); return; }
+      rest.splice(0, per).forEach(i => s.mask[i] = 1); draw(s);
+      if (here()) tone(PENTA[Math.min(PENTA.length - 1, f)]*2, PENTA[Math.min(PENTA.length - 1, f)]*2, .12, 'sine', .07);
+      f++;
+      if (!rest.length){ clearInterval(fill); s.left = 0; finished(s); }
+    }, 45);
+  }
+  /* done: whichever picture finishes filling in second starts the meeting (done only means "filling in") */
+  function finished(s){
+    s.shown = true; s.el.classList.add('pp-done');
+    if (!here()) return;
+    retrigger(s.easel, 'pp-hop');
+    s.quietUntil = performance.now() + (FX[CALL[s.page.name]](.1) || 1)*1000;
+    const [x, y] = rel(s.easel); confetti(x, y, 22);
+    say(`${an(nameOf(s.page.name)).replace(/^a/, 'A')}!`, 0, 'names');
+    const other = S[1 - s.i];
+    if (other.shown) later(meet, 1700);
+    else later(() => { if (!other.done && !other.ptr.size) other.hand.hidden = false; }, 4000);   // nudge the other side
+  }
+  /* both done: the two animals dance and call to each other, then go up on the shelf */
+  function meet(){
+    if (party) return;
+    party = true; FX.cheer();
+    S.forEach(s => { retrigger(s.easel, 'pp-dance'); const [x, y] = rel(s.easel); confetti(x, y, 30); });
+    const [a, b] = S.map(s => s.page.name);
+    say(`Beautiful! ${an(nameOf(a)).replace(/^a/, 'A')} and ${an(nameOf(b))}!`, 0, 'names');
+    const t1 = FX[CALL[a]](.5) || 1.5, t2 = FX[CALL[b]](t1 + .15) || t1 + 1;
+    later(() => {
+      gallery.push(a, b); gallery = gallery.slice(-8); renderGallery();
+      rounds++; party = false; newRound();
+    }, Math.max(3600, t2*1000 + 300));
+  }
+  S.forEach(s => {
+    s.el.addEventListener('pointerdown', e => {
+      e.preventDefault(); keepAwake();
+      if (!s.page || party) return;
+      s.hand.hidden = true;
+      if (s.done){   // a finished picture: tap it to hear the animal again
+        const now = performance.now(); if (now < s.quietUntil) return;
+        retrigger(s.easel, 'pp-hop'); s.quietUntil = now + (FX[CALL[s.page.name]]() || 1)*1000; return;
+      }
+      const p = at(s, e); s.ptr.set(e.pointerId, p);
+      if (p[0] > -1 && p[1] > -1 && p[0] < s.page.w + 1 && p[1] < s.page.h + 1) stroke(s, p, p, e); else fling(s, e);
+    });
+    s.el.addEventListener('pointermove', e => {
+      const a = s.ptr.get(e.pointerId); if (!a || s.done || party) return;
+      const p = at(s, e); s.ptr.set(e.pointerId, p); stroke(s, a, p, e);
+    });
+    ['pointerup', 'pointercancel'].forEach(t => s.el.addEventListener(t, e => s.ptr.delete(e.pointerId)));
+  });
+  if (typeof ResizeObserver === 'function') S.forEach(s => new ResizeObserver(() => size(s)).observe(s.el));
+  newRound(); renderGallery();
+  return {
+    enter(){
+      say('Paint Pals! Rub your picture to paint it!', 0, 'menus');
+      if (party || S.every(s => s.shown)){ party = false; newRound(); }   // left during a celebration: start the next pair
+      S.forEach(size);
+    },
+    leave(){ $$('.pp-drop, .pp-spark', root).forEach(d => d.remove()); S.forEach(s => s.ptr.clear()); },
+    state: () => ({painted: S.map(s => +(1 - s.left/s.page.paintable.length).toFixed(3)), done: S.map(s => s.done), names: S.map(s => s.page.name), rounds, gallery: gallery.length})
+  };
+})();
+
 /* ======================= PARENT SETTINGS ======================= */
 /* hidden behind a 3-second press on the clock; a quick tap just wiggles it */
 const clock = $('#clock');
@@ -5428,7 +6069,7 @@ async function renderFx(name, secs=3){
   return {len, data:Array.from(buf.getChannelData(0))};
 }
 window.__toyPhone = { go, renderFx, speakable,
-  panorama: (k, w=1600) => Promise.resolve().then(() => { const cv = document.createElement('canvas'); cv.width = w; cv.height = Math.round(w * WH / WW); renderScene(cv.getContext('2d'), SCENES[k], 0, 0, w / WW, cv.width, cv.height, 3, true); return cv.toDataURL('image/png'); }), dino: () => ({fill:DinoBuddies.fill(), family:DinoBuddies.family()}), fx: () => Object.keys(FX), ringIn: () => maybeRing(true), sound: () => ({state: ctx ? ctx.state : 'none', rebuilds, held: held.length}),
+  panorama: (k, w=1600) => Promise.resolve().then(() => { const cv = document.createElement('canvas'); cv.width = w; cv.height = Math.round(w * WH / WW); renderScene(cv.getContext('2d'), SCENES[k], 0, 0, w / WW, cv.width, cv.height, 3, true); return cv.toDataURL('image/png'); }), dino: () => ({fill:DinoBuddies.fill(), family:DinoBuddies.family()}), snack: () => SnackTime.state(), paint: () => PaintPals.state(), fx: () => Object.keys(FX), ringIn: () => maybeRing(true), sound: () => ({state: ctx ? ctx.state : 'none', rebuilds, held: held.length}),
   pauseSound: () => { if (ctx) Object.defineProperty(ctx, 'state', {configurable:true, get: () => 'interrupted'}); }, photos: () => Photos.list.length, call: () => call && call.state, contacts: () => CONTACTS.length };
 })();
 </script>

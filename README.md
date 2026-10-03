@@ -14,11 +14,25 @@ Guided Access. It's one self-contained `index.html` (vanilla JS, no build step),
   Starts with 4 sample photos. Keeps the newest 40. There's no delete button for kids.
 - **Music**: a pentatonic xylophone, drum pads, an animal piano (every key is an animal sound in tune), and
   4 songs with a dancing animal: Twinkle Twinkle, Old MacDonald, The Wheels on the Bus, If You're Happy and You Know It.
-- **Games**: a controller icon that opens a game picker with the first two games, moved in whole:
-  - *Wild Tap Safari*: Safari, Zoo and Dino sound boards, Find It, egg hatching and bubble popping.
+- **Games**: a controller icon that opens a game picker. Each card says who it's for: "1 player" with one little kid, or
+  "2 players" with two.
+  - *Wild Tap Safari* (1 player): Safari, Zoo and Dino sound boards, Find It, egg hatching and bubble popping.
     Its grid button goes back to the Wild Tap menu.
-  - *Dino Buddies*: the split-screen game for both boys. Every tap on either half flies a treat into one shared egg.
-    The hatched family is remembered between visits.
+  - *Snack Time* (1 player): a hungry animal walks in, thinking of a food in a thought bubble. Tap that food on the picnic
+    blanket and it flies into the animal's mouth: munching, the animal's call, hearts and a sticker, then the next animal
+    walks in. Two foods to choose from at first, three after a few animals. A wrong food only gets a gentle head shake, and
+    after two tries the right food glows, so there's no way to lose. Every fifth animal is a little party. The bubble
+    shows the food, so the game works with the voice off (with Animal names on, it also says "The panda wants some bamboo!").
+    Eleven animals: monkey and banana, penguin and fish, puppy and bone, panda and bamboo, giraffe and leaf, chick and corn,
+    turtle and strawberry, parrot and blueberry, frog and fly, hippo and watermelon, cow and flower.
+  - *Dino Buddies* (2 players): the split-screen game for both boys. Every tap on either half flies a treat into one
+    shared egg. The hatched family is remembered between visits.
+  - *Paint Pals* (2 players): split screen again, with a coloring page of an animal on each half. Rubbing a finger over it
+    paints it in its real colors, each half with its own notes on one shared scale, so two kids painting at once still
+    sounds like music. Tapping beside the picture flings a blob of paint onto it, so the little one can tap instead of
+    rub. When a picture is nearly painted it finishes itself and the animal calls out. When both are done, the two
+    animals dance and call to each other, go up on the shelf in the middle (remembered between visits), and a new pair
+    arrives: lion and giraffe, puppy and kitty, monkey and parrot, cow and chick, T. rex and long neck, and seven more.
 
 ## Animal voices
 
@@ -40,6 +54,9 @@ mid-volume, and the animal finishes its call before it talks.
 | Triceratops | two nose snorts and a grunt |
 | Stegosaurus | a rumbly grunt, a tail swish and a thump |
 | Pterodactyl | a raspy, hawk-like "keee-ahh" |
+| Dog | two quick, bright barks |
+| Cat | a "mee-ow": the mouth opening, then closing |
+| Duck | two nasal quacks |
 
 The camera scenes and Wild Tap use the same voices (plus a leopard and tiger growl, parrot squawk, flamingo honk,
 gorilla chest beats, frog ribbit, owl hoot and more).
@@ -60,8 +77,9 @@ Every picture is pixel art placed one pixel at a time: no emoji, no vector drawi
 
 - **Sprites** live in `index.html` as text, in the `PIX` block: a palette, then one row of letters per row of pixels.
   Each letter is a color and `.` is see-through. Edit a row, reload, and the picture changes everywhere.
-  There are 93: 37 animals and dinosaurs (32×32, facing left), 7 little 16×16 animals for far away in the camera,
-  27 things and treats, the 5 app icons, 16 buttons, checkmarks and status-bar icons, and the toy's own home-screen icon.
+  There are 100: 37 animals and dinosaurs (32×32, facing left), 7 little 16×16 animals for far away in the camera,
+  32 things and treats (Snack Time's foods and Paint Pals' brush among them), the 5 app icons, 18 buttons, checkmarks,
+  player badges and status-bar icons, and the toy's own home-screen icon.
   `npm run sprites` draws them all on one sheet:
 
   ![Every sprite](screenshots/sprites.png)
@@ -114,7 +132,7 @@ Hold the clock in the top-left corner for **3 seconds**. A quick tap only wiggle
   | Phone calls | The animals talk when you call them and when they call you | on (a call is the animal talking) |
   | Wild Tap: Find It | "Where is the giraffe?" | on (the game is the question) |
   | Opening apps | "Hi buddy!", "Phone! Who do you want to call?", "Tap the egg!" | off |
-  | Animal names | The animal's name after its sound, Wild Tap facts, hatched babies | off |
+  | Animal names | The animal's name after its sound, Wild Tap facts, hatched babies, what each Snack Time animal wants, finished paintings | off |
   | Camera and Photos | The animals in view and in each picture | off |
   | Keypad numbers | Each number pressed | off |
   | Music | Instrument and song names | off |
@@ -172,9 +190,10 @@ npm run artifact   # writes dist/artifact.html
 ```
 
 The test taps every button on every screen, places and hangs up calls, takes photos, plays every instrument and a song,
-plays every Wild Tap screen, hatches a Dino Buddies egg with two fingers at once, opens parent settings with a
-3-second hold, mashes 250 random touches (some two-handed), then checks the home button still gets home. It also
-renders all 21 animal calls offline to check each is audible, under 2.5 seconds and not clipping, and it fails on any
+plays every Wild Tap screen, hatches a Dino Buddies egg with two fingers at once, feeds Snack Time animals (wrong food
+first), paints both Paint Pals pictures with two fingers at once until the pair goes up on the shelf, opens parent settings
+with a 3-second hold, mashes 250 random touches (some two-handed), then checks the home button still gets home. It also
+renders all 24 animal calls offline to check each is audible, under 2.5 seconds and not clipping, and it fails on any
 console error. Screenshots go to `tests/screenshots/`.
 
 ## Notes
