@@ -1,0 +1,18 @@
+{
+  "contacts": [
+    {
+      "name": "Daddy",
+      "photo": "daddy.jpg",
+      "clips": ["daddy-hi.m4a", "daddy-love.m4a", "daddy-playing.m4a"],
+      "bye": "daddy-bye.m4a",
+      "color": "#BFE3F7"
+    },
+    {
+      "name": "Grandma",
+      "photo": "grandma.jpg",
+      "clips": ["grandma-hi.m4a"],
+      "color": "#FFD1DA",
+      "lines": ["Hi sweetie! It's Grandma! I love you!", "Are you being a good helper today?"]
+    }
+  ]
+}
