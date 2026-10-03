@@ -12,8 +12,8 @@ Guided Access. It's one self-contained `index.html` (vanilla JS, no build step),
 - **Camera**: a pretend safari camera. Drag to look around a pixel-art panorama (savanna, jungle, dino valley) about
   3 screens wide. The shutter flashes, clicks and saves a small pixel-art PNG, and (if a parent turns it on) the voice says what's in the shot.
   Each scene has two hidden animals to find. 1×/2× zoom, and the last-photo thumbnail opens Photos.
-  A parent can also turn on **the phone's real camera** (see [The real camera](#the-real-camera)): photos with fun looks,
-  and selfies in pixel-art animal costumes.
+  It also has **the phone's real camera** (see [The real camera](#the-real-camera)): photos with fun looks, and selfies in
+  pixel-art animal costumes. A parent can switch it to pretend only.
 - **Photos**: the kids' pictures, newest first. Big arrows and swipe, and (if a parent turns it on) the voice names the animals.
   A selfie in a costume makes that animal's sound when it comes up.
   Starts with 4 sample photos. Keeps the newest 60. There's no delete button for kids.
@@ -127,7 +127,8 @@ on `pointerdown` with sound and motion, there are no failure states, and two kid
 
 ## The real camera
 
-Off until a parent picks it in settings (**Camera: Pretend / Real / Both**). It's laid out like a phone camera, in the
+On from the start alongside the pretend camera (settings: **Camera: Pretend / Real / Both**, Both by default; Pretend
+turns it off). It's laid out like a phone camera, in the
 toy's own pixel style: a big live picture, the shutter under it, and along the bottom the last photo, the modes and a
 flip button. With **Both**, the modes are the pretend safari, Photo and Selfie; with **Real**, just Photo and Selfie.
 
@@ -146,8 +147,9 @@ flip button. With **Both**, the modes are the pretend safari, Photo and Selfie; 
 - **Only while it's on screen**: the camera runs only while the Camera app is open, and stops when the kids leave it,
   the phone locks or the toy goes to the background (the green camera dot goes away). It asks for pictures only, never
   the microphone: on an iPhone, using the microphone moves all sound to the earpiece.
-- **Permission**: Safari asks the first time. Choosing Real or Both in settings asks right then, so the question comes
-  while a parent is holding the phone. To stop Safari asking again: tap the page menu (**aA**) next to the web
+- **Permission**: Safari asks the first time Photo or Selfie opens (the Camera starts on the pretend safari, so it
+  doesn't ask until then). Choosing Real or Both in settings asks right then, so the question comes while a parent is
+  holding the phone. To stop Safari asking again: tap the page menu (**aA**) next to the web
   address, then **Website Settings › Camera › Allow**. If the camera is refused or missing, the pretend camera shows
   instead, and settings say what happened and how to allow it.
 
@@ -205,8 +207,8 @@ Hold the clock in the top-left corner for **3 seconds**. A quick tap only wiggle
 - Incoming calls on/off
 - Volume (Quiet / Soft / Medium / Loud)
 - Sound when the phone is on silent (on by default)
-- **Camera**: Pretend (the default), Real (the phone's camera) or Both, with a note on whether the camera is allowed
-  and how to allow it
+- **Camera**: Both (the default: the pretend safari plus the phone's camera), Real (the phone's camera only) or
+  Pretend (no real camera), with a note on whether the camera is allowed and how to allow it
 - **Voice**: a checkbox for each place the talking voice can speak. Animal sounds and music always play.
 
   | Checkbox | What the voice says | Starts |

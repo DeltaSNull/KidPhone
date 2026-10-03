@@ -110,7 +110,7 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img{image-rendering:auto}
 .tabs{display:flex; justify-content:center; gap:12px; flex:none}
 .tab{width:var(--bar); height:var(--bar); display:grid; place-items:center; --fr:var(--f-glass)}
 .tab.on{--fr:var(--f-sun)}
-.tab .px{width:64%; height:64%}
+.tab .px{width:auto; height:min(46px, 70%); aspect-ratio:1; margin-top:-4px}   /* centered on the face (the frame's lip and shadow sit below it) */
 .pane{flex:1; min-height:0; min-width:0; position:relative}
 .round{width:96px; height:96px; display:grid; place-items:center; flex:none}
 .round .px{width:50%; height:50%; margin-top:-6%}
@@ -4175,8 +4175,8 @@ const VOICE = [
   {k:'numbers', on:false, t:'Keypad numbers', d:'Says each number you press.'},
   {k:'music', on:false, t:'Music', d:'Names the instruments and songs.'}
 ];
-const settings = Object.assign({incoming:true, vol:2, silent:true, camera:'pretend'}, store.get('settings', {}));
-if (!['pretend','real','both'].includes(settings.camera)) settings.camera = 'pretend';
+const settings = Object.assign({incoming:true, vol:2, silent:true, camera:'both'}, store.get('settings', {}));
+if (!['pretend','real','both'].includes(settings.camera)) settings.camera = 'both';
 settings.vol = clamp(settings.vol|0, 0, 3);
 settings.voice = Object.assign(Object.fromEntries(VOICE.map(v => [v.k, v.on])), settings.voice || {});
 const voiceOn = area => !area || !!settings.voice[area];

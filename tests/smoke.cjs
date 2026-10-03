@@ -341,7 +341,7 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   const portraitView = viewport.height > viewport.width;
   const tapSetting = async sel => { await page.evaluate(sel => document.querySelector(sel).scrollIntoView({ block: 'center' }), sel); await sleep(150); await tap(sel); };   // clear of the sticky header
   await holdClock();
-  check(await page.evaluate(() => document.querySelector('[data-camera="pretend"]').classList.contains('on')), 'the camera setting starts on Pretend');
+  check(await page.evaluate(() => document.querySelector('[data-camera="both"]').classList.contains('on')), 'the camera setting starts on Both (pretend, photo and selfie)');
   await tapSetting('[data-camera="both"]'); await sleep(1500);
   check(await page.evaluate(() => JSON.parse(localStorage.getItem('toyphone.settings')).camera) === 'both', 'the camera setting is saved');
   const camNote = await page.locator('#camNote').textContent();
