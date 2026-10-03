@@ -561,21 +561,75 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   check(!!snack.want, `Snack Time: the next animal walks in (${snack.animal})`);
   await home();
 
-  // --- SCHOOL: letters (ABC Zoo, ABC Snack)
+  // --- SCHOOL: the Letter Path, ABC Zoo, ABC Snack
   const school = () => page.evaluate(() => window.__toyPhone.school());
   await tap('[data-app="school"]'); await sleep(600);
-  check(await page.locator('#schoolList .gamecard').count() === 2, 'School shows its learning games');
+  check(await page.locator('#schoolList .gamecard').count() === 3, 'School shows its learning games');
   await shot('28-school'); await fits('school');
+  const lp = () => page.evaluate(() => window.__toyPhone.path());
+  const until = async (fn, n = 30) => { for (let i = 0; i < n && !(await fn()); i++) await sleep(300); return fn(); };
+  await tap('.gamecard[aria-label="Letter Path"]'); await sleep(900);
+  const order = await page.$$eval('.lp-stone', bs => bs.map(b => b.dataset.l).join(''));
+  check(order === 'satipnckehrmdgoulfbjzwvyxq' && (await lp()).open.join('') === 's', `Letter Path: 26 stones in phonics order, only s open (${order})`);
+  await shot('28b-letterpath'); await fits('letter path');
+  await tap('.lp-stone[data-l="t"]'); await sleep(700);
+  check(!(await lp()).lesson && (await said()).includes('Not yet! Tap the bouncing letter!'), 'a stone not open yet: "Not yet! Tap the bouncing letter!"');
+  await tap('.lp-stone[data-l="s"]'); await sleep(1000);
+  let ls = await lp();
+  check(ls.lesson && ls.letter === 's' && ls.step === 'meet', 'the bouncing stone starts the s lesson with Meet');
+  await until(async () => (await lp()).next);
+  check((await said()).includes('This is s. It says /s/, like star!') && (await lp()).next, 'Meet: "This is s. It says /s/, like star!", then the next arrow');
+  before = await osc(); await tap('.lp-letters'); await sleep(900);
+  check((await said()).includes('/s/!') && await osc() > before, 'tapping the letters plays the s sound');
+  await shot('28c-meet'); await fits('meet');
+  await tap('#lpNext'); await sleep(900);
+  check((await lp()).step === 'trace' && (await lp()).strokes === 1, 'Trace: s is one stroke');
+  const cvb = await page.locator('.lp-paper canvas').boundingBox();
+  await drag([cvb.x + cvb.width * 0.1, cvb.y + cvb.height * 0.95], [cvb.x + cvb.width * 0.9, cvb.y + cvb.height * 0.95]);
+  check((await lp()).stroke === 0 && !(await lp()).traced, 'a scribble away from the letter traces nothing');
+  for (let n = 0; n < 6; n++) {
+    const pts = await page.evaluate(() => window.__toyPhone.pathPts()); if (!pts) break;
+    await touch('touchStart', [pts[0]]); for (let i = 1; i < pts.length; i += 2) await touch('touchMove', [pts[i]]);
+    await touch('touchMove', [pts[pts.length - 1]]); await touch('touchEnd', []); await sleep(200);
+  }
+  check((await lp()).traced === true, 'following the star along the stroke traces s');
+  await shot('28d-trace');
+  ls = await until(async () => { const x = await lp(); return x.step === 'hear' && x; });
+  check(ls && ls.choices.length === 3 && ls.choices.includes('star'), `Hear: three pictures, one of them starts with /s/ ${JSON.stringify(ls && ls.choices)}`);
+  await until(async () => (await said()).includes('Which one starts with /s/?'));
+  check((await said()).includes('Which one starts with /s/?'), 'Hear asks "Which one starts with /s/?"');
+  await shot('28e-hear'); await fits('hear');
+  const wrongW = ls.choices.find(c => c !== ls.want);
+  await tap(`.lp-card[data-k="${wrongW}"]`); await sleep(600);
+  check((await said()).some(t => t.toLowerCase().startsWith(wrongW + ' ') && /(starts|ends) with \/\w\//.test(t)) && (await lp()).misses === 1, `a wrong picture: the voice says what ${wrongW} starts with, and asks again`);
+  for (let r = 0; r < 3 && (await lp()).step === 'hear'; r++) { const s1 = await lp(); await tap(`.lp-card[data-k="${s1.want}"]`); await until(async () => { const x = await lp(); return x.step !== 'hear' || x.round !== s1.round; }); }
+  ls = await lp();
+  check(ls.step === 'find' && ls.choices.length === 3 && ls.choices.includes('s') && ls.want === 's', `Find: three letters, which says /s/? ${JSON.stringify(ls.choices)}`);
+  await until(async () => (await said()).includes('Which letter says /s/?'));
+  check((await said()).includes('Which letter says /s/?'), 'Find asks "Which letter says /s/?"');
+  await shot('28f-find'); await fits('find');
+  for (let r = 0; r < 4 && (await lp()).step === 'find'; r++) { const s1 = await lp(); await tap(`.lp-card[data-k="${s1.want}"]`); await until(async () => { const x = await lp(); return x.step !== 'find' || x.round !== s1.round; }); }
+  check((await said()).some(t => t.endsWith('s says /s/!')), 'a right letter: "Yes! s says /s/!"');
+  ls = await lp();
+  check(ls.lesson && ls.step === null && ls.stars.s === 2, `the lesson ends with stars: two, for one wrong tap ${JSON.stringify(ls.stars)}`);
+  await until(async () => (await said()).includes('You learned s!'));
+  await shot('28g-done');
+  await until(async () => !(await lp()).lesson, 25);
+  ls = await lp();
+  check(!ls.lesson && ls.open.join('') === 'sa' && await page.locator('.lp-stone[data-l="s"] .lp-stars i.on').count() === 2, `back on the trail: s shows its two stars and a is open (${ls.open.join('')})`);
+  await until(async () => (await said()).includes('Next is a!'));
+  check((await said()).includes('Next is a!'), 'and the voice says "Next is a!"');
+  await tap('#letterpath .sc-back'); await sleep(500);
   await tap('.gamecard[aria-label="ABC Zoo"]'); await sleep(700);
   check(await page.locator('.az-tile').count() === 26, 'ABC Zoo shows all 26 letters');
   before = await osc();
   await tap('.az-tile[data-l="M"]'); await sleep(2600);
   let sc = await school();
   check(sc.zoo.letter === 'M' && await osc() > before, `tapping a letter shows it and its picture makes its sound (${sc.zoo.letter})`);
-  check((await said()).includes('M is for monkey!'), 'and the voice says "M is for monkey!"');
+  check((await said()).includes('M says /m/! M is for monkey!'), 'and the voice says "M says /m/! M is for monkey!"');
   await shot('29-abczoo'); await fits('abc zoo');
   await tap('#azCase'); await sleep(300);
-  check((await school()).zoo.small && await page.locator('.az-tile img').count() === 26, 'the case button shows the little letters');
+  check(!(await school()).zoo.small && await page.locator('.az-tile img').count() === 26, 'little letters first; the case button shows the capitals');
   await tap('#azSong'); await sleep(1500);
   check((await school()).zoo.singing, 'the song button sings the ABCs, lighting each letter');
   await tap('#azSong'); await sleep(300);
@@ -607,7 +661,17 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   const labels = await page.$$eval('#asFoods .st-food', bs => bs.map(b => b.getAttribute('aria-label')));
   check(sc.snack.level === 1 && (sc.snack.mode === 'little' ? labels.every(l => l.startsWith('little ')) : sc.snack.mode === 'big'), `the "Little letters" setting asks mostly for little letters ${sc.snack.mode} ${JSON.stringify(labels)}`);
   await home();
-  await holdClock(); await tapSetting('[data-abc="auto"]'); await tap('#doneBtn'); await sleep(300);
+  await holdClock(); await tapSetting('[data-abc="auto"]');
+  await tapSetting('.lp-chip[data-pl="m"]'); await sleep(400);
+  check(/lips together/.test(await page.locator('#pathInfo').textContent()) && /Learned: 1 of 26/.test(await page.locator('#pathNote').textContent()),
+    'the parent page: letters learned so far, and a letter shows how to say its sound');
+  await until(async () => (await said()).includes('This is m. It says /m/, like monkey!'), 10);
+  check((await said()).includes('This is m. It says /m/, like monkey!'), 'and plays its lesson line, so a parent can check the sound');
+  await tapSetting('[data-path="open"]'); await tap('#doneBtn'); await sleep(300);
+  await tap('[data-app="school"]'); await sleep(500); await tap('.gamecard[aria-label="Letter Path"]'); await sleep(800);
+  check((await lp()).open.length === 26 && await page.locator('.lp-stone.locked').count() === 0, 'the "All open" setting opens every letter');
+  await home();
+  await holdClock(); await tapSetting('[data-path="order"]'); await tap('#doneBtn'); await sleep(300);
 
   // --- PAINT PALS (two players): both kids rub their own picture at the same time
   await tap('[data-app="games"]'); await sleep(500);
@@ -723,7 +787,8 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   const uncredited = Object.entries(sj).filter(([n, v]) => { const f = typeof v === 'string' ? v : v.file; return !fs.existsSync(path.join(ROOT, 'assets', 'sounds', f)) || !new RegExp(`\\|[^|]*\\b${n}\\b[^|]*\\|\\s*$`, 'm').test(credits); });
   check(!uncredited.length, `all ${Object.keys(sj).length} animal recordings are on disk and credited ${uncredited.map(u => u[0]).join(', ')}`);
   const vj = JSON.parse(fs.readFileSync(path.join(ROOT, 'assets', 'voice', 'voice.json'), 'utf8'));
-  const vbad = Object.entries(vj.clips).filter(([k, [f, ms]]) => { const fp = path.join(ROOT, 'assets', 'voice', f); return !fs.existsSync(fp) || fs.statSync(fp).size < 900 || ms < 200 || ms > 15000; });
+  const vbad = Object.entries(vj.clips).filter(([k, [f, ms]]) => { const fp = path.join(ROOT, 'assets', 'voice', f); const sound = /^n\|\/[a-z]\/!$/.test(k);   // (a letter sound on its own, like /k/, is a short puff)
+    return !fs.existsSync(fp) || fs.statSync(fp).size < (sound ? 500 : 900) || ms < (sound ? 120 : 200) || ms > 15000; });
   const vfiles = fs.readdirSync(path.join(ROOT, 'assets', 'voice')).filter(f => f.endsWith('.mp3'));
   check(!vbad.length && vfiles.length === new Set(Object.values(vj.clips).map(v => v[0])).size, `all ${vfiles.length} voice clips are on disk, sized and timed sensibly, with none left over ${JSON.stringify(vbad.slice(0, 3))}`);
   check(count > 80 && !bad.length, `all ${count} pixel sprites are well formed ${bad.slice(0, 5).join(', ')}`);

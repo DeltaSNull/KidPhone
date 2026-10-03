@@ -39,6 +39,30 @@ and clips nothing uses any more are deleted. `npm test` checks that every line t
 **Respellings**: a few sound words come out wrong from the model ("Grr" is spelled out letter by letter), so
 `make_voices.py` respells them for the model only: Grr → Gurr, Brr → Burr, La la la → Lah lah lah, Pawoo → Pah-woo.
 
+## Letter names and sounds
+
+**Names**: a letter on its own ("Find the B!", "That's Q!", "This is s.") goes to the model as the exact phonemes of
+its name, spliced into the rest of the line, because respelling it ("Ay") made A come out as "eye", and a bare "A is
+for" came out as "uh".
+
+**Sounds**: a line can hold a letter's sound, written `/s/` ("It says /s/, like star!"). Each sound is the narrator
+saying a word, cut down to its first sound (`SOUND_SRC`: sun, apple, top, itch, pop, ...; x is the end of box), with
+pocketsphinx's phoneme aligner finding where the sound starts and stops:
+
+- Sounds you can hold (m, n, l, r, v, z) are said held (the phoneme written four times), cut and stretched to half
+  a second; short vowels to 0.3 s.
+- Hisses and puffs (s, f, p, t, c, k, h, x) keep only the voiceless part: the frames with little energy below 1 kHz,
+  from the closure before a burst, so there's no "suh" or "puh" after them. s and f are stretched to half a second,
+  h to a quarter.
+- b, d, g, j, w, y and q end just after the voice starts, which is how teachers say them, with the "uh" as short as it goes.
+- Those words are said at normal speed: slowed down, the model starts every word with a murmur, an "uh" before the
+  consonant. The held sounds and vowels are slowed down, since they're stretched anyway.
+
+The aligner must hear the expected phonemes at the start of each word, or the tool stops. Cutting the sounds is
+checked by measuring each one (a hiss should be mostly above 3 kHz, a held m mostly below 1 kHz) and by looking at a
+spectrogram of all 26, but listen to them once: settings, Letter Path, tap a letter, *Hear the sound*. A changed
+sound needs `SOUNDS_VERSION` raised, so the lines that use it get new clip names and no phone keeps an old copy.
+
 ## Checking without listening
 
 `--check` decodes every shipped MP3 and transcribes it with pocketsphinx, an offline speech recognizer, then lists the

@@ -38,7 +38,7 @@ RESPELL = [(r'\bgrr+\b', 'Gurr'), (r'\bbrr+\b', 'Burr'), (r'\bla la la\b', 'Lah 
 # A letter on its own ("Find the B!", "That's b!", "B is for bear!") is said as its name. Respelling doesn't work (the
 # speech front end reads "Ay" as "eye" and spells "Eff" out), and a bare "A is for" comes out as the word "a", so the
 # letter's name goes in as phonemes, spliced between the rest of the line.
-LONE_LETTER = re.compile(r"\b([A-Za-z])(?=[!?.,]| is for)")
+LONE_LETTER = re.compile(r"\b([A-Za-z])(?=[!?.,]| is | says)")
 LETTER_IPA = dict(A='ˈeɪ', B='bˈiː', C='sˈiː', D='dˈiː', E='ˈiː', F='ˈɛf', G='dʒˈiː', H='ˈeɪtʃ', I='ˈaɪ', J='dʒˈeɪ', K='kˈeɪ', L='ˈɛl', M='ˈɛm',
                   N='ˈɛn', O='ˈoʊ', P='pˈiː', Q='kjˈuː', R='ˈɑːɹ', S='ˈɛs', T='tˈiː', U='jˈuː', V='vˈiː', W='dˈʌbəljˌuː', X='ˈɛks', Y='wˈaɪ', Z='zˈiː')
 
@@ -63,7 +63,9 @@ def phonemes(k, text):
         pos = m.end()
     rest = text[pos:].lstrip()
     if rest[:1] in ('!', '?', '.', ','):
-        out[-1] += rest[0]; rest = rest[1:]   # the punctuation after a letter stays with it
+        if out:
+            out[-1] += rest[0]   # the punctuation after a letter stays with it
+        rest = rest[1:]
     if rest.strip():
         out.append(ph(rest))
     return ' '.join(out)
@@ -80,7 +82,7 @@ def voices_npz(path):
 
 
 def clip_name(who, text, spk):
-    key = f"{VERSION}|{who}|{text}|{spk['voice']}|{spk['speed']}|{spk['semis']}" + ('|letters2' if LONE_LETTER.search(text) else '')   # (a new name for re-recorded letter lines, so no phone keeps an old copy)
+    key = f"{VERSION}|{who}|{text}|{spk['voice']}|{spk['speed']}|{spk['semis']}" + ('|letters2' if LONE_LETTER.search(text) else '') + (f'|sounds{SOUNDS_VERSION}' if SOUND_TOKEN.search(text) else '')   # (a new name for re-recorded letter lines and changed sounds, so no phone keeps an old copy)
     return hashlib.sha1(key.encode()).hexdigest()[:12] + '.mp3'
 
 
@@ -127,11 +129,108 @@ def trim(a, floor_db=-40.0, head=.02, tail=.08):
     return a[max(0, on[0] * n - int(SR * head)):min(len(a), (on[-1] + 1) * n + int(SR * tail))]
 
 
-def render(k, text, spk):
-    phon = phonemes(k, tts_text(text))
-    a, sr = k.create(phon, voice=spk['voice'], speed=spk['speed'], is_phonemes=True, sentence_pause=.28, clause_pause=.12)
-    assert sr == SR
+# Letter sounds for phonics ("sss", the a in apple), written /s/ in a line. The model can't say a sound on its own, so each
+# is cut from a word that starts with it: the narrator says the word, pocketsphinx lines its phones up with the audio,
+# and the first sound is cut out. Voiced sounds you can hold (m, n, l, r, v, z) are said held (the phoneme written four
+# times) and brought to half a second; short vowels go to 0.3 s. The voiceless ones (s, f, t, p, c, k, h, and the ks of
+# x) keep only the frames with little energy below 1 kHz, from the closure before a burst, so no vowel follows them;
+# s and f are stretched to half a second, h to a quarter. b, d, g, j, w, y and q keep a breath of the vowel, or they
+# can't be heard. x is the end of "box" (ks), q the start of "queen" (kw). Raise SOUNDS_VERSION when a sound changes.
+SOUNDS_VERSION = 1
+SOUND_SRC = {'s':('sun','S','fric'), 'a':('apple','AE','vowel'), 't':('top','T','stop'), 'i':('itch','IH','vowel'), 'p':('pop','P','stop'),
+             'n':('nut','N','hold'), 'c':('cat','K','stop'), 'k':('kit','K','stop'), 'e':('egg','EH','vowel'), 'h':('hat','HH','breath'),
+             'r':('red','R','hold'), 'm':('mop','M','hold'), 'd':('dog','D','vstop'), 'g':('gum','G','vstop'), 'o':('octopus','AA','vowel'),
+             'u':('up','AH','vowel'), 'l':('log','L','hold'), 'f':('fan','F','fric'), 'b':('bat','B','vstop'), 'j':('jam','JH','vstop'),
+             'z':('zip','Z','hold'), 'w':('wet','W','glide'), 'v':('van','V','hold'), 'y':('yes','Y','glide'), 'x':('box','K S','end'), 'q':('queen','K W','glide')}
+SOUND_TOKEN = re.compile(r'/([a-z])/')
+_sounds, _aligner = {}, []
+
+
+def align(a, word):
+    """the word's phones and where they are, in seconds (pocketsphinx forced alignment, two passes)"""
+    from pocketsphinx import Decoder, get_model_path
+    from scipy.signal import resample_poly
+    if not _aligner:
+        m = get_model_path()
+        _aligner.append(Decoder(hmm=os.path.join(m, 'en-us', 'en-us'), dict=os.path.join(m, 'en-us', 'cmudict-en-us.dict'), loglevel='FATAL'))
+    d = _aligner[0]
+    pad = np.concatenate([np.zeros(int(SR * .2)), a, np.zeros(int(SR * .2))])
+    pcm = (resample_poly(pad, 2, 3) * 32767).clip(-32768, 32767).astype('<i2').tobytes()
+    d.set_align_text(word); d.start_utt(); d.process_raw(pcm, full_utt=True); d.end_utt()
+    d.set_alignment(); d.start_utt(); d.process_raw(pcm, full_utt=True); d.end_utt()
+    return [(p.name, p.start * .01 - .2, (p.start + p.duration) * .01 - .2) for w in d.get_alignment() for p in w if p.name != 'SIL']
+
+
+def letter_sound(k, key):
+    if key in _sounds:
+        return _sounds[key]
+    from pedalboard import time_stretch
+    word, phones, kind = SOUND_SRC[key]
+    unvoiced, slow = kind in ('fric', 'stop', 'breath'), kind in ('hold', 'vowel')
+    ph = k.tokenizer.phonemize(word + ('.' if slow else ''), 'en-us')
+    if kind in ('hold', 'vowel'):   # say the sound held: its phoneme written again (four times for a consonant, twice for a vowel)
+        i = next(j for j, ch in enumerate(ph) if ch not in 'ˈˌ')
+        ph = ph[:i] + ph[i] * (4 if kind == 'hold' else 2) + ph[i + 1:]
+    # slowed down, the model starts a word with a voiced murmur, an "uh" before the consonant: only the held sounds and vowels are said slowly
+    a, sr = k.create(ph, voice='af_heart', speed=.8 if slow else 1, is_phonemes=True)
     a = a.astype(np.float32)
+    al, want = align(a, word), phones.split()
+    seg = al[len(al) - len(want):] if kind == 'end' else al[:len(want)]
+    if [p[0] for p in seg] != want:
+        sys.exit(f'letter sound {key}: expected {want} at the {"end" if kind == "end" else "start"} of "{word}", the aligner heard {al}')
+    t0, t1 = seg[0][1], seg[-1][2]
+    t1 += {'vstop': .035, 'glide': .03, 'vowel': -.015}.get(kind, 0)
+    if kind == 'end':
+        t1 = len(a) / SR
+    if unvoiced or kind == 'end':   # keep just the voiceless part: the frames with little of their energy below 1 kHz, up to where the vowel comes in
+        n = int(SR * .01); fr = [a[i:i + n] for i in range(0, min(len(a) - n, int((t1 + .06) * SR)), n)]
+        e = [float((f ** 2).sum()) + 1e-12 for f in fr]; peak = max(e)
+        lo = lambda f: (lambda X, hz: X[(hz > 80) & (hz < 1000)].sum() / (X.sum() + 1e-12))(np.abs(np.fft.rfft(f * np.hanning(len(f)))) ** 2, np.fft.rfftfreq(len(f), 1 / SR))
+        quiet = [e[j] > peak * .003 and lo(f) < .5 for j, f in enumerate(fr)]
+        runs, j = [], 0
+        while j < len(fr):   # runs of voiceless frames, a single other frame inside one allowed
+            if quiet[j]:
+                b = j
+                while j + 1 < len(fr) and (quiet[j + 1] or (j + 2 < len(fr) and quiet[j + 2])):
+                    j += 1 + (not quiet[j + 1])
+                runs.append((b, j + 1))
+            j += 1
+        if not runs:
+            sys.exit(f'letter sound {key}: no voiceless part found in "{word}"')
+        b, end = max(runs, key=lambda r: r[1] - r[0])
+        if kind in ('stop', 'end'):   # from the quietest frame just before: the closure, so the burst is whole
+            b = min(range(max(0, b - 3), b + 1), key=lambda j: e[j])
+        t0, t1 = b * .01, end * .01
+    s = a[max(0, int(t0 * SR)):int(t1 * SR)].copy()
+    target = {'hold': .5, 'fric': .5, 'breath': .25, 'vowel': .3}.get(kind)
+    if target and len(s) > SR * .03:
+        s = time_stretch(s[None, :], SR, stretch_factor=len(s) / (SR * target))[0].astype(np.float32)
+    n = len(s); fi, fo = min(n, int(SR * (.003 if kind in ('stop', 'end') else .008))), min(n, int(SR * (.02 if kind == 'stop' else .04)))
+    s[:fi] *= np.linspace(0, 1, fi); s[n - fo:] *= np.linspace(1, 0, fo)
+    _sounds[key] = s
+    return s
+
+
+def speak(k, text, spk):
+    """the words through the model; /s/ tokens as the letter sounds, with a short pause either side"""
+    parts, pos, out = [], 0, []
+    for m in SOUND_TOKEN.finditer(text):
+        parts += [('t', text[pos:m.start()]), ('s', m.group(1))]; pos = m.end()
+    parts.append(('t', text[pos:]))
+    gap = np.zeros(int(SR * .12), dtype=np.float32)
+    for kind, v in parts:
+        if kind == 's':
+            out += [gap, letter_sound(k, v), gap]
+        elif re.search(r'[A-Za-z0-9]', v):
+            a, sr = k.create(phonemes(k, tts_text(v.lstrip(' ,.!?').strip())), voice=spk['voice'], speed=spk['speed'], is_phonemes=True, sentence_pause=.28, clause_pause=.12)
+            assert sr == SR
+            out.append(a.astype(np.float32))
+    return np.concatenate(out) if out else np.zeros(1, dtype=np.float32)
+
+
+def render(k, text, spk):
+    phon = text if SOUND_TOKEN.search(text) else phonemes(k, tts_text(text))
+    a = speak(k, text, spk)
     chain = [HighpassFilter(cutoff_frequency_hz=80), LowShelfFilter(cutoff_frequency_hz=200, gain_db=-6), PeakFilter(cutoff_frequency_hz=3000, gain_db=2.5, q=.8)]
     if spk['semis']:
         chain.insert(0, PitchShift(semitones=spk['semis']))
@@ -171,6 +270,8 @@ def check(manifest):
     rows = []
     for key, (f, ms) in manifest.items():
         who, text = key.split('|', 1)
+        if SOUND_TOKEN.search(text):
+            continue   # (a letter sound isn't a word the recognizer could score)
         pcm = subprocess.run(['ffmpeg', '-loglevel', 'error', '-i', os.path.join(OUT, f), '-f', 's16le', '-ar', '16000', '-ac', '1', '-'],
                              capture_output=True, check=True).stdout
         d = Decoder(samprate=16000); d.start_utt(); d.process_raw(pcm, full_utt=True); d.end_utt()

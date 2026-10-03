@@ -58,10 +58,10 @@ img[src^="data:image/png"]{image-rendering:-webkit-optimize-contrast; image-rend
 .art{line-height:1}
 .art > .px{width:1.15em; height:1.15em}
 /* frames: notched pixel corners, a light rim, a darker lip and a drop shadow, stretched to fit (border-image) */
-.tab,.contact,.dial,.key,.callbtn,.thumb,.pic,.song,.wt-tile,.wt-back,.wt-pad,.wt-choice,.wt-stickers,.wt-newegg,.st-food,.pp-easel,.who-btn,.sheet,.sbtn,.vopt,.confirm,.bar,.pad,.pkey,.vstage img,.pkey.blk::after{
+.tab,.contact,.dial,.key,.callbtn,.thumb,.pic,.song,.wt-tile,.wt-back,.wt-pad,.wt-choice,.wt-stickers,.wt-newegg,.st-food,.pp-easel,.who-btn,.sheet,.sbtn,.vopt,.confirm,.bar,.pad,.pkey,.vstage img,.pkey.blk::after,.lp-card,.lp-paper{
   border-style:solid; border-color:transparent; border-width:9px 9px 15px; border-image:var(--fr, var(--f-paper)) 9 9 15 fill / 9px 9px 15px stretch;
   border-radius:0!important; box-shadow:none!important; background:none!important}
-.word,.wt-word,.nm,.gname,.gplay,.calltime,#zoomTxt{border-style:solid; border-color:transparent; border-width:6px 6px 9px; border-image:var(--tg, var(--t-paper)) 6 6 9 fill / 6px 6px 9px stretch; border-radius:0!important; box-shadow:none!important; background:none!important}
+.word,.wt-word,.nm,.gname,.gplay,.calltime,#zoomTxt,.lp-word{border-style:solid; border-color:transparent; border-width:6px 6px 9px; border-image:var(--tg, var(--t-paper)) 6 6 9 fill / 6px 6px 9px stretch; border-radius:0!important; box-shadow:none!important; background:none!important}
 /* cards with their own painted picture get an edge with a see-through middle */
 .vf,.stage,.gamecard{border-style:solid; border-color:transparent; border-width:9px 9px 15px; border-image:var(--b-paper) 9 9 15 / 9px 9px 15px stretch; border-radius:0!important; box-shadow:none!important; background-clip:padding-box!important}
 /* round buttons */
@@ -559,12 +559,12 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img{image-rendering:auto}
 .st-bite{position:absolute; left:0; top:0; width:64px; height:64px; display:grid; place-items:center; font-size:56px; line-height:1; pointer-events:none; z-index:6; will-change:transform}
 
 /* ---------- School: learning games. Letters are a school-print pixel alphabet (see GLYPH) ---------- */
-.g-abc{background:#FFE8A3} .g-abcsnack{background:#BFE9FF}
+.g-abc{background:#FFE8A3} .g-abcsnack{background:#BFE9FF} .g-path{background:#D4F2C4}
 #schoolList{grid-auto-rows:minmax(0,230px); align-content:center}
 @media (orientation:landscape){ #schoolList{grid-auto-rows:minmax(0,1fr)} }
 .gamecard .gnote{padding:0 6px; font-size:15px; color:#5A4A3E; white-space:nowrap}
-.sc-back{position:absolute; left:8px; top:8px; z-index:5; width:64px; height:64px; display:grid; place-items:center; background:var(--d-paper) center/100% 100% no-repeat}
-.sc-back .px{width:30px; height:30px; margin-top:-4px}
+.sc-back,.lp-back{position:absolute; left:8px; top:8px; z-index:5; width:64px; height:64px; display:grid; place-items:center; background:var(--d-paper) center/100% 100% no-repeat}
+.sc-back .px,.lp-back .px{width:30px; height:30px; margin-top:-4px}
 .glyph{object-fit:contain}
 #abczoo{display:grid; grid-template-rows:minmax(0,1fr) auto; background:#FFF3C4}
 .az-stage{position:relative; min-height:0; min-width:0; display:grid; place-items:center; padding:8px}
@@ -574,8 +574,9 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img{image-rendering:auto}
 .az-song.on{background-image:var(--d-go)}
 .az-show{display:grid; grid-template-columns:auto auto; align-items:center; justify-items:center; gap:4px 12px; margin-top:44px; touch-action:none}
 .az-letters{grid-row:span 2; display:flex; align-items:flex-end}
-.az-letters .glyph{height:clamp(80px, min(22vh, 30vw), 170px); width:auto; display:block}
-.az-letters .glyph + .glyph{margin-left:-6%}
+.az-letters{--H:clamp(90px, min(26vh, 36vw), 200px)}
+.az-letters .glyph{height:var(--H); width:auto; display:block}
+.az-letters .glyph + .glyph{height:calc(var(--H) * .62); margin:0 0 calc(var(--H) * .099) -2%}   /* the capital as tall as the little letter */
 .az-pic{font-size:clamp(56px, min(13vh, 20vw), 110px)}
 .az-word{font-size:clamp(22px, 6vw, 34px); padding:0 6px} .az-word b{color:var(--lc)}
 .az-show.pop .az-letters,.az-show.pop .az-pic{animation:hop .45s cubic-bezier(.3,1.6,.5,1)}
@@ -594,6 +595,84 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img{image-rendering:auto}
 .as .st-want .px:not(.glyph){width:1em; height:1em}
 .as-cookie{width:86%; aspect-ratio:1; display:grid; place-items:center; background:var(--d-cookie) center/100% 100% no-repeat; pointer-events:none}
 .as-cookie .glyph{height:66%; width:auto; margin-top:-6%}
+
+/* ---------- School: Letter Path. A snake of stepping stones (four across standing up, seven lying down); a lesson slides over it ---------- */
+#letterpath{padding:0; display:block; background:#D8F2C4}
+.lp-map{position:absolute; inset:80px 10px 14px; --s:64px}
+@media (orientation:landscape){ .lp-map{inset:12px 12px 14px 86px} }
+.lp-link{position:absolute; height:10px; margin-top:-5px; transform-origin:0 50%; pointer-events:none; background:repeating-linear-gradient(90deg, #C69A5C 0 10px, transparent 10px 18px)}
+.lp-stone{position:absolute; width:var(--s); height:var(--s); margin:calc(var(--s) / -2) 0 0 calc(var(--s) / -2); display:grid; place-items:center; padding:0; background:var(--d-paper) center/100% 100% no-repeat}
+.lp-stone .glyph{height:70%; width:auto; margin-top:-8%; pointer-events:none}
+.lp-stone.cur{background-image:var(--d-lit); z-index:2; animation:lp-bob 1.3s ease-in-out infinite}
+.lp-stone.locked{opacity:.7}
+.lp-stone.go{animation:hop .4s cubic-bezier(.3,1.6,.5,1)}
+.lp-stone.no{animation:wt-wiggle .4s}
+.lp-stone.wig{animation:lp-bob .4s ease-in-out 3}
+.lp-stone.unlock{animation:lp-unlock .8s cubic-bezier(.3,1.6,.5,1), lp-bob 1.3s .8s ease-in-out infinite}
+@keyframes lp-bob{50%{transform:translateY(-9%)}}
+@keyframes lp-unlock{0%{transform:scale(.5)}60%{transform:scale(1.25)}100%{transform:scale(1)}}
+.lp-stars,.lp-endstars{display:flex; pointer-events:none}
+.lp-stars{position:absolute; left:50%; bottom:-11%; transform:translateX(-50%); gap:1px}
+.lp-stars .px{width:calc(var(--s) * .27); height:calc(var(--s) * .27)}
+.lp-stars i,.lp-endstars i,.lp-cs i{display:block; filter:grayscale(1) brightness(1.35) opacity(.55)}
+.lp-stars i.on,.lp-endstars i.on,.lp-cs i.on{filter:none}
+.lp-owl{position:absolute; width:calc(var(--s) * .74); height:calc(var(--s) * .74); margin:calc(var(--s) * -.92) 0 0 calc(var(--s) * .3); z-index:3; transition:left .6s ease, top .6s ease}
+.lp-owl.left{margin-left:calc(var(--s) * -1.04)} .lp-owl.left .px{transform:scaleX(-1)}
+.lp-owl .px{width:100%; height:100%}
+.lp-owl.hop{animation:hop .45s cubic-bezier(.3,1.6,.5,1)}
+.lp-lesson{position:absolute; inset:0; z-index:8; display:grid; grid-template-rows:80px minmax(0,1fr); background:#FFF3C4}
+.lp-lesson.in{animation:appIn .3s cubic-bezier(.25,1.3,.5,1)}
+@media (orientation:landscape){ .lp-lesson{grid-template-rows:68px minmax(0,1fr)} .lp-next{top:2px} }
+.lp-top{position:relative}
+.lp-steps{height:100%; display:flex; justify-content:center; align-items:center; gap:8px; padding:0 82px}
+.lp-step{width:42px; height:42px; flex:none; display:grid; place-items:center; background:var(--d-dark) center/100% 100% no-repeat; opacity:.4; transition:transform .25s}
+.lp-step .px{width:24px; height:24px; margin-top:-3px}
+.lp-step.done{opacity:1; background-image:var(--d-go)}
+.lp-step.on{opacity:1; background-image:var(--d-sun); transform:scale(1.22)}
+.lp-next{position:absolute; right:8px; top:6px; z-index:5; width:68px; height:68px; display:grid; place-items:center; background:var(--d-go) center/100% 100% no-repeat; animation:lp-pulse 1.2s ease-in-out infinite}
+.lp-next .px{width:34px; height:34px; margin-top:-4px}
+.lp-next.pop{animation:lp-unlock .5s cubic-bezier(.3,1.6,.5,1), lp-pulse 1.2s .5s ease-in-out infinite}
+@keyframes lp-pulse{50%{transform:scale(1.1)}}
+.lp-stage{position:relative; min-height:0; min-width:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; padding:4px 12px 18px}
+@media (orientation:landscape){ .lp-stage{flex-direction:row; gap:28px; padding:0 16px 12px} }
+.lp-letters{--H:clamp(100px, min(34vh, 56vw), 290px); display:flex; align-items:flex-end; touch-action:none}
+@media (orientation:landscape){ .lp-letters{--H:clamp(90px, min(46vh, 28vw), 220px)} }
+.lp-letters .glyph{height:var(--H); width:auto}
+.lp-letters .glyph + .glyph{height:calc(var(--H) * .62); margin:0 0 calc(var(--H) * .099) -2%}   /* the capital as tall as the little letter, on the same line */
+.lp-letters.hop,.lp-pic.hop,.lp-paper.hop{animation:hop .45s cubic-bezier(.3,1.6,.5,1)}
+.lp-pic{display:flex; flex-direction:column; align-items:center; gap:8px; touch-action:none}
+.lp-pic .art{font-size:clamp(64px, min(15vh, 26vw), 130px)}
+.lp-word{font-size:clamp(24px, 6vw, 34px); padding:0 8px} .lp-word b{color:var(--lc)}
+.lp-paper{display:grid; place-items:center; position:relative; padding:0; --fr:var(--f-paper)}
+.lp-paper canvas{display:block; image-rendering:pixelated; touch-action:none}
+.lp-pen,.lp-ghost{position:absolute; left:0; top:0; margin:-22px 0 0 -22px; font-size:38px; pointer-events:none; will-change:transform}
+.lp-ghost{opacity:.55}
+.lp-ear{width:68px; height:68px; flex:none; display:grid; place-items:center; background:var(--d-berry) center/100% 100% no-repeat}
+.lp-ear .px{width:36px; height:36px; margin-top:-4px}
+.lp-ear.wig{animation:wig .3s 2}
+.lp-cards{--cs:clamp(96px, min(42vw, 25vh), 180px); display:flex; flex-wrap:wrap; gap:12px; justify-content:center; align-items:center; max-width:calc(var(--cs) * 2 + 12px)}   /* two over one: big enough for small fingers */
+@media (orientation:landscape){ .lp-cards{--cs:clamp(80px, min(20vw, 44vh), 170px); flex-wrap:nowrap; gap:16px; max-width:none} }
+.lp-card{width:var(--cs); height:var(--cs); flex:none; display:grid; place-items:center; padding:0; --fr:var(--f-cream); animation:st-deal .45s cubic-bezier(.3,1.6,.5,1) backwards}
+.lp-card .art{font-size:calc(var(--cs) * .52)}
+.lp-card .glyph{height:80%; width:auto; margin-top:-6%; pointer-events:none}
+.lp-card.yes,.lp-card.hint{--fr:var(--f-lit)}
+.lp-card.bounce{animation:wt-bounce .6s cubic-bezier(.3,1.6,.5,1)}
+.lp-card.no{animation:wt-wiggle .45s}
+.lp-card.hint{animation:st-hint 1.1s ease-in-out infinite}
+.lp-card.off{opacity:.4}
+.lp-endstars{gap:6px}
+.lp-endstars .px{width:clamp(48px, min(13vw, 13vh), 80px); height:clamp(48px, min(13vw, 13vh), 80px)}
+.lp-endstars i{animation:lp-unlock .5s cubic-bezier(.3,1.6,.5,1) backwards}
+.lp-endstars i:nth-child(2){animation-delay:.3s} .lp-endstars i:nth-child(3){animation-delay:.6s}
+/* the parent page's letter grid */
+.lp-grid{flex-basis:100%; display:grid; grid-template-columns:repeat(auto-fill, minmax(56px, 1fr)); gap:6px}
+.lp-chip{min-height:66px; min-width:0; padding:0; display:flex; flex-direction:column; align-items:center; justify-content:center}
+.lp-chip .glyph{height:36px; width:auto; margin-bottom:-4px}
+.lp-cs{display:flex; pointer-events:none} .lp-cs .px{width:13px; height:13px}
+.lp-info{flex-basis:100%; padding:4px 2px}
+.lp-ihead{display:flex; align-items:flex-end; gap:6px}
+.lp-ihead .glyph{height:70px; width:auto} .lp-ihead .art{font-size:54px; margin-left:6px}
+.lp-info p{margin:8px 0; font-weight:500; font-size:15px; line-height:1.35}
 
 /* ---------- Game: Paint Pals (two players): each kid rubs color into their own animal; then the two meet ---------- */
 .app.pp{display:grid; grid-template-rows:minmax(0,1fr) auto minmax(0,1fr); overflow:hidden; background:#FFF1DC}
@@ -802,6 +881,16 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img{image-rendering:auto}
         <div class="st-foods" id="asFoods" aria-label="Letter cookies"></div>
       </section>
 
+      <!-- SCHOOL: Letter Path (one letter at a time, in phonics order: meet it, trace it, hear it, find it) -->
+      <section class="app lp" id="letterpath" hidden aria-label="Letter Path">
+        <button class="sc-back" aria-label="School"></button>
+        <div class="lp-map" id="lpMap"></div>
+        <div class="lp-lesson" id="lpLesson" hidden>
+          <div class="lp-top"><button class="lp-back" id="lpBack" aria-label="Letter Path"></button><div class="lp-steps" id="lpSteps"></div><button class="lp-next" id="lpNext" aria-label="Next" hidden></button></div>
+          <div class="lp-stage" id="lpStage"></div>
+        </div>
+      </section>
+
       <!-- GAME: Wild Tap Safari -->
       <section class="app wt" id="wildtap" hidden aria-label="Wild Tap Safari">
         <section class="wt-screen" id="wt-menu">
@@ -908,9 +997,21 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img{image-rendering:auto}
           <span class="vhint">Pretend: drag around a pixel-art safari. Real: the phone's own camera, with fun looks, and animal costumes for selfies. Both: the kids switch between them. Photos stay on this phone.</span>
           <span class="vhint" id="camNote"></span></div>
         <div class="srow"><span>ABC Snack</span>
-          <div class="seg"><button class="sbtn" data-abc="auto">Grows</button><button class="sbtn" data-abc="big">Big letters</button><button class="sbtn" data-abc="little">Little letters</button></div>
-          <span class="vhint">The animal asks for a letter by name and the child finds it (the letter is never shown first). Grows: big letters until the child gets eight in a row, then mostly little letters. Letters come in the order phonics programs teach them, a few at a time.</span>
+          <div class="seg"><button class="sbtn" data-abc="auto">Grows</button><button class="sbtn" data-abc="big">Big letters</button><button class="sbtn" data-abc="little">Little letters</button><button class="sbtn" data-abc="sound">Sounds</button></div>
+          <span class="vhint">The animal asks for a letter out loud and the child finds it (the letter is never shown first). Grows: big letters by name until the child gets eight in a row, then mostly little letters, then eight more in a row and letter sounds ("Which letter says /s/?"). Letters come in the order phonics programs teach them, a few at a time; sounds are asked for the letters done on the Letter Path.</span>
           <span class="vhint" id="abcNote"></span></div>
+        <div class="srow"><span>Letter Path</span>
+          <div class="seg"><button class="sbtn" data-path="order">In order</button><button class="sbtn" data-path="open">All open</button></div>
+          <span class="vhint">One letter at a time, in phonics order (s a t i p n first, since they make words soonest): meet it, trace it, hear words that start with its sound, then find it. In order: each letter opens when the one before it is done. All open: any letter, any time. Tap a letter below to hear it and see how to say its sound.</span>
+          <span class="vhint" id="pathNote"></span>
+          <div class="lp-grid" id="pathGrid"></div>
+          <div class="lp-info" id="pathInfo" hidden></div>
+          <button class="sbtn danger" id="pathReset">Start the path over</button></div>
+        <div class="confirm" id="confirmPath" hidden>
+          <span>Clear the stars on every letter?</span>
+          <button class="sbtn danger" id="yesPath">Yes, start over</button>
+          <button class="sbtn" id="noPath">Keep them</button>
+        </div>
         <div class="srow"><span>Voice</span><span class="vhint">Where the talking voice speaks. Animal sounds and music always play.</span></div>
         <div class="vlist" id="voiceList"></div>
         <div class="srow"><span id="photoCount">Photos</span><button class="sbtn danger" id="clearBtn">Clear photos</button></div>
@@ -4167,7 +4268,7 @@ const BGS = [
   ['.db-a', BG.dbSide('#A6E39A', '#6CC46A', '#3E9447')], ['.db-b', BG.dbSide('#A9DDF7', '#5BB8E8', '#2F86C4')], ['.db-mid', BG.sand],
   ['#stScene', BG.snack], ['#asScene', BG.snack], ['.st-foods', BG.picnic],
   ['#school', BG.stripey(['#FFF0B8', '#FFE28A', '#FFD466', '#FFC746'], '#FFF6D2')], ['.g-abc', BG.grad(['#FFF6D2', '#FFE8A3', '#FFDB7A'])], ['.g-abcsnack', BG.grad(['#E4F6FF', '#C9ECFF', '#ADE0FF'])],
-  ['#abczoo', BG.grad(['#FFF8DC', '#FFF0BE', '#FFE7A0', '#FFDE85'])],
+  ['#abczoo', BG.grad(['#FFF8DC', '#FFF0BE', '#FFE7A0', '#FFDE85'])], ['#letterpath', BG.grad(['#EAF9DD', '#D8F2C4', '#C6EAAE', '#B4E09A'])], ['.lp-lesson', BG.grad(['#FFF8DC', '#FFF0BE', '#FFE7A0', '#FFDE85'])], ['.g-path', BG.grad(['#EAF9DD', '#D2F0BE', '#B4E09A'])],
   ['.pp-a', BG.ppSide('#FFE4CC', '#FFC99E', ['#FF9F43', '#E8506E', '#FFC83D'], 3)], ['.pp-b', BG.ppSide('#E6DFFC', '#C9BCF5', ['#8A6FD1', '#3D8FE0', '#5CC9B5'], 9)], ['.pp-mid', BG.wood],
   ['#dinobuddies .who', BG.split], ['#paintpals .who', BG.paint]
 ];
@@ -4193,7 +4294,7 @@ function repaint(el){ const fn = bgFor.get(el); if (fn) paintBG(el, fn); }
   Object.entries(F).forEach(([k, v]) => r.setProperty('--f-' + k, v));
   r.setProperty('--b-paper', bezelURL('#FFFDF6', '#5A4A3E'));
   r.setProperty('--t-paper', tagURL('#FFFDF6', '#5A4A3E')); r.setProperty('--t-sun', tagURL('#FFC83D', INK));
-  const D = {sun:discURL('#FFC83D', 28, '#7A4A0A'), go:discURL('#3BBF5C', 28, '#16502A'), stop:discURL('#F04E4E', 28, '#6A1A1A'), paper:discURL('#FFFDF6', 28, '#5A4A3E'), glass:discURL('#D9F0FF', 28, '#2A5A8A'), berry:discURL('#E8506E', 28, '#6E1832'), dark:discURL('#3A2C22', 28, '#1A120C')};
+  const D = {lit:discURL('#FFF3B0', 28, '#9A6A10'), sun:discURL('#FFC83D', 28, '#7A4A0A'), go:discURL('#3BBF5C', 28, '#16502A'), stop:discURL('#F04E4E', 28, '#6A1A1A'), paper:discURL('#FFFDF6', 28, '#5A4A3E'), glass:discURL('#D9F0FF', 28, '#2A5A8A'), berry:discURL('#E8506E', 28, '#6E1832'), dark:discURL('#3A2C22', 28, '#1A120C')};
   Object.entries(D).forEach(([k, v]) => r.setProperty('--d-' + k, v));
   r.setProperty('--d-cookie', discURL('#F2C27A', 28, '#8A5A2B')); r.setProperty('--d-shutter', shutterURL()); r.setProperty('--d-ring', ringURL()); r.setProperty('--bubble', bubbleURL()); r.setProperty('--nest', nestURL()); r.setProperty('--think', thinkURL());
 })();
@@ -4286,9 +4387,10 @@ const VOICE = [
   {k:'numbers', on:false, t:'Keypad numbers', d:'Says each number you press.'},
   {k:'music', on:false, t:'Music', d:'Names the instruments and songs.'}
 ];
-const settings = Object.assign({incoming:true, vol:2, silent:true, camera:'both', abc:'auto'}, store.get('settings', {}));
-if (!['auto','big','little'].includes(settings.abc)) settings.abc = settings.abc === 'case' ? 'little' : settings.abc === 'listen' ? 'big' : 'auto';
+const settings = Object.assign({incoming:true, vol:2, silent:true, camera:'both', abc:'auto', path:'order'}, store.get('settings', {}));
+if (!['auto','big','little','sound'].includes(settings.abc)) settings.abc = settings.abc === 'case' ? 'little' : settings.abc === 'listen' ? 'big' : 'auto';
 if (!['pretend','real','both'].includes(settings.camera)) settings.camera = 'both';
+if (!['order','open'].includes(settings.path)) settings.path = 'order';
 settings.vol = clamp(settings.vol|0, 0, 3);
 settings.voice = Object.assign(Object.fromEntries(VOICE.map(v => [v.k, v.on])), settings.voice || {});
 const voiceOn = area => !area || !!settings.voice[area];
@@ -4636,8 +4738,10 @@ try{ pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }catch(e){}
 /* The phone's voice reads ALL-CAPS words letter by letter ("R-O-A-R") and stumbles on stretched made-up words,
    so every line is cleaned first: sound words get spellings it says right, caps go lowercase, "Wheee" becomes "Whee". */
 const SAY_AS = [[/\b(?:r+o+a+r+|rawr)\b/gi, 'roar'], [/\bpa+-?o+\b/gi, 'pawoo'], [/\bgr{2,}\b/gi, 'grr'], [/\bhr+umph\b/gi, 'harrumph'], [/\bmwah\b/gi, 'smooch']];
+/* a letter sound, /s/ in a line, for the phone's own voice (only heard when a recorded clip is missing) */
+const SOUND_SPEECH = {s:'ss', a:'a', t:'t', i:'ih', p:'p', n:'nn', c:'k', k:'k', e:'eh', h:'h', r:'rr', m:'mm', d:'d', g:'g', o:'ah', u:'uh', l:'ll', f:'ff', b:'b', j:'j', z:'zz', w:'w', v:'vv', y:'y', x:'ks', q:'kw'};
 function speakable(text){
-  let t = String(text).replace(/\b[A-Z]{2,}\b/g, w => w.toLowerCase());
+  let t = String(text).replace(/\/([a-z])\//g, (m, c) => SOUND_SPEECH[c]).replace(/\b[A-Z]{2,}\b/g, w => w.toLowerCase());
   SAY_AS.forEach(([re, w]) => { t = t.replace(re, m => m[0] === m[0].toUpperCase() ? w[0].toUpperCase() + w.slice(1) : w); });
   return t.replace(/([a-z])\1{2,}/gi, '$1$1');
 }
@@ -4856,7 +4960,7 @@ function updateClock(){ const d = new Date(); $('#clockTxt').textContent = ((d.g
 updateClock(); setInterval(updateClock, 10000);
 
 /* ---------- Navigation ---------- */
-const APPS = ['home','phone','camera','photos','music','games','wildtap','dinobuddies','snacktime','paintpals','school','abczoo','abcsnack'];
+const APPS = ['home','phone','camera','photos','music','games','wildtap','dinobuddies','snacktime','paintpals','school','letterpath','abczoo','abcsnack'];
 let current = 'home';
 const APP_SAY = {phone:'Phone! Who do you want to call?', camera:'Camera! Slide to look around. Then press the big button!', music:'Music! Let\'s play!', games:'Games! Pick a game!'};
 function go(name, fromEl){
@@ -4885,6 +4989,7 @@ function enterApp(name){
   if (name === 'school') say(SCHOOL_SAY.school, 0, 'menus');
   if (name === 'abczoo') AbcZoo.enter();
   if (name === 'abcsnack') AbcSnack.enter();
+  if (name === 'letterpath') LetterPath.enter();
 }
 function leaveApp(name){
   if (name === 'camera') stopCamera();
@@ -4896,6 +5001,7 @@ function leaveApp(name){
   if (name === 'paintpals') PaintPals.leave();
   if (name === 'abczoo') AbcZoo.leave();
   if (name === 'abcsnack') AbcSnack.leave();
+  if (name === 'letterpath') LetterPath.leave();
 }
 $('#homeBtn').innerHTML = ICON.home;
 tap($('#homeBtn'), () => {
@@ -6153,7 +6259,9 @@ function renderCamNote(){
 /* ======================= SCHOOL ======================= */
 /* A school-print alphabet, drawn the way children learn to write it: circles and sticks (a and g with one story,
    capital I with bars, q with a tail, t crossed). Each letter is strokes on a 15 x 21 grid, baseline at 16:
-   L = line x0,y0,x1,y1; A = arc cx,cy,rx,ry,from,to (degrees, 0 is right, 90 is down); D = dot x,y. */
+   L = line x0,y0,x1,y1; A = arc cx,cy,rx,ry,from,to (degrees, 0 is right, 90 is down); D = dot x,y.
+   The little letters' strokes are in writing order and direction, since the Letter Path traces them: round letters
+   go counter-clockwise from the top right (the "magic c"), b and p go up the stick and round clockwise. */
 const GLYPH = {
   A:'L7.5,2,2.5,16 L7.5,2,12.5,16 L4.5,11,10.5,11', B:'L3,2,3,16 L3,2,8,2 A8,5.5,3.5,3.5,-90,90 L3,9,8.5,9 A8.5,12.5,3.7,3.5,-90,90 L3,16,8.5,16',
   C:'A8,9,5.5,7,40,320', D:'L3,2,3,16 L3,2,6,2 L3,16,6,16 A6,9,6,7,-90,90', E:'L3,2,3,16 L3,2,11.5,2 L3,9,10,9 L3,16,11.5,16', F:'L3,2,3,16 L3,2,11.5,2 L3,9,10,9',
@@ -6163,13 +6271,13 @@ const GLYPH = {
   Q:'A7.5,9,5.5,7,0,360 L9,12,13,16.5', R:'L3,2,3,16 L3,2,8,2 L3,10,8,10 A8,6,3.6,4,-90,90 L7.5,10,12,16',
   S:'A7.5,5.6,4.3,3.6,340,90 A7.5,12.4,4.7,3.6,-90,200', T:'L2,2,13,2 L7.5,2,7.5,16', U:'L3,2,3,11 A7.5,11,4.5,5,180,0 L12,2,12,11',
   V:'L2,2,7.5,16 L13,2,7.5,16', W:'L1,2,4,16 L4,16,7.5,7 L7.5,7,11,16 L11,16,14,2', X:'L3,2,12,16 L12,2,3,16', Y:'L2,2,7.5,9 L13,2,7.5,9 L7.5,9,7.5,16', Z:'L3,2,12,2 L12,2,3,16 L3,16,12,16',
-  a:'A7,11.5,4,4.5,0,360 L11,7,11,16', b:'L3,2,3,16 A7,11.5,4,4.5,0,360', c:'A7.5,11.5,4.5,4.5,45,315', d:'A7,11.5,4,4.5,0,360 L11,2,11,16',
-  e:'L3,11.5,12,11.5 A7.5,11.5,4.5,4.5,360,40', f:'A9.5,5,2.5,2.5,180,330 L7,5,7,16 L4,8.5,10.5,8.5', g:'A7,11.5,4,4.5,0,360 L11,7,11,17 A7,17,4,3,0,150',
+  a:'A7,11.5,4,4.5,320,-40 L11,7,11,16', b:'L3,2,3,16 A7,11.5,4,4.5,180,540', c:'A7.5,11.5,4.5,4.5,315,45', d:'A7,11.5,4,4.5,320,-40 L11,2,11,16',
+  e:'L3,11.5,12,11.5 A7.5,11.5,4.5,4.5,360,40', f:'A9.5,5,2.5,2.5,330,180 L7,5,7,16 L4,8.5,10.5,8.5', g:'A7,11.5,4,4.5,320,-40 L11,7,11,17 A7,17,4,3,0,150',
   h:'L3,2,3,16 A7,11,4,4,180,360 L11,11,11,16', i:'L7.5,8,7.5,16 D7.5,4.5', j:'L8.5,8,8.5,17 A5.5,17,3,3,0,150 D8.5,4.5', k:'L3,2,3,16 L10.5,7.5,3,13 L6,11,11.5,16',
   l:'L7.5,2,7.5,16', m:'L2,8,2,16 A4.8,11,2.8,3.5,180,360 L7.5,11,7.5,16 A10.2,11,2.8,3.5,180,360 L13,11,13,16', n:'L3,8,3,16 A7,11,4,3.5,180,360 L11,11,11,16',
-  o:'A7.5,11.5,4.5,4.5,0,360', p:'L3,8,3,20 A7,11.5,4,4.5,0,360', q:'A7,11.5,4,4.5,0,360 L11,8,11,20 L11,20,13.5,18.5', r:'L3,8,3,16 A7.5,11.5,4.5,3.5,180,300',
+  o:'A7.5,11.5,4.5,4.5,290,-70', p:'L3,8,3,20 A7,11.5,4,4.5,180,540', q:'A7,11.5,4,4.5,320,-40 L11,8,11,20 L11,20,13.5,18.5', r:'L3,8,3,16 A7.5,11.5,4.5,3.5,180,300',
   s:'A7.5,9.3,3.6,2.3,340,90 A7.5,13.7,3.9,2.3,-90,200', t:'L7,4,7,14 A9.5,14,2.5,2,180,20 L4,8,11,8', u:'L3,8,3,12 A7,12,4,4,180,0 L11,8,11,16',
-  v:'L3,8,7.5,16 L12,8,7.5,16', w:'L1.5,8,4.5,16 L4.5,16,7.5,10 L7.5,10,10.5,16 L10.5,16,13.5,8', x:'L3,8,12,16 L12,8,3,16', y:'L3,8,7.5,16 L12,8,5,20', z:'L3,8,12,8 L12,8,3,16 L3,16,12,16'
+  v:'L3,8,7.5,16 L7.5,16,12,8', w:'L1.5,8,4.5,16 L4.5,16,7.5,10 L7.5,10,10.5,16 L10.5,16,13.5,8', x:'L3,8,12,16 L12,8,3,16', y:'L3,8,7.5,16 L12,8,5,20', z:'L3,8,12,8 L12,8,3,16 L3,16,12,16'
 };
 const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
 const LETTER_COL = ['#F0524F','#FF9F43','#E8B020','#5CB85C','#2FA8A0','#3D8FE0','#8A6FD1','#E8506E'];   // a steady color for each letter
@@ -6206,27 +6314,79 @@ const SCHOOL_PIX = {
     {r:'#F0524F', R:'#B8322F', y:'#FFC83D', Y:'#D99A1E', k:'#5A4A3E', o:'#3B2B20'}],
   yoyo:[P => { P.line(16, 1, 16, 10, 'k').ell(16, 2, 2, 2, 'k').ell(16, 2, .9, .9, '.'); P.ell(16, 19, 11, 11, 'r'); P.rect(5, 18, 22, 2, 'R'); P.ell(16, 19, 3, 3, 'w');
     P.shade('r', 'd', 'l', 2); P.outline('o'); },
-    {k:'#5A4A3E', r:'#3D8FE0', R:'#2A6BB8', d:'#2C5E9E', l:'#82CBFF', w:'#FFFDF6', o:'#163E70'}]
+    {k:'#5A4A3E', r:'#3D8FE0', R:'#2A6BB8', d:'#2C5E9E', l:'#82CBFF', w:'#FFFDF6', o:'#163E70'}],
+  sun:[P => { for (let i=0;i<8;i++){ const a = i*Math.PI/4 + Math.PI/8, c = Math.cos(a), s = Math.sin(a); P.tube(16 + c*9, 16 + s*9, 16 + c*12, 16 + s*12, 16 + c*14.5, 16 + s*14.5, 2, .8, 'r'); }
+    P.ell(16, 16, 10, 10, 'y'); P.shade('y', 'Y', 'l', 2); P.rect(12, 13, 2, 3, 'k').rect(19, 13, 2, 3, 'k').rect(10, 17, 2, 1, 'p').rect(21, 17, 2, 1, 'p');
+    P.set(13, 19, 'k').rect(14, 20, 5, 1, 'k').set(19, 19, 'k'); P.outline('o'); },
+    {y:'#FFC83D', Y:'#E8981E', l:'#FFE58A', r:'#FF9F43', k:'#5A3A1E', p:'#FF7F6A', o:'#8A4A12'}],
+  fox:[P => { P.poly([[4,3],[14,9],[7,16]], 'f').poly([[28,3],[18,9],[25,16]], 'f'); P.poly([[6,6],[11,9.5],[8,13]], 'e').poly([[26,6],[21,9.5],[24,13]], 'e');
+    P.ell(16, 17, 11.5, 9, 'f'); P.shade('f', 'F', 'l', 2); P.ell(10.5, 21, 6.5, 4.5, 'w').ell(21.5, 21, 6.5, 4.5, 'w').poly([[10,23],[16,30],[22,23]], 'w');
+    P.rect(10, 15, 2, 3, 'k').rect(21, 15, 2, 3, 'k').ell(16, 23.5, 2.2, 1.6, 'k').set(15, 23, 'g'); P.outline('o'); },
+    {f:'#FF8A2E', F:'#D2601A', l:'#FFB066', e:'#5A2A14', w:'#FFFDF6', k:'#2B1A12', g:'#8A7A70', o:'#4A200C'}],
+  queen:[P => { P.ell(16, 18, 10, 10, 'h').rect(6, 18, 20, 9, 'h'); P.ell(16, 32, 12, 7, 'v'); P.rect(14, 23, 4, 4, 's'); P.ell(16, 18, 6.5, 7, 's');
+    P.ell(16, 12.5, 7.5, 3.2, 'h'); P.shade('h', 'H', null, 1); P.shade('v', 'V', 'u', 2);
+    P.poly([[8.5,10],[8.5,2.5],[12.5,7],[16,1],[19.5,7],[23.5,2.5],[23.5,10]], 'g'); P.rect(9, 8, 14, 2, 'G'); P.set(16, 5, 'r').set(16, 6, 'r').set(11, 8, 'b').set(21, 8, 'b').set(16, 8, 'r');
+    P.rect(13, 17, 2, 2, 'k').rect(18, 17, 2, 2, 'k').rect(11, 20, 2, 1, 'p').rect(20, 20, 2, 1, 'p').set(14, 21, 'm').rect(15, 22, 3, 1, 'm').set(18, 21, 'm'); P.outline('o'); },
+    {h:'#8A4A22', H:'#6A3216', s:'#FFD2A8', v:'#A06AD8', V:'#7A48B0', u:'#C496F0', g:'#FFC83D', G:'#E8981E', r:'#F0524F', b:'#3D8FE0', k:'#3B2314', p:'#FF9E8E', m:'#C2414A', o:'#3B1A10'}],
+  kite:[P => { P.tube(16, 22, 13, 27, 18, 31, .6, .6, 'k'); [[15,26],[17,29]].forEach(([x, y]) => P.poly([[x-2.5,y-1.5],[x+2.5,y+1.5],[x+2.5,y-1.5],[x-2.5,y+1.5]], 'b'));
+    P.poly([[16,2],[16,12],[6,12]], 'r').poly([[16,2],[26,12],[16,12]], 'y').poly([[6,12],[16,12],[16,23]], 'g').poly([[16,12],[26,12],[16,23]], 'u');
+    P.line(16, 3, 16, 22, 'w').line(7, 12, 25, 12, 'w'); P.outline('o'); },
+    {r:'#F0524F', y:'#FFC83D', g:'#5CB85C', u:'#3D8FE0', w:'#FFF2CC', k:'#5A4A3E', b:'#E8506E', o:'#3B2B20'}],
+  moon:[P => { P.ell(14, 16, 12.5, 12.5, 'y'); P.ell(21.5, 11.5, 9, 9.5, '.'); P.shade('y', 'Y', 'l', 2);
+    P.rect(7, 16, 2, 2, 'k').rect(8, 21, 3, 1, 'k').set(7, 20, 'k').set(11, 20, 'k').rect(5, 19, 2, 1, 'p');
+    [[26,24,2],[28,6,1],[20,29,1]].forEach(([x, y, r]) => P.rect(x - r, y, 2*r + 1, 1, 's').rect(x, y - r, 1, 2*r + 1, 's')); P.outline('o'); },
+    {y:'#FFEE9A', Y:'#E8B83A', l:'#FFFADC', k:'#6A4A12', p:'#FFA07A', s:'#FFE070', o:'#6A4A12'}],
+  nest:[P => { const egg = (cx, cy) => P.each(cx - 4, cy - 5, cx + 4, cy + 5, (x, y) => { const dx = (x + .5 - cx)/3.6, dy = (y + .5 - cy)/(y + .5 < cy ? 5 : 4.2); if (!P.get(x, y) && dx*dx + dy*dy <= 1) P.set(x, y, 'e'); });
+    egg(16, 10.5); P.outline('E'); egg(10, 12.5); egg(22, 12.5); P.outline('E'); P.each(0, 0, 31, 31, (x, y) => { if (P.get(x, y) === code('e') && (P.get(x + 1, y + 1) === code('E') || P.get(x + 1, y) === code('E'))) P.set(x, y, 'd'); });
+    [[14,8],[8,10],[20,10]].forEach(([x, y]) => P.set(x, y, 'l').set(x, y + 1, 'l'));
+    P.each(1, 17, 31, 29, (x, y) => { const dx = (x + .5 - 16)/14.5, dy = (y + .5 - 17)/11; if (dx*dx + dy*dy <= 1) P.set(x, y, 'b'); }); P.ell(16, 17.5, 15, 2.6, 'L');
+    for (let y=21;y<28;y+=2) for (let x = 3 + (y % 4)*1.5; x < 28; x += 5) P.line(x, y, x + 3, y + 1, 'B');
+    P.line(0, 16, 4, 18, 'B').line(27, 18, 31, 15, 'B').line(3, 23, 0, 21, 'B'); P.outline('o'); },
+    {e:'#8FD3F0', d:'#5AA8D0', E:'#3D6F98', l:'#FFFFFF', b:'#B07A3E', B:'#7A4A1E', L:'#D8A866', o:'#3B2314'}],
+  rocket:[P => { P.poly([[16,25],[12,25],[16,31],[20,25]], 'f'); P.poly([[14,25],[18,25],[16,29]], 'y');
+    P.poly([[10,17],[5,25],[10,24]], 'r').poly([[22,17],[27,25],[22,24]], 'r'); P.ell(16, 15, 6, 11, 'w'); P.rect(10, 15, 13, 10, 'w'); P.ell(16, 7, 5, 5, 'r'); P.rect(10, 8, 13, 13, 'w');
+    P.poly([[16,1],[10.5,9],[21.5,9]], 'r'); P.rect(10, 21, 13, 4, 'w'); P.shade('w', 'W', null, 2); P.ell(16, 14, 3.2, 3.2, 'G').ell(16, 14, 2.2, 2.2, 'g'); P.set(15, 13, 'l');
+    P.rect(13, 22, 7, 1, 'r'); P.outline('o'); },
+    {w:'#F4F4F8', W:'#C8C8D6', r:'#F0524F', g:'#82CBFF', G:'#3D6FA8', l:'#FFFFFF', f:'#FF9F43', y:'#FFE070', o:'#2E2A40'}],
+  igloo:[P => { P.ell(16, 26, 14, 15, 'i'); P.rect(0, 26, 32, 6, '.'); P.rect(1, 25, 30, 4, 'i'); P.shade('i', 'I', null, 2);
+    const I = code('i'), brick = (x0, y0, x1, y1) => { const n = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0)); for (let k=0;k<=n;k++){ const x = Math.round(x0 + (x1 - x0)*k/n), y = Math.round(y0 + (y1 - y0)*k/n); if (P.get(x, y) === I) P.set(x, y, 'I'); } };
+    [13, 18, 23].forEach((y, r) => { brick(0, y, 31, y); for (let x = 5 + (r % 2)*3; x < 30; x += 6) brick(x, y + 1, x, y + 4); }); brick(16, 9, 16, 12); brick(10, 10, 10, 12); brick(22, 10, 22, 12);
+    P.ell(16, 24, 4.5, 6, 'd').rect(11, 24, 11, 5, 'd'); P.rect(2, 29, 28, 2, 's'); P.outline('o'); },
+    {i:'#FFFFFF', I:'#B8D8EE', d:'#3D5A78', s:'#E3F2FB', o:'#3D5A78'}],
+  van:[P => { P.rect(2, 9, 25, 15, 'b'); P.poly([[27,13],[31,18],[31,24],[27,24]], 'b'); P.rect(3, 6, 18, 4, 'b'); P.shade('b', 'B', 'l', 2);
+    P.rect(5, 11, 6, 5, 'g').rect(13, 11, 6, 5, 'g').poly([[22,11],[26.5,11],[29.5,17],[22,17]], 'g'); P.set(6, 12, 'w').set(14, 12, 'w');
+    P.rect(2, 20, 30, 2, 'B'); [8, 24].forEach(x => P.ell(x, 25, 3.8, 3.8, 'k').ell(x, 25, 1.6, 1.6, 'h')); P.rect(30, 19, 1, 2, 'y'); P.outline('o'); },
+    {b:'#5CB85C', B:'#3A8A3E', l:'#9AE29A', g:'#BFE9FF', w:'#FFFFFF', k:'#2B2B33', h:'#B8B8C8', y:'#FFE070', o:'#1E3A20'}],
+  gift:[P => { P.rect(5, 13, 22, 16, 'r'); P.rect(3, 9, 26, 5, 'R'); P.shade('r', 'd', 'l', 2); P.rect(14, 9, 4, 20, 'y');
+    P.ell(11.5, 6.5, 4.5, 3, 'y').ell(20.5, 6.5, 4.5, 3, 'y').ell(11.5, 6.5, 2, 1.2, 'Y').ell(20.5, 6.5, 2, 1.2, 'Y'); P.rect(14, 5, 4, 4, 'Y'); P.outline('o'); },
+    {r:'#3D8FE0', R:'#2A6BB8', d:'#2C5E9E', l:'#82CBFF', y:'#FFC83D', Y:'#E8981E', o:'#163E70'}],
+  jam:[P => { P.rect(7, 11, 18, 18, 'j'); P.ell(16, 28, 9, 2.5, 'j'); P.rect(6, 6, 20, 5, 'c'); P.rect(8, 4, 16, 2, 'c'); P.shade('j', 'J', null, 2);
+    P.rect(9, 15, 14, 9, 'w'); P.ell(16, 19.5, 4, 3.5, 'r').rect(15, 15, 2, 2, 'g'); P.set(10, 13, 'l').set(10, 14, 'l').set(10, 25, 'l'); P.shade('c', 'C', null, 1); P.outline('o'); },
+    {j:'#C2213A', J:'#8A1426', l:'#FF8A9A', c:'#F4B64A', C:'#D9862F', w:'#FFFDF6', r:'#F0524F', g:'#5CB85C', o:'#4A0E18'}],
+  box:[P => { P.poly([[3,12],[16,16],[16,30],[3,26]], 'b').poly([[16,16],[29,12],[29,26],[16,30]], 'B'); P.poly([[3,12],[16,8],[29,12],[16,16]], 'd');
+    P.poly([[3,12],[0,7],[13,4],[16,8]], 'l').poly([[29,12],[32,7],[19,4],[16,8]], 'l'); P.line(16, 16, 16, 30, 'D'); P.line(8, 19, 12, 20, 'D'); P.outline('o'); },
+    {b:'#D8A866', B:'#B07A3E', d:'#7A4A1E', l:'#E8C080', D:'#7A4A1E', o:'#3B2314'}]
 };
 const schoolPic = name => SCHOOL_PIX[name] ? once('sp' + name, () => { const P = new Pix(32, 32), [draw, pal] = SCHOOL_PIX[name]; draw(P); return `<img class="px" src="${pxURL(P.canvas(pal), 4).slice(5, -2)}" alt="" draggable="false">`; }) : ART[name];
-/* a word for each letter, the picture and the sound it makes (fx: a toy sound; note and xylo are little tunes) */
+/* a word for each letter, the picture and the sound it makes (fx: a toy sound; note is a little tune). Every word starts with
+   its letter's sound (iguana, octopus, umbrella: the short vowels), except x, which phonics teaches at the end: fox. */
 const ABC = [
   ['A','apple','apple','crunch'], ['B','butterfly','butterfly','flutter'], ['C','cat','cat','meow'], ['D','dog','dog','woof'], ['E','elephant','elephant','trumpet'],
   ['F','frog','frog','ribbit'], ['G','gorilla','gorilla','thump'], ['H','hippo','hippo','hippo'], ['I','iguana','lizard','flick'], ['J','jellyfish','jellyfish','splash'],
   ['K','kangaroo','kangaroo','boing'], ['L','lion','lion','roar'], ['M','monkey','monkey','ooh'], ['N','note','note','note'], ['O','octopus','octopus','splash'],
-  ['P','penguin','penguin','bray'], ['Q','quack','duck','quack'], ['R','rhino','rhino','snort'], ['S','star','star','cheer'], ['T','tiger','tiger','growl'],
-  ['U','umbrella','umbrella','pop'], ['V','volcano','volcano','boom'], ['W','whale','whale','splash'], ['X','xylophone','xylo','xylo'], ['Y','yo-yo','yoyo','boing'], ['Z','zebra','zebra','neigh']
+  ['P','penguin','penguin','bray'], ['Q','queen','queen','cheer'], ['R','rhino','rhino','snort'], ['S','star','star','cheer'], ['T','tiger','tiger','growl'],
+  ['U','umbrella','umbrella','pop'], ['V','volcano','volcano','boom'], ['W','whale','whale','splash'], ['X','fox','fox',''], ['Y','yo-yo','yoyo','boing'], ['Z','zebra','zebra','neigh']
 ].map(([L, w, pic, fx]) => ({L, w, pic, fx}));
 const abcOf = L => ABC[LETTERS.indexOf(L.toUpperCase())];
 function abcSound(e, at = 0){
   if (e.fx === 'note'){ [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => tone(f, f, .22, 'triangle', .2, at + i*.13)); return at + .7; }
-  if (e.fx === 'xylo'){ XYLO.forEach(([f], i) => tone(f, f, .28, 'sine', .22, at + i*.07)); return at + .9; }
   return FX[e.fx] ? FX[e.fx](at) || at + .8 : at;
 }
 
 
 /* ----- the School menu: one card per learning game ----- */
 const SCHOOL = [
+  {id:'letterpath', n:'Letter Path', note:'One letter at a time', cls:'g-path', art:() => `<span class="art">${glyphImg('s')}</span><span class="art big">${ART.owl}</span><span class="art">${glyphImg('a')}</span>`},
   {id:'abczoo', n:'ABC Zoo', note:'Every letter, A to Z', cls:'g-abc', art:() => `<span class="art">${glyphImg('A')}</span><span class="art big">${glyphImg('B')}</span><span class="art">${glyphImg('C')}</span>`},
   {id:'abcsnack', n:'ABC Snack', note:'Feed the letter', cls:'g-abcsnack', art:() => `<span class="art big">${ART.monkey}</span><span class="art">${glyphImg('a')}</span>`}
 ];
@@ -6239,13 +6399,55 @@ SCHOOL.forEach(g => {
 $$('.sc-back').forEach(b => { b.innerHTML = ICON.grid; tap(b, () => { FX.boop(); go('school'); }); });
 const SCHOOL_SAY = {school:'School! What do you want to learn?', abczoo:'ABC Zoo! Tap a letter!', abcsnack:'ABC Snack! The animals want letter cookies!'};
 const cap = w => w[0].toUpperCase() + w.slice(1);
-const isFor = e => `${e.L} is for ${e.w}!`;
+const isFor = e => e.L === 'X' ? `X is in ${e.w}!` : `${e.L} is for ${e.w}!`;
 
-/* ----- ABC Zoo: tap a letter to see it big and little, its word and picture; the picture makes its sound, then the
-   voice says "L is for lion!". The song button plays the ABC song (the Twinkle Twinkle tune) and lights each letter. ----- */
+/* ----- Letter Path: one letter at a time, in the order phonics programs teach them (s a t i p n first: they make words
+   soonest). A trail of stepping stones, little letters first, each earning up to three stars. A lesson is four short steps:
+   Meet (the letter, big and little, its sound and a word), Trace (follow the star along each stroke, in writing order),
+   Hear (which picture starts with the sound?) and Find (which letter makes the sound?, with letters learned before mixed
+   in). Nothing is ever failed: a wrong tap names what was tapped, after two tries the right one glows, and every lesson
+   ends with at least one star. Sounds are written /s/ in the lines: the voice tool records each one cut from a word. ----- */
+const PATH = 'satipnckehrmdgoulfbjzwvyxq'.split('');
+/* a second word for each letter that has one, so Hear also asks about a word the lesson hasn't shown */
+const WORD2 = {s:'sun', a:['alligator','crocodile'], t:'turtle', i:'igloo', p:'panda', n:'nest', c:'cow', k:'kite', e:'egg', h:'hand', r:'rocket', m:'moon',
+  d:'duck', g:'gift', l:'leaf', f:'fish', b:'bus', j:'jam', w:'watermelon', v:'van', x:'box'};
+const word2 = l => { const v = WORD2[l]; return v ? (Array.isArray(v) ? {w:v[0], pic:v[1], l} : {w:v, pic:v, l}) : null; };
+const PATH_WORDS = PATH.flatMap(l => { const e = abcOf(l); return [{w:e.w, pic:e.pic, l}, word2(l)].filter(Boolean); });
+/* sounds too close to tell apart in a first lesson: never asked against each other in Hear */
+const NEAR = ['ckqg', 'pb', 'td', 'fv', 'sz', 'mn', 'aeiou'];
+const near = (a, b) => NEAR.some(g => g.includes(a) && g.includes(b));
+/* letters that say the same sound, or are each other's mirror image: never side by side in Find */
+const TWINS = ['ckq', 'bd', 'pq', 'mw', 'nu'];
+const twins = (a, b) => TWINS.some(g => g.includes(a) && g.includes(b));
+/* how to say each sound, for the parent page */
+const PATH_TIP = {s:'a long hiss, teeth together: sss', a:'short a, as in apple, mouth wide open', t:'a quick tap of the tongue behind the top teeth, no "uh"',
+  i:'short i, as in itch', p:'lips pop a puff of air, no voice', n:'tongue up, hum through the nose: nnn', c:'a quick k from the back of the tongue, as in cat',
+  k:'the same sound as c: k, as in kite', e:'short e, as in egg', h:'just a breath, like fogging a window', r:'a little growl, lips slightly round: rrr, not "ruh"',
+  m:'lips together, hum: mmm', d:'a tongue tap with the voice on, keep the "uh" tiny', g:'from the back of the tongue with the voice on, as in gum',
+  o:'short o, as in octopus, mouth round and open', u:'short u, as in up', l:'tongue up behind the top teeth: lll', f:'top teeth on the lower lip, blow: fff',
+  b:'lips pop with the voice on, keep the "uh" tiny', j:'j, as in jam', z:'a buzzing bee: zzz', w:'lips round, as in wet', v:'top teeth on the lower lip, voice on: vvv',
+  y:'y, as in yes', x:'two sounds together, k and s: ks, at the end of fox and box', q:'q almost always comes with u and says kw, as in queen'};
+const P_SAY = {
+  path:'Letter Path! Tap the bouncing letter!', notyet:'Not yet! Tap the bouncing letter!', all:'You learned every letter!', yes:'Yes!',
+  meet: l => `This is ${l}. It says /${l}/, like ${abcOf(l).w}!`, sound: l => `/${l}/!`,
+  trace: l => `Trace ${l}! Follow the star.`, made: l => `You made ${l}!`,
+  hear: l => l === 'x' ? 'Which one ends with /x/?' : `Which one starts with /${l}/?`,
+  word: o => o.l === 'x' ? `${cap(o.w)} ends with /x/!` : `${cap(o.w)} starts with /${o.l}/!`,
+  find: l => `Which letter says /${l}/?`, says: l => `${l} says /${l}/!`, thats: l => `That's ${l}!`,
+  learned: l => `You learned ${l}!`, next: l => `Next is ${l}!`
+};
+/* up to three stars, the ones not earned yet greyed out */
+const starRow = (n, cls) => `<span class="${cls}">${[1, 2, 3].map(k => `<i class="${k <= n ? 'on' : ''}">${ART.star}</i>`).join('')}</span>`;
+/* the word with its letter in color: the first letter, or for x the one at the end */
+const pathWord = (w, l) => { const i = l === 'x' ? w.lastIndexOf('x') : 0; return `${w.slice(0, i)}<b>${w[i]}</b>${w.slice(i + 1)}`; };
+
+/* ----- ABC Zoo: tap a letter to see it little and big, its word and picture; the picture makes its sound, then the
+   voice says the letter's sound and "L is for lion!". Little letters first (the ones in books); the case button shows
+   capitals. The song button plays the ABC song (the Twinkle Twinkle tune) and lights each letter. ----- */
+const zooSays = e => `${e.L} says /${e.L.toLowerCase()}/!`;
 const AbcZoo = (() => {
   const grid = $('#azGrid'), show = $('#azShow'), lettersEl = $('#azLetters'), picEl = $('#azPic'), wordEl = $('#azWord');
-  let cur = ABC[0], small = false, singing = 0, quietUntil = 0;
+  let cur = ABC[0], small = true, singing = 0, quietUntil = 0;
   const tiles = ABC.map((e, i) => {
     const b = document.createElement('button'); b.className = 'az-tile'; b.dataset.l = e.L; b.setAttribute('aria-label', e.L);
     tap(b, () => { stopSong(); pick(e, true); }, {bump:false});
@@ -6254,21 +6456,21 @@ const AbcZoo = (() => {
   function paintTiles(){ tiles.forEach((b, i) => { b.innerHTML = glyphImg(small ? ABC[i].L.toLowerCase() : ABC[i].L); }); }
   function pick(e, speak){
     cur = e; tiles.forEach(b => b.classList.toggle('on', b.dataset.l === e.L));
-    lettersEl.innerHTML = glyphImg(e.L) + glyphImg(e.L.toLowerCase());
+    lettersEl.innerHTML = glyphImg(e.L.toLowerCase()) + glyphImg(e.L);
     picEl.innerHTML = schoolPic(e.pic);
-    wordEl.style.setProperty('--lc', letterCol(e.L)); wordEl.innerHTML = `<b>${e.w[0]}</b>${e.w.slice(1)}`;
+    wordEl.style.setProperty('--lc', letterCol(e.L)); wordEl.innerHTML = pathWord(e.w, e.L.toLowerCase());
     retrigger(show, 'pop');
     if (!speak) return;
     hush(); FX.pop(); const end = abcSound(e); quietUntil = performance.now() + end*1000;
-    say(isFor(e), 0, 'school');
+    say(zooSays(e) + ' ' + isFor(e), 0, 'school');
   }
   /* tap the big letters to hear the letter, or the picture to hear its sound and word */
   show.addEventListener('pointerdown', e => {
     e.preventDefault(); keepAwake(); if (singing) return;
     if (e.target.closest('#azPic')){ if (performance.now() < quietUntil) return; quietUntil = performance.now() + abcSound(cur)*1000; retrigger(picEl, 'hop'); say(cap(cur.w) + '!', 0, 'school'); }
-    else { FX.pop(); retrigger(lettersEl, 'hop'); hush(); say(cur.L + '!', 0, 'school'); }
+    else { FX.pop(); retrigger(lettersEl, 'hop'); hush(); say(`${cur.L}! /${cur.L.toLowerCase()}/!`, 0, 'school'); }
   });
-  $('#azCase').innerHTML = glyphImg('a', '#3B2B20');
+  $('#azCase').innerHTML = glyphImg(small ? 'A' : 'a', '#3B2B20');
   tap($('#azCase'), () => { FX.pop(); small = !small; $('#azCase').innerHTML = glyphImg(small ? 'A' : 'a', '#3B2B20'); paintTiles(); say(small ? 'Little letters!' : 'Big letters!', 0, 'school'); });
   $('#azSong').innerHTML = ART.note;
   /* the ABC song: one note per letter (l, m, n, o share a beat), then "now I know my ABCs" with every letter lit */
@@ -6294,13 +6496,14 @@ const AbcZoo = (() => {
     enter(){ stopSong(); pick(cur, false); say(SCHOOL_SAY.abczoo, 0, 'school'); },
     leave(){ stopSong(); },
     state: () => ({letter:cur.L, small, singing:!!singing}),
-    lines: () => [SCHOOL_SAY.abczoo, 'Little letters!', 'Big letters!', 'Now I know my ABCs!', ...ABC.flatMap(e => [isFor(e), e.L + '!', cap(e.w) + '!'])]
+    lines: () => [SCHOOL_SAY.abczoo, 'Little letters!', 'Big letters!', 'Now I know my ABCs!', ...ABC.flatMap(e => [zooSays(e) + ' ' + isFor(e), e.L + '!', cap(e.w) + '!'])]
   };
 })();
 
 /* ----- ABC Snack: Snack Time with letter cookies. An animal asks for a letter out loud (its bubble shows an ear, never the
    letter: the child has to know it); feed it that cookie. It grows with the child: big letters by name, then little
-   letters by name. Letters come a few at a time, in the order phonics programs teach them (s a t i p n first), and a new
+   letters by name, then letter sounds ("Which letter says /s/?"), asked about the letters done on the Letter Path once
+   there are a few. Letters come a few at a time, in the order phonics programs teach them (s a t i p n first), and a new
    group joins once most of the current ones are known. Nothing is ever lost: a wrong cookie gets a head shake and the
    voice names the letter that was tapped; after two tries the right one glows. ----- */
 const AbcSnack = (() => {
@@ -6321,20 +6524,23 @@ const AbcSnack = (() => {
   const yum = at => { tone(523, 784, .14, 'triangle', .14, at); tone(659, 1047, .2, 'triangle', .13, at + .13); return at + .35; };
   const call = (s, at = 0) => s.x ? FX[s.x](at) : yum(at);
   function act(cls){ animalEl.classList.remove('in', 'out', 'hop', 'nope', 'chomp'); void animalEl.offsetWidth; animalEl.classList.add(cls); }
-  const level = () => ({big:0, little:1}[settings.abc] ?? prog.lv);
+  const level = () => ({big:0, little:1, sound:2}[settings.abc] ?? prog.lv);
   const pool = () => ORDER.slice(0, clamp(prog.open, 4, 26));
   function nextLetter(){
+    if (mode === 'sound'){ const p = LetterPath.progress().learned.map(l => l.toUpperCase()), from = (p.length >= 3 ? p : pool()).filter(L => L !== letter); return rnd(from.length ? from : pool()); }
     const p = pool(), fresh = p.filter(L => !known(L) && L !== letter);
     const from = fresh.length && Math.random() < .75 ? fresh : p.filter(L => L !== letter);
     return rnd(from);
   }
   const say2 = (lines, tries = 0) => { if (speaking() && tries < 15){ later(() => say2(lines, tries + 1), 300); return; } say(lines, 0, 'school'); };
-  const ask = () => { if (!cur || eating) return; say2(WANTS(cur) + ' ' + FIND(letter, mode === 'little')); };
+  const ask = () => { if (!cur || eating) return; say2(WANTS(cur) + ' ' + want()); };
+  const want = () => mode === 'sound' ? P_SAY.find(letter.toLowerCase()) : FIND(letter, mode === 'little');
+  const small = () => mode !== 'big';
   function arrive(){
     const prev = cur;
     if (!queue.length) queue = shuffle(EATERS).filter(s => s !== prev);
     cur = queue.shift(); misses = 0; eating = true;
-    mode = level() === 0 ? 'big' : (Math.random() < .7 ? 'little' : 'big');
+    const lv = level(); mode = lv === 0 ? 'big' : lv === 1 ? (Math.random() < .7 ? 'little' : 'big') : (Math.random() < .65 ? 'sound' : 'little');
     letter = nextLetter();
     put(animalEl, ART[cur.a]); animalEl.setAttribute('aria-label', cur.n);
     think.classList.remove('on');
@@ -6345,13 +6551,14 @@ const AbcSnack = (() => {
   }
   /* two cookies at first, three once a few animals are fed; look-alikes (b and d...) stay apart until most letters are known */
   function deal(){
-    const n = fed < 3 ? 2 : 3, small = mode === 'little';
-    const clash = L => ORDER.filter(known).length < 12 && MIRROR.some(pr => pr.includes(letter.toLowerCase()) && pr.includes(L.toLowerCase()) || pr.includes(letter) && pr.includes(L));
+    const n = fed < 3 ? 2 : 3, sm = small();
+    const clash = L => (mode === 'sound' && twins(L.toLowerCase(), letter.toLowerCase())) ||   // (c and k say the same sound)
+      ORDER.filter(known).length < 12 && MIRROR.some(pr => pr.includes(letter.toLowerCase()) && pr.includes(L.toLowerCase()) || pr.includes(letter) && pr.includes(L));
     const others = shuffle(ORDER.slice(0, Math.max(prog.open, 8)).filter(L => L !== letter && !clash(L))).slice(0, n - 1);
     foodsEl.innerHTML = ''; foodsEl.classList.toggle('n2', n === 2);
     shuffle([letter, ...others]).forEach((L, i) => {
-      const b = document.createElement('button'); b.className = 'st-food'; b.dataset.l = L; b.setAttribute('aria-label', small ? 'little ' + L.toLowerCase() : L);
-      b.style.animationDelay = i*.07 + 's'; b.innerHTML = `<span class="as-cookie">${glyphImg(small ? L.toLowerCase() : L)}</span>`;
+      const b = document.createElement('button'); b.className = 'st-food'; b.dataset.l = L; b.setAttribute('aria-label', sm ? 'little ' + L.toLowerCase() : L);
+      b.style.animationDelay = i*.07 + 's'; b.innerHTML = `<span class="as-cookie">${glyphImg(sm ? L.toLowerCase() : L)}</span>`;
       tap(b, () => pick(b, L), {bump:false});
       foodsEl.appendChild(b);
     });
@@ -6360,7 +6567,7 @@ const AbcSnack = (() => {
     const st = prog.stats[letter] = prog.stats[letter] || {k:0, n:0}; st.n++; if (right && !misses) st.k++;
     if (right && !misses){ prog.streak++; prog.down = 0; } else { prog.streak = 0; if (!right) prog.down++; }
     if (settings.abc === 'auto' || !settings.abc){
-      if (prog.lv === 0 && prog.streak >= 8){ prog.lv = 1; prog.streak = 0; later(() => say2('Now little letters too!'), 2600); }
+      if (prog.lv < 2 && prog.streak >= 8){ prog.lv++; prog.streak = 0; later(() => say2(prog.lv === 1 ? 'Now little letters too!' : 'Now letter sounds too!'), 2600); }
       else if (prog.lv > 0 && prog.down >= 3){ prog.lv--; prog.down = 0; }
     }
     const p = pool(); if (p.filter(known).length >= p.length - 2 && prog.open < 26) prog.open = Math.min(26, prog.open + 4);
@@ -6371,7 +6578,7 @@ const AbcSnack = (() => {
     if (L !== letter){
       misses++; uhuh(); retrigger(b, 'no'); act('nope'); retrigger(think, 'wig');
       if (misses === 1) score(false);
-      hush(); say(`That's ${mode === 'little' ? L.toLowerCase() : L}! ` + FIND(letter, mode === 'little'), 0, 'school');
+      hush(); say(`That's ${small() ? L.toLowerCase() : L}! ` + want(), 0, 'school');
       if (misses >= 2) foodsEl.querySelector(`[data-l="${letter}"]`)?.classList.add('hint');
       return;
     }
@@ -6381,7 +6588,7 @@ const AbcSnack = (() => {
     const s = cur, a = root.getBoundingClientRect(), fr = b.getBoundingClientRect(), ar = animalEl.getBoundingClientRect();
     const x0 = fr.left - a.left + fr.width/2, y0 = fr.top - a.top + fr.height/2, x1 = ar.left - a.left + ar.width*s.m[0], y1 = ar.top - a.top + ar.height*s.m[1];
     const mx = (x0 + x1)/2, my = Math.min(y0, y1) - 60;
-    const t = document.createElement('div'); t.className = 'st-bite art'; t.innerHTML = `<span class="as-cookie" style="width:64px">${glyphImg(mode === 'little' ? L.toLowerCase() : L)}</span>`;
+    const t = document.createElement('div'); t.className = 'st-bite art'; t.innerHTML = `<span class="as-cookie" style="width:64px">${glyphImg(small() ? L.toLowerCase() : L)}</span>`;
     root.appendChild(t); FX.swoosh();
     t.animate([{transform:`translate(${x0-32}px,${y0-32}px) scale(1)`}, {transform:`translate(${mx-32}px,${my-32}px) scale(1.2)`, offset:.5}, {transform:`translate(${x1-32}px,${y1-32}px) scale(.35)`}],
       {duration:650, easing:'ease-in-out', fill:'forwards'}).onfinish = () => { t.remove(); eat(s, L); };
@@ -6392,7 +6599,7 @@ const AbcSnack = (() => {
     const end = s.x === 'munch' ? FX.munch(0) : call(s, FX.crunch(0) + .05);
     fed++; addSticker(L);
     later(() => { act('hop'); hearts(); }, 700);
-    say('Yum! ' + isFor(abcOf(L)), 0, 'school');
+    say('Yum! ' + (mode === 'sound' ? P_SAY.says(L.toLowerCase()) : isFor(abcOf(L))), 0, 'school');
     const party = fed % 5 === 0, stay = end*1000 + (party ? 2400 : 900);
     if (party) later(celebrate, end*1000 + 100);
     later(() => { act('out'); steps(); }, stay);
@@ -6409,15 +6616,280 @@ const AbcSnack = (() => {
     state: () => ({want: cur && !eating ? letter : null, mode, level: level(), choices: [...foodsEl.children].map(b => b.dataset.l), fed, open: prog.open}),
     progress: () => ({lv: prog.lv, open: prog.open, known: ORDER.filter(known)}),
     reset(){ Object.assign(prog, {lv:0, open:6, streak:0, down:0, stats:{}}); save(); },
-    lines: () => [SCHOOL_SAY.abcsnack, 'Hooray! Five full tummies!', 'Now little letters too!',
+    lines: () => [SCHOOL_SAY.abcsnack, 'Hooray! Five full tummies!', 'Now little letters too!', 'Now letter sounds too!',
       ...EATERS.map(WANTS), ...LETTERS.flatMap(L => [FIND(L, false), FIND(L, true), `That's ${L}!`, `That's ${L.toLowerCase()}!`, 'Yum! ' + isFor(abcOf(L))])]
   };
 })();
 function renderAbcNote(){
   $$('[data-abc]').forEach(b => b.classList.toggle('on', b.dataset.abc === (settings.abc || 'auto')));
   const n = $('#abcNote'); if (!n) return;
-  const p = AbcSnack.progress(), stage = ['big letters by name', 'little letters by name (and some big ones)'][p.lv];
+  const p = AbcSnack.progress(), stage = ['big letters by name', 'little letters by name (and some big ones)', 'letter sounds, for the letters done on the Letter Path (and little letters by name)'][p.lv];
   n.textContent = `Now: ${stage}. Letters known: ${p.known.length ? p.known.join(' ') : 'none yet'} (${p.known.length} of 26). Letters in play: ${'SATIPNCKEHRMDGOULFBJZWVYXQ'.slice(0, p.open).split('').join(' ')}.`;
+}
+
+/* ----- the Letter Path itself (its words, sounds and lines are with the alphabet above) ----- */
+const LetterPath = (() => {
+  const root = $('#letterpath'), map = $('#lpMap'), lesson = $('#lpLesson'), stage = $('#lpStage'), stepsEl = $('#lpSteps'), nextBtn = $('#lpNext');
+  const prog = Object.assign({stars:{}}, store.get('path', {}));
+  const save = () => store.set('path', prog);
+  const done = l => (prog.stars[l] || 0) > 0;
+  const curIdx = () => PATH.findIndex(l => !done(l));   // the next letter to learn (-1 once all are done)
+  const isOpen = l => settings.path === 'open' || done(l) || PATH.indexOf(l) <= curIdx() || curIdx() < 0;
+  const STEPS = [['meet', 'smiley'], ['trace', 'hand'], ['hear', 'ear'], ['find', 'magnifier']];
+  const uhuh = () => { tone(392, 370, .15, 'triangle', .13); tone(330, 300, .22, 'triangle', .13, .19); };
+  const talk = t => { hush(); say(t, 0, 'school'); return lineMs(t); };
+  let stones = [], links = [], owl = null, pos = [], L = null, step = -1, misses = 0, tries = 0, rounds = [], round = 0, busy = false, tr = null, quietUntil = 0;
+
+  /* ----- the trail: stepping stones in a snake, four across standing up and seven lying down, so all 26 fit without scrolling ----- */
+  function build(){
+    links = PATH.slice(1).map(() => { const d = document.createElement('div'); d.className = 'lp-link'; map.appendChild(d); return d; });
+    stones = PATH.map(l => {
+      const b = document.createElement('button'); b.className = 'lp-stone'; b.dataset.l = l; b.setAttribute('aria-label', l);
+      tap(b, () => pickStone(l, b), {bump:false});
+      map.appendChild(b); return b;
+    });
+    owl = document.createElement('div'); owl.className = 'lp-owl art'; owl.innerHTML = ART.owl; map.appendChild(owl);
+    tap(owl, () => { const now = performance.now(); if (now < quietUntil) return; retrigger(owl, 'hop'); quietUntil = now + FX.hoot(0)*1000; }, {bump:false});
+  }
+  function paint(){
+    const ci = curIdx();
+    stones.forEach((b, i) => {
+      const l = PATH[i], st = prog.stars[l] || 0, open = isOpen(l);
+      b.className = 'lp-stone' + (i === ci ? ' cur' : '') + (open ? '' : ' locked');
+      b.innerHTML = glyphImg(l, open ? undefined : '#B9AE9F') + (st ? starRow(st, 'lp-stars') : '');
+    });
+  }
+  function layout(){
+    const w = map.clientWidth, h = map.clientHeight; if (!w || !h) return;
+    const cols = w > h*1.1 ? 7 : 4, rows = Math.ceil(PATH.length/cols), cw = w/cols, ch = h/rows;
+    map.style.setProperty('--s', Math.round(Math.min(cw, ch*.92)*.86) + 'px');
+    pos = PATH.map((l, i) => { const r = Math.floor(i/cols), c = r % 2 ? cols - 1 - i % cols : i % cols; return [cw*(c + .5), ch*(r + .45)]; });
+    stones.forEach((b, i) => { b.style.left = pos[i][0] + 'px'; b.style.top = pos[i][1] + 'px'; });
+    links.forEach((d, i) => { const [x0, y0] = pos[i], [x1, y1] = pos[i + 1]; d.style.left = x0 + 'px'; d.style.top = y0 + 'px'; d.style.width = Math.hypot(x1 - x0, y1 - y0) + 'px'; d.style.transform = `rotate(${Math.atan2(y1 - y0, x1 - x0)}rad)`; });
+    const ci = curIdx(), at = pos[ci < 0 ? PATH.length - 1 : ci];
+    owl.style.left = at[0] + 'px'; owl.style.top = at[1] + 'px'; owl.classList.toggle('left', at[0] > w/2);   // perched on the side with room
+  }
+  function pickStone(l, b){
+    if (busy) return;
+    if (!isOpen(l)){ FX.boop(); retrigger(b, 'no'); const c = stones[curIdx()]; if (c) retrigger(c, 'wig'); retrigger(owl, 'hop'); talk(P_SAY.notyet); return; }
+    busy = true; FX.pop(); retrigger(b, 'go'); hush();
+    later(() => { busy = false; start(l); }, 380);
+  }
+
+  /* ----- a lesson ----- */
+  function start(l){
+    L = l; misses = 0; step = -1; lesson.hidden = false; retrigger(lesson, 'in');
+    stepsEl.innerHTML = STEPS.map(([id, icon]) => `<span class="lp-step" data-s="${id}">${ART[icon]}</span>`).join('');
+    nextStep();
+  }
+  function nextStep(){
+    clearLater(); hush(); stopTrace(); nextBtn.hidden = true; busy = false; round = 0;
+    step++;
+    $$('.lp-step', stepsEl).forEach((el, i) => { el.classList.toggle('done', i < step); el.classList.toggle('on', i === step); });
+    if (step >= STEPS.length) return finish();
+    stage.className = 'lp-stage lp-' + STEPS[step][0]; stage.innerHTML = '';
+    ({meet, trace, hear, find})[STEPS[step][0]]();
+  }
+  function showNext(){ if (!nextBtn.hidden) return; nextBtn.hidden = false; retrigger(nextBtn, 'pop'); }
+  const bigLetters = () => `<div class="lp-letters" role="button" aria-label="${L}">${glyphImg(L)}${glyphImg(L.toUpperCase())}</div>`;
+
+  /* Meet: the little letter big, the capital beside it, and its word. Tap the letters for the sound, the picture for the word */
+  function meet(){
+    const e = abcOf(L);
+    stage.innerHTML = bigLetters() + `<div class="lp-pic" role="button" aria-label="${e.w}"><span class="art">${schoolPic(e.pic)}</span><span class="lp-word" style="--lc:${letterCol(L)}">${pathWord(e.w, L)}</span></div>`;
+    const lettersEl = $('.lp-letters', stage), picEl = $('.lp-pic', stage);
+    tap(lettersEl, () => { FX.pop(); retrigger(lettersEl, 'hop'); talk(P_SAY.sound(L)); }, {bump:false});
+    tap(picEl, () => { const now = performance.now(); retrigger(picEl, 'hop'); if (now < quietUntil) return; hush(); quietUntil = now + abcSound(e)*1000; say(cap(e.w) + '!', 0, 'school'); }, {bump:false});
+    later(showNext, talk(P_SAY.meet(L)) + 500);
+  }
+
+  /* Trace: follow the star along each stroke in writing order. The road is wide (a finger is), and the ink only moves forward
+     along the stroke from where it is, so a scribble can't skip ahead. Left alone, a ghost star shows the way. */
+  const K = 4, PAD = 3, CW = 15*K + 2*PAD, CH = 21*K + 2*PAD, TOL = 2.7;
+  function strokesOf(ch){
+    const out = [];
+    GLYPH[ch].split(' ').forEach(cmd => {
+      const v = cmd.slice(1).split(',').map(Number); let pts;
+      if (cmd[0] === 'D') return out.push({dot:true, pts:[[v[0], v[1]]]});
+      if (cmd[0] === 'L'){ const n = Math.max(1, Math.ceil(Math.hypot(v[2] - v[0], v[3] - v[1])*4)); pts = Array.from({length:n + 1}, (_, i) => [v[0] + (v[2] - v[0])*i/n, v[1] + (v[3] - v[1])*i/n]); }
+      else { const [cx, cy, rx, ry, a0, a1] = v, n = Math.max(2, Math.ceil(Math.abs(a1 - a0)*Math.PI/180*Math.max(rx, ry)*4)); pts = Array.from({length:n + 1}, (_, i) => { const a = (a0 + (a1 - a0)*i/n)*Math.PI/180; return [cx + Math.cos(a)*rx, cy + Math.sin(a)*ry]; }); }
+      const last = out[out.length - 1], end = last && !last.dot && last.pts[last.pts.length - 1];
+      if (end && Math.hypot(end[0] - pts[0][0], end[1] - pts[0][1]) < .6) last.pts.push(...pts.slice(1));   // the pen doesn't lift: one stroke
+      else out.push({pts});
+    });
+    return out;
+  }
+  function trace(){
+    stage.innerHTML = `<div class="lp-paper"><canvas width="${CW}" height="${CH}"></canvas><span class="lp-ghost art">${ART.star}</span><span class="lp-pen art">${ART.starBright}</span></div>`;
+    const cv = $('canvas', stage);
+    tr = {cv, g:cv.getContext('2d'), strokes:strokesOf(L), i:0, k:0, pid:null, idle:performance.now(), raf:0, beep:0, finished:false, pen:$('.lp-pen', stage), ghost:$('.lp-ghost', stage)};
+    const units = e => { const r = cv.getBoundingClientRect(); return [((e.clientX - r.left)/r.width*CW - PAD)/K, ((e.clientY - r.top)/r.height*CH - PAD)/K]; };
+    cv.addEventListener('pointerdown', e => { e.preventDefault(); keepAwake(); if (!tr || tr.pid !== null) return; tr.pid = e.pointerId; try{ cv.setPointerCapture(e.pointerId); }catch(x){} follow(units(e)); });
+    cv.addEventListener('pointermove', e => { if (!tr || e.pointerId !== tr.pid) return; (e.getCoalescedEvents ? e.getCoalescedEvents() : [e]).forEach(x => follow(units(x))); });
+    ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(t => cv.addEventListener(t, e => { if (tr && e.pointerId === tr.pid) tr.pid = null; }));
+    draw(); tick(performance.now());
+    talk(P_SAY.trace(L));
+    later(showNext, 25000);   // (a way on for a parent, if tracing just isn't happening today)
+  }
+  function follow([x, y]){
+    if (!tr || tr.finished) return;
+    const s = tr.strokes[tr.i];
+    if (s.dot){ if (Math.hypot(x - s.pts[0][0], y - s.pts[0][1]) < TOL*1.3) strokeDone(); return; }
+    let best = -1, run = 0;
+    for (let j = tr.k + 1; j < s.pts.length; j++){
+      run += Math.hypot(s.pts[j][0] - s.pts[j - 1][0], s.pts[j][1] - s.pts[j - 1][1]);
+      if (run > 2.6) break;
+      if (Math.hypot(x - s.pts[j][0], y - s.pts[j][1]) < TOL) best = j;
+    }
+    if (best <= tr.k) return;
+    tr.k = best; tr.idle = performance.now(); draw();
+    const now = performance.now(); if (now - tr.beep > 70){ tr.beep = now; const f = 330 + 500*(tr.i + tr.k/s.pts.length)/tr.strokes.length; tone(f, f*1.05, .05, 'triangle', .05); }
+    if (tr.k >= s.pts.length - 4) strokeDone();
+  }
+  function strokeDone(){
+    tr.i++; tr.k = 0; tr.idle = performance.now(); FX.pop();
+    if (tr.i >= tr.strokes.length){
+      tr.finished = true; tr.i = tr.strokes.length; draw(); retrigger($('.lp-paper', stage), 'hop'); FX.cheer();
+      const [x, y] = rel(tr.cv); confetti(x, y, 30);
+      later(nextStep, Math.max(1900, talk(P_SAY.made(L)) + 400));
+      return;
+    }
+    draw();
+  }
+  function draw(){
+    if (!tr) return;
+    const P = new Pix(CW, CH), at = (x, y) => [PAD + x*K, PAD + y*K], col = letterCol(L);
+    for (let x=0;x<CW;x++){ P.set(x, PAD + 2*K, 'g'); if (x % 4 < 2) P.set(x, PAD + 8*K, 'g'); P.set(x, PAD + 16*K, 'b'); P.set(x, PAD + 20*K, 'g'); }
+    tr.strokes.forEach(s => s.pts.forEach(([x, y]) => { const [px, py] = at(x, y), r = s.dot ? 6 : 5; P.ell(px, py, r, r, 'r'); }));
+    P.outline('R', 'gb');
+    tr.strokes.forEach((s, i) => { if (i > tr.i) return; const n = i < tr.i ? s.pts.length : tr.k + 1; for (let j=0;j<n;j++){ const [px, py] = at(...s.pts[j]), r = s.dot ? 4.5 : 3.4; P.ell(px, py, r, r, 'c'); } });
+    tr.g.clearRect(0, 0, CW, CH); tr.g.drawImage(P.canvas({g:'#E6D9C2', b:'#C4AF8E', r:'#FFFFFF', R:'#D8C7AA', c:col}), 0, 0);
+  }
+  /* the star sits where the ink has reached; after a few quiet seconds a ghost star runs ahead along the stroke */
+  function tick(now){
+    if (!tr) return;
+    const room = [stage.clientWidth - 40, stage.clientHeight - 34], k = Math.max(1, Math.min(room[0]/CW, room[1]/CH, 7)), wpx = Math.round(CW*k) + 'px';
+    if (tr.cv.style.width !== wpx){ tr.cv.style.width = wpx; tr.cv.style.height = Math.round(CH*k) + 'px'; }   // as big as fits, every frame (turning the phone)
+    const s = tr.strokes[tr.i], r = tr.cv.getBoundingClientRect(), box = tr.cv.parentNode, p = box.getBoundingClientRect(), ox = p.left + box.clientLeft, oy = p.top + box.clientTop;
+    const spot = ([x, y]) => [r.left - ox + (PAD + x*K)/CW*r.width, r.top - oy + (PAD + y*K)/CH*r.height];   // (inside the frame's border)
+    const place = (el, pt) => { const [x, y] = spot(pt); el.style.transform = `translate(${x}px, ${y}px)`; };
+    tr.pen.hidden = !s; tr.ghost.hidden = true;
+    if (s){
+      place(tr.pen, s.pts[tr.k]);
+      const idle = now - tr.idle, t = (idle - 2500) % 2800 / 1500;
+      if (!s.dot && tr.pid === null && idle > 2500 && t <= 1){ tr.ghost.hidden = false; place(tr.ghost, s.pts[Math.round(tr.k + (s.pts.length - 1 - tr.k)*t)]); }
+    }
+    tr.raf = requestAnimationFrame(tick);
+  }
+  function stopTrace(){ if (tr){ cancelAnimationFrame(tr.raf); tr = null; } }
+
+  /* Hear: three pictures; which one starts with the sound? The lesson's word first, then its second word */
+  function hear(){
+    const e = abcOf(L), w2 = word2(L);
+    rounds = [{w:e.w, pic:e.pic, l:L}, ...(w2 ? [w2] : [])];
+    hearRound();
+  }
+  function hearRound(){
+    const t = rounds[round], used = new Set([L]), others = [];
+    for (const o of shuffle(PATH_WORDS)) if (others.length < 2 && !used.has(o.l) && !near(o.l, L) && o.pic !== t.pic){ others.push(o); used.add(o.l); }
+    choices(shuffle([t, ...others]), o => `<span class="art">${schoolPic(o.pic)}</span>`, o => o.w, o => o === t, P_SAY.hear(L), (o, right) => (right ? P_SAY.yes + ' ' : '') + P_SAY.word(o));
+  }
+  /* Find: three letters; which one says the sound? The new letter twice, and one learned before (if any) in between */
+  function find(){
+    const before = PATH.slice(0, PATH.indexOf(L)).filter(done);
+    rounds = [L, before.length ? rnd(before) : L, L];
+    findRound();
+  }
+  function findRound(){
+    const t = rounds[round], ok = l => l !== t && !twins(l, t);
+    const met = shuffle(PATH.filter(l => ok(l) && (done(l) || l === L))), rest = shuffle(PATH.filter(l => ok(l) && !done(l) && l !== L));
+    choices(shuffle([t, ...[...met, ...rest].slice(0, 2)]), l => glyphImg(l), l => l, l => l === t, P_SAY.find(t), (l, right) => right ? P_SAY.yes + ' ' + P_SAY.says(l) : P_SAY.thats(l));
+  }
+  /* the shared part of Hear and Find: ask out loud (the ear asks again), answer every tap by name, glow after two misses */
+  function choices(list, face, label, right, ask, reply){
+    tries = 0;
+    stage.innerHTML = `<button class="lp-ear" aria-label="Again">${ICON.ear}</button><div class="lp-cards"></div>`;
+    const cards = $('.lp-cards', stage), ear = $('.lp-ear', stage);
+    tap(ear, () => { if (busy) return; FX.pop(); retrigger(ear, 'wig'); talk(ask); });
+    list.forEach((o, i) => {
+      const b = document.createElement('button'); b.className = 'lp-card'; b.dataset.k = label(o); b.dataset.right = right(o) ? '1' : ''; b.setAttribute('aria-label', label(o));
+      b.style.animationDelay = i*.08 + 's'; b.innerHTML = face(o);
+      tap(b, () => {
+        if (busy) return;
+        if (!right(o)){
+          tries++; if (tries === 1) misses++; uhuh(); retrigger(b, 'no');
+          talk(reply(o, false) + ' ' + ask);
+          if (tries >= 2) cards.querySelector('[data-right="1"]').classList.add('hint');
+          return;
+        }
+        busy = true; FX.pop(); b.classList.remove('hint'); b.classList.add('yes'); retrigger(b, 'bounce');
+        $$('.lp-card', cards).forEach(c => { if (c !== b) c.classList.add('off'); });
+        const [x, y] = rel(b); confetti(x, y, 16);
+        later(() => { busy = false; round++; if (round < rounds.length) (step === 2 ? hearRound : findRound)(); else nextStep(); }, talk(reply(o, true)) + 500);
+      }, {bump:false});
+      cards.appendChild(b);
+    });
+    talk(ask);
+  }
+
+  /* the end: stars for how it went (three with no misses), saved as the best so far; then back to the trail */
+  function finish(){
+    const st = misses === 0 ? 3 : misses <= 2 ? 2 : 1, first = !done(L);
+    prog.stars[L] = Math.max(prog.stars[L] || 0, st); save();
+    stage.className = 'lp-stage lp-end'; stage.innerHTML = bigLetters() + starRow(st, 'lp-endstars');
+    FX.cheer(); const [x, y] = rel(stage); confetti(x, y, 44);
+    const line = first && curIdx() < 0 ? P_SAY.all : P_SAY.learned(L);
+    later(() => toTrail(first), Math.max(3400, talk(line) + 900));
+  }
+  function toTrail(learnedNow){
+    clearLater(); hush(); stopTrace(); lesson.hidden = true; L = null; step = -1; busy = false;
+    paint(); layout();
+    const ci = curIdx();
+    if (learnedNow && ci >= 0){ retrigger(stones[ci], 'unlock'); retrigger(owl, 'hop'); later(() => { FX.pop(); talk(P_SAY.next(PATH[ci])); }, 500); }
+  }
+  tap(nextBtn, () => { FX.pop(); nextStep(); });
+  nextBtn.innerHTML = ICON.right;
+  $('#lpBack').innerHTML = ICON.left;
+  tap($('#lpBack'), () => { FX.boop(); toTrail(false); });
+  build();
+  if (typeof ResizeObserver === 'function') new ResizeObserver(() => { if (current === 'letterpath') layout(); }).observe(map);
+  return {
+    enter(){ lesson.hidden = true; stopTrace(); L = null; busy = false; paint(); layout(); retrigger(owl, 'hop'); say(P_SAY.path, 0, 'school'); },
+    leave(){ stopTrace(); lesson.hidden = true; L = null; busy = false; },
+    refresh(){ paint(); layout(); },
+    progress: () => ({stars:{...prog.stars}, learned:PATH.filter(done), next:PATH[curIdx()] || null}),
+    reset(){ prog.stars = {}; save(); paint(); layout(); },
+    /* (tests) where things are; the current stroke's points on screen, so a test can trace them */
+    state: () => ({lesson:!lesson.hidden, letter:L, step:STEPS[step] ? STEPS[step][0] : null, round, misses, next:!nextBtn.hidden,
+      choices:$$('.lp-card', stage).map(b => b.dataset.k), want:($('.lp-card[data-right="1"]', stage) || {}).dataset?.k || null,
+      stroke:tr && !tr.finished ? tr.i : null, strokes:tr ? tr.strokes.length : 0, traced:tr ? tr.finished : null, open:PATH.filter(isOpen), stars:{...prog.stars}}),
+    strokePts: () => { if (!tr || tr.finished) return null; const r = tr.cv.getBoundingClientRect(); return tr.strokes[tr.i].pts.map(([x, y]) => [r.left + (PAD + x*K)/CW*r.width, r.top + (PAD + y*K)/CH*r.height]); },
+    lines: () => [P_SAY.path, P_SAY.notyet, P_SAY.all, P_SAY.yes, 'Follow the star.',
+      ...PATH.flatMap(l => [P_SAY.meet(l), P_SAY.sound(l), P_SAY.trace(l), P_SAY.made(l), P_SAY.hear(l), P_SAY.find(l), P_SAY.says(l), P_SAY.thats(l), P_SAY.learned(l), P_SAY.next(l)]),
+      ...PATH_WORDS.map(P_SAY.word)]
+  };
+})();
+/* the parent page: every letter with its stars; tap one to hear its sound and its lesson line, and see how to say it */
+let pathSel = null;
+function renderPathNote(){
+  $$('[data-path]').forEach(b => b.classList.toggle('on', b.dataset.path === (settings.path || 'order')));
+  const g = $('#pathGrid'); if (!g) return;
+  const p = LetterPath.progress();
+  if (!g.children.length) PATH.forEach(l => {
+    const b = document.createElement('button'); b.className = 'sbtn lp-chip'; b.dataset.pl = l; b.setAttribute('aria-label', l);
+    tap(b, () => { pathSel = pathSel === l ? null : l; FX.pop(); renderPathNote(); if (pathSel) say(P_SAY.meet(l)); });
+    g.appendChild(b);
+  });
+  [...g.children].forEach(b => { const l = b.dataset.pl, st = p.stars[l] || 0; b.innerHTML = glyphImg(l) + starRow(st, 'lp-cs'); b.classList.toggle('on', l === pathSel); });
+  $('#pathNote').textContent = `Learned: ${p.learned.length} of 26.` + (p.next ? ` Next up: ${p.next}.` : ' Every letter done!');
+  const box = $('#pathInfo'); box.hidden = !pathSel; if (!pathSel) return;
+  const l = pathSel, e = abcOf(l), w2 = word2(l), st = p.stars[l] || 0;
+  box.innerHTML = `<div class="lp-ihead">${glyphImg(l)}${glyphImg(l.toUpperCase())}<span class="art">${schoolPic(e.pic)}</span>${w2 ? `<span class="art">${schoolPic(w2.pic)}</span>` : ''}</div>
+    <p><b>${l} ${l.toUpperCase()}</b>, ${l === 'x' ? 'at the end of' : 'as in'} <b>${e.w}</b>${w2 ? ` and <b>${w2.w}</b>` : ''}. Say it: ${PATH_TIP[l]}.</p>
+    <p>${st ? `Best so far: ${st} of 3 stars (three is a lesson with no wrong taps).` : 'Not done yet.'} Lesson ${PATH.indexOf(l) + 1} of 26.</p>
+    <div class="seg"><button class="sbtn" data-hear="sound">Hear the sound</button><button class="sbtn" data-hear="words">Hear the words</button></div>`;
+  tap($('[data-hear="sound"]', box), () => say(P_SAY.sound(l)));
+  tap($('[data-hear="words"]', box), () => say([P_SAY.meet(l), P_SAY.word({w:e.w, l}), ...(w2 ? [P_SAY.word(w2)] : [])].join(' ')));
 }
 
 /* ======================= MUSIC ======================= */
@@ -7177,11 +7649,11 @@ function renderSettings(){
   $$('[data-incoming]').forEach(b => b.classList.toggle('on', (b.dataset.incoming === '1') === settings.incoming));
   $$('[data-silent]').forEach(b => b.classList.toggle('on', (b.dataset.silent === '1') === settings.silent));
   $$('[data-vol]').forEach(b => b.classList.toggle('on', +b.dataset.vol === settings.vol));
-  renderCamNote(); renderAbcNote();
+  renderCamNote(); renderAbcNote(); renderPathNote();
   const n = Photos.list.length; $('#photoCount').textContent = n + (n === 1 ? ' photo' : ' photos');
   $('#clearBtn').disabled = !n;
 }
-function openSettings(){ hush(); $('#confirmClear').hidden = true; renderSettings(); pickVoice(); showSound(); $('#settings').hidden = false; FX.cheer(); }
+function openSettings(){ hush(); $('#confirmClear').hidden = true; $('#confirmPath').hidden = true; renderSettings(); pickVoice(); showSound(); $('#settings').hidden = false; FX.cheer(); }
 /* is the sound engine running? (the animals, drums and ringtones all come from it; the voice doesn't) */
 function showSound(){
   const n = $('#soundNote'); if (!n) return;
@@ -7191,9 +7663,13 @@ function showSound(){
       : ' It follows the ring/silent switch: if it\'s quiet, flip the switch to ring.')
     + (rebuilds ? ` (Restarted ${rebuilds} time${rebuilds > 1 ? 's' : ''}.)` : '');
 }
-function closeSettings(){ $('#settings').hidden = true; }
+function closeSettings(){ $('#settings').hidden = true; if (current === 'letterpath') LetterPath.refresh(); }
 $$('[data-incoming]').forEach(b => tap(b, () => { settings.incoming = b.dataset.incoming === '1'; saveSettings(); renderSettings(); scheduleIncoming(); }));
 $$('[data-abc]').forEach(b => tap(b, () => { settings.abc = b.dataset.abc; saveSettings(); renderSettings(); FX.cheer(); }));
+$$('[data-path]').forEach(b => tap(b, () => { settings.path = b.dataset.path; saveSettings(); renderSettings(); FX.cheer(); }));
+tap($('#pathReset'), () => { $('#confirmPath').hidden = false; });
+tap($('#noPath'), () => { $('#confirmPath').hidden = true; });
+tap($('#yesPath'), () => { LetterPath.reset(); pathSel = null; $('#confirmPath').hidden = true; renderSettings(); });
 $$('[data-camera]').forEach(b => tap(b, () => {
   settings.camera = b.dataset.camera; saveSettings(); FX.cheer();
   if (realBroken()) real.state = 'off';
@@ -7248,7 +7724,7 @@ function voiceLines(){
     ...Object.values(CAM_SAY), ...Object.values(MODE_SAY), ...COSTUMES.map(c => `You're ${article(COSTUME_NAME[c])}!`), ...LOOK_ORDER.slice(1).map(k => LOOKS[k].say),
     ...Object.values(MUSIC_SAY), ...SONGS.map(x => x.n + '!'), 'Yay! Great dancing!', 'Stop!', 'Hello! This is how loud I am.',
     ...WildTap.lines(), ...DinoBuddies.lines(), ...SnackTime.lines(), ...PaintPals.lines(),
-    SCHOOL_SAY.school, ...AbcZoo.lines(), ...AbcSnack.lines()
+    SCHOOL_SAY.school, ...LetterPath.lines(), ...AbcZoo.lines(), ...AbcSnack.lines()
   ];
   /* the narrator records whole lines and their sentences (for lines put together at play time); animals record whole lines */
   const out = new Map(), put1 = (who, x) => out.set(who + '|' + x, {who, s:x});
@@ -7278,6 +7754,8 @@ window.__toyPhone = { go, renderFx, speakable, voiceLines, lineMs,
     return c.toDataURL(); },
   camLook: i => setLook(i), camLens: i => setLens(i),
   school: () => ({zoo:AbcZoo.state(), snack:AbcSnack.state(), progress:AbcSnack.progress()}),
+  schoolPics: names => names.map(n => schoolPic(n) || ''),   // (pictures by name, for checking them by eye)
+  path: () => LetterPath.state(), pathPts: () => LetterPath.strokePts(), pathProgress: () => LetterPath.progress(),
   glyphSheet: () => { const k = 3, cw = 34, ch = 46, c = document.createElement('canvas'); c.width = 26*cw*k; c.height = 2*ch*k; const g = c.getContext('2d'); g.fillStyle = '#FFFDF6'; g.fillRect(0, 0, c.width, c.height); g.imageSmoothingEnabled = false;
     LETTERS.forEach((L, i) => { g.drawImage(glyphCanvas(L), i*cw*k, 0, cw*k, ch*k); g.drawImage(glyphCanvas(L.toLowerCase()), i*cw*k, ch*k, cw*k, ch*k); });
     return c.toDataURL(); },   // (the alphabet on one sheet, for checking the letters by eye)
