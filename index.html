@@ -4238,7 +4238,12 @@ function vox(o){
   if (o.noise){ const n = noiseSrc(c), ng = c.createGain(); ng.gain.value = o.noise; n.connect(ng); ng.connect(mix); n.start(t0, Math.random()); n.stop(stop); }
   return (o.at || 0) + end;
 }
-/* Animal calls stay mid-volume and under ~2 seconds: realistic, not scary. Each returns its length in seconds. */
+/* Animal calls stay mid-volume and under ~2 seconds: realistic, not scary. Each returns its length in seconds.
+   They're made for a phone's own speaker, which plays almost nothing below 300 Hz: a deep sound keeps its low rumble
+   for headphones but carries its weight in the mids (a knock in a footstep, harmonics in a hum), or the phone loses it. */
+const step = at => {   // one big footstep: a low thud, a woody knock and a little grit
+  tone(110,40,.32,'sine',.2,at); tone(180,110,.18,'sawtooth',.14,at,0,800); noise(.14,'bandpass',800,450,1,at); tone(360,240,.1,'triangle',.4,at); noise(.05,'bandpass',1800,1200,.16,at+.01);
+};
 const FX = {
   roar(at=0){   // lion: a deep, rough, moaning roar, then two grunts
     vox({at, vol:.5, f0:[[0,95],[.2,150],[.55,178],[.9,140],[1.2,88]], amp:[[0,0],[.12,.45],[.45,1],[.95,.7],[1.25,0]],
@@ -4259,8 +4264,8 @@ const FX = {
       form:[{f:[[0,700],[.2,1000],[1.1,820]], q:3}, {f:1900, q:4, g:.7}, {f:3300, q:5, g:.35}],
       vib:35, vibHz:7, jitter:40, rough:.25, roughHz:55, noise:.22, drive:6});
   },
-  munch(at=0){   // giraffe: giraffes really do hum, low and soft; then munching leaves
-    vox({at, type:'triangle', vol:.6, f0:[[0,100],[.7,94]], amp:[[0,0],[.12,.8],[.55,.8],[.8,0]], form:[{f:260, q:2}, {f:520, q:4, g:.3}], vib:12, vibHz:4});
+  munch(at=0){   // giraffe: giraffes really do hum, low and soft ("mmm"); then munching leaves
+    vox({at, vol:.4, f0:[[0,120],[.7,112]], amp:[[0,0],[.12,.8],[.55,.8],[.8,0]], form:[{f:560, q:2.5}, {f:1100, q:4, g:.4}, {f:1800, q:5, g:.12}], vib:12, vibHz:4});
     return FX.crunch(at + .85);
   },
   crunch(at=0){ [0,.26,.52].forEach(d => { noise(.07,'bandpass',3400,2000,.34,at+d); noise(.05,'bandpass',2200,1400,.26,at+d+.07); }); return at + .65; },
@@ -4290,17 +4295,18 @@ const FX = {
     return at + 1.3;
   },
   bellow(at=0){   // long neck: a low, gentle "hoooom", then two big footsteps
-    vox({at, vol:.5, f0:[[0,68],[.35,92],[1,80],[1.3,60]], amp:[[0,0],[.25,.85],[.95,.8],[1.3,0]], form:[{f:[[0,300],[.5,430],[1.3,280]], q:4}, {f:[[0,700],[1.3,600]], q:5, g:.4}], vib:20, vibHz:4, noise:.18, rough:.25, roughHz:20});
+    vox({at, vol:.5, f0:[[0,80],[.35,104],[1,92],[1.3,72]], amp:[[0,0],[.25,.85],[.95,.8],[1.3,0]],
+      form:[{f:[[0,500],[.5,650],[1.3,480]], q:4}, {f:[[0,1000],[1.3,850]], q:5, g:.5}, {f:1800, q:6, g:.12}], vib:20, vibHz:4, noise:.18, rough:.25, roughHz:20, drive:2});
     return FX.stomp(at + 1.35);
   },
-  stomp(at=0){ tone(90,38,.3,'sine',.5,at); tone(90,38,.3,'sine',.5,at+.42); return at + .75; },
+  stomp(at=0){ step(at); step(at + .42); return at + .75; },
   huff(at=0){   // triceratops: two big nose snorts and a grunt
     [0,.32].forEach(d => { noise(.22,'bandpass',900,380,.6,at+d); vox({at:at+d, vol:.2, f0:[[0,110],[.2,85]], amp:[[0,0],[.03,1],[.22,0]], form:[{f:420, q:3}], noise:.7, rough:.5, roughHz:30}); });
     return vox({at:at+.72, vol:.55, f0:[[0,92],[.4,74]], amp:[[0,0],[.06,1],[.42,0]], form:[{f:460, q:3}, {f:900, q:4, g:.5}], rough:.65, roughHz:24, noise:.4});
   },
   stego(at=0){   // stegosaurus: a rumbly grunt, a tail swish and a thump
     vox({at, vol:.45, f0:[[0,86],[.45,70]], amp:[[0,0],[.08,1],[.48,0]], form:[{f:400, q:3}, {f:850, q:4, g:.5}], rough:.7, roughHz:22, noise:.4});
-    noise(.28,'highpass',600,3200,.22,at+.55); tone(95,38,.32,'sine',.55,at+.85);
+    noise(.28,'highpass',600,3200,.22,at+.55); step(at + .85);
     return at + 1.2;
   },
   screech(at=0){   // pterodactyl or eagle: a raspy "keee-ahh"
@@ -4323,9 +4329,9 @@ const FX = {
     [0,.28].forEach(d => vox({at:at+d, vol:.26, f0:[[0,480],[.08,520],[.2,430]], amp:[[0,0],[.03,1],[.2,0]], form:[{f:700, q:5}, {f:1600, q:6, g:.8}, {f:2900, q:6, g:.3}], rough:.3, roughHz:60, noise:.15, drive:3}));
     return at + .5;
   },
-  thump(at=0){ [0,.12,.24,.36,.48,.58].forEach(d => { noise(.09,'bandpass',260,180,.55,at+d); tone(170,110,.1,'sine',.35,at+d); }); return at + .7; },   // gorilla chest beats
+  thump(at=0){ [0,.12,.24,.36,.48,.58].forEach(d => { noise(.09,'bandpass',800,600,.65,at+d); tone(400,300,.09,'triangle',.3,at+d); tone(140,100,.1,'sine',.14,at+d); }); return at + .7; },   // gorilla chest beats: hollow pok-pok-pok
   ribbit(at=0){ [[0,280],[.2,340]].forEach(([d, f]) => vox({at:at+d, vol:.5, f0:[[0,f],[.12,f*.92]], amp:[[0,0],[.02,1],[.12,0]], form:[{f:800, q:4}, {f:1900, q:5, g:.4}], rough:1, roughHz:60, noise:.1})); return at + .35; },
-  hoot(at=0){ [[0,.24],[.36,.16],[.6,.45]].forEach(([d, len]) => vox({at:at+d, type:'triangle', vol:.2, f0:[[0,410],[len,370]], amp:[[0,0],[.05,1],[len,0]], form:[{f:420, q:3}, {f:800, q:4, g:.2}], noise:.12})); return at + 1.05; },
+  hoot(at=0){ [[0,.24],[.36,.16],[.6,.45]].forEach(([d, len]) => vox({at:at+d, type:'triangle', vol:.2, f0:[[0,500],[len,450]], amp:[[0,0],[.05,1],[len,0]], form:[{f:520, q:3}, {f:1000, q:4, g:.45}], noise:.12})); return at + 1.05; },
   yawn(at=0){ return vox({at, type:'triangle', vol:.15, f0:[[0,1400],[.2,2200],[.55,1500]], amp:[[0,0],[.08,1],[.55,0]], form:[{f:2000, q:2}], vib:40, vibHz:6, noise:.05}); },   // sloth: a high, whistly "ah-eee"
   moo(at=0){ return vox({at, vol:.42, f0:[[0,118],[.2,135],[.9,112],[1.1,96]], amp:[[0,0],[.15,.9],[.85,.8],[1.1,0]], form:[{f:[[0,260],[.3,560],[1.1,430]], q:4}, {f:[[0,800],[.3,950],[1.1,850]], q:5, g:.4}], rough:.3, roughHz:25, noise:.2}); },
   woof(at=0){   // dog: two quick, bright barks
@@ -4347,45 +4353,56 @@ const FX = {
   flick(at=0){ tone(1400,2400,.05,'sine',.15,at); tone(1400,2400,.05,'sine',.15,at+.1); return at + .15; },
   snap(at=0){ noise(.08,'highpass',2500,1800,.36,at); noise(.08,'highpass',2500,1800,.36,at+.17); return at + .25; },   // two jaw snaps
   peep(at=0){ [0,.15,.3].forEach(d => tone(2600,3300,.09,'sine',.16,at+d)); return at + .4; },
-  boing(at=0){ [0,.3,.6].forEach(d => tone(180,620,.25,'sine',.3,at+d)); return at + .85; },
-  boom(at=0){ noise(1.6,'lowpass',320,60,.7,at); tone(60,30,1.4,'sine',.6,at); return at + 1.6; },
+  boing(at=0){ [0,.3,.6].forEach(d => { synth({f:340, f1:900, dur:.26, type:'triangle', vol:.26, at:at+d, vib:12, rel:.1}); tone(680,1800,.25,'sine',.06,at+d); }); return at + .85; },
+  boom(at=0){   // volcano: the deep rumble, and the blast and crackle a phone speaker can play
+    noise(1.6,'lowpass',320,60,.35,at); tone(60,30,1.4,'sine',.3,at);
+    noise(.35,'bandpass',1400,500,.6,at); noise(1.3,'bandpass',800,380,.5,at+.05); tone(150,60,.6,'sawtooth',.14,at,0,900);
+    return at + 1.6;
+  },
   pop(){ tone(500+Math.random()*400, 1300+Math.random()*400, .09, 'sine', .3); },
-  boop(){ tone(420,330,.18,'sine',.2); },
+  boop(){ tone(560,440,.18,'sine',.2); },
   tick(){ tone(1800,1800,.03,'square',.03); },
   crack(){ noise(.08,'highpass',3000,2000,.3); },
   cheer(){ [523,659,784,1047].forEach((f,i)=>tone(f,f,.24,'triangle',.2,i*.11)); },
   shutter(){ noise(.04,'highpass',5000,3500,.4); noise(.07,'bandpass',1800,1100,.32,.08); tone(900,500,.05,'square',.03,.08); },
   pickup(){ noise(.03,'highpass',3000,2000,.18); tone(880,880,.06,'sine',.07,.02); },
-  hangup(){ tone(480,480,.13,'sine',.16); tone(360,360,.2,'sine',.16,.16); },
+  hangup(){ tone(620,620,.13,'sine',.16); tone(470,470,.2,'sine',.16,.16); },
   swoosh(){ noise(.25,'bandpass',600,2400,.18); }
 };
 
 /* Real recordings win: list them in assets/sounds/sounds.json (see the README there), by sound ("roar") or by animal
    ("lion": that animal's sound), and the recording plays everywhere that sound is used: calls, Wild Tap, the camera,
    the games. A sound with no recording keeps its synthesized version. */
-const SOUND_FILES = {}, soundBufs = {}, REC = {};
+const SOUND_FILES = {}, soundBufs = {}, REC = {}, REC_THEN = {};   // REC_THEN: a synthesized sound to play right after a recording
 const FX_SYNTH = {...FX};
 function playRec(buf, at = 0){
   busy(at + buf.duration);
   if (hold(() => playRec(buf, at))) return at + buf.duration;
   const s = ctx.createBufferSource(); s.buffer = buf; s.connect(dest()); s.start(ctx.currentTime + at); return at + buf.duration;
 }
-/* Level trims in dB, measured (integrated loudness of each sound rendered offline): every animal call lands near the
-   same loudness, so a frog or a chick isn't a whisper next to an elephant (the noisy huff and snap get a little less,
-   so a loud burst never clips). Only the outermost sound is trimmed (the
+/* Level trims in dB, measured (integrated loudness of each sound rendered offline, as a phone's own speaker would play
+   it, and never above -19 LUFS full-range): every animal call lands near the same loudness on the phone, so a frog or a
+   chick isn't a whisper next to an elephant, and a deep call isn't lost (the crunch, flick and flutter stay softer:
+   they're small sounds, not calls). Only the outermost sound is trimmed (the
    giraffe's hum ends in the crunch sound; the crunch isn't trimmed twice). */
-const FX_TRIM = {trumpet:-4, munch:2.1, neigh:-2.1, ooh:-3.1, hippo:2.2, huff:4.5, stego:2.4, screech:-1.3, snort:8, growl:3.4, squawk:1.8,
-  thump:2.9, ribbit:6.8, hoot:-2.4, yawn:-2.4, woof:-1.1, meow:-2.2, quack:-1.3, tweet:8, peep:7.1, snap:4.5, splash:7.9, crunch:8, flick:8,
-  flutter:8, boing:4.1, stomp:2};
+const FX_TRIM = {roar:2.2, bigroar:2.3, trumpet:-2.1, munch:7.1, neigh:-2, bray:.4, hippo:6, bellow:3.6, stomp:8.2, huff:9.4, stego:6.3,
+  screech:-2, splash:7, snort:11.3, growl:6.8, squawk:1.8, honk:2.7, thump:8.2, ribbit:8.2, hoot:1.5, yawn:-3, moo:4.2, meow:-1.5, quack:-.7,
+  tweet:7.4, snap:3.7, peep:6.3, boing:1, boom:7.5, crunch:8, flick:8, flutter:8};
+/* after the trim, a soft limiter: untouched up to 0.7, then rounding off below 1, so a boosted thud or snort never clips.
+   The curve covers -2..2 (the trim feeds it at half level), so even a peak at twice full scale is rounded, not cut off. */
+let softCurve = null;
+const softClip = () => softCurve || (softCurve = Float32Array.from({length: 2049}, (_, i) => {
+  const x = (i / 1024 - 1) * 2, a = Math.abs(x); return Math.sign(x) * (a < .7 ? a : .7 + .28 * Math.tanh((a - .7) / .28)); }));
 let fxDepth = 0;
 Object.keys(FX_SYNTH).forEach(k => { FX[k] = (at = 0) => {
-  if (REC[k]) return playRec(REC[k], at);
+  if (REC[k]){ const end = playRec(REC[k], at), then = REC_THEN[k]; return then && FX[then] && then !== k ? FX[then](end + .02) || end : end; }
   const db = fxDepth ? 0 : FX_TRIM[k] || 0, c = db && audio();
   if (!c) return FX_SYNTH[k](at);
-  const g = c.createGain(); g.gain.value = 10 ** (db / 20); g.connect(dest());
+  const g = c.createGain(), ws = c.createWaveShaper(); g.gain.value = 10 ** (db / 20) / 2; ws.curve = softClip(); ws.oversample = '2x';
+  g.connect(ws); ws.connect(dest());
   let end; fxDepth++;
   try{ into(g, () => { end = FX_SYNTH[k](at); }); } finally { fxDepth--; }
-  setTimeout(() => { try{ g.disconnect(); }catch(e){} }, ((end || at + 3) + 1) * 1000);
+  setTimeout(() => { try{ g.disconnect(); ws.disconnect(); }catch(e){} }, ((end || at + 3) + 1) * 1000);
   return end;
 }; });
 async function loadSounds(){
@@ -4394,8 +4411,9 @@ async function loadSounds(){
     const r = await fetch('assets/sounds/sounds.json', {cache:'no-cache'});
     if (!r.ok) return;
     const j = await r.json();
-    Object.entries(j || {}).forEach(([id, f]) => {
-      if (typeof f !== 'string') return;
+    Object.entries(j || {}).forEach(([id, v]) => {   // "lion": "lion.mp3", or "munch": {"file": "munch.mp3", "then": "crunch"}
+      const f = typeof v === 'string' ? v : v && v.file; if (typeof f !== 'string') return;
+      if (v.then) REC_THEN[FX_SYNTH[id] ? id : (ANIMALS.find(a => a.id === id) || {}).fx] = v.then;
       const url = /^(data:|blob:|https?:|\/)/.test(f) ? f : 'assets/sounds/' + f;
       const fx = FX_SYNTH[id] ? id : (ANIMALS.find(a => a.id === id) || {}).fx;
       SOUND_FILES[id] = url; loadClip(url).then(buf => { if (!buf) return; soundBufs[id] = buf; if (fx) REC[fx] = buf; });
@@ -4403,9 +4421,9 @@ async function loadSounds(){
   }catch(e){}
 }
 function animalSound(a, at=0){
-  const buf = a.id && soundBufs[a.id];
+  const buf = a.id && !FX_SYNTH[a.id] && soundBufs[a.id];   // a recording of this very animal ("lion": ...)
   if (buf) return playRec(buf, at);
-  return (a.fx && FX[a.fx]) ? (FX[a.fx](at) || at + .8) : at;
+  return (a.fx && FX[a.fx]) ? (FX[a.fx](at) || at + .8) : at;   // its sound: a recording of it if there is one (and what follows it)
 }
 
 /* ---------- Speech ---------- */
@@ -4509,11 +4527,11 @@ const voiceChains = new WeakMap();
 function voiceOut(phone){
   const c = ctx, m = master; let ch = voiceChains.get(c);
   if (!ch){
-    const direct = c.createGain(); direct.gain.value = .66; direct.connect(m);   // clips are at -16 LUFS: this puts the voice ~3 dB over the animal calls
+    const direct = c.createGain(); direct.gain.value = 1; direct.connect(m);   // clips are at -21 LUFS on a phone speaker: 3 dB over the animal calls
     const hp = c.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 260; hp.Q.value = .7;
     const mid = c.createBiquadFilter(); mid.type = 'peaking'; mid.frequency.value = 2300; mid.Q.value = .9; mid.gain.value = 3.5;
     const lp = c.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 5200; lp.Q.value = .6;
-    const line = c.createGain(); line.gain.value = .8;
+    const line = c.createGain(); line.gain.value = .8;   // measured: as loud on a phone speaker as the direct voice (the line's 2.3 kHz lift adds ~2 dB)
     hp.connect(mid); mid.connect(lp); lp.connect(line); line.connect(m);
     ch = {direct, phone:hp}; voiceChains.set(c, ch);
   }
@@ -6296,10 +6314,11 @@ function voiceLines(){
   return [...out.values()];
 }
 /* test hook: render one sound into an offline buffer (used by the tests to check every animal call) */
-async function renderFx(name, secs=3){
-  const prev = [ctx, master, noiseBuf], off = new OfflineAudioContext(1, 44100*secs, 44100);
+async function renderFx(name, secs=3, synthOnly=false){
+  const prev = [ctx, master, noiseBuf], off = new OfflineAudioContext(1, 44100*secs, 44100), rec = {...REC};
   ctx = off; master = off.createGain(); master.connect(off.destination);
-  let len = 0; try{ len = (typeof name === 'string' ? FX[name](0) : vox(name)) || 0; } finally { [ctx, master, noiseBuf] = prev; }
+  if (synthOnly) Object.keys(REC).forEach(k => delete REC[k]);   // the synthesized version, even where a recording plays
+  let len = 0; try{ len = (typeof name === 'string' ? FX[name](0) : vox(name)) || 0; } finally { [ctx, master, noiseBuf] = prev; Object.assign(REC, rec); }
   const buf = await off.startRendering();
   return {len, data:Array.from(buf.getChannelData(0))};
 }

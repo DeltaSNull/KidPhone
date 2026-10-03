@@ -1,7 +1,7 @@
 /* Offline support for the self-hosted toy phone.
    Network first, so an updated index.html shows up on the next launch (voice clips, which never change, cache first);
    the cached copy is used only when the server can't be reached (car, park, Wi-Fi down). */
-const CACHE = 'toy-phone-v2';
+const CACHE = 'toy-phone-v3';   // a new name clears the old cache (the voice was re-recorded: its old clips would sit there unused)
 const CORE = ['./', 'index.html', 'manifest.webmanifest', 'icons/icon-180.png'];
 
 self.addEventListener('install', e => {

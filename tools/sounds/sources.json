@@ -1,0 +1,180 @@
+{
+ "_about": "Where each sound comes from. A recording: a Wikimedia Commons file and the seconds to cut (start, end), optionally rate (below 1 slows it down and lowers it, like a slowed tape) and gain in dB. A designed sound: layers, each another sound here by name (from) or a file, with its own rate, gain and start time (at). then: a synthesized sound the page plays right after. hp, lp: high- and low-pass in Hz (hp defaults to 70). shelf: dB at 250 Hz and below; presence: dB around 1.1 kHz (deep sounds use both, so a phone speaker can play them).",
+ "roar": {
+  "file": "File:Lion raring-sound1TamilNadu178.ogg",
+  "start": 4.9,
+  "end": 6.75,
+  "note": "a male lion roaring",
+  "shelf": -12,
+  "presence": 8
+ },
+ "trumpet": {
+  "file": "File:Elephant voice - trumpeting.ogg",
+  "start": 0.1,
+  "note": "an elephant trumpeting"
+ },
+ "neigh": {
+  "file": "File:Wiehern.ogg",
+  "note": "a horse whinnying (for the zebra's neigh)"
+ },
+ "bigroar": {
+  "layers": [
+   {
+    "from": "roar",
+    "rate": 0.7
+   },
+   {
+    "file": "File:Alligatorbellowedit.ogg",
+    "start": 1.5,
+    "end": 3.4,
+    "rate": 0.9,
+    "gain": -4,
+    "at": 0.1
+   },
+   {
+    "from": "trumpet",
+    "rate": 0.6,
+    "gain": -10,
+    "at": 0.3
+   }
+  ],
+  "hp": 45,
+  "shelf": -12,
+  "presence": 8,
+  "note": "T. rex: a lion's roar slowed down, an alligator's bellow under it and a low elephant trumpet"
+ },
+ "ooh": {
+  "file": "File:Pant-hoot call made by a male chimpanzee.ogg",
+  "start": 5.4,
+  "end": 8.0,
+  "note": "a chimpanzee's pant-hoot, the end of the build-up and two screams (for the monkey)"
+ },
+ "bray": {
+  "layers": [
+   {
+    "file": "File:Vocal-individuality-cues-in-the-African-penguin-(Spheniscus-demersus)-a-source-filter-theory-srep17255-s2.oga",
+    "start": 0.5,
+    "end": 1.12
+   },
+   {
+    "file": "File:Vocal-individuality-cues-in-the-African-penguin-(Spheniscus-demersus)-a-source-filter-theory-srep17255-s2.oga",
+    "start": 0.5,
+    "end": 1.12,
+    "rate": 0.94,
+    "at": 0.68
+   }
+  ],
+  "note": "an African penguin's bray, twice: haw haw"
+ },
+ "growl": {
+  "file": "File:439280 schots angry-tiger.wav",
+  "start": 42.4,
+  "end": 44.6,
+  "note": "a tiger growling"
+ },
+ "squawk": {
+  "file": "File:Scarlet macaw 01.wav",
+  "start": 11.45,
+  "end": 13.25,
+  "hp": 1000,
+  "note": "a scarlet macaw squawking twice (high-passed to take out the traffic rumble behind it)"
+ },
+ "ribbit": {
+  "layers": [
+   {
+    "file": "File:Single Frog Croak.oga",
+    "start": 0.03,
+    "end": 0.47
+   },
+   {
+    "file": "File:Single Frog Croak.oga",
+    "start": 1.36,
+    "end": 1.8,
+    "at": 0.5
+   }
+  ],
+  "note": "a frog croaking twice: ribbit, ribbit"
+ },
+ "stego": {
+  "file": "File:Alligatorbellowedit.ogg",
+  "start": 7.6,
+  "end": 8.5,
+  "rate": 0.85,
+  "hp": 60,
+  "shelf": -18,
+  "presence": 12,
+  "then": "stomp",
+  "note": "stegosaurus: an alligator's rumbling grunt, slowed down (then two synthesized footsteps)",
+  "lp": 2500
+ },
+ "hoot": {
+  "file": "File:Bubo virginianus - Great Horned Owl XC450919.mp3",
+  "start": 2.35,
+  "end": 4.45,
+  "hp": 150,
+  "shelf": -8,
+  "presence": 6,
+  "note": "a great horned owl's hoo, hoo-hoo, hoooo, sped up half again (its real hoot is too deep for a phone speaker to play)",
+  "rate": 1.5
+ },
+ "moo": {
+  "file": "File:Single Cow Moo.ogg",
+  "start": 0.9,
+  "end": 2.65,
+  "note": "a cow mooing"
+ },
+ "woof": {
+  "layers": [
+   {
+    "file": "File:Barking of a dog.ogg",
+    "start": 0.15,
+    "end": 0.5
+   },
+   {
+    "file": "File:Barking of a dog.ogg",
+    "start": 1.15,
+    "end": 1.45,
+    "at": 0.34
+   }
+  ],
+  "hp": 150,
+  "note": "a dog barking twice"
+ },
+ "meow": {
+  "file": "File:Meow of a Siamese cat - freemaster2.wav",
+  "start": 0.0,
+  "end": 1.15,
+  "note": "a Siamese cat's meow"
+ },
+ "quack": {
+  "file": "File:Pekin duck & mallard.ogg",
+  "start": 5.05,
+  "end": 5.65,
+  "hp": 200,
+  "note": "a duck quacking"
+ },
+ "screech": {
+  "file": "File:Buteo jamaicensis - Red-tailed Hawk XC71575.mp3",
+  "start": 0.45,
+  "end": 1.75,
+  "rate": 0.9,
+  "hp": 1200,
+  "note": "a red-tailed hawk's scream, a little slower and lower (for the eagle and the pterodactyl)"
+ },
+ "peep": {
+  "file": "File:মুরগির বাচ্চার ডাক.oga",
+  "start": 2.5,
+  "end": 3.3,
+  "hp": 2000,
+  "note": "chicks peeping (for the chick and the baby dinosaur)"
+ },
+ "splash": {
+  "file": "File:Bathtub water splashes.ogg",
+  "start": 3.6,
+  "end": 4.35,
+  "hp": 200,
+  "note": "a splash of water",
+  "shelf": -8,
+  "presence": 4
+ }
+}

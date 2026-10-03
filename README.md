@@ -41,32 +41,39 @@ Guided Access. It's one self-contained `index.html` (vanilla JS, no build step),
 
 ## Animal voices
 
-The animals' calls are modeled on the real animals: a buzzing "vocal cord" source shaped by throat and mouth
-resonances, with the real call's pitch swoops, growl (roughness) and breath. Each stays under about 2 seconds and
-mid-volume, and the animal finishes its call before it talks. Every call was measured (integrated loudness, rendered
-offline) and trimmed to the same level, within about 2 dB of each other (they were 12.5 dB apart), so a frog or a chick
-isn't a whisper next to an elephant. Tones and noise bursts start from silence, with no click. A real recording in `assets/sounds/` replaces a synthesized call everywhere it's used.
+Most animals are **real recordings** from [Wikimedia Commons](https://commons.wikimedia.org/), all public domain, CC0,
+CC BY or CC BY-SA, credited in [`assets/sounds/CREDITS.md`](assets/sounds/CREDITS.md). Each is cut to its best call
+and levelled by [`tools/sounds/`](tools/sounds/README.md). The dinosaurs, which nobody has recorded, are designed the
+way film sound designers do it: real animals slowed down and layered. Animals with no good free recording keep a
+synthesized call, and so does the copy with no sound files. Those are modeled on the real animals: a buzzing "vocal
+cord" source shaped by throat and mouth resonances, with the real call's pitch swoops, growl and breath, under about
+2 seconds, and the animal finishes its call before it talks.
+
+**Made for the phone's own speaker.** A phone speaker plays almost nothing below 300 Hz, so a deep sound that's
+loud on headphones can vanish on the phone (measured through a model of that speaker, the old dinosaur footsteps lost
+33 dB, a real lion's roar 9 dB, a slowed-down T. rex 13 dB). Every sound, recorded or synthesized, is now judged the way
+that speaker plays it: deep sounds carry their weight in the mids (a knock in a footstep, harmonics in a hum, less
+bass and more presence in the roars), and every animal call is levelled to the same loudness on the phone, within
+about 1 dB of each other, and never a blast on headphones. A soft limiter rounds off peaks, so nothing clips.
 
 | Animal | Its call |
 | --- | --- |
-| Lion | a deep, rough, rising-and-falling roar, then two grunts |
-| Elephant | a bright, brassy, wobbly trumpet |
-| Giraffe | a low, soft hum (giraffes really hum), then munching |
-| Zebra | a whinny: a high trilling squeal sliding down, then a soft nicker |
-| Monkey | a chimp pant-hoot: hoots that speed up and climb, then excited screams |
-| Penguin | an African penguin's donkey-like bray, "haa haa hee-haaaw" |
-| Hippo | a wheeze-honk: a squeaky in-breath, then deep rhythmic honks |
-| T. rex | a deeper, growlier roar with a soft rumble under it |
-| Long neck | a low, gentle "hoooom", then two big footsteps |
-| Triceratops | two nose snorts and a grunt |
-| Stegosaurus | a rumbly grunt, a tail swish and a thump |
-| Pterodactyl | a raspy, hawk-like "keee-ahh" |
-| Dog | two quick, bright barks |
-| Cat | a "mee-ow": the mouth opening, then closing |
-| Duck | two nasal quacks |
+| Lion | a male lion roaring (recording) |
+| Elephant | an elephant trumpeting (recording) |
+| Giraffe | a soft "mmm" hum (giraffes really hum), then munching (synthesized) |
+| Zebra | a horse's whinny (recording) |
+| Monkey | a chimpanzee's pant-hoot building up into two screams (recording) |
+| Penguin | an African penguin's bray, twice: haw haw (recording) |
+| Hippo | a wheeze-honk: a squeaky in-breath, then rhythmic honks (synthesized) |
+| T. rex | a lion's roar slowed down, an alligator's bellow under it and a low elephant trumpet (designed) |
+| Long neck | a gentle "hoooom", then two big footsteps (synthesized) |
+| Triceratops | two nose snorts and a grunt (synthesized) |
+| Stegosaurus | an alligator's grunt, slowed down, then two footsteps (designed) |
+| Pterodactyl | a red-tailed hawk's scream, a little slower and lower (recording) |
 
-The camera scenes and Wild Tap use the same voices (plus a leopard and tiger growl, parrot squawk, flamingo honk,
-gorilla chest beats, frog ribbit, owl hoot and more).
+The camera scenes, Wild Tap and the games use the same sounds, plus recordings of a tiger's growl (also the leopard),
+a macaw, a frog, an owl (sped up: a great horned owl hoots too deep for a phone speaker), a cow, a dog, a cat, a duck,
+chicks (also the baby dinosaur) and a splash, and synthesized gorilla chest beats, a rhino's snort, a sloth and more.
 
 ## The voice
 
@@ -92,8 +99,11 @@ games, and every animal on the phone has its own voice:
 
 - **Calls** sound like calls: the animal's voice goes through a gentle phone-line filter, and the phone itself
   ("Calling Lion!", "Lion is calling you! Ring ring!") speaks in the narrator's voice.
-- **One level**: every clip is brought to the same loudness, a little above the animal calls, and plays through the
-  same sound engine as the animals, so it follows the volume setting and never cuts them off.
+- **Made for the phone's speaker**: a phone's own speaker plays almost nothing below 300 Hz, and some voices carry
+  more down there than others, so every clip is voiced for it (a little less bass, a little more clarity around
+  3 kHz) and levelled by how loud that speaker plays it: every character comes out at the same loudness, 3 dB over the
+  animal calls. Clips play through the same sound engine as the animals, so they follow the volume setting and never
+  cut them off.
 - **Offline**: clips are small MP3s (`assets/voice/`, about 6 MB in all), fetched in the background after the first
   tap and kept by the offline cache.
 - **Family names** (a contact you add) have no recording, so those lines use the phone's own voice when the silent
@@ -102,8 +112,8 @@ games, and every animal on the phone has its own voice:
 [`tools/voices/`](tools/voices/README.md) records them. It reads every line from `index.html`, so new lines get
 recorded the next time it runs, and `npm test` fails if any line the toy can say has no recording.
 
-**Real recordings:** a synthesizer only gets so close. To use real recordings (for example, ones you make at the zoo),
-drop them in `assets/sounds/` and list them in `sounds.json`. See [`assets/sounds/README.md`](assets/sounds/README.md).
+**Your own recordings** (from the zoo, say) can replace any sound: drop them in `assets/sounds/` and list them in
+`sounds.json`. See [`assets/sounds/README.md`](assets/sounds/README.md).
 
 The big yellow home button is always in the same spot and always goes home. The talking voice speaks only where a parent
 turns it on in settings (phone calls and Wild Tap's Find It to start with), every tap answers

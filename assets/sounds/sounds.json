@@ -1,0 +1,23 @@
+{
+ "roar": "roar.mp3",
+ "trumpet": "trumpet.mp3",
+ "neigh": "neigh.mp3",
+ "bigroar": "bigroar.mp3",
+ "ooh": "ooh.mp3",
+ "bray": "bray.mp3",
+ "growl": "growl.mp3",
+ "squawk": "squawk.mp3",
+ "ribbit": "ribbit.mp3",
+ "stego": {
+  "file": "stego.mp3",
+  "then": "stomp"
+ },
+ "hoot": "hoot.mp3",
+ "moo": "moo.mp3",
+ "woof": "woof.mp3",
+ "meow": "meow.mp3",
+ "quack": "quack.mp3",
+ "screech": "screech.mp3",
+ "peep": "peep.mp3",
+ "splash": "splash.mp3"
+}

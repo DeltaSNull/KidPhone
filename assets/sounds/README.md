@@ -1,8 +1,8 @@
-# Real animal recordings (optional)
+# Real animal recordings
 
-Out of the box, every animal's voice is synthesized in the browser. If you have real recordings, drop them in
-here and the real thing plays instead, everywhere that sound is used: phone calls, the home screen, Wild Tap, the
-camera and the games.
+The recordings here come from Wikimedia Commons and are built by `tools/sounds/make_sounds.py` (credits in
+[CREDITS.md](CREDITS.md)). A recording plays everywhere its sound is used: phone calls, the home screen, Wild Tap,
+the camera and the games. Anything without a recording uses its synthesized call. You can add your own too.
 
 A great source: record the real animals on your next zoo trip with Voice Memos.
 
@@ -10,7 +10,10 @@ A great source: record the real animals on your next zoo trip with Voice Memos.
 
 1. Trim each recording to a short, clean call (1–3 seconds). `.m4a` from Voice Memos, `.mp3` and `.wav` all work.
 2. Put the files in this folder on the server.
-3. Copy `sounds.example.json` to `sounds.json` and list the files, by animal or by sound:
+3. Add them to `sounds.json` (it already lists the built recordings; `sounds.example.json` shows the format), by
+   animal or by sound. An entry can also name a synthesized sound to play right after it, like
+   `"stego": {"file": "stego.mp3", "then": "stomp"}`. Running `make_sounds.py` again rewrites `sounds.json`, so add
+   your lines back after a rebuild. Your files play as they are, so trim them to a similar loudness first:
 
 ```json
 {
@@ -30,6 +33,6 @@ By sound: `roar`, `bigroar`, `trumpet`, `munch`, `neigh`, `ooh`, `bray`, `hippo`
 
 ## Licenses
 
-Everything here except this README and the example is ignored by git. Recordings you download often come with a
-license that doesn't allow sharing them again. Keep them on your own server, and check the license before
-putting them anywhere public.
+Everything here is committed to git and published with the site. The recordings `make_sounds.py` builds are all
+freely licensed. Recordings you find elsewhere often come with a license that doesn't allow sharing them again:
+keep those on your own server (don't commit them), and check the license before putting anything public.

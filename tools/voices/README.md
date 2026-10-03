@@ -11,8 +11,10 @@ own voice instead.
 - **What they say**: read from `index.html` itself (`lines.cjs` asks the page for every line it can say), so a line
   you add to the toy is recorded the next time you run this. Lines the toy assembles while playing ("Hooray!" + "A
   baby T rex!") are recorded sentence by sentence; fixed lines are recorded whole, for a natural rhythm.
-- **Processing**: trimmed, filtered below 80 Hz, brought to −16 LUFS (one loudness for every clip), limited at
-  −1.5 dB, faded, and encoded as 24 kHz mono MP3 at 40 kbps.
+- **Processing**: filtered below 80 Hz, voiced for a phone's own speaker (−6 dB below 200 Hz, +2.5 dB around 3 kHz
+  for clarity), brought to −21 LUFS as that speaker would play it (it hardly plays anything below 300 Hz, and some
+  voices carry more there than others, so measured full-range they'd come out up to 4 dB apart on the phone), at most
+  −17 LUFS full-range, limited at −1.5 dB, trimmed, faded, and encoded as 24 kHz mono MP3 at 40 kbps.
 
 ## Run it
 

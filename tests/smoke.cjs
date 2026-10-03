@@ -63,12 +63,27 @@ function lufs(x, fs) {
   return L(mean(g2));
 }
 
+/* Roughly what a phone's built-in speaker plays: three first-order high-passes at 350 Hz (falling 18 dB an octave below
+   it: -11 dB at 300 Hz, -18 dB at 200 Hz, -34 dB at 100 Hz). The toy plays on that speaker, so loudness is judged there. */
+function phoneSpeaker(x, fs) {
+  const K = Math.tan(Math.PI * 350 / fs), b0 = 1 / (1 + K), a1 = (K - 1) / (K + 1);
+  let y = Float64Array.from(x);
+  for (let pass = 0; pass < 3; pass++) {
+    const out = new Float64Array(y.length); let x1 = 0, y1 = 0;
+    for (let i = 0; i < y.length; i++) { const v = b0 * (y[i] - x1) - a1 * y1; x1 = y[i]; y1 = v; out[i] = v; }
+    y = out;
+  }
+  return y;
+}
+
 /* record what the page plays and says */
 function instrument() {
-  window.__osc = 0; window.__said = []; window.__decoded = 0;
+  window.__osc = 0; window.__src = 0; window.__said = []; window.__decoded = 0;
   const AC = window.AudioContext || window.webkitAudioContext;
   const osc = AC.prototype.createOscillator;
   AC.prototype.createOscillator = function () { window.__osc++; return osc.call(this); };
+  const src = AC.prototype.createBufferSource;   // recordings and voice clips (each counts as a sound played)
+  AC.prototype.createBufferSource = function () { window.__src++; return src.call(this); };
   const dec = AC.prototype.decodeAudioData;
   AC.prototype.decodeAudioData = function (buf, ok, bad) { return dec.call(this, buf, b => { window.__decoded++; ok && ok(b); }, bad); };
   if (window.speechSynthesis) {
@@ -94,10 +109,8 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   await page.route('**/assets/family/family.json', r => family
     ? r.fulfill({ contentType: 'application/json', body: JSON.stringify({ contacts: [{ name: 'Daddy', photo: FAMILY_PHOTO, clips: [wavDataUri(0.8), wavDataUri(0.5)], color: '#BFE3F7' }] }) })
     : r.fulfill({ status: 404, body: 'not found' }));
-  // a dropped-in real recording replaces the lion's synth voice
-  await page.route('**/assets/sounds/sounds.json', r => family
-    ? r.fulfill({ contentType: 'application/json', body: JSON.stringify({ lion: wavDataUri(1.0) }) })
-    : r.fulfill({ status: 404, body: 'not found' }));
+  // the real recordings (assets/sounds) load in the family runs; the other run has none, so the synthesized calls play
+  if (!family) await page.route('**/assets/sounds/sounds.json', r => r.fulfill({ status: 404, body: 'not found' }));
   await page.goto(base + '/index.html');
   await page.evaluate(() => document.fonts.ready);
   await sleep(500);
@@ -112,7 +125,7 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   const shot = async n => page.screenshot({ path: path.join(OUT, `${name}-${n}.png`) });
   const state = () => page.evaluate(() => window.__toyPhone.call());
   const said = () => page.evaluate(() => window.__said.concat(window.__toyPhone.voice().log));   // the phone's speech voice and the recorded clips
-  const osc = () => page.evaluate(() => window.__osc);
+  const osc = () => page.evaluate(() => window.__osc + window.__src);   // synthesized sounds, recordings and clips
   const visible = sel => page.locator(sel).first().isVisible();
   const home = async () => { await tap('#homeBtn'); await sleep(2200); };
 
@@ -151,22 +164,42 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
     const calls = ['roar','bigroar','trumpet','munch','neigh','ooh','bray','hippo','bellow','huff','stego','screech','snort','growl','squawk','honk','thump','ribbit','hoot','yawn','moo','woof','meow','quack'];
     const bad = [];
     for (const n of calls) {
-      const r = await page.evaluate(n => window.__toyPhone.renderFx(n, 3).then(r => { let p = 0; for (const v of r.data) p = Math.max(p, Math.abs(v)); return { p, len: r.len }; }), n);
+      const r = await page.evaluate(n => window.__toyPhone.renderFx(n, 3, true).then(r => { let p = 0; for (const v of r.data) p = Math.max(p, Math.abs(v)); return { p, len: r.len }; }), n);
       if (!(r.p > 0.1 && r.p < 0.99 && r.len > 0.2 && r.len < 2.5)) bad.push(`${n} peak ${r.p.toFixed(2)} len ${r.len}`);
     }
     check(!bad.length, `all ${calls.length} animal calls render, are audible and don't clip ${bad.join(', ')}`);
-    /* every animal call at about the same loudness (they're trimmed to ~-23 LUFS), so none is a whisper or a blast */
-    const loud = [], rec = await page.evaluate(() => window.__toyPhone.recorded());
-    for (const n of calls.filter(n => !rec.includes(n))) {   // (a dropped-in recording plays instead of the synthesized call)
-      const d = await page.evaluate(n => window.__toyPhone.renderFx(n, 3).then(r => r.data), n);
+    /* every animal call at about the same loudness on a phone speaker (trimmed to ~-24 LUFS there), so none is a whisper
+       or a blast, and none is a deep sound the phone can't play; and never above -19 LUFS full-range (headphones) */
+    const loud = [], blast = [];
+    for (const n of calls) {
+      const d = await page.evaluate(n => window.__toyPhone.renderFx(n, 3, true).then(r => r.data), n);
       let end = d.length; while (end > 0 && Math.abs(d[end - 1]) < 1e-4) end--;
-      const x = Float64Array.from(d.slice(0, Math.max(end, 22050)));
-      loud.push([n, lufs(x, 44100)]);
+      const x = Float64Array.from(d.slice(0, Math.max(end, 22050))), full = lufs(x, 44100);
+      loud.push([n, lufs(phoneSpeaker(x, 44100), 44100)]);
+      if (full > -18.5) blast.push(`${n} ${full.toFixed(1)}`);
     }
     const lv = loud.map(v => v[1]), spread = Math.max(...lv) - Math.min(...lv);
-    check(spread <= 3, `animal calls are within 3 dB of each other in loudness (spread ${spread.toFixed(1)} dB: ${loud.sort((a, b) => a[1] - b[1]).filter((v, i, a) => i === 0 || i === a.length - 1).map(v => v[0] + ' ' + v[1].toFixed(1)).join(', ')})`);
+    check(spread <= 2.5, `animal calls are within 2.5 dB of each other on a phone speaker (spread ${spread.toFixed(1)} dB: ${loud.sort((a, b) => a[1] - b[1]).filter((v, i, a) => i === 0 || i === a.length - 1).map(v => v[0] + ' ' + v[1].toFixed(1)).join(', ')})`);
+    check(!blast.length, `no animal call is louder than -18.5 LUFS full-range ${blast.join(', ')}`);
   }
-  if (family) check(await page.evaluate(() => window.__decoded) >= 1, 'a recording listed in sounds.json is loaded');
+  if (family) {
+    /* every real recording loads, and plays at the toy's level (-24 LUFS on a phone speaker, at most -19 full-range) without clipping */
+    const want = Object.keys(JSON.parse(fs.readFileSync(path.join(ROOT, 'assets', 'sounds', 'sounds.json'), 'utf8')));
+    for (let i = 0; i < 40 && (await page.evaluate(() => window.__toyPhone.recorded().length)) < want.length; i++) await sleep(250);
+    const got = await page.evaluate(() => window.__toyPhone.recorded());
+    check(want.every(n => got.includes(n)), `all ${want.length} real recordings load (${want.filter(n => !got.includes(n)).join(', ') || 'none missing'})`);
+    if (name === 'portrait') {
+      const off = [];
+      for (const n of got) {
+        const r = await page.evaluate(n => window.__toyPhone.renderFx(n, 4).then(r => ({ d: r.data, len: r.len })), n);
+        let end = r.d.length; while (end > 0 && Math.abs(r.d[end - 1]) < 1e-4) end--;
+        let pk = 0; for (const v of r.d) pk = Math.max(pk, Math.abs(v));
+        const x = Float64Array.from(r.d.slice(0, Math.max(end, 22050))), L = lufs(phoneSpeaker(x, 44100), 44100), full = lufs(x, 44100);
+        if (!(L > -26 && L < -22 && full < -18.5 && pk < 0.99 && r.len > 0.3 && r.len < 3.6)) off.push(`${n} phone ${L.toFixed(1)} full ${full.toFixed(1)} LUFS peak ${pk.toFixed(2)} ${r.len.toFixed(1)}s`);
+      }
+      check(!off.length, `every recording plays at the toy's level, under 3.6 s, without clipping ${off.join(', ')}`);
+    }
+  }
 
   // --- PHONE: contacts and a full outgoing call
   await tap('[data-app="phone"]'); await sleep(500);
@@ -561,6 +594,10 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
     return [...(r.some(x => x.length !== r[0].length) ? [`${n}: uneven rows`] : []), ...[...new Set(r.join(''))].filter(c => c !== '.' && !keys.has(c)).map(c => `${n}: no color for ${c}`)];
   });
   const count = (pix.match(/^\w+:\{pal:/gm) || []).length;
+  /* every real animal recording is on disk and credited (author, license, link) in assets/sounds/CREDITS.md */
+  const sj = JSON.parse(fs.readFileSync(path.join(ROOT, 'assets', 'sounds', 'sounds.json'), 'utf8')), credits = fs.readFileSync(path.join(ROOT, 'assets', 'sounds', 'CREDITS.md'), 'utf8');
+  const uncredited = Object.entries(sj).filter(([n, v]) => { const f = typeof v === 'string' ? v : v.file; return !fs.existsSync(path.join(ROOT, 'assets', 'sounds', f)) || !new RegExp(`\\|[^|]*\\b${n}\\b[^|]*\\|\\s*$`, 'm').test(credits); });
+  check(!uncredited.length, `all ${Object.keys(sj).length} animal recordings are on disk and credited ${uncredited.map(u => u[0]).join(', ')}`);
   const vj = JSON.parse(fs.readFileSync(path.join(ROOT, 'assets', 'voice', 'voice.json'), 'utf8'));
   const vbad = Object.entries(vj.clips).filter(([k, [f, ms]]) => { const fp = path.join(ROOT, 'assets', 'voice', f); return !fs.existsSync(fp) || fs.statSync(fp).size < 900 || ms < 200 || ms > 15000; });
   const vfiles = fs.readdirSync(path.join(ROOT, 'assets', 'voice')).filter(f => f.endsWith('.mp3'));

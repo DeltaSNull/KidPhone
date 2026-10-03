@@ -10,23 +10,26 @@ animal on the phone. Each line becomes one small mono MP3, named by a hash of wh
 speaker's settings, so running it again only records what changed and deletes clips nothing uses any more.
 assets/voice/voice.json maps "who|line" to [file, milliseconds] for the page.
 
-Every clip is filtered below 80 Hz, brought to the same loudness, limited, and trimmed of quiet ends, so the narrator
-and the animals sit at one level and lines follow each other without dead air. --check transcribes each clip with pocketsphinx (an
+Every clip is filtered below 80 Hz, voiced for a phone's own speaker (a little less below 200 Hz, a little more
+presence around 3 kHz), brought to the same loudness as that speaker would play it (it hardly plays anything below
+300 Hz, and some voices have more down there than others), limited, and trimmed of quiet ends, so the narrator and the
+animals sit at one level on the phone and lines follow each other without dead air. --check transcribes each clip with pocketsphinx (an
 offline speech recognizer) and lists the clips whose words come back furthest from the script, worst first.
 See tools/voices/README.md for where the model and voices come from.
 """
 import argparse, hashlib, json, os, re, subprocess, sys, tempfile, time
 import numpy as np
 import pyloudnorm as pyln
-from pedalboard import Pedalboard, PitchShift, HighpassFilter, Limiter
+from pedalboard import Pedalboard, PitchShift, HighpassFilter, LowShelfFilter, PeakFilter
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, '..', '..'))
 OUT = os.path.join(ROOT, 'assets', 'voice')
 SR = 24000
-LUFS = -16.0            # every clip's loudness
+PHONE_LUFS = -21.0      # every clip's loudness on a phone speaker (the page plays it 3 dB over the animal calls)
+FULL_MAX = -17.0        # and never louder than this full-range
 BITRATE = '40k'
-VERSION = 2             # bump to re-record everything after changing the processing below
+VERSION = 4             # bump to re-record everything after changing the processing below
 
 # Words the model says wrong ("Grr" comes out letter by letter), respelled for it only; the page keeps the real words.
 RESPELL = [(r'\bgrr+\b', 'Gurr'), (r'\bbrr+\b', 'Burr'), (r'\bla la la\b', 'Lah lah lah'), (r'\bpawoo\b', 'Pah-woo')]
@@ -58,10 +61,32 @@ def page_lines():
     return json.loads(out.stdout)
 
 
+def speaker(a):
+    """roughly what a phone's built-in speaker plays: falling away 18 dB an octave below about 350 Hz"""
+    return Pedalboard([HighpassFilter(cutoff_frequency_hz=350) for _ in range(3)])(a, SR)
+
+
 def loudness(a):
     meter = pyln.Meter(SR)
     pad = np.concatenate([a, np.zeros(max(0, int(SR * .5) - len(a)), dtype=a.dtype)])   # the meter needs 0.4 s
     return meter.integrated_loudness(pad.astype(np.float64))
+
+
+def limit(a, sr, ceiling_db=-1.0, look=.002, release=.06):
+    """A peak limiter that only ever turns loud peaks down to the ceiling (pedalboard's Limiter also adds makeup gain,
+    which made everything about 4 dB louder than its loudness target)."""
+    from numpy.lib.stride_tricks import sliding_window_view
+    c = 10 ** (ceiling_db / 20)
+    if np.abs(a).max() <= c:
+        return a
+    need = np.minimum(1.0, c / np.maximum(np.abs(a), 1e-9))
+    w = max(1, int(sr * look))
+    g = sliding_window_view(np.pad(need, (w, w), mode='edge'), 2 * w + 1).min(axis=1)   # starts turning down just before a peak
+    k, v, out = np.exp(-1 / (sr * release)), 1.0, np.empty_like(g)
+    for i, gi in enumerate(g):   # instant attack, smooth release
+        v = gi if gi < v else gi + (v - gi) * k
+        out[i] = v
+    return (a * out).astype(np.float32)
 
 
 def trim(a, floor_db=-40.0, head=.02, tail=.08):
@@ -79,12 +104,12 @@ def render(k, text, spk):
     a, sr = k.create(phon, voice=spk['voice'], speed=spk['speed'], is_phonemes=True, sentence_pause=.28, clause_pause=.12)
     assert sr == SR
     a = a.astype(np.float32)
-    chain = [HighpassFilter(cutoff_frequency_hz=80)]
+    chain = [HighpassFilter(cutoff_frequency_hz=80), LowShelfFilter(cutoff_frequency_hz=200, gain_db=-6), PeakFilter(cutoff_frequency_hz=3000, gain_db=2.5, q=.8)]
     if spk['semis']:
         chain.insert(0, PitchShift(semitones=spk['semis']))
     a = Pedalboard(chain)(a, SR)
-    a = a * (10 ** ((LUFS - loudness(a)) / 20))
-    a = Pedalboard([Limiter(threshold_db=-1.5, release_ms=60)])(a, SR)
+    a = a * (10 ** (min(PHONE_LUFS - loudness(speaker(a)), FULL_MAX - loudness(a)) / 20))
+    a = limit(a, SR, -1.5)
     a = trim(a)
     n = len(a); fi, fo = min(n, int(SR * .008)), min(n, int(SR * .03))
     a[:fi] *= np.linspace(0, 1, fi); a[n - fo:] *= np.linspace(1, 0, fo)
