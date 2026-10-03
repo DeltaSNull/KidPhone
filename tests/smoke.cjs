@@ -316,6 +316,52 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   const src = await page.evaluate(id => localStorage.getItem('toyphone.photo.' + id), meta.id);
   check(src.startsWith('data:image/png') && src.length < 250000, `photo is a small pixel-art PNG (${Math.round(src.length / 1024)} KB)`);
   await shot('8-camera-zoom');
+  await tap('#zoomBtn'); await sleep(400);
+
+  const holdClock = async () => { const [x, y] = await center('#clock'); await touch('touchStart', [[x, y]]); await sleep(3300); await touch('touchEnd', []); await sleep(300); };
+  const tapSetting = async sel => { await page.evaluate(sel => document.querySelector(sel).scrollIntoView({ block: 'center' }), sel); await sleep(150); await tap(sel); };   // clear of the sticky header
+  // --- LOOK AROUND: the pretend scenes follow the phone (orientation readings stand in for an iPhone's)
+  const look = () => page.evaluate(() => window.__toyPhone.look());
+  const orient = (a, b, g) => page.evaluate(([a, b, g]) => window.dispatchEvent(new DeviceOrientationEvent('deviceorientation', { alpha: a, beta: b, gamma: g })), [a, b, g]);
+  const hold = async (yaw, pitch, ms = 500) => { const t0 = Date.now(); while (Date.now() - t0 < ms) { await orient(-yaw, 90 + pitch, 0); await sleep(30); } };   // portrait, upright, turned and tipped by degrees
+  const turned = (a, b) => ((a - b + 4800) % 3200) - 1600;
+  check(!(await look()).ar, 'until the phone sends its motion, the pretend camera drags as before');
+  await hold(0, 0, 800);
+  let lk = await look();
+  check(lk.ar && lk.following, 'once the phone sends its motion, the pretend camera follows it');
+  check((await said()).includes('Move the phone to look all around!'), 'and says "Move the phone to look all around!"');
+  await hold(45, 0);
+  const lk45 = await look();
+  check(Math.abs(turned(lk45.x, lk.x) - 400) < 12, `turning the phone 45 degrees turns the scene 45 degrees (${Math.round(turned(lk45.x, lk.x))} of 400 world units)`);
+  let back = 0;
+  for (let y = 60; y <= 405; y += 15) { const x0 = (await look()).x; await hold(y, 0, 60); if (turned((await look()).x, x0) < 0) back++; }
+  await hold(405, 0, 400); lk = await look();   // (let the smoothing settle)
+  check(!back && Math.abs(turned(lk.x, lk45.x)) < 15, `a full turn comes back to the same place: the scene goes all the way round, smoothly (${Math.round(turned(lk.x, lk45.x))})`);
+  await shot('8b-camera-look');
+  await hold(45, 60);
+  check((await look()).y < 0, 'tipping the phone up looks past the top of the scene, into more sky');
+  await shot('8c-camera-sky');
+  await hold(45, -88, 900);
+  lk = await look();
+  check(lk.flat && !lk.following, 'laid flat, the phone goes back to plain dragging');
+  await drag([vf.x + vf.width * 0.8, vf.y + vf.height / 2], [vf.x + vf.width * 0.2, vf.y + vf.height / 2]); await sleep(300);
+  const lkd = await look();
+  check(Math.abs(turned(lkd.x, lk.x)) > 100, 'and a drag pans it');
+  await hold(45, 0, 700);
+  const lku = await look();
+  check(lku.following && Math.abs(turned(lku.x, lkd.x)) < 20, 'lifted again, it follows the phone from where it is');
+  let n0 = await page.evaluate(() => window.__toyPhone.photos());
+  await tap('#shutter'); await sleep(700);
+  check(await page.evaluate(() => window.__toyPhone.photos()) === n0 + 1, 'the shutter works while it follows the phone');
+  await home();
+  await holdClock();
+  check(await page.evaluate(() => document.querySelector('[data-look="move"]').classList.contains('on')) && /works/.test(await page.locator('#lookNote').textContent()),
+    'parent settings: Move the phone is on, and says it works on this phone');
+  await tapSetting('[data-look="drag"]'); await tap('#doneBtn'); await sleep(300);
+  await tap('[data-app="camera"]'); await sleep(700); await hold(0, 0, 400);
+  check(!(await look()).ar, 'with Drag only, the pretend camera ignores the motion');
+  await home(); await holdClock(); await tapSetting('[data-look="move"]'); await tap('#doneBtn'); await sleep(300);
+  await tap('[data-app="camera"]'); await sleep(700);
   await tap('#lastShot'); await sleep(700);
   check(await visible('#viewer'), 'thumbnail opens the photo');
 
@@ -336,10 +382,8 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   await home();
 
   // --- REAL CAMERA (a parent turns it on; Chromium's fake camera stands in for the phone's)
-  const holdClock = async () => { const [x, y] = await center('#clock'); await touch('touchStart', [[x, y]]); await sleep(3300); await touch('touchEnd', []); await sleep(300); };
   const cam = () => page.evaluate(() => window.__toyPhone.cam());
   const portraitView = viewport.height > viewport.width;
-  const tapSetting = async sel => { await page.evaluate(sel => document.querySelector(sel).scrollIntoView({ block: 'center' }), sel); await sleep(150); await tap(sel); };   // clear of the sticky header
   await holdClock();
   check(await page.evaluate(() => document.querySelector('[data-camera="both"]').classList.contains('on')), 'the camera setting starts on Both (pretend, photo and selfie)');
   await tapSetting('[data-camera="both"]'); await sleep(1500);

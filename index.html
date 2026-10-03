@@ -996,6 +996,10 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img{image-rendering:auto}
           <div class="seg"><button class="sbtn" data-camera="pretend">Pretend</button><button class="sbtn" data-camera="real">Real</button><button class="sbtn" data-camera="both">Both</button></div>
           <span class="vhint">Pretend: drag around a pixel-art safari. Real: the phone's own camera, with fun looks, and animal costumes for selfies. Both: the kids switch between them. Photos stay on this phone.</span>
           <span class="vhint" id="camNote"></span></div>
+        <div class="srow"><span>Pretend camera</span>
+          <div class="seg"><button class="sbtn" data-look="move">Move the phone</button><button class="sbtn" data-look="drag">Drag only</button></div>
+          <span class="vhint">Move the phone: the pretend scenes go all the way round. Turn around to see the rest, tip the phone up for the sky and down for the ground; dragging still works too. Laid flat, the phone goes back to dragging. Safari asks once to allow motion: tap Move the phone here to answer it. Drag only: the scenes move only when dragged.</span>
+          <span class="vhint" id="lookNote"></span></div>
         <div class="srow"><span>ABC Snack</span>
           <div class="seg"><button class="sbtn" data-abc="auto">Grows</button><button class="sbtn" data-abc="big">Big letters</button><button class="sbtn" data-abc="little">Little letters</button><button class="sbtn" data-abc="sound">Sounds</button></div>
           <span class="vhint">The animal asks for a letter out loud and the child finds it (the letter is never shown first). Grows: big letters by name until the child gets eight in a row, then mostly little letters, then eight more in a row and letter sounds ("Which letter says /s/?"). Letters come in the order phonics programs teach them, a few at a time; sounds are asked for the letters done on the Letter Path.</span>
@@ -4387,10 +4391,11 @@ const VOICE = [
   {k:'numbers', on:false, t:'Keypad numbers', d:'Says each number you press.'},
   {k:'music', on:false, t:'Music', d:'Names the instruments and songs.'}
 ];
-const settings = Object.assign({incoming:true, vol:2, silent:true, camera:'both', abc:'auto', path:'order'}, store.get('settings', {}));
+const settings = Object.assign({incoming:true, vol:2, silent:true, camera:'both', abc:'auto', path:'order', look:'move'}, store.get('settings', {}));
 if (!['auto','big','little','sound'].includes(settings.abc)) settings.abc = settings.abc === 'case' ? 'little' : settings.abc === 'listen' ? 'big' : 'auto';
 if (!['pretend','real','both'].includes(settings.camera)) settings.camera = 'both';
 if (!['order','open'].includes(settings.path)) settings.path = 'order';
+if (!['move','drag'].includes(settings.look)) settings.look = 'move';
 settings.vol = clamp(settings.vol|0, 0, 3);
 settings.voice = Object.assign(Object.fromEntries(VOICE.map(v => [v.k, v.on])), settings.voice || {});
 const voiceOn = area => !area || !!settings.voice[area];
@@ -5275,7 +5280,9 @@ async function loadFamily(){
 /* ======================= CAMERA ======================= */
 /* A pixel-art panorama about 3 screens wide. World units: 3200 x 1000. The world is painted on a grid of
    5 world units per pixel (640 x 200 art pixels) and scaled up with hard edges, so the scenery, the animals
-   and the photos are all made of the same square pixels. Animals are sprites drawn at whole-number sizes. */
+   and the photos are all made of the same square pixels. Animals are sprites drawn at whole-number sizes.
+   The world goes all the way round: its right edge joins its left (3200 units is a full turn when the camera
+   follows the phone), and more sky and ground carry on above and below it for looking up and down. */
 const WW = 3200, WH = 1000, AP = 5, AW = WW/AP, AH = WH/AP;
 
 
@@ -5291,8 +5298,9 @@ const PROP = {
     P.ell(ox, oy, 10*s, 10*s, 'w').ell(ox + 11*s, oy - 4.4*s, 12.4*s, 12.4*s, 'w').ell(ox + 24*s, oy, 9.6*s, 9.6*s, 'w').rect(ox - 8*s, oy, 40*s, 7*s, 'w').ell(ox - 8*s + 1, oy + 3.5*s, 3.5*s, 3.5*s, 'w').ell(ox + 32*s - 1, oy + 3.5*s, 3.5*s, 3.5*s, 'w');
     P.shade('w', 'b', null, 2).outline('o');
     const c = P.canvas({w:'#FFFFFF', b:'#DCEEF9', o:'#A9D3EE'});
-    return (g, t, x0, y0) => g.drawImage(c, Math.round(A(((p.x + t*p.v) % (WW + 600)) - 300) - ox) - x0, Math.round(A(p.y) - oy) - y0); },
-  hills(p){ const top = x => A(p.y - p.a*(.5 + .5*Math.sin((x + .5)*AP*p.f + p.ph))), y0 = Math.floor(Math.min(...Array.from({length:AW}, (_, x) => top(x)))), P = new Pix(AW, AH - y0);
+    return (g, t, x0, y0) => { const x = Math.round(A((p.x + t*p.v) % WW) - ox) - x0, y = Math.round(A(p.y) - oy) - y0; g.drawImage(c, x, y); g.drawImage(c, x - AW, y); }; },   // (round the world and in again)
+  hills(p){ const f = 2*Math.PI*Math.max(1, Math.round(p.f*WW/(2*Math.PI)))/WW;   // a whole number of rises round the world
+    const top = x => A(p.y - p.a*(.5 + .5*Math.sin((x + .5)*AP*f + p.ph))), y0 = Math.floor(Math.min(...Array.from({length:AW}, (_, x) => top(x)))), P = new Pix(AW, AH - y0);
     const cols = [p.c, mix(p.c, p.g || p.c, .5), p.g || mix(p.c, '#2E5A2A', .25)];
     for (let x=0;x<AW;x++){ const ty = Math.round(top(x)) - y0; for (let y=Math.max(0, ty);y<P.h;y++) P.set(x, y, y === ty ? 'l' : String.fromCharCode(48 + cols.indexOf(stepCol(cols, (y - ty)/(P.h - ty)*1.15, x, y)))); }
     P.speck('1', 'd', 900, p.y).speck('2', 'd', 900, p.y + 7).speck('0', 'l', 500, p.y + 3);
@@ -5340,10 +5348,11 @@ const PROP = {
     if (p.hole){ P.ell(cx, A(p.hole), W*.34, W*.42, 'R').ell(cx, A(p.hole) + .6, W*.27, W*.34, 'k'); }
     P.outline('o');
     return still(P.canvas({t:'#8A5A2B', T:'#6A4220', l:'#A8743E', R:'#5A3818', k:'#2E1A0A', o:'#2E1A0A'}), A(p.x) - cx, 0); },
-  canopy(p){ const P = new Pix(AW, 68), cs = 'abc';
-    for (let i=0;i<24;i++){ const x = A(i*140 + sr(i)*60), y = A(40 + sr(i*5)*90) - 8, r = A(110 + sr(i*9)*80); P.ell(x, y, r + 1, r + 1, 'o').ell(x, y, r, r, cs[i % 3]).ell(x - r*.3, y - r*.25, r*.35, r*.2, 'l'); }
+  canopy(p){ const UP = 40, P = new Pix(AW, 68 + UP), cs = 'abc';   // (the leaves reach above the world's top, into the treetops seen looking up)
+    for (let i=0;i<24;i++){ const x0 = A(i*140 + sr(i)*60), y = A(40 + sr(i*5)*90) - 8 + UP, r = A(110 + sr(i*9)*80);
+      [x0 - AW, x0].forEach(x => P.ell(x, y, r + 1, r + 1, 'o').ell(x, y, r, r, cs[i % 3]).ell(x - r*.3, y - r*.25, r*.35, r*.2, 'l')); }   // (the last ones reach round to the start)
     P.speck('a', 'l', 600, 2).speck('b', 'o', 300, 4).speck('c', 'L', 300, 6);
-    return still(P.canvas({a:'#3F9447', b:'#55AB50', c:'#6CC46A', l:'#7DD07A', L:'#9BE08E', o:'#1E4A20'}), 0, 0); },
+    return still(P.canvas({a:'#3F9447', b:'#55AB50', c:'#6CC46A', l:'#7DD07A', L:'#9BE08E', o:'#1E4A20'}), 0, -UP); },
   vine(p){ const L = A(p.len), frames = new Map();
     const frame = sw => { if (frames.has(sw)) return frames.get(sw); const P = new Pix(24, L + 6), x = 12;
       P.tube(x, 0, x + sw*2, L/2, x + sw, L, .7, .7, 'v');
@@ -5425,15 +5434,55 @@ function backdrop(sc){
   for (let y=0;y<AH;y++) for (let x=0;x<AW;x++) im.data.set(y < hz ? stepCol(sky, y/hz, x, y) : stepCol(gr, (y - hz)/(AH - hz), x, y), (y*AW + x)*4);
   g.putImageData(im, 0, 0); return c;
 }
+/* above and below the painted world, seen when the camera follows the phone up or down: the sky deepening to blue
+   overhead with a few high clouds (in the jungle, more treetops), and more ground underfoot, pebbles and tufts.
+   Each is one world wide, so it joins round like the rest. */
+const CAP = 160;   // art pixels: 800 world units, about 90 degrees of looking up or down
+/* the commonest color along one row of the world's backdrop and hills */
+function edgeCol(sc, row){
+  const c = document.createElement('canvas'); c.width = AW; c.height = 1; const g = c.getContext('2d');
+  g.drawImage(sc.bg, 0, -row); sc.items.forEach(it => { if (it.p && it.p.k === 'hills') it.draw(g, 0, 0, row); });
+  const d = g.getImageData(0, 0, AW, 1).data, n = new Map();
+  for (let i=0;i<d.length;i+=4){ const k = '#' + [d[i], d[i + 1], d[i + 2]].map(v => v.toString(16).padStart(2, '0')).join(''); n.set(k, (n.get(k) || 0) + 1); }
+  return [...n].sort((a, b) => b[1] - a[1])[0][0];
+}
+function caps(sc){
+  const mk = () => { const c = document.createElement('canvas'); c.width = AW; c.height = CAP; return c; };
+  const paint = (c, cols, dir) => { const g = c.getContext('2d'), im = g.createImageData(AW, CAP), rs = cols.map(rgbOf);
+    for (let y=0;y<CAP;y++) for (let x=0;x<AW;x++) im.data.set(stepCol(rs, dir > 0 ? y/(CAP - 1) : 1 - y/(CAP - 1), x, y), (y*AW + x)*4);
+    g.putImageData(im, 0, 0); return g; };
+  const leafy = sc.overhead === 'leaves', top = mk(), bot = mk();
+  sc.zenith = leafy ? '#2A5E30' : mix(sc.sky[0], '#2F6FC8', .55);
+  const tg = paint(top, ramp(sc.zenith, leafy ? '#3F9447' : sc.sky[0], 5), 1), P = new Pix(AW, CAP);
+  if (leafy){
+    for (let i=0;i<90;i++){ const x0 = sr(i*3.1)*AW, y = CAP*(1 - Math.pow(sr(i*7.7), 1.6)), r = 8 + sr(i*5.3)*14;   // (thicker low down, where they meet the treetops)
+      [x0 - AW, x0, x0 + AW].forEach(x => P.ell(x, y, r + 1, r + 1, 'o').ell(x, y, r, r, 'abc'[i % 3]).ell(x - r*.3, y - r*.25, r*.35, r*.2, 'l')); }
+    P.speck('a', 'l', 900, 5).speck('b', 'o', 500, 8).speck('c', 'L', 500, 9);
+    tg.drawImage(P.canvas({a:'#3F9447', b:'#55AB50', c:'#6CC46A', l:'#7DD07A', L:'#9BE08E', o:'#1E4A20'}), 0, 0);
+  } else {
+    [[60, 40, 1.1], [250, 95, .8], [420, 55, 1], [560, 120, .7]].forEach(([x, y, k]) => P.ell(x, y, 14*k, 6*k, 'w').ell(x + 9*k, y - 4*k, 9*k, 6*k, 'w').ell(x - 10*k, y + 1, 8*k, 4*k, 'w'));
+    P.shade('w', 'b', null, 1).outline('o');
+    tg.drawImage(P.canvas({w:'#FFFFFF', b:'#DCEEF9', o:'#A9D3EE'}), 0, 0);
+  }
+  const floor = edgeCol(sc, AH - 1);   // carry on from the color along the bottom of the world (the hills cover the ground in places)
+  sc.deep = mix(floor, '#2A1E0A', .2);
+  const bg = paint(bot, ramp(floor, sc.deep, 4), 1), Q = new Pix(AW, CAP), gd = mix(floor, '#2A1E0A', .35), gl = mix(floor, '#FFFFFF', .25);
+  for (let i=0;i<260;i++){ const x = Math.floor(sr(i*1.7)*AW), y = 3 + Math.floor(sr(i*4.3)*(CAP - 6));
+    if (i % 3) Q.rect(x, y, 2, 1, i % 2 ? 'd' : 'l');                                    // pebbles and specks
+    else { Q.line(x, y, x - 1, y - 3, 't').line(x + 1, y, x + 1, y - 4, 'T').line(x + 2, y, x + 3, y - 3, 't'); }   // a tuft
+  }
+  bg.drawImage(Q.canvas({d:gd, l:gl, t:sc.tuft || '#5E9E3A', T:mix(sc.tuft || '#5E9E3A', '#FFFFFF', .2)}), 0, 0);
+  sc.top = top; sc.bot = bot;
+}
 function prepScene(sc){
   if (sc.bg) return;
   sc.items.forEach(it => { if (it.p && !it.draw) it.draw = PROP[it.p.k](it.p); });
-  sc.bg = backdrop(sc);
+  sc.bg = backdrop(sc); caps(sc);
 }
 
 /* Animals: sp = sprite, k = how many art pixels each sprite pixel covers, m = motion */
 const SCENES = {
-  savanna:{n:'Savanna', icon:ART.giraffe, sky:['#6CC4EE','#D9F4FF'], horizon:575, ground:['#F2CD6A','#D9A43E'],
+  savanna:{n:'Savanna', icon:ART.giraffe, sky:['#6CC4EE','#D9F4FF'], horizon:575, ground:['#F2CD6A','#D9A43E'], tuft:'#B08F2A',
     props:[
       {k:'sun', x:2700, y:170, r:70, z:0}, {k:'cloud', x:200, y:140, s:1, v:9, z:.1}, {k:'cloud', x:1200, y:100, s:1.3, v:7, z:.1}, {k:'cloud', x:2200, y:190, s:.9, v:11, z:.1}, {k:'cloud', x:3000, y:120, s:1.1, v:8, z:.1},
       {k:'hills', y:570, a:70, f:.004, ph:1, c:'#C9D98A', g:'#B8C46A', z:.5},
@@ -5458,7 +5507,7 @@ const SCENES = {
       {n:'leopard', sp:'leopard', k:1, x:2330, y:518, z:4.2, m:'bob', amp:3, speed:1, fx:'growl', hidden:true, hideAbove:452},
       {n:'turtle', sp:'turtleSm', k:1, x:2960, y:950, z:8.5, m:'peek', amp:46, period:7, phase:.7, fx:'crunch', hidden:true, hideBelow:885}
     ]},
-  jungle:{n:'Jungle', icon:ART.monkey, sky:['#B8EEBC','#93DA97'], horizon:665, ground:['#7CC96B','#4FA84C'],
+  jungle:{n:'Jungle', icon:ART.monkey, sky:['#B8EEBC','#93DA97'], horizon:665, ground:['#7CC96B','#4FA84C'], overhead:'leaves', tuft:'#2E7A33',
     props:[
       {k:'beams', z:.2}, {k:'hills', y:660, a:60, f:.006, ph:2, c:'#6FC07A', g:'#4FA84C', z:.4},
       {k:'trunk', x:300, w:120, y:880, hole:520, z:2}, {k:'trunk', x:1100, w:110, y:860, z:2}, {k:'trunk', x:1900, w:130, y:880, z:2}, {k:'trunk', x:2720, w:120, y:870, z:2},
@@ -5553,18 +5602,26 @@ function drawAnimal(g, a, ps, ox, oy){
 /* draw the world so that world point (vx,vy) lands at the canvas top-left, s canvas px per world unit:
    paint it on a small pixel buffer, then scale that up with hard edges */
 const pbuf = document.createElement('canvas'), pg = pbuf.getContext('2d');
+const REACH = 120;   // art pixels: the furthest a prop or animal reaches past its spot, so one near the join shows on both sides
+const wrapX = x => ((x % WW) + WW) % WW;
 function renderScene(g, sc, vx, vy, s, w, h, t, allUp){
   prepScene(sc);
+  vx = wrapX(vx);
   const k = s*AP, ax = Math.floor(A(vx)), ay = Math.floor(A(vy)), fx = A(vx) - ax, fy = A(vy) - ay;
   const bw = Math.ceil(w/k + fx) + 1, bh = Math.ceil(h/k + fy) + 1;
   if (pbuf.width !== bw || pbuf.height !== bh){ pbuf.width = bw; pbuf.height = bh; }
   pg.setTransform(1, 0, 0, 1, 0, 0); pg.imageSmoothingEnabled = false; pg.clearRect(0, 0, bw, bh);
-  pg.drawImage(sc.bg, -ax, -ay);
-  for (const it of sc.items){
-    if (it.p){ it.draw(pg, t, ax, ay); continue; }
-    const a = it.a, ps = pose(a, t, allUp);
-    if (ps.x + a.size < vx || ps.x - a.size > vx + w/s) continue;
-    drawAnimal(pg, a, ps, ax, ay);
+  const laps = [-1, 0, 1].filter(n => n*AW - REACH < ax + bw && (n + 1)*AW + REACH > ax);   // this time round the world, and the next where the view crosses the join
+  if (ay < 0 || ay + bh > AH){   // looking up or down, past the painted world
+    pg.fillStyle = sc.zenith; pg.fillRect(0, 0, bw, -CAP - ay); pg.fillStyle = sc.deep; pg.fillRect(0, AH + CAP - ay, bw, bh);
+    laps.forEach(n => { pg.drawImage(sc.top, n*AW - ax, -CAP - ay); pg.drawImage(sc.bot, n*AW - ax, AH - ay); });
+  }
+  laps.forEach(n => pg.drawImage(sc.bg, n*AW - ax, -ay));
+  for (const it of sc.items) for (const n of laps){
+    if (it.p){ it.draw(pg, t, ax - n*AW, ay); continue; }
+    const a = it.a, ps = pose(a, t, allUp), x = ps.x + n*WW;
+    if (x + a.size < vx || x - a.size > vx + w/s) continue;
+    drawAnimal(pg, a, ps, ax - n*AW, ay);
   }
   g.setTransform(1, 0, 0, 1, 0, 0); g.imageSmoothingEnabled = false;
   g.drawImage(pbuf, -fx*k, -fy*k, bw*k, bh*k);
@@ -5582,7 +5639,8 @@ function inShot(sc, x0, y0, vw, vh, t, allUp){
   sc.animals.forEach(a => {
     const b = visBox(a, pose(a, t, allUp));
     if (b.h < Math.max(.3*a.size, 22)) return;
-    const ix = Math.max(0, Math.min(b.x1, x0 + vw) - Math.max(b.x0, x0)), iy = Math.max(0, Math.min(b.y1, y0 + vh) - Math.max(b.y0, y0));
+    const sx = (b.x0 + b.x1)/2 < wrapX(x0) ? WW : 0, ox = wrapX(x0) - sx;   // (a shot across the join)
+    const ix = Math.max(0, Math.min(b.x1, ox + vw) - Math.max(b.x0, ox)), iy = Math.max(0, Math.min(b.y1, y0 + vh) - Math.max(b.y0, y0));
     if (ix * iy >= .4 * (b.x1 - b.x0) * b.h) out.push({a, x:(b.x0 + b.x1)/2});
   });
   return out.sort((u, v) => u.x - v.x).map(o => o.a);
@@ -5601,14 +5659,67 @@ const cam = {mode:'safari', scene:'savanna', x:0, y:0, zoom:1, target:1, vx:0, v
 const vf = $('#vf'), vfc = $('#vfc'), vg = vfc.getContext('2d');
 let vfW = 0, vfH = 0, dpr = 1;
 const foundHidden = new Set();
-const camScale = () => vfH / WH * cam.zoom;   // css px per world unit
+/* ----- Look around: with the parent setting on, the pretend scenes follow the phone all the way round. Turn to see the
+   rest of the world, tip the phone up for the sky and down for the ground; dragging still steers too. Laid flat (on a
+   table or a lap) the phone goes back to plain dragging, so a toddler doesn't just see the ground. Pixel art never
+   tilts, so the picture doesn't roll with the phone. iPhone asks once to allow motion: only from a parent's tap in
+   settings, never in front of the kids (Safari answers by itself, without asking, if it was allowed before). ----- */
+const U = WW / 360, FOV = 85;   // world units per degree of turn; degrees across the picture's long side at 1x (a wide phone camera)
+const AR = {perm:'', ok:false, live:0, raw:null, yaw:null, pitch:0, yawOff:0, pitchOff:0, flat:false, listening:false, said:false};
+const arMode = () => settings.look !== 'drag' && AR.ok;   // the setting is on and this phone sends its motion
+const arC0 = () => SCENES[cam.scene].horizon + 150;        // the middle of the picture with the phone held upright: the horizon high, the animals in view
+function onOrient(e){
+  if (e.beta == null || e.gamma == null) return;   // (a computer with no motion sensor sends one empty reading)
+  AR.raw = [e.alpha || 0, e.beta, e.gamma]; AR.live = performance.now();
+  if (!AR.ok){   // first motion: the closer, steerable view, centered where the picture was
+    const s0 = camScale(), cx = cam.x + vfW/s0/2; AR.ok = AR.ok || settings.look !== 'drag';
+    if (AR.ok && vfW > 1){ const s1 = camScale(); cam.x = cx - vfW/s1/2; cam.y = arC0() - vfH/s1/2; clampCam(); }
+    AR.ok = true; AR.yaw = null; renderLookNote();
+  }
+}
+function listenMotion(){ if (!AR.listening){ AR.listening = true; window.addEventListener('deviceorientation', onOrient); } }
+function askMotion(){
+  const D = window.DeviceOrientationEvent;
+  if (!D){ AR.perm = 'none'; return Promise.resolve('none'); }
+  if (typeof D.requestPermission !== 'function'){ AR.perm = 'granted'; listenMotion(); return Promise.resolve('granted'); }
+  return D.requestPermission().then(r => { AR.perm = r; if (r === 'granted') listenMotion(); return r; }, () => { AR.perm = AR.perm || 'ask'; return AR.perm; });
+}
+/* where the back of the phone points: a heading (degrees clockwise) and how far above the horizon. The screen's up
+   direction steadies the heading when the phone looks nearly straight up or down. (deviceorientation: Z-X'-Y' angles) */
+function phoneAim([al, be, ga]){
+  const r = Math.PI/180, cA = Math.cos(al*r), sA = Math.sin(al*r), cB = Math.cos(be*r), sB = Math.sin(be*r), cG = Math.cos(ga*r), sG = Math.sin(ga*r);
+  const D = [-(cG*sA*sB + cA*sG), cA*cG*sB - sA*sG, -cB*cG];   // the back of the phone, in east-north-up
+  const th = ((screen.orientation && screen.orientation.angle) ?? window.orientation ?? 0)*r, s = Math.sin(th), c = Math.cos(th);
+  const Up = [s*(cA*cG - sA*sB*sG) - c*cB*sA, s*(cG*sA + cA*sB*sG) + c*cA*cB];   // the screen's up, level part
+  return {yaw: Math.atan2(D[0] - Up[0]*D[2], D[1] - Up[1]*D[2])/r, pitch: Math.asin(clamp(D[2], -1, 1))/r};
+}
+const turn = (a, b) => ((a - b + 540) % 360) - 180;   // the short way round from b to a, in degrees
+/* the picture where the phone points (and the drag offsets); false while the phone lies flat or sends nothing */
+function arFrame(dt){
+  if (!arMode() || !AR.raw || performance.now() - AR.live > 1200) return false;
+  const aim = phoneAim(AR.raw);
+  if (aim.pitch < (AR.flat ? -60 : -70)){ AR.flat = true; return false; }
+  if (AR.flat || AR.yaw === null){ AR.flat = false; arHere(aim); }
+  if (!AR.said && current === 'camera'){ AR.said = true; say('Move the phone to look all around!', 0, 'camera'); }
+  const k = Math.min(1, dt/45); AR.yaw += turn(aim.yaw, AR.yaw)*k; AR.pitch += (aim.pitch - AR.pitch)*k;   // a little smoothing
+  if (!drag) AR.pitchOff *= Math.pow(.5, dt/1500);   // a drag up or down drifts back to where the phone points
+  const sc = camScale(), cy = arC0() - clamp(AR.pitch + AR.pitchOff, -80, 80)*U;
+  cam.x = (AR.yaw + AR.yawOff)*U - vfW/sc/2; cam.y = cy - vfH/sc/2; clampCam();
+  return true;
+}
+/* follow from here: the picture stays put and the phone's turns move it from now on */
+function arHere(aim){ const sc = camScale(); AR.yaw = aim.yaw; AR.pitch = aim.pitch; AR.yawOff = (cam.x + vfW/sc/2)/U - aim.yaw; AR.pitchOff = (arC0() - cam.y - vfH/sc/2)/U - aim.pitch; }
+const camScale = () => arMode() ? Math.max(vfW, vfH)/(FOV*U)*cam.zoom : vfH/WH*cam.zoom;   // css px per world unit
 function sizeCamera(){
   vfW = Math.max(1, vf.clientWidth); vfH = Math.max(1, vf.clientHeight);   // layout size: ignores the zoom-in animation
   dpr = Math.min(window.devicePixelRatio || 1, 2);
   vfc.width = Math.round(vfW * dpr); vfc.height = Math.round(vfH * dpr);
   clampCam();
 }
-function clampCam(){ const s = camScale(); cam.x = clamp(cam.x, 0, Math.max(0, WW - vfW/s)); cam.y = clamp(cam.y, 0, Math.max(0, WH - vfH/s)); }
+function clampCam(){
+  const s = camScale(), vh = vfH/s; cam.x = wrapX(cam.x);   // round and round
+  cam.y = arMode() ? clamp(cam.y, arC0() - 80*U - vh/2, arC0() + 80*U - vh/2) : clamp(cam.y, 0, Math.max(0, WH - vh));
+}
 const sceneBtns = SCENE_KEYS.map(k => {
   const b = document.createElement('button'); b.className = 'scenebtn art'; b.innerHTML = SCENES[k].icon; b.setAttribute('aria-label', SCENES[k].n);
   tap(b, () => { FX.swoosh(); setScene(k, true); });
@@ -5618,7 +5729,7 @@ function setScene(k, speak){
   cam.scene = k; cam.vx = cam.vy = 0; cam.hinted = false; cam.enterT = performance.now();
   sceneBtns.forEach((b, i) => b.classList.toggle('on', SCENE_KEYS[i] === k));
   sizeCamera();
-  const s = camScale(); cam.x = (WW - vfW/s) * (k === 'dino' ? .3 : .4); cam.y = (WH - vfH/s) / 2; clampCam();
+  const s = camScale(); cam.x = (WW - vfW/s) * (k === 'dino' ? .3 : .4); cam.y = arMode() ? arC0() - vfH/s/2 : (WH - vfH/s) / 2; clampCam(); AR.yaw = null;
   retrigger($('#flash'), 'go');
   if (speak) say(SCENES[k].n + '!', 0, 'camera');
 }
@@ -5633,13 +5744,17 @@ function startCamera(){
 function stopCamera(){ stopPretend(); closeStream(); stopFx(); vswipe = null; }
 /* the pretend camera: a pixel-art world to drag around */
 function startPretend(){
-  sizeCamera(); setScene(cam.scene, false);
+  sizeCamera(); setScene(cam.scene, false); AR.flat = false;
   cancelAnimationFrame(cam.raf); cam.last = performance.now();
   const loop = now => {
     cam.raf = requestAnimationFrame(loop);
     const dt = Math.min(50, now - cam.last); cam.last = now;
     if (Math.abs(cam.zoom - cam.target) > .001){ const cx = cam.x + vfW/camScale()/2, cy = cam.y + vfH/camScale()/2; cam.zoom += (cam.target - cam.zoom) * Math.min(1, dt/90); cam.x = cx - vfW/camScale()/2; cam.y = cy - vfH/camScale()/2; clampCam(); }
-    if (!drag && (Math.abs(cam.vx) > .002 || Math.abs(cam.vy) > .002)){ cam.x += cam.vx*dt; cam.y += cam.vy*dt; const f = Math.pow(.93, dt/16); cam.vx *= f; cam.vy *= f; clampCam(); }
+    if (arFrame(dt)) cam.vx = cam.vy = 0;
+    else {
+      if (!drag && (Math.abs(cam.vx) > .002 || Math.abs(cam.vy) > .002)){ cam.x += cam.vx*dt; cam.y += cam.vy*dt; const f = Math.pow(.93, dt/16); cam.vx *= f; cam.vy *= f; clampCam(); }
+      if (AR.flat && !drag && arMode()){ cam.y += (arC0() - vfH/camScale()/2 - cam.y)*Math.min(1, dt/400); }   // laid flat: back to the usual view
+    }
     const s = camScale() * dpr;
     renderScene(vg, SCENES[cam.scene], cam.x, cam.y, s, vfc.width, vfc.height, now/1000);
     if (!cam.hinted && now - cam.enterT > 22000 && now - cam.shotAt > 12000){
@@ -5666,7 +5781,8 @@ vf.addEventListener('pointermove', e => {
   if (!drag || e.pointerId !== drag.id) return;
   const s = camScale(), now = performance.now(), dt = Math.max(8, now - drag.lt);
   const dx = e.clientX - drag.lx, dy = e.clientY - drag.ly;
-  cam.x -= dx / s; cam.y -= dy / s; clampCam();
+  if (AR.yaw !== null && arMode() && !AR.flat && performance.now() - AR.live < 1200){ AR.yawOff -= dx/s/U; AR.pitchOff += dy/s/U; }   // following the phone: a drag adds a turn
+  else { cam.x -= dx / s; cam.y -= dy / s; clampCam(); }
   drag.vx = .6*drag.vx + .4*(-dx/s/dt); drag.vy = .6*drag.vy + .4*(-dy/s/dt);
   drag.lx = e.clientX; drag.ly = e.clientY; drag.lt = now;
   if (Math.hypot(e.clientX - drag.x0, e.clientY - drag.y0) > 14) drag.moved = true;
@@ -5674,16 +5790,16 @@ vf.addEventListener('pointermove', e => {
 function endDrag(e, cancelled){
   if (!drag || e.pointerId !== drag.id) return;
   if (!drag.moved && !cancelled) camTap(e);
-  else if (performance.now() - drag.lt < 80){ cam.vx = drag.vx; cam.vy = cam.zoom > 1.01 ? drag.vy : 0; }
+  else if (performance.now() - drag.lt < 80){ cam.vx = drag.vx; cam.vy = cam.zoom > 1.01 || arMode() ? drag.vy : 0; }
   drag = null;
 }
 vf.addEventListener('pointerup', e => cam.mode !== 'safari' ? realUp(e) : endDrag(e, false));
 vf.addEventListener('pointercancel', e => { vswipe = null; endDrag(e, true); });
 function camTap(e){
   const r = vf.getBoundingClientRect(), s = camScale(), t = performance.now()/1000;
-  const wx = cam.x + (e.clientX - r.left)/s, wy = cam.y + (e.clientY - r.top)/s;
+  const wy = cam.y + (e.clientY - r.top)/s, wx0 = wrapX(cam.x + (e.clientX - r.left)/s);
   const sc = SCENES[cam.scene];
-  const hit = sc.animals.slice().sort((u, v) => v.z - u.z).find(a => { const b = visBox(a, pose(a, t)); return b.h > 10 && wx >= b.x0 - 20 && wx <= b.x1 + 20 && wy >= b.y0 - 20 && wy <= b.y1 + 10; });
+  const hit = sc.animals.slice().sort((u, v) => v.z - u.z).find(a => { const b = visBox(a, pose(a, t)); return b.h > 10 && [wx0 - WW, wx0, wx0 + WW].some(wx => wx >= b.x0 - 20 && wx <= b.x1 + 20) && wy >= b.y0 - 20 && wy <= b.y1 + 10; });
   if (!hit) return;
   hit.hopT = t; if (hit.m === 'peek') hit.upUntil = t + 2.6;
   FX[hit.fx] && FX[hit.fx]();
@@ -6244,6 +6360,16 @@ function realShutter(){
 }
 
 /* ----- settings: what the parent sees about the camera ----- */
+function renderLookNote(){
+  $$('[data-look]').forEach(b => b.classList.toggle('on', b.dataset.look === settings.look));
+  const n = $('#lookNote'); if (!n) return;
+  n.textContent = settings.look === 'drag' ? ''
+    : AR.ok ? 'Moving the phone works on this phone. (In Guided Access, keep Motion on in its Options.)'
+    : AR.perm === 'denied' ? "Safari was told not to allow motion, so the scenes drag for now. Close the toy's tab (or swipe the Home Screen app away), open it again, and tap Move the phone to be asked again."
+    : AR.perm === 'none' ? "This browser doesn't share the phone's motion, so the scenes drag."
+    : AR.perm === 'granted' ? 'Motion allowed. It starts when the phone moves.'
+    : "Motion isn't on right now (Safari may forget when it's closed): tap Move the phone to allow it. Until then the scenes drag.";
+}
 function renderCamNote(){
   $$('[data-camera]').forEach(b => b.classList.toggle('on', b.dataset.camera === settings.camera));
   const n = $('#camNote'); if (!n) return;
@@ -7649,7 +7775,7 @@ function renderSettings(){
   $$('[data-incoming]').forEach(b => b.classList.toggle('on', (b.dataset.incoming === '1') === settings.incoming));
   $$('[data-silent]').forEach(b => b.classList.toggle('on', (b.dataset.silent === '1') === settings.silent));
   $$('[data-vol]').forEach(b => b.classList.toggle('on', +b.dataset.vol === settings.vol));
-  renderCamNote(); renderAbcNote(); renderPathNote();
+  renderCamNote(); renderLookNote(); renderAbcNote(); renderPathNote();
   const n = Photos.list.length; $('#photoCount').textContent = n + (n === 1 ? ' photo' : ' photos');
   $('#clearBtn').disabled = !n;
 }
@@ -7676,6 +7802,8 @@ $$('[data-camera]').forEach(b => tap(b, () => {
   renderSettings();
   if (current === 'camera') startCamera(); else if (settings.camera !== 'pretend') probeCamera();
 }));
+/* a parent's tap is what lets Safari ask about motion; leaving settings with the setting on asks too, if it's still off */
+$$('[data-look]').forEach(b => tap(b, () => { settings.look = b.dataset.look; saveSettings(); FX.cheer(); renderSettings(); if (settings.look === 'move') askMotion().then(renderLookNote); }));
 $$('[data-silent]').forEach(b => tap(b, () => { settings.silent = b.dataset.silent === '1'; saveSettings(); setSession(); renderSettings(); showSound(); FX.cheer(); }));
 $$('[data-vol]').forEach(b => tap(b, () => { settings.vol = +b.dataset.vol; saveSettings(); if (master) master.gain.value = VOLS[settings.vol]; renderSettings(); FX.cheer(); }));
 tap($('#clearBtn'), () => { if (Photos.list.length) $('#confirmClear').hidden = false; });
@@ -7683,7 +7811,7 @@ tap($('#noClear'), () => { $('#confirmClear').hidden = true; });
 tap($('#yesClear'), () => { Photos.clear(); store.set('seeded', true); $('#confirmClear').hidden = true; renderSettings(); if (current === 'photos'){ closeViewer(true); renderGrid(); } showThumb(); });
 tap($('#testSound'), () => { FX.cheer(); say('Hello! This is how loud I am.'); });
 tap($('#testRing'), () => { closeSettings(); if (call) return; if (current !== 'home') go('home'); setTimeout(() => maybeRing(true), 600); });
-tap($('#doneBtn'), () => { closeSettings(); FX.pop(); });
+tap($('#doneBtn'), () => { if (settings.look === 'move' && !AR.ok) askMotion(); closeSettings(); FX.pop(); });
 
 /* ---------- Toddler-proofing ---------- */
 ['gesturestart','gesturechange','gestureend','contextmenu','selectstart','dragstart'].forEach(t => document.addEventListener(t, e => e.preventDefault()));
@@ -7692,7 +7820,7 @@ document.addEventListener('touchmove', e => { if (!inScroll(e)) e.preventDefault
 let lastTouch = 0;
 document.addEventListener('touchend', e => { const now = Date.now(); if (now - lastTouch < 350 && !inScroll(e)) e.preventDefault(); lastTouch = now; }, {passive:false});
 document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'visible'){ keepAwake(); updateClock(); if (current === 'camera' && cam.mode !== 'safari') startReal(); }
+  if (document.visibilityState === 'visible'){ keepAwake(); updateClock(); if (current === 'camera' && cam.mode !== 'safari') startReal(); if (settings.look === 'move' && !AR.listening) askMotion().then(renderLookNote); }
   else { stopSong(); if (call){ stopCallSounds(); closeCall(); } closeStream(); stopFx(); }   // the camera never runs off screen
 });
 let resizeT = 0;
@@ -7708,6 +7836,7 @@ buildContacts();
 loadFamily();
 loadSounds();
 loadVoiceBank();
+if (settings.look === 'move') askMotion().then(renderLookNote);   // (no prompt here: Safari only reuses an earlier yes)
 seedPhotos();
 window.claude?.hot?.snapshot?.(() => ({ app: current, scene: cam.scene }));
 const start = (data) => { if (data && data.scene && SCENES[data.scene]) cam.scene = data.scene; if (data && data.app && data.app !== 'home') go(data.app); };
@@ -7721,7 +7850,7 @@ function voiceLines(){
       ...(a.hidden ? ['Can you find the hiding ' + a.n + '?', 'You found the ' + a.n + '!', 'Wow! You found the hiding ' + a.n + '!'] : [])])]),
     'You got a picture!', ...CLICKS, ...PRETTY, 'Zoom in!', 'Zoom out!', 'Take a picture first!', 'Your pictures!', 'Look at all your pictures!',
     'No pictures yet! Tap the camera to take some!', 'All your pictures!',
-    ...Object.values(CAM_SAY), ...Object.values(MODE_SAY), ...COSTUMES.map(c => `You're ${article(COSTUME_NAME[c])}!`), ...LOOK_ORDER.slice(1).map(k => LOOKS[k].say),
+    ...Object.values(CAM_SAY), ...Object.values(MODE_SAY), 'Move the phone to look all around!', ...COSTUMES.map(c => `You're ${article(COSTUME_NAME[c])}!`), ...LOOK_ORDER.slice(1).map(k => LOOKS[k].say),
     ...Object.values(MUSIC_SAY), ...SONGS.map(x => x.n + '!'), 'Yay! Great dancing!', 'Stop!', 'Hello! This is how loud I am.',
     ...WildTap.lines(), ...DinoBuddies.lines(), ...SnackTime.lines(), ...PaintPals.lines(),
     SCHOOL_SAY.school, ...LetterPath.lines(), ...AbcZoo.lines(), ...AbcSnack.lines()
@@ -7747,6 +7876,8 @@ window.__toyPhone = { go, renderFx, speakable, voiceLines, lineMs,
   voiceMissing: () => voiceLines().filter(l => !(VB.map && VB.map[l.who + '|' + l.s])).map(l => l.who + '|' + l.s),
   panorama: (k, w=1600) => Promise.resolve().then(() => { const cv = document.createElement('canvas'); cv.width = w; cv.height = Math.round(w * WH / WW); renderScene(cv.getContext('2d'), SCENES[k], 0, 0, w / WW, cv.width, cv.height, 3, true); return cv.toDataURL('image/png'); }), dino: () => ({fill:DinoBuddies.fill(), family:DinoBuddies.family()}), snack: () => SnackTime.state(), paint: () => PaintPals.state(), fx: () => Object.keys(FX), ringIn: () => maybeRing(true), sound: () => ({state: ctx ? ctx.state : 'none', rebuilds, held: held.length}),
   pauseSound: () => { if (ctx) Object.defineProperty(ctx, 'state', {configurable:true, get: () => 'interrupted'}); }, photos: () => Photos.list.length, call: () => call && call.state,
+  sceneView: (k, x, y, w, h, pw = 800) => { const cv = document.createElement('canvas'); cv.width = pw; cv.height = Math.round(pw*h/w); renderScene(cv.getContext('2d'), SCENES[k], x, y, pw/w, cv.width, cv.height, 3, true); return cv.toDataURL('image/png'); },   // (any part of a world, for checking by eye)
+  look: () => ({ar:arMode(), following:!!AR.raw && performance.now() - AR.live < 1200 && !AR.flat && arMode(), flat:AR.flat, perm:AR.perm, x:cam.x, y:cam.y, w:vfW/camScale(), h:vfH/camScale(), scene:cam.scene}),
   cam: () => ({mode:cam.mode, modes:camModes(), state:real.state, facing:real.facing, tracks:real.stream ? real.stream.getTracks().filter(t => t.readyState === 'live').length : 0,
     playing:camVideo.readyState >= 2 && camVideo.videoWidth > 0, look:curLook(), lens:curLens().id, costume:curCostume(), zoom:real.zoom, fx:!camFx.hidden}),
   costumeSheet: () => { const c = document.createElement('canvas'), k = 4, ids = COSTUMES; c.width = ids.length*(COS_W + 4)*k; c.height = (COS_H + 4)*k + 24*k; const g = c.getContext('2d'); g.fillStyle = '#5BA0D8'; g.fillRect(0, 0, c.width, c.height); g.imageSmoothingEnabled = false;

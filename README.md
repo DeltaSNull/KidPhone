@@ -9,9 +9,11 @@ Guided Access. It's one self-contained `index.html` (vanilla JS, no build step),
   animal answers, makes its call and chats every ~6 seconds until hang-up). Animals also call in every
   1–3 minutes while the kids are on the home screen. It can never place a real call: there are no `tel:` links,
   and phone-number detection is turned off.
-- **Camera**: a pretend safari camera. Drag to look around a pixel-art panorama (savanna, jungle, dino valley) about
-  3 screens wide. The shutter flashes, clicks and saves a small pixel-art PNG, and (if a parent turns it on) the voice says what's in the shot.
-  Each scene has two hidden animals to find. 1×/2× zoom, and the last-photo thumbnail opens Photos.
+- **Camera**: a pretend safari camera, a pixel-art world (savanna, jungle, dino valley) that goes all the way round.
+  **Move the phone to look around** (see [Look around](#look-around)): turn to see the rest of the world, tip the phone
+  up for the sky and down for the ground. Dragging works too, and is all there is where the phone shares no motion.
+  The shutter flashes, clicks and saves a small pixel-art PNG, and (if a parent turns it on) the voice says what's in
+  the shot. Each scene has two hidden animals to find. 1×/2× zoom, and the last-photo thumbnail opens Photos.
   It also has **the phone's real camera** (see [The real camera](#the-real-camera)): photos with fun looks, and selfies in
   pixel-art animal costumes. A parent can switch it to pretend only.
 - **Photos**: the kids' pictures, newest first. Big arrows and swipe, and (if a parent turns it on) the voice names the animals.
@@ -168,6 +170,27 @@ on `pointerdown` with sound and motion, there are no failure states, and two kid
 ![Portrait screens](screenshots/portrait.jpg)
 ![Landscape screens](screenshots/landscape.jpg)
 
+## Look around
+
+The pretend camera follows the phone (settings: **Pretend camera: Move the phone / Drag only**, Move the phone by
+default). Each world is a full circle: 3,200 world units is one turn, the right edge joins the left with no seam, and
+more sky (deepening to blue overhead, with high clouds; in the jungle, more treetops) and more ground (pebbles and
+tufts) carry on above and below for looking up and down.
+
+- **How it maps**: turning the phone turns the scene by the same angle, and tipping it up or down looks up or down, up
+  to 80 degrees. The picture spans about 85 degrees across, like a wide phone camera, so a full turn is about four
+  screens. Held upright, the picture shows the horizon high up and the animals below it. The picture doesn't roll when
+  the phone tilts sideways: pixel art never rotates.
+- **Dragging still steers**: a drag adds a turn; a drag up or down drifts back to where the phone points.
+- **Laid flat** (on a table or a lap), the phone goes back to plain dragging and the usual view, so a toddler doesn't
+  just see the ground. Lifted again, it follows the phone from where the picture is.
+- **Permission**: iPhone asks once before a website can use motion, and only after a tap. The toy only asks from a
+  parent's tap in settings (choosing *Move the phone*, or *Done* while motion is still off), never in front of the kids.
+  When the toy opens, Safari quietly reuses an earlier yes. The settings note says whether motion is working now; if
+  Safari has forgotten (it may after it's closed), tap *Move the phone* again. In Guided Access, leave **Motion** on
+  in its Options. Android phones share motion without asking.
+- Taps on animals, hidden animals and photos all work across the join and while the phone moves.
+
 ## The real camera
 
 On from the start alongside the pretend camera (settings: **Camera: Pretend / Real / Both**, Both by default; Pretend
@@ -210,7 +233,8 @@ Every picture is pixel art placed one pixel at a time: no emoji, no vector drawi
   ![Every sprite](screenshots/sprites.png)
 
 - **The camera world** is painted on a grid of 640×200 pixels (5 world units per pixel), sky and ground in flat
-  bands with a little ordered dither where they meet. Trees, ponds, rocks, palms and the volcano are painted with the
+  bands with a little ordered dither where they meet, and joins round at its ends (the hills rise a whole number of
+  times per lap, the clouds drift round, and props near the join are drawn on both sides). Trees, ponds, rocks, palms and the volcano are painted with the
   same tools as the sprites (shapes, then shading and an outline), and the scene is scaled up with hard edges. Animals are
   drawn at whole-number sizes and never rotated: they walk, hop and peek, and sway by shuffling one pixel.
 - **Buttons, cards and backgrounds** are pixel pictures too, painted by the script on a 3-CSS-pixel grid: frames with
@@ -257,6 +281,8 @@ Hold the clock in the top-left corner for **3 seconds**. A quick tap only wiggle
   *Start the path over* clears the stars, with a confirm step
 - **Camera**: Both (the default: the pretend safari plus the phone's camera), Real (the phone's camera only) or
   Pretend (no real camera), with a note on whether the camera is allowed and how to allow it
+- **Pretend camera**: Move the phone (the default: the scenes follow the phone; tapping it is what lets Safari ask
+  about motion) or Drag only, with a note on whether motion is working
 - **Voice**: a checkbox for each place the talking voice can speak. Animal sounds and music always play.
 
   | Checkbox | What the voice says | Starts |
@@ -297,6 +323,10 @@ The automated test runs in Chromium, so these need a person and the phone:
       front cameras show, the costumes line up with a face at arm's length, photos save and survive a reload, and the
       animal sounds keep playing while the camera is on
 - [ ] The camera turns off (the green dot goes away) when you go home, lock the phone or switch apps
+- [ ] Look around (settings: Pretend camera: Move the phone; Safari asks, tap Allow): turning and tipping the phone
+      moves the scenes the same way, a full turn comes back round, laying the phone flat goes back to dragging, and it
+      still works in Guided Access with Motion on. Then close Safari, open the toy again and see whether it still moves
+      without asking (the settings note says)
 - [ ] The letter names in School sound right ("Find the B!", "That's Q!", "A is for apple!"). The voice model is given
       each letter's name as exact phonemes (respelling made "A" sound like "eye"), and a speech recognizer heard them,
       but listen once
@@ -344,7 +374,9 @@ with a 3-second hold, mashes 250 random touches (some two-handed), then checks t
 renders all 24 animal calls offline to check each is audible, under 2.5 seconds and not clipping, and it fails on any
 console error. It also turns on the real camera, with Chromium's fake camera standing in, and checks both cameras,
 zoom, looks, the costume strip, saved photos, that the camera stops off screen and that a refused camera falls back
-to the pretend one. Screenshots go to `tests/screenshots/`.
+to the pretend one. Orientation readings stand in for a moving phone: the pretend camera has to follow a 45 degree
+turn exactly, come back round after a full turn, look up into the sky, go back to dragging when laid flat, and stop
+following with Drag only. Screenshots go to `tests/screenshots/`.
 
 ## Notes
 
