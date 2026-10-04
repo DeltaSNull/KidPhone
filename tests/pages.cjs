@@ -113,12 +113,11 @@ async function run(browser, origin, name) {
      (The page registers it itself on https; this local server is http, so register it the same way here.) */
   const scope = await page.evaluate(async () => { const r = await navigator.serviceWorker.register('sw.js'); await navigator.serviceWorker.ready; return r.scope; });
   check(scope === origin + BASE, `service worker scope is ${BASE}`);
-  await page.reload(); await sleep(800);   // a load under the worker fills its cache
   if (ENGINE === 'webkit') {
     /* Playwright WebKit on Linux can throw an internal browser error when a service-worker-controlled page is
-       reloaded after context.setOffline(true). Check the actual Cache Storage instead: this proves the worker installed
-       its offline shell without turning a Playwright runner limitation into an app failure. Chromium below still does
-       the full forced-offline navigation. */
+       reloaded after context.setOffline(true). The worker's install event already cached the offline shell, so inspect
+       Cache Storage directly without an unnecessary reload (which can also abort a background voice prefetch and make
+       WebKit log a misleading access-control error). Chromium below still does the full forced-offline navigation. */
     const cached = await page.evaluate(async () => ({
       index: !!(await caches.match('index.html')),
       manifest: !!(await caches.match('manifest.webmanifest')),
@@ -126,6 +125,7 @@ async function run(browser, origin, name) {
     }));
     check(cached.index && cached.manifest && cached.icon, `WebKit service worker cached the offline core ${JSON.stringify(cached)}`);
   } else {
+    await page.reload(); await sleep(800);   // a load under the worker fills its cache
     await context.setOffline(true);
     await page.reload(); await sleep(800);
     check(await shown('#home'), 'with no network, the toy still opens from the offline cache');
