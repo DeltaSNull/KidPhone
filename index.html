@@ -568,21 +568,24 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img{image-rendering:auto}
 .glyph{object-fit:contain}
 #abczoo{display:grid; grid-template-rows:minmax(0,1fr) auto; background:#FFF3C4}
 .az-stage{position:relative; min-height:0; min-width:0; display:grid; place-items:center; padding:8px}
+#abczoo .az-stage{padding-top:76px; container-type:size}   /* the letter and picture fit the space under the buttons (100cqh) */
 .az-btn{position:absolute; top:8px; width:64px; height:64px; display:grid; place-items:center; background:var(--d-sun) center/100% 100% no-repeat}
 .az-btn .px{width:34px; height:34px; margin-top:-4px}
 .az-case{right:80px} .az-song{right:8px}
 .az-song.on{background-image:var(--d-go)}
 .az-show{display:grid; grid-template-columns:auto auto; align-items:center; justify-items:center; gap:4px 12px; margin-top:44px; touch-action:none}
-.az-letters{grid-row:span 2; display:flex; align-items:flex-end}
-.az-letters{--H:clamp(90px, min(26vh, 36vw), 200px)}
+#abczoo .az-show{margin-top:0; grid-template-rows:1fr auto auto 1fr; row-gap:0}   /* the word right under its picture, the two centered beside the letters */
+.az-letters{grid-row:1 / -1; display:flex; align-items:flex-end}
+.az-letters{--H:clamp(64px, min(26vh, 36vw, 100cqh), 200px)}
 .az-letters .glyph{height:var(--H); width:auto; display:block}
 .az-letters .glyph + .glyph{height:calc(var(--H) * .62); margin:0 0 calc(var(--H) * .099) -2%}   /* the capital as tall as the little letter */
-.az-pic{font-size:clamp(56px, min(13vh, 20vw), 110px)}
-.az-word{font-size:clamp(22px, 6vw, 34px); padding:0 6px} .az-word b{color:var(--lc)}
+.az-pic{grid-row:2; font-size:clamp(40px, min(13vh, 20vw, calc((100cqh - 40px) / 1.15)), 110px)}
+.az-word{grid-row:3; font-size:clamp(22px, 6vw, 34px); padding:0 6px} .az-word b{color:var(--lc)}
 .az-show.pop .az-letters,.az-show.pop .az-pic{animation:hop .45s cubic-bezier(.3,1.6,.5,1)}
 .az-grid{display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:6px; padding-top:4px}
+#abczoo.tight .az-grid{grid-template-columns:repeat(7,minmax(0,1fr))}
 .az-tile{aspect-ratio:1; min-width:0; display:grid; place-items:center; padding:0; border-style:solid; border-color:transparent; border-width:6px 6px 9px; border-image:var(--tg, var(--t-paper)) 6 6 9 fill / 6px 6px 9px stretch}
-.az-tile .glyph{height:86%; width:auto; pointer-events:none}
+.az-tile .glyph{width:64%; height:auto; pointer-events:none}   /* (by the tile's width: sized by its height, the tile grew taller than wide) */
 .az-tile.on{--tg:var(--t-sun)}
 .az-tile.sing{animation:hop .4s cubic-bezier(.3,1.6,.5,1)}
 @media (orientation:landscape){
@@ -1120,6 +1123,19 @@ const shuffle = a => { const b = a.slice(); for (let i=b.length-1;i>0;i--){ cons
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 function put(el, art){ el.classList.add('art'); el.innerHTML = art; }
 function retrigger(el, cls){ el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); }
+
+/* Added to an iPhone's home screen, the toy runs with the status bar drawn over its top. iOS then lays the page out as
+   if the status bar still took its own space, yet draws it from the top of the screen, so a status-bar-high strip at
+   the bottom goes unused. When the page comes out exactly that much short of the screen, it's sized to the screen. */
+function fillScreen(){
+  const de = document.documentElement, home = navigator.standalone === true || matchMedia('(display-mode: standalone)').matches;
+  de.style.height = '';
+  if (!home) return;
+  const top = parseFloat(getComputedStyle(de).paddingTop) || 0;   // the status bar: safe-area-inset-top
+  const full = innerWidth > innerHeight ? Math.min(screen.width, screen.height) : Math.max(screen.width, screen.height);
+  if (top > 0 && Math.abs(full - de.clientHeight - top) <= 2) de.style.height = full + 'px';
+}
+fillScreen();
 
 /* Family contacts can also be pasted in here (data: URIs work), instead of assets/family/family.json.
    Example: { name:'Daddy', photo:'data:image/jpeg;base64,...', clips:['data:audio/mp4;base64,...'] }  */
@@ -6700,6 +6716,10 @@ const AbcZoo = (() => {
     tap(b, () => { stopSong(); pick(e, true); }, {bump:false});
     grid.appendChild(b); return b;
   });
+  /* a short screen (a small iPhone with Safari's bars): seven letters to a row, so the letter and its picture still fit
+     above them (six to a row takes five rows of the screen's width, plus about 210px for the buttons, letter and word) */
+  const root = $('#abczoo');
+  if (window.ResizeObserver) new ResizeObserver(() => { const w = root.clientWidth, h = root.clientHeight; root.classList.toggle('tight', h > w && h < (w - 30)*5/6 + 210); }).observe(root);
   function paintTiles(){ tiles.forEach((b, i) => { b.innerHTML = glyphImg(small ? ABC[i].L.toLowerCase() : ABC[i].L); }); }
   function pick(e, speak){
     cur = e; tiles.forEach(b => b.classList.toggle('on', b.dataset.l === e.L));
@@ -8146,7 +8166,7 @@ document.addEventListener('visibilitychange', () => {
   else { stopSong(); if (call){ stopCallSounds(); closeCall(); } closeStream(); stopFx(); }   // the camera never runs off screen
 });
 let resizeT = 0;
-window.addEventListener('resize', () => { clearTimeout(resizeT); resizeT = setTimeout(() => { fitContacts(); if (current === 'camera'){ sizeCamera(); if (cam.mode !== 'safari'){ updateLookUI(); placeLenses(); } } if (!bgWatch) paintBackgrounds(); }, 120); });
+window.addEventListener('resize', () => { clearTimeout(resizeT); resizeT = setTimeout(() => { fillScreen(); fitContacts(); if (current === 'camera'){ sizeCamera(); if (cam.mode !== 'safari'){ updateLookUI(); placeLenses(); } } if (!bgWatch) paintBackgrounds(); }, 120); });
 window.addEventListener('pagehide', () => closeStream());
 paintBackgrounds(); if (bgWatch) bgFor.forEach((fn, el) => bgWatch.observe(el));
 

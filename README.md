@@ -280,6 +280,8 @@ Every picture is pixel art placed one pixel at a time: no emoji, no vector drawi
    when the ring/silent switch is set to silent. Turn it off to have the toy follow the switch like other web pages.
 
 Home-screen apps keep their own storage, so photos taken there don't show up in Safari's copy, and the reverse.
+Opened from the home screen, iOS lays the page out as if the status bar still took its own space, yet draws it from the
+top of the screen, which would leave a status-bar-high strip empty at the bottom; the toy notices and fills the screen.
 
 ## Parent settings
 
@@ -413,7 +415,8 @@ does. Screenshots go to `tests/screenshots/`.
   restart is replaced. The voice waits for a sound to finish rather than talking over it.
 - A call nobody hangs up says goodbye by itself after 3 minutes (`CALL_MAX_MS`), so a forgotten phone doesn't chat all afternoon.
 - In portrait, the 8 xylophone bars and 8 piano keys are about 66px tall but span the full width, the ABC Zoo
-  letters are about 53px, the 123 Zoo numbers about 65px, and the Letter Path stones about 68px (47px with Safari's bars showing; 26 share the screen, so the whole path shows
+  letters are about 53px (43px on a small iPhone with Safari's bars, where they go seven to a row so the big letter and
+  its picture still fit above them), the 123 Zoo numbers about 65px, and the Letter Path stones about 68px (47px with Safari's bars showing; 26 share the screen, so the whole path shows
   without scrolling). Every other kid control is 80px or more.
 - With five app icons, the three animals on the home-screen hill only show on tall portrait screens (800px or more).
 - Every picture is a pixel sprite in `index.html`, so the toy looks the same on every phone, and walking animals always face the way they walk. The test fails if an emoji or an SVG sneaks back in, or if a sprite has uneven rows or a letter with no color.

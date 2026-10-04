@@ -92,6 +92,30 @@ function instrument() {
   }
 }
 
+/* Added to an iPhone's home screen (the status bar drawn over the top), iOS lays the page out a status bar short of the
+   screen and leaves a strip unused at the bottom: the toy then sizes itself to the screen. Stood in for here by a short
+   viewport, a status bar and home bar (safe areas) as padding, navigator.standalone, and the screen's real height. */
+async function homeScreen(browser, base) {
+  console.log('\n=== home screen app 440x956 (laid out 62px short)');
+  const open = async screenH => {
+    const context = await browser.newContext({ viewport: { width: 440, height: 894 }, deviceScaleFactor: 2, hasTouch: true, isMobile: true });
+    const page = await context.newPage();
+    await page.addInitScript(h => {
+      Object.defineProperty(navigator, 'standalone', { get: () => true });
+      Object.defineProperty(screen, 'height', { get: () => h }); Object.defineProperty(screen, 'width', { get: () => 440 });
+      const st = document.createElement('style'); st.textContent = ':root{padding-top:62px!important;padding-bottom:34px!important}';   // (env(safe-area-inset-*) is 0 here)
+      new MutationObserver((m, o) => { if (document.head) { document.head.appendChild(st); o.disconnect(); } }).observe(document, { childList: true, subtree: true });
+    }, screenH);
+    await page.goto(base + '/index.html'); await sleep(600);
+    const r = await page.evaluate(() => ({ html: document.documentElement.getBoundingClientRect().height, device: document.querySelector('#device').getBoundingClientRect().bottom }));
+    await context.close(); return r;
+  };
+  let r = await open(956);
+  check(r.html === 956 && r.device === 956 - 34, `the page fills the whole screen, down to the home bar ${JSON.stringify(r)}`);
+  r = await open(894);
+  check(r.html === 894 && r.device === 894 - 34, `and is left alone when the layout already fits the screen ${JSON.stringify(r)}`);
+}
+
 async function run(browser, base, name, viewport, { family = true } = {}) {
   console.log(`\n=== ${name} ${viewport.width}x${viewport.height}${family ? '' : ' (no family file)'}`);
   const context = await browser.newContext({ viewport, deviceScaleFactor: 2, hasTouch: true, isMobile: true,
@@ -688,6 +712,11 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   let sc = await school();
   check(sc.zoo.letter === 'M' && await osc() > before, `tapping a letter shows it and its picture makes its sound (${sc.zoo.letter})`);
   check((await said()).slice(zs).includes('M is for monkey!') && !(await said()).slice(zs).some(t => / says /.test(t)), 'and the voice says "M is for monkey!" (no letter sound)');
+  const az = await page.evaluate(() => { const b = s => document.querySelector(s).getBoundingClientRect(), g = b('#azGrid'), side = g.left > b('#azStage').right - 2;
+    return { side, clear: ['#azLetters', '#azPic', '#azWord'].every(s => side ? b(s).right <= g.left : b(s).bottom <= g.top), gap: Math.round(b('#azWord').top - b('#azPic').bottom),
+      tile: [Math.round(b('.az-tile').width), Math.round(b('.az-tile').height)], ink: [...document.querySelectorAll('#azGrid .az-tile')].every(t => { const r = t.getBoundingClientRect(), q = t.querySelector('.glyph').getBoundingClientRect(); return q.bottom <= r.bottom && q.top >= r.top; }) }; });
+  check(az.clear && az.gap >= -2 && az.gap <= 8, `ABC Zoo: the letter, picture and word stay clear of the letter tiles, the word just under its picture ${JSON.stringify(az)}`);
+  check(az.ink && (az.side || Math.abs(az.tile[0] - az.tile[1]) <= 1), `ABC Zoo: the tiles are square and every letter sits inside its tile ${JSON.stringify(az.tile)}`);
   await shot('29-abczoo'); await fits('abc zoo');
   await tap('#azCase'); await sleep(300);
   check(!(await school()).zoo.small && await page.locator('#azGrid .az-tile img').count() === 26, 'little letters first; the case button shows the capitals');
@@ -902,6 +931,7 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
     if (process.env.ONLY !== 'landscape') await run(browser, base, 'portrait', { width: 390, height: 844 });
     if (process.env.ONLY !== 'portrait') await run(browser, base, 'landscape', { width: 844, height: 390 });
     if (!process.env.QUICK) await run(browser, base, 'safari-bars', { width: 390, height: 664 }, { family: false });
+    await homeScreen(browser, base);
   } catch (e) { failures.push('crashed: ' + e.stack); console.error(e); }
   await browser.close(); srv.close();
   if (warnings.length) console.log('\nSize notes:\n  ' + warnings.join('\n  '));
