@@ -18,7 +18,7 @@ This file is the source of truth for the suggestions from the School review. Che
 | --- | --- | --- |
 | 1. Parent controls and child profiles | Done except profiles (on hold) | Parent access controls (P1-01 to P1-07, P1-13): [PR #2](https://github.com/DeltaSNull/KidPhone/pull/2). Play time (P1-08) and School sounds (P1-09) done. Profiles, Together play and migration (P1-10 to P1-12) are on hold with progress tracking. |
 | 2. Learning foundation and existing activity improvements | In progress | Done without tracking: P2-10, P2-11, P2-12, P2-13. Tracking items (P2-01 to P2-08, part of P2-09) on hold. |
-| 3. First guided learning journey | Not started | — |
+| 3. First guided learning journey | In progress | Dino Picnic (P3-04) done; Animal Delivery (P3-06) first step done (attributes and quantity to come). |
 | 4. Broader curriculum and parent summaries | Not started | — |
 
 Recommended order: Phase 1 → Phase 2 → Phase 3 → Phase 4. Dino Picnic and Animal Delivery are the first new activity priorities. Technical and validation tasks below belong to the phase they support.
@@ -66,9 +66,9 @@ Acceptance: hints, retries, skipped tracing, demonstrations, and joint play cann
 - [ ] **P3-01 — Today's Adventure:** Make a short guided sequence the main School entry point while retaining free exploration.
 - [ ] **P3-02 — Preschool path:** Offer adjustable lessons in letters/sounds, name recognition, counting and making sets of 1–5, vocabulary, and following directions.
 - [ ] **P3-03 — Toddler Play Together:** Offer adult-guided naming, pointing, sound imitation, familiar-object matching, one/more, in/out, open/closed, clapping, waving, and turn-taking. Do not present this as a smaller preschool test.
-- [ ] **P3-04 — Dino Picnic:** Reuse animal/food art for “give three snacks”; allow adding/removing snacks and choosing Feed. Vary quantities and arrangements; provide a simpler adult-guided toddler version. **In progress — Claude, 2026-10-04.**
+- [x] **P3-04 — Dino Picnic:** Reuse animal/food art for “give three snacks”; allow adding/removing snacks and choosing Feed. Vary quantities and arrangements; provide a simpler adult-guided toddler version. **Done — Claude: Dino Picnic. Snacks scattered on the blanket, tapped onto the plate in a jumble (no boxes), take-back, a check to feed; quantities 1–3 then 1–5 with shuffled arrangements; Help count shows rings and feeds when full (the adult-guided toddler version). Smoke tests (portrait, landscape, Safari bars) pass locally and in CI before deploying; family trial pending (P3-09).**
 - [ ] **P3-05 — Sound Safari:** Extend the listening-based ABC Snack approach to picture and letter choices with separate sound and letter-name objectives.
-- [ ] **P3-06 — Animal Delivery:** Teach directions and vocabulary, starting with “put the apple under the tree,” then combining attributes and quantity when ready. Include simple toddler in/out activities. **In progress — Claude, 2026-10-04.**
+- [ ] **P3-06 — Animal Delivery:** Teach directions and vocabulary, starting with “put the apple under the tree,” then combining attributes and quantity when ready. Include simple toddler in/out activities. **Partly done — Claude: Animal Delivery. "Put the apple under the tree": in and on first (the box, a simple toddler start), then on/under the table, then under the tree and next to the box; drag or tap a spot; wrong spots named, the right one glows after two tries. Combining attributes and quantity is still to come. Smoke tests (portrait, landscape, Safari bars) pass locally and in CI before deploying; family trial pending (P3-09).**
 - [ ] **P3-07 — Session structure:** Give each adventure a clear beginning and ending, with a manageable mix of review and new material rather than endless auto-advancement.
 - [ ] **P3-08 — Offline follow-through:** End with a related action such as bringing three toy animals, finding an object, or following a spoken direction with a parent.
 - [ ] **P3-09 — First family trial:** Observe each learner using the appropriate experience. Record usability and teaching changes needed without publishing private child observations in the repository.
@@ -113,6 +113,7 @@ Use these as curriculum/design references, not as claims that app scores diagnos
 
 | Date | Change | Evidence |
 | --- | --- | --- |
+| 2026-10-04 | Claude: Dino Picnic (P3-04) and Animal Delivery (P3-06); the School menu became a picture grid for seven games. | Smoke tests in three layouts; CI on main before deploying |
 | 2026-10-04 | Owner's request: ABC Snack asks by letter name only until the letter sounds are right (T-04); the sounds stage and Sounds setting are removed. | [Handoff](HANDOFF.md) |
 | 2026-10-04 | Claude: Play time (P1-08), School sounds and always-on lesson voice (P1-09), ABC Snack A to Z (P2-10), plain-ink letter checks (P2-11), Count myself 123 Snack with Help count kept (P2-13); P2-12 holds by design. | Smoke tests in three layouts and parent-controls tests pass locally; CI on main before deploying |
 | 2026-10-04 | Progress tracking deferred while the toy is being tested (owner's decision): profiles, Together play, migration, the skill model and learning records, and the parent dashboard. Claude took P1-08, P1-09, P2-09, P2-10, P2-11 and P2-13. | [Handoff](HANDOFF.md) |
