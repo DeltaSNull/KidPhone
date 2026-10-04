@@ -754,7 +754,22 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   const labels = await page.$$eval('#asFoods .st-food', bs => bs.map(b => b.getAttribute('aria-label')));
   check(sc.snack.level === 1 && (sc.snack.mode === 'little' ? labels.every(l => l.startsWith('little ')) : sc.snack.mode === 'big'), `the "Little letters" setting asks mostly for little letters ${sc.snack.mode} ${JSON.stringify(labels)}`);
   await home();
-  await holdClock(); await tapSetting('[data-abc="auto"]');
+  // a phone left on the old letter-sounds stage (or the old Sounds setting) now asks by name only
+  await page.evaluate(() => { const st = JSON.parse(localStorage.getItem('toyphone.settings')); st.abc = 'sound'; localStorage.setItem('toyphone.settings', JSON.stringify(st));
+    const a = JSON.parse(localStorage.getItem('toyphone.abc') || '{}'); a.lv = 2; a.v = 2; localStorage.setItem('toyphone.abc', JSON.stringify(a)); });
+  await page.reload(); await page.waitForFunction(() => window.__toyPhone); await sleep(800);
+  const asks = [];
+  for (let k = 0; k < 3; k++) {
+    await tap('[data-app="school"]'); await sleep(500); await tap('.gamecard[aria-label="ABC Snack"]'); await sleep(1500);
+    sc = await until(async () => { const x = await school(); return x.snack.want && x; });
+    await until(async () => (await said()).some(t => / wants (an? [A-Z]|a little [a-z])!$/.test(t) && t.toUpperCase().endsWith(` ${sc.snack.want}!`)), 20);
+    asks.push(sc.snack.mode); await home();
+  }
+  check(asks.every(m => m === 'big' || m === 'little') && (await school()).progress.lv <= 1 && !(await said()).some(t => / wants \/[a-z]\//.test(t)),
+    `ABC Snack never asks for a letter's sound, even for a phone left on the old sounds stage: it asks by name (${asks.join(', ')})`);
+  await holdClock();
+  check(await page.locator('[data-abc="sound"]').count() === 0 && await page.locator('[data-abc="little"].on').count() === 1, 'the Sounds choice is gone; the old setting becomes Little letters');
+  await tapSetting('[data-abc="auto"]');
   await tapSetting('.lp-chip[data-pl="m"]'); await sleep(400);
   check(/lips together/.test(await page.locator('#pathInfo').textContent()) && /Learned: 1 of 26/.test(await page.locator('#pathNote').textContent()),
     'the parent page: letters learned so far, and a letter shows how to say its sound');

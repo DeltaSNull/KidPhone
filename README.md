@@ -80,14 +80,14 @@ Guided Access. It's one self-contained `index.html` (vanilla JS, no build step),
   - *ABC Snack*: Snack Time with letter cookies. After the first "feed the animals" line, each animal just asks:
     "Puppy wants an S!" Its thought bubble shows an ear, never the letter, so the child has to know it (tap the bubble
     to hear it again). It grows with the child: big letters, then (after eight right on the first try in a row) mostly
-    little letters ("Frog wants a little b!"), then (eight more) letter sounds ("Monkey wants /s/!"), asked about the
-    letters done on the Letter Path once there are three; three misses in a row steps back. Letters come a few at a
+    little letters ("Frog wants a little b!"); three misses in a row steps back. It always asks by the letter's name,
+    never its sound (the letter sounds stay in the Letter Path's lessons). Letters come a few at a
     time, A to Z like the Letter Path (A to F first); a new group joins once most of the current ones are known. After
     the first few animals, now and then every cookie's letter is drawn in plain ink, so the child goes by the letter's
     shape rather than its color (Find in the Letter Path does the same in its last round). A wrong cookie is
     never a loss: a head shake, the voice names the cookie that was tapped ("That's N!") and asks again, and after two
-    tries the right one glows. Look-alikes (b and d, p and q) stay apart until the child knows most letters, and c and
-    k never meet when the question is a sound. A right cookie gets a crunch and "Yum!"
+    tries the right one glows. Look-alikes (b and d, p and q) stay apart until the child knows most letters. A right
+    cookie gets a crunch and "Yum!"
   - *123 Zoo*: the numbers 1 to 10 in the same pixel print. Tap one and that many animals hop into a ten-frame (two
     rows of five, the way early math shows a number: seven is "five and two more"), each counted out loud ("One! Two!
     Three!"), then "Three zebras!" and they all call. One lion, two elephants, three zebras, four penguins, five frogs,
@@ -341,7 +341,7 @@ turned off in settings): no card.
 - Incoming calls on/off
 - Volume (Quiet / Soft / Medium / Loud)
 - Sound when the phone is on silent (on by default)
-- **ABC Snack**: Grows (the default), or fixed at Big letters, Little letters or Sounds, with the current stage and the
+- **ABC Snack**: Grows (the default), or fixed at Big letters or Little letters, with the current stage and the
   letters the child knows (picked right by name on the first try three times)
 - **123 Snack**: Count myself (the default: the child decides how many and taps the check) or Help count (the boxes
   show how many)

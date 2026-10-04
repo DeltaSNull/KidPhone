@@ -1137,8 +1137,8 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img{image-rendering:auto}
           <span class="vhint">Move the phone: the pretend scenes go all the way round. Turn around to see the rest, tip the phone up for the sky and down for the ground; dragging still works too. Laid flat, the phone goes back to dragging. Safari asks once to allow motion: tap Move the phone here to answer it. Drag only: the scenes move only when dragged.</span>
           <span class="vhint" id="lookNote"></span></div>
         <div class="srow"><span>ABC Snack</span>
-          <div class="seg"><button class="sbtn" data-abc="auto">Grows</button><button class="sbtn" data-abc="big">Big letters</button><button class="sbtn" data-abc="little">Little letters</button><button class="sbtn" data-abc="sound">Sounds</button></div>
-          <span class="vhint">The animal asks for a letter out loud and the child finds it (the letter is never shown first). Grows: big letters by name until the child gets eight in a row, then mostly little letters, then eight more in a row and letter sounds ("Monkey wants /s/!"). Letters come a few at a time, A to Z like the Letter Path; sounds are asked for the letters done on the Letter Path.</span>
+          <div class="seg"><button class="sbtn" data-abc="auto">Grows</button><button class="sbtn" data-abc="big">Big letters</button><button class="sbtn" data-abc="little">Little letters</button></div>
+          <span class="vhint">The animal asks for a letter out loud and the child finds it (the letter is never shown first). Grows: big letters by name until the child gets eight in a row, then mostly little letters. The animals always ask by the letter's name ("Puppy wants an S!", "Frog wants a little b!"), never its sound. Letters come a few at a time, A to Z like the Letter Path.</span>
           <span class="vhint" id="abcNote"></span></div>
         <div class="srow"><span>123 Snack</span>
           <div class="seg"><button class="sbtn" data-count="self">Count myself</button><button class="sbtn" data-count="help">Help count</button></div>
@@ -4547,7 +4547,8 @@ const VOICE = [
   {k:'music', on:false, t:'Music', d:'Names the instruments and songs.'}
 ];
 const settings = Object.assign({incoming:true, vol:2, silent:true, camera:'both', abc:'auto', path:'order', look:'move', schoolFx:'on', play:0, count:'self'}, store.get('settings', {}));
-if (!['auto','big','little','sound'].includes(settings.abc)) settings.abc = settings.abc === 'case' ? 'little' : settings.abc === 'listen' ? 'big' : 'auto';
+if (settings.abc === 'sound') settings.abc = 'little';   // (letter sounds left ABC Snack: it asks by name only)
+if (!['auto','big','little'].includes(settings.abc)) settings.abc = settings.abc === 'case' ? 'little' : settings.abc === 'listen' ? 'big' : 'auto';
 if (!['pretend','real','both'].includes(settings.camera)) settings.camera = 'both';
 if (!['order','open'].includes(settings.path)) settings.path = 'order';
 if (!['move','drag'].includes(settings.look)) settings.look = 'move';
@@ -6883,8 +6884,8 @@ const AbcZoo = (() => {
 
 /* ----- ABC Snack: Snack Time with letter cookies. An animal asks for a letter out loud in a few words ("Puppy wants an
    S!"; its bubble shows an ear, never the letter: the child has to know it); feed it that cookie. It grows with the
-   child: big letters by name, then little letters ("Frog wants a little b!"), then letter sounds ("Monkey wants /s/!"),
-   asked about the letters done on the Letter Path once there are a few. Letters come a few at a time, A to Z like the
+   child: big letters by name, then little letters ("Frog wants a little b!"). Always the letter's name, never its sound
+   (the letter sounds stay in the Letter Path's lessons). Letters come a few at a time, A to Z like the
    Letter Path (A to F first), and a new group joins once most of the current ones are known. Now and then every
    cookie's letter is drawn in plain ink, so the child goes by the letter's shape, not its color.
    Nothing is ever lost: a wrong cookie gets a head shake and the voice names the letter that was tapped ("That's N!");
@@ -6896,10 +6897,11 @@ const AbcSnack = (() => {
   const ORDER = LETTERS;   // A to Z, the same order as the Letter Path
   const MIRROR = ['bd', 'pq', 'mw', 'nu', 'MW', 'NZ'];   // easy to mix up: kept apart until the child knows most letters
   const anL = L => (/^[AEFHILMNORSX]$/.test(L) ? 'an ' : 'a ') + L;   // "an S", "a B": by how the letter's name starts
-  const WANT = (s, L, mode) => `${cap(s.n)} wants ${mode === 'sound' ? `/${L.toLowerCase()}/` : mode === 'little' ? 'a little ' + L.toLowerCase() : anL(L)}!`;   // "Puppy wants an S!"
+  const WANT = (s, L, mode) => `${cap(s.n)} wants ${mode === 'little' ? 'a little ' + L.toLowerCase() : anL(L)}!`;   // "Puppy wants an S!"
   const root = $('#abcsnack'), scene = $('#asScene'), animalEl = $('#asAnimal'), think = $('#asThink'), wantEl = $('#asWant'), foodsEl = $('#asFoods'), fedEl = $('#asFed');
   const prog = Object.assign({lv:0, open:6, streak:0, down:0, stats:{}}, store.get('abc', {}));
   if (prog.v !== 2){ prog.lv = prog.lv >= 2 ? 1 : 0; prog.v = 2; }   // (the old match / listen / big-and-little stages)
+  prog.lv = Math.min(prog.lv, 1);   // (the letter-sound stage is gone: those children stay on little letters)
   const save = () => store.set('abc', prog);
   const known = L => (prog.stats[L] || {}).k >= 3;   // picked right by name on the first try three times
   let cur = null, letter = 'S', mode = 'big', misses = 0, eating = true, fed = 0, queue = [], quietUntil = 0, plain = false;
@@ -6908,10 +6910,9 @@ const AbcSnack = (() => {
   const yum = at => { tone(523, 784, .14, 'triangle', .14, at); tone(659, 1047, .2, 'triangle', .13, at + .13); return at + .35; };
   const call = (s, at = 0) => s.x ? FX[s.x](at) : yum(at);
   function act(cls){ animalEl.classList.remove('in', 'out', 'hop', 'nope', 'chomp'); void animalEl.offsetWidth; animalEl.classList.add(cls); }
-  const level = () => ({big:0, little:1, sound:2}[settings.abc] ?? prog.lv);
+  const level = () => ({big:0, little:1}[settings.abc] ?? prog.lv);
   const pool = () => ORDER.slice(0, clamp(prog.open, 4, 26));
   function nextLetter(){
-    if (mode === 'sound'){ const p = LetterPath.progress().learned.map(l => l.toUpperCase()), from = (p.length >= 3 ? p : pool()).filter(L => L !== letter); return rnd(from.length ? from : pool()); }
     const p = pool(), fresh = p.filter(L => !known(L) && L !== letter);
     const from = fresh.length && Math.random() < .75 ? fresh : p.filter(L => L !== letter);
     return rnd(from);
@@ -6923,7 +6924,7 @@ const AbcSnack = (() => {
     const prev = cur;
     if (!queue.length) queue = shuffle(EATERS).filter(s => s !== prev);
     cur = queue.shift(); misses = 0; eating = true;
-    const lv = level(); mode = lv === 0 ? 'big' : lv === 1 ? (Math.random() < .7 ? 'little' : 'big') : (Math.random() < .65 ? 'sound' : 'little');
+    const lv = level(); mode = lv === 0 ? 'big' : Math.random() < .7 ? 'little' : 'big';
     letter = nextLetter(); plain = fed >= 3 && Math.random() < .35;   // (after the first few: sometimes the letters come in plain ink)
     put(animalEl, ART[cur.a]); animalEl.setAttribute('aria-label', cur.n);
     think.classList.remove('on');
@@ -6935,8 +6936,7 @@ const AbcSnack = (() => {
   /* two cookies at first, three once a few animals are fed; look-alikes (b and d...) stay apart until most letters are known */
   function deal(){
     const n = fed < 3 ? 2 : 3, sm = small();
-    const clash = L => (mode === 'sound' && twins(L.toLowerCase(), letter.toLowerCase())) ||   // (c and k say the same sound)
-      ORDER.filter(known).length < 12 && MIRROR.some(pr => pr.includes(letter.toLowerCase()) && pr.includes(L.toLowerCase()) || pr.includes(letter) && pr.includes(L));
+    const clash = L => ORDER.filter(known).length < 12 && MIRROR.some(pr => pr.includes(letter.toLowerCase()) && pr.includes(L.toLowerCase()) || pr.includes(letter) && pr.includes(L));
     const others = shuffle(ORDER.slice(0, Math.max(prog.open, 8)).filter(L => L !== letter && !clash(L))).slice(0, n - 1);
     foodsEl.innerHTML = ''; foodsEl.classList.toggle('n2', n === 2); foodsEl.dataset.plain = plain ? '1' : '';
     shuffle([letter, ...others]).forEach((L, i) => {
@@ -6950,7 +6950,7 @@ const AbcSnack = (() => {
     const st = prog.stats[letter] = prog.stats[letter] || {k:0, n:0}; st.n++; if (right && !misses) st.k++;
     if (right && !misses){ prog.streak++; prog.down = 0; } else { prog.streak = 0; if (!right) prog.down++; }
     if (settings.abc === 'auto' || !settings.abc){
-      if (prog.lv < 2 && prog.streak >= 8){ prog.lv++; prog.streak = 0; later(() => say2(prog.lv === 1 ? 'Now little letters too!' : 'Now letter sounds too!'), 2600); }
+      if (prog.lv < 1 && prog.streak >= 8){ prog.lv++; prog.streak = 0; later(() => say2('Now little letters too!'), 2600); }
       else if (prog.lv > 0 && prog.down >= 3){ prog.lv--; prog.down = 0; }
     }
     const p = pool(); if (p.filter(known).length >= p.length - 2 && prog.open < 26) prog.open = Math.min(26, prog.open + 4);
@@ -6999,14 +6999,14 @@ const AbcSnack = (() => {
     state: () => ({want: cur && !eating ? letter : null, mode, level: level(), choices: [...foodsEl.children].map(b => b.dataset.l), fed, open: prog.open, plain}),
     progress: () => ({lv: prog.lv, open: prog.open, known: ORDER.filter(known)}),
     reset(){ Object.assign(prog, {lv:0, open:6, streak:0, down:0, stats:{}}); save(); },
-    lines: () => [SCHOOL_SAY.abcsnack, 'Hooray! Five full tummies!', 'Now little letters too!', 'Now letter sounds too!',
-      'Yum!', ...EATERS.flatMap(e => LETTERS.flatMap(L => ['big', 'little', 'sound'].map(m => WANT(e, L, m)))), ...LETTERS.flatMap(L => [`That's ${L}!`, `That's ${L.toLowerCase()}!`])]
+    lines: () => [SCHOOL_SAY.abcsnack, 'Hooray! Five full tummies!', 'Now little letters too!',
+      'Yum!', ...EATERS.flatMap(e => LETTERS.flatMap(L => ['big', 'little'].map(m => WANT(e, L, m)))), ...LETTERS.flatMap(L => [`That's ${L}!`, `That's ${L.toLowerCase()}!`])]
   };
 })();
 function renderAbcNote(){
   $$('[data-abc]').forEach(b => b.classList.toggle('on', b.dataset.abc === (settings.abc || 'auto')));
   const n = $('#abcNote'); if (!n) return;
-  const p = AbcSnack.progress(), stage = ['big letters by name', 'little letters by name (and some big ones)', 'letter sounds, for the letters done on the Letter Path (and little letters by name)'][p.lv];
+  const p = AbcSnack.progress(), stage = ['big letters by name', 'little letters by name (and some big ones)'][p.lv];
   n.textContent = `Now: ${stage}. Letters known: ${p.known.length ? p.known.join(' ') : 'none yet'} (${p.known.length} of 26). Letters in play: ${LETTERS.slice(0, p.open).join(' ')}.`;
 }
 

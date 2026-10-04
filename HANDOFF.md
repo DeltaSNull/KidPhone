@@ -7,6 +7,10 @@ Read SCHOOL_ROADMAP.md first, then AGENTS.md. This is the agreed plan going forw
 - None claimed. The last batch (below) is done; the next unfinished, untracked items are in the roadmap (Phase 3 activities such as Today's Adventure, Dino Picnic, Sound Safari and Animal Delivery, after the owner's real-phone check).
 - Owner's decision: hold off on progress tracking while the toy is being tested. Profiles, Together play, legacy migration (P1-10 to P1-12), the skill model and learning records (P2-01 to P2-08, T-02, T-06) and the parent dashboard (P4-06 to P4-08) are deferred in the roadmap. Don't start them until the owner asks.
 
+## Owner's request, 2026-10-04: ABC Snack asks by letter name only
+
+- The letter sounds still don't sound right to the owner, so ABC Snack no longer asks for a sound ("Monkey wants /s/!"): the sound stage, the Sounds setting and those 234 voice clips are gone; a saved `lv: 2` or `abc: 'sound'` becomes little letters. Letter sounds remain only in the Letter Path lessons (and its parent page). Bring sounds back to ABC Snack only when the owner says the phonics audio is right (T-04).
+
 ## Last batch: play time, School sounds, Phase 2 without tracking (done)
 
 - Claude, 2026-10-04, directly on `main` (CI tests every push before it deploys).
