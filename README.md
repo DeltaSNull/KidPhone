@@ -82,7 +82,9 @@ Guided Access. It's one self-contained `index.html` (vanilla JS, no build step),
     to hear it again). It grows with the child: big letters, then (after eight right on the first try in a row) mostly
     little letters ("Frog wants a little b!"), then (eight more) letter sounds ("Monkey wants /s/!"), asked about the
     letters done on the Letter Path once there are three; three misses in a row steps back. Letters come a few at a
-    time, the easiest first (s a t i p n); a new group joins once most of the current ones are known. A wrong cookie is
+    time, A to Z like the Letter Path (A to F first); a new group joins once most of the current ones are known. After
+    the first few animals, now and then every cookie's letter is drawn in plain ink, so the child goes by the letter's
+    shape rather than its color (Find in the Letter Path does the same in its last round). A wrong cookie is
     never a loss: a head shake, the voice names the cookie that was tapped ("That's N!") and asks again, and after two
     tries the right one glows. Look-alikes (b and d, p and q) stay apart until the child knows most letters, and c and
     k never meet when the question is a sound. A right cookie gets a crunch and "Yum!"
@@ -91,10 +93,14 @@ Guided Access. It's one self-contained `index.html` (vanilla JS, no build step),
     Three!"), then "Three zebras!" and they all call. One lion, two elephants, three zebras, four penguins, five frogs,
     six ducks, seven monkeys, eight butterflies, nine chicks, ten fish. Tap the frame to count again; the 10 button
     counts ten stars ("Count to ten!") and cheers.
-  - *123 Snack*: an animal walks in thinking of a number: "Puppy wants three bones!" Under it, that many empty boxes and
-    a basket of its food. Each tap on the basket drops one snack into the next box, counted out loud and numbered; when
-    the boxes are full the animal eats them all ("Yum! Three bones!") and earns a sticker. Up to three for the first three
-    animals, then up to five, and up to ten after ten. Monkey and bananas, penguin and fish, puppy and bones, giraffe and
+  - *123 Snack*: an animal walks in thinking of a number: "Puppy wants three bones!" Under it, empty boxes (five, or
+    ten once it asks for more than five), a basket of its food and a green check. Each tap on the basket drops one snack
+    into the next box, counted out loud and numbered; tapping the boxes takes the last one back. The child taps the
+    check when it's right: the animal eats them all ("Yum! Three bones!") and earns a sticker. Too few or too many is
+    said gently ("Two is not enough!", "Four is too many!") and asked again; after two tries the boxes it wants glow.
+    With the parent setting *Help count*, there are exactly as many boxes as it wants and it eats as soon as they're
+    full (for a toddler, or to teach counting first). Up to three for the first three animals, then up to five, and up
+    to ten after ten. Monkey and bananas, penguin and fish, puppy and bones, giraffe and
     leaves, turtle and strawberries, parrot and blueberries, frog and flies, elephant and peanuts, kangaroo and carrots,
     gorilla and oranges, rhino and apples.
   - Parents get a page in settings: every Letter Path letter with its stars (tap one to hear its sound and lesson
@@ -109,8 +115,8 @@ learning progress, guided lessons, new activities, and verification.
 
 | Phase | Planned work |
 | --- | --- |
-| 1 | Parent PIN, app restrictions, School-only mode, and child profiles |
-| 2 | Skill tracking, better feedback, and improvements to existing learning activities |
+| 1 | Parent PIN, app restrictions, School-only mode, play time, School sounds (child profiles on hold) |
+| 2 | Improvements to existing learning activities (skill tracking on hold) |
 | 3 | Today's Adventure, Dino Picnic, Sound Safari, and Animal Delivery |
 | 4 | Sorting, stories, patterns, feelings, and useful parent summaries |
 
@@ -317,7 +323,13 @@ Hold the clock in the top-left corner for **3 seconds**. If you have set a paren
 
 **Forgotten PIN:** there is no child-accessible bypass. If a parent has access to browser developer tools, removing only the local storage key `toyphone.access` resets the PIN and app policy while preserving other ToyPhone data. Otherwise, removing this site's browser/app website data resets the PIN **and also deletes locally stored progress and photos**. Recovery returns the app to Full phone; configure restrictions again before handing it over. The app cannot recover a forgotten PIN.
 
-**Still planned:** child profiles, session limits, separate lesson/effect audio controls, and the redesigned learning experience. See [the roadmap](SCHOOL_ROADMAP.md) and [current handoff](HANDOFF.md).
+### Play time
+
+- **Off** (the default), **15 min**, **30 min** or **1 hour**. When the time is up, the voice says "Almost time for a break!" and a little moon shows in the status bar; the child can finish what they're doing. The session ends as they leave it (or at a menu, or after two minutes): a sleepy owl under the moon covers the toy with "Time for a break! See you soon!" The home button doesn't get past it and no calls come in.
+- Only a grown-up starts more play: hold the clock (and enter the PIN, if set), then **Start a new session**, a longer limit, or Off. The break screen stays until then, even if the toy is closed and opened again.
+- Only time with the toy on screen counts (not settings, not the phone asleep), and each day starts fresh.
+
+**Not planned for now:** child profiles and progress tracking are on hold while the toy is being tested. See [the roadmap](SCHOOL_ROADMAP.md) and [current handoff](HANDOFF.md).
 
 
 **Getting ready**: when the toy opens and Safari still needs an OK for something it's set to use (motion for *Move the
@@ -331,6 +343,10 @@ turned off in settings): no card.
 - Sound when the phone is on silent (on by default)
 - **ABC Snack**: Grows (the default), or fixed at Big letters, Little letters or Sounds, with the current stage and the
   letters the child knows (picked right by name on the first try three times)
+- **123 Snack**: Count myself (the default: the child decides how many and taps the check) or Help count (the boxes
+  show how many)
+- **School sounds**: On (the default), Quieter or Off: animal sounds, crunches and cheers in the School games. The lesson
+  voice always speaks, so a question the child has to listen to never goes silent
 - **Letter Path**: In order (the default: each letter opens when the one before is done) or All open, every letter
   with its stars, and a page for each letter: its words, how to say its sound, *Hear the sound* and *Hear the words*.
   *Start the path over* clears the stars, with a confirm step
@@ -338,16 +354,17 @@ turned off in settings): no card.
   Pretend (no real camera), with a note on whether the camera is allowed and how to allow it
 - **Pretend camera**: Move the phone (the default: the scenes follow the phone; tapping it is what lets Safari ask
   about motion) or Drag only, with a note on whether motion is working
-- **Voice**: a checkbox for each place the talking voice can speak. Animal sounds and music always play.
+- **Voice**: a checkbox for each place the talking voice can speak. Animal sounds and music always play (in School, as
+  *School sounds* says). School and Wild Tap's Find It ask their questions out loud, so those two are always on.
 
   | Checkbox | What the voice says | Starts |
   | --- | --- | --- |
   | Phone calls | The animals talk when you call them and when they call you | on (a call is the animal talking) |
-  | Wild Tap: Find It | "Where is the giraffe?" | on (the game is the question) |
+  | Wild Tap: Find It | "Where is the giraffe?" | always on (the game is the question) |
   | Opening apps | "Hi buddy!", "Phone! Who do you want to call?", "Tap the egg!" | off |
   | Animal names | The animal's name after its sound, Wild Tap facts, hatched babies, what each Snack Time animal wants, finished paintings | off |
   | Camera and Photos | The animals in view and in each picture | off |
-  | School | Letters, sounds, words and counting in the School games | on (the games need it) |
+  | School | Letters, sounds, words and counting in the School games | always on (the games ask out loud) |
   | Keypad numbers | Each number pressed | off |
   | Music | Instrument and song names | off |
 
@@ -389,6 +406,10 @@ The automated test runs in Chromium, so these need a person and the phone:
       checked by measurement and on a spectrogram, never by ear. Hisses (s, f) should be a clean hiss, puffs (p, t, k,
       h) short with no "uh", held sounds (m, n, l, r, v, z) steady
 - [ ] Tracing on the phone: the star follows a finger along each stroke, and a scribble doesn't count
+- [ ] Play time (settings: 15 min): when it's up, the moon shows and the voice gives the heads-up; leaving the game
+      brings the sleepy owl; the clock hold (and PIN) gets a grown-up to *Start a new session*
+- [ ] School sounds Off: the School games are quiet except the voice, and the other apps still make their sounds
+- [ ] 123 Snack, Count myself: adding, taking back and the green check feel right for the 3-year-old; Help count for the toddler
 - [ ] Listen to *If You're Happy and You Know It*. Its melody was written from memory, so check it by ear
       (notes live in the `SONGS` list in `index.html`)
 

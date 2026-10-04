@@ -693,8 +693,10 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   await until(async () => (await said()).includes('Which letter says /a/?'));
   check((await said()).includes('Which letter says /a/?'), 'Find asks "Which letter says /a/?"');
   await shot('28f-find'); await fits('find');
-  for (let r = 0; r < 5 && (await lp()).step === 'find'; r++) { await sleep(500); const s1 = await lp(); await tap(`.lp-card[data-k="${s1.want}"]`); await until(async () => { const x = await lp(); return x.step !== 'find' || x.round !== s1.round; }); }
+  const plains = [];
+  for (let r = 0; r < 5 && (await lp()).step === 'find'; r++) { await sleep(500); const s1 = await lp(); plains[s1.round] = await page.getAttribute('.lp-cards', 'data-plain'); await tap(`.lp-card[data-k="${s1.want}"]`); await until(async () => { const x = await lp(); return x.step !== 'find' || x.round !== s1.round; }); }
   check((await said()).some(t => t.endsWith('a says /a/!')), 'a right letter: "Yes! a says /a/!"');
+  check(plains.length === 3 && plains[2] === '1' && !plains[0], `Find: the last round draws the letters in plain ink, so a is found by its shape ${JSON.stringify(plains)}`);
   ls = await lp();
   check(ls.lesson && ls.step === null && ls.stars.a === 2, `the lesson ends with stars: two, for one wrong tap ${JSON.stringify(ls.stars)}`);
   await until(async () => (await said()).includes('You learned a!'));
@@ -729,8 +731,8 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   await tap('.gamecard[aria-label="ABC Snack"]'); await sleep(1500);
   for (let i = 0; i < 25 && !(await school()).snack.want; i++) await sleep(300);
   sc = await school();
-  check(sc.snack.want && sc.snack.mode === 'big' && sc.snack.choices.length === 2 && sc.snack.choices.includes(sc.snack.want) && 'SATIPN'.includes(sc.snack.want),
-    `ABC Snack: an animal asks for a big letter from the first group (s a t i p n), with 2 cookies ${JSON.stringify(sc.snack)}`);
+  check(sc.snack.want && sc.snack.mode === 'big' && sc.snack.choices.length === 2 && sc.snack.choices.includes(sc.snack.want) && 'ABCDEF'.includes(sc.snack.want),
+    `ABC Snack: an animal asks for a big letter from the first group (A to F, the Letter Path's order), with 2 cookies ${JSON.stringify(sc.snack)}`);
   const asked = () => said().then(a => a.find(t => / wants (an? [A-Z]|a little [a-z])!$/.test(t) && t.toUpperCase().endsWith(` ${sc.snack.want}!`)));
   for (let i = 0; i < 25 && !(await asked()); i++) await sleep(300);   // it waits for the intro line
   check(await page.locator('#asWant .glyph').count() === 0 && !!(await asked()),
@@ -785,24 +787,91 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
     'the 10 button counts ten stars: "Count to ten!", "One!" to "Ten!", then "You counted to ten!"');
   await tap('#numzoo .sc-back'); await sleep(500);
   await tap('.gamecard[aria-label="123 Snack"]'); await sleep(1500);
+  // count myself (the default): boxes that don't give the number away, add and take back, then the green check
+  const WANTS = / wants (one|two|three) \w+!( Add snacks, then tap the check!)?$/;
   let sn = (await until(async () => { const x = await nums(); return x.snack.want && x; })).snack;
-  check(sn.want >= 1 && sn.want <= 3 && sn.cells === sn.want && sn.filled === 0, `123 Snack: an animal wants one to three snacks, with that many empty boxes ${JSON.stringify(sn)}`);
-  await until(async () => (await said()).some(t => / wants (one|two|three) \w+!$/.test(t)));
-  check((await said()).some(t => / wants (one|two|three) \w+!$/.test(t)), `and says how many ("${(await said()).find(t => / wants (one|two|three) /.test(t))}")`);
+  check(sn.mode === 'self' && sn.want >= 1 && sn.want <= 3 && sn.cells === 5 && sn.filled === 0 && sn.feed, `123 Snack: an animal wants one to three snacks; five empty boxes and a green check, so the boxes don't give it away ${JSON.stringify(sn)}`);
+  await until(async () => (await said()).some(t => WANTS.test(t)));
+  check((await said()).some(t => WANTS.test(t) && / Add snacks, then tap the check!$/.test(t)), `and says how many, and how to play ("${(await said()).find(t => WANTS.test(t))}")`);
   check(await page.locator('#nsWant img, #nsWant canvas').count() > 0, 'the number shows in its thought bubble');
   await shot('32-123snack'); await fits('123 snack');
   c0 = (await said()).length;
-  for (let i = 0; i < sn.want; i++) { await tap('#nsBasket'); await sleep(550); }
-  const sn1 = (await nums()).snack; heard = (await said()).slice(c0);
-  check(sn1.got === sn.want && sn1.filled === sn.want && await page.locator('#nsFrame .nz-badge').count() === sn.want, `each tap on the basket puts one snack in the next box, numbered ${JSON.stringify(sn1)}`);
-  check(['One!', 'Two!', 'Three!'].slice(0, sn.want).every(t => heard.includes(t)), `and counts it out loud ${JSON.stringify(heard)}`);
-  await shot('33-123snack-full');
+  for (let i = 0; i <= sn.want; i++) { await tap('#nsBasket'); await sleep(550); }
+  let sn1 = (await nums()).snack; heard = (await said()).slice(c0);
+  check(sn1.got === sn.want + 1 && sn1.filled === sn.want + 1 && await page.locator('#nsFrame .nz-badge').count() === sn.want + 1, `each tap on the basket puts one snack in the next box, numbered ${JSON.stringify(sn1)}`);
+  check(['One!', 'Two!', 'Three!', 'Four!'].slice(0, sn.want + 1).every(t => heard.includes(t)), `and counts it out loud ${JSON.stringify(heard)}`);
+  await shot('33-123snack-plate');
+  c0 = (await said()).length;
+  await tap('#nsFeed'); await sleep(700);
+  const many = `${['One', 'Two', 'Three', 'Four'][sn.want]} is too many!`;
+  check((await nums()).snack.fed === 0 && (await said()).slice(c0).some(t => t.startsWith(many) && WANTS.test(t)), `one too many and the check: "${many}", and it asks again (nothing eaten)`);
+  await tap('#nsFrame'); await sleep(600);
+  sn1 = (await nums()).snack;
+  check(sn1.got === sn.want && sn1.filled === sn.want, `tapping the boxes takes the last snack back ${JSON.stringify(sn1)}`);
+  c0 = (await said()).length;
+  await tap('#nsFeed');
   await until(async () => (await said()).slice(c0).some(t => /^Yum! (One|Two|Three) \w+!$/.test(t)), 25);
   check((await nums()).snack.fed === 1 && await page.locator('#nsFed .s').count() === 1 && (await said()).slice(c0).some(t => /^Yum! (One|Two|Three) \w+!$/.test(t)),
-    'when the boxes are full the animal eats them all: "Yum! Three bones!" and a sticker');
+    'the right number and the check: the animal eats them all, "Yum! Three bones!", and a sticker');
   sn = (await until(async () => { const x = await nums(); return x.snack.want && x; })).snack;
   check(!!sn.want && sn.filled === 0, `the next animal walks in (${sn.animal} wants ${sn.want})`);
+  c0 = (await said()).length;
+  await tap('#nsFeed'); await sleep(600); await tap('#nsFeed'); await sleep(600);
+  sn1 = (await nums()).snack;
+  check(sn1.aim === sn.want && (await said()).slice(c0).some(t => WANTS.test(t)), `after two tries with nothing on the plate, the boxes it wants glow (${sn1.aim})`);
   await home();
+  // help count (a parent setting): the boxes show how many, and the animal eats when they're full
+  await holdClock(); await tapSetting('[data-count="help"]'); await tap('#doneBtn'); await sleep(300);
+  check(await page.evaluate(() => JSON.parse(localStorage.getItem('toyphone.settings')).count) === 'help', 'the 123 Snack setting is saved');
+  await tap('[data-app="school"]'); await sleep(500); await tap('.gamecard[aria-label="123 Snack"]'); await sleep(1500);
+  sn = (await until(async () => { const x = await nums(); return x.snack.want && x; })).snack;
+  check(sn.mode === 'help' && sn.cells === sn.want && !sn.feed, `Help count: as many boxes as it wants, no check button ${JSON.stringify(sn)}`);
+  for (let i = 0; i < sn.want; i++) { await tap('#nsBasket'); await sleep(550); }
+  await until(async () => (await nums()).snack.fed === 1, 25);
+  check((await nums()).snack.fed === 1, 'and it eats as soon as the boxes are full');
+  await home();
+  await holdClock(); await tapSetting('[data-count="self"]'); await tap('#doneBtn'); await sleep(300);
+
+  // --- School sounds: the lesson voice always speaks; animal sounds and cheers in School can be quieter or off
+  await holdClock();
+  check(await page.locator('[data-voice="school"]').isDisabled() && await page.locator('[data-voice="find"]').isDisabled()
+    && await page.getAttribute('[data-voice="school"]', 'aria-checked') === 'true', 'the School and Find It voices are always on (a question the child must hear never goes silent)');
+  await tapSetting('[data-schoolfx="off"]'); await tap('#doneBtn'); await sleep(300);
+  await tap('[data-app="school"]'); await sleep(500); await tap('.gamecard[aria-label="ABC Zoo"]'); await sleep(700);
+  const fxSchool = await page.evaluate(() => window.__toyPhone.fxLevel());
+  c0 = (await said()).length; await tap('#azGrid .az-tile[data-l="C"]'); await sleep(2200);
+  check(fxSchool === 0 && (await said()).slice(c0).includes('C is for cat!'), `School sounds Off: no animal sounds in School (level ${fxSchool}), and the voice still says "C is for cat!"`);
+  await home();
+  check(await page.evaluate(() => window.__toyPhone.fxLevel()) === 1, 'outside School the sounds play as usual');
+  await holdClock(); await tapSetting('[data-schoolfx="on"]'); await tap('#doneBtn'); await sleep(300);
+
+  // --- Play time: when it's up, a heads-up; the session ends as the child leaves the game; a grown-up starts more
+  await holdClock(); await tapSetting('[data-play="15"]');
+  check(/Played 0 of 15 minutes/.test(await page.locator('#playNote').textContent()), 'Play time: 15 minutes, with how much is used');
+  await tap('#doneBtn'); await sleep(300);
+  await tap('[data-app="school"]'); await sleep(500); await tap('.gamecard[aria-label="123 Zoo"]'); await sleep(800);
+  c0 = (await said()).length;
+  await page.evaluate(() => window.__toyPhone.playTime(15 * 60000)); await sleep(1600);
+  let ps = await page.evaluate(() => window.__toyPhone.session());
+  check(ps.ending && !ps.shown && await visible('#breakIc') && (await said()).slice(c0).includes('Almost time for a break!'), `when the time is up: "Almost time for a break!", a moon in the status bar, and the game carries on ${JSON.stringify(ps)}`);
+  await tap('#numzoo .sc-back'); await sleep(900);
+  ps = await page.evaluate(() => window.__toyPhone.session());
+  check(ps.ended && ps.shown && await visible('#breakTime'), `leaving the game ends the session: the sleepy owl covers the toy ${JSON.stringify(ps)}`);
+  await until(async () => (await said()).slice(c0).includes('Time for a break! See you soon!'), 15);
+  check((await said()).slice(c0).includes('Time for a break! See you soon!'), 'and says "Time for a break! See you soon!"');
+  await shot('34-break'); await fits('break');
+  await tap('#homeBtn'); await sleep(600);
+  check(await visible('#breakTime'), 'the home button does not get past it');
+  await page.evaluate(() => window.__toyPhone.ringIn()); await sleep(600);
+  check(await state() !== 'ringing', 'and no calls come in');
+  await page.reload(); await page.waitForFunction(() => window.__toyPhone); await sleep(800);
+  check(await visible('#breakTime'), 'it is still there after closing and opening the toy');
+  await holdClock();
+  check(/Break time/.test(await page.locator('#playNote').textContent()), 'a grown-up holds the clock: settings say it is break time');
+  await tapSetting('#playReset'); await sleep(300);
+  ps = await page.evaluate(() => window.__toyPhone.session());
+  check(!ps.ended && !ps.shown && ps.used === 0, `Start a new session: the owl goes and the time starts over ${JSON.stringify(ps)}`);
+  await tapSetting('[data-play="0"]'); await tap('#doneBtn'); await sleep(300);
 
   // --- PAINT PALS (two players): both kids rub their own picture at the same time
   await tap('[data-app="games"]'); await sleep(500);

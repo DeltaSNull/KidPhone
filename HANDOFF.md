@@ -4,11 +4,18 @@ Read SCHOOL_ROADMAP.md first, then AGENTS.md. This is the agreed plan going forw
 
 ## Active batch
 
-- Claimed: Claude, 2026-10-04, working on `main` (CI tests every push before it deploys).
+- None claimed. The last batch (below) is done; the next unfinished, untracked items are in the roadmap (Phase 3 activities such as Today's Adventure, Dino Picnic, Sound Safari and Animal Delivery, after the owner's real-phone check).
 - Owner's decision: hold off on progress tracking while the toy is being tested. Profiles, Together play, legacy migration (P1-10 to P1-12), the skill model and learning records (P2-01 to P2-08, T-02, T-06) and the parent dashboard (P4-06 to P4-08) are deferred in the roadmap. Don't start them until the owner asks.
-- Scope: P1-08 play-time limit, P1-09 lesson voice vs sound effects; then P2-09 skippable tracing, P2-10 one letter order (A to Z) for ABC Snack and Letter Path, P2-11 letters without their color cue, P2-13 a count-it-yourself 123 Snack (guided counting kept).
 
-## Last batch: parent access controls (done)
+## Last batch: play time, School sounds, Phase 2 without tracking (done)
+
+- Claude, 2026-10-04, directly on `main` (CI tests every push before it deploys).
+- P1-08 Play time: `PLAY` in `index.html`; parent setting Off/15/30/60 min (`settings.play`), session in `toyphone.session` ({day, used, ended}). Heads-up "Almost time for a break!" and `#breakIc` moon; ends as `go()` leaves the activity (`PLAY.navigate()`), at a menu after 4 s, or after 2 min; `#breakTime` owl screen blocks Home (go → accessHome) and calls (`ringIn`, `maybeRing`); persists across reloads until Start a new session (`#playReset`), a longer limit, Off, or a new day. Test hooks: `session()`, `playTime(ms)`.
+- P1-09 School sounds: a `fx` gain between effects and `master` (the voice bypasses it); `syncFx()` in `go()` applies `settings.schoolFx` (on/quiet/off) in School screens only; `busy()` ignores muted effects so the voice doesn't wait for them. VOICE entries with `need:true` (school, find) are always on (`VOICE_NEED`), shown checked and disabled. Hook: `fxLevel()`.
+- P2-10: ABC Snack `ORDER = LETTERS` (A–Z, A–F first). P2-11: `INK` plain-ink glyphs, ~35% of ABC Snack rounds after three animals (`state().plain`, `#asFoods[data-plain]`) and the last Letter Path Find round (`.lp-cards[data-plain]`). P2-13: 123 Snack Count myself (`settings.count`, default `self`): 5 or 10 boxes, basket adds, tapping the frame takes the last back, `#nsFeed` checks; `FEW`/`MANY` lines; boxes glow (`aim`) after two wrong feeds; Help count keeps the old guided flow.
+- 23 new voice clips. Tests: smoke (all three layouts) covers all of the above; parent-controls still passes. Real-phone checks are listed in the README's manual checklist.
+
+## Earlier batch: parent access controls (done)
 
 - Status: Done. Codex implemented it; Claude fixed the last CI failure and integrated it, 2026-10-04.
 - Merged: [PR #2](https://github.com/DeltaSNull/KidPhone/pull/2), rebased onto main as `ca5c487`, `794069e`, `49191c6`. Main run [#26](https://github.com/DeltaSNull/KidPhone/actions/runs/37218633269) passed every test job and deployed to GitHub Pages.
