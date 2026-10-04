@@ -25,6 +25,13 @@ const check = (condition, message) => { assert.ok(condition, message); console.l
     await context.route('https://fonts.gstatic.com/**', r => r.abort());
     await context.route('**/assets/family/family.json', r => r.fulfill({json:{contacts:[]}}));
     const page = await context.newPage(); page.on('pageerror', e => errors.push(e.message));
+    // Reloading while voice clips are still downloading makes WebKit report each cut-off download as a misleading
+    // "access control checks" error (see tests/pages.cjs). Let them finish before every reload instead of ignoring errors.
+    let voiceLoads = 0;
+    const isVoice = r => r.url().includes('/assets/voice/');
+    page.on('request', r => { if (isVoice(r)) voiceLoads++; });
+    ['requestfinished', 'requestfailed'].forEach(ev => page.on(ev, r => { if (isVoice(r)) voiceLoads = Math.max(0, voiceLoads - 1); }));
+    const reload = async () => { for (let i = 0; i < 80 && voiceLoads > 0; i++) await page.waitForTimeout(100); await page.reload(); };
     await page.addInitScript(() => {
       // Only seed once; reload assertions must exercise persisted application writes.
       if (!localStorage.getItem('toyphone.settings')) localStorage.setItem('toyphone.settings', JSON.stringify({incoming:false, camera:'pretend', look:'drag', silent:false}));
@@ -73,7 +80,7 @@ const check = (condition, message) => { assert.ok(condition, message); console.l
     await tap('#homeBtn'); check(!(await visible('#parentGate')), 'Home cancels PIN entry without unlocking');
     // Store permission-enabled preferences to ensure access policy wins over old camera settings.
     await page.evaluate(() => { const s = JSON.parse(localStorage.getItem('toyphone.settings')); s.camera='both'; s.look='move'; localStorage.setItem('toyphone.settings', JSON.stringify(s)); sessionStorage.setItem('restoreCamera','1'); });
-    await page.reload(); await page.waitForFunction(() => window.__toyPhone);
+    await reload(); await page.waitForFunction(() => window.__toyPhone);
     check(await visible('#school') && !(await visible('#ready')), 'reload blocks restored Camera state and skips permission onboarding');
     check(await page.evaluate(() => permissionCalls.motion + permissionCalls.camera) === 0, 'disabled camera requests neither motion nor media permission');
     await unlock('2580');
@@ -117,15 +124,15 @@ const check = (condition, message) => { assert.ok(condition, message); console.l
     // Backgrounding must relock parent settings even if the phone remains on the same page.
     await page.evaluate(() => { Object.defineProperty(document, 'visibilityState', {configurable:true, value:'hidden'}); document.dispatchEvent(new Event('visibilitychange')); });
     check(!(await visible('#settings')), 'backgrounding closes and relocks settings');
-    await page.reload(); await page.waitForFunction(() => window.__toyPhone);
+    await reload(); await page.waitForFunction(() => window.__toyPhone);
     await hold();
     for (let i=0; i<5; i++) await pin('1111');
     check(/wait 30/.test(await page.locator('#pinMessage').textContent()), 'five bad PINs trigger cooldown');
-    await page.reload(); await page.waitForFunction(() => window.__toyPhone); await hold(); await pin('3690');
+    await reload(); await page.waitForFunction(() => window.__toyPhone); await hold(); await pin('3690');
     check(!(await visible('#settings')) && /wait/.test(await page.locator('#pinMessage').textContent()), 'PIN cooldown survives reload');
     // The service worker is intentionally HTTPS-only; exercise actual cached offline launch on the secure localhost origin.
     await page.evaluate(async () => { await navigator.serviceWorker.register('/KidPhone/sw.js', {scope:'/KidPhone/'}); await navigator.serviceWorker.ready; });
-    await page.reload(); await page.waitForFunction(() => navigator.serviceWorker.controller && window.__toyPhone);
+    await reload(); await page.waitForFunction(() => navigator.serviceWorker.controller && window.__toyPhone);
     check(await visible('#school'), 'a launch under the service worker preserves School-only policy');
     if (useWebkit){
       // Playwright WebKit on Linux throws an internal browser error when a service-worker-controlled page is reloaded after
@@ -134,7 +141,7 @@ const check = (condition, message) => { assert.ok(condition, message); console.l
       const cached = await page.evaluate(async () => ({index:!!(await caches.match('index.html')), manifest:!!(await caches.match('manifest.webmanifest'))}));
       check(cached.index && cached.manifest, 'WebKit service worker cached the offline shell ' + JSON.stringify(cached));
     } else {
-      await page.waitForTimeout(800); await context.setOffline(true); await page.reload(); await page.waitForFunction(() => window.__toyPhone);
+      await page.waitForTimeout(800); await context.setOffline(true); await reload(); await page.waitForFunction(() => window.__toyPhone);
       check(await visible('#school'), 'cached offline launch preserves School-only policy');
     }
     check(errors.length === 0, 'no JavaScript errors: ' + errors.join('; '));
