@@ -4,7 +4,9 @@ Read SCHOOL_ROADMAP.md first, then AGENTS.md. This is the agreed plan going forw
 
 ## Active batch
 
-- None claimed. The next batch is below; whoever starts it records a claim here (model, date, branch) first.
+- Claimed: Claude, 2026-10-04, working on `main` (CI tests every push before it deploys).
+- Owner's decision: hold off on progress tracking while the toy is being tested. Profiles, Together play, legacy migration (P1-10 to P1-12), the skill model and learning records (P2-01 to P2-08, T-02, T-06) and the parent dashboard (P4-06 to P4-08) are deferred in the roadmap. Don't start them until the owner asks.
+- Scope: P1-08 play-time limit, P1-09 lesson voice vs sound effects; then P2-09 skippable tracing, P2-10 one letter order (A to Z) for ABC Snack and Letter Path, P2-11 letters without their color cue, P2-13 a count-it-yourself 123 Snack (guided counting kept).
 
 ## Last batch: parent access controls (done)
 
@@ -34,7 +36,7 @@ Read SCHOOL_ROADMAP.md first, then AGENTS.md. This is the agreed plan going forw
 - Final: every CI job passed on `b128461` ([run 37212605934](https://github.com/DeltaSNull/KidPhone/actions/runs/37212605934)): Chromium smoke in portrait, landscape and the short Safari view; Pages/offline and parent controls in Chromium and WebKit; WebKit iPhone smoke. Claude also ran the full Chromium smoke and Pages/offline suites locally on that commit: all passed. The same commit passed again on main in run #26 before deploying.
 - Still pending: T-09 real-iPhone checks of the PIN gate, School only and Custom (Safari and home-screen), and family usability.
 
-## Next batch (not started)
+## Next batch (deferred: progress tracking, see above)
 
 Start P1-10, P1-11, and P1-12: separate learner profiles, untracked Together mode, and preservation of legacy shared progress. ABC Snack currently captures its progress object inside its closure and Letter Path does the same; both need deliberate profile switching/reset/loading. Do not simply rename storage keys and accidentally retain the other child's in-memory records. Keep private child details and observations off GitHub.
 

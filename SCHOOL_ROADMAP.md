@@ -32,30 +32,30 @@ Recommended order: Phase 1 → Phase 2 → Phase 3 → Phase 4. Dino Picnic and 
 - [x] **P1-05 — Camera and call shutdown:** End an active camera or call when disabled; suppress incoming calls in School-only mode. Separate Camera app availability from Pretend/Real/Both settings. **Done — [PR #2](https://github.com/DeltaSNull/KidPhone/pull/2), merged as `49191c6`; Chromium and WebKit checks passed in CI ([run 37212605934](https://github.com/DeltaSNull/KidPhone/actions/runs/37212605934)) and on main before deploying. Real-iPhone check pending (T-09).**
 - [x] **P1-06 — Permission handling:** Skip camera and motion permission requests when those features are unavailable, including startup, settings completion, and resume. **Done — [PR #2](https://github.com/DeltaSNull/KidPhone/pull/2), merged as `49191c6`; Chromium and WebKit checks passed in CI ([run 37212605934](https://github.com/DeltaSNull/KidPhone/actions/runs/37212605934)) and on main before deploying. Real-iPhone check pending (T-09).**
 - [x] **P1-07 — Persistent restrictions:** Preserve access policy across reloads, closing/reopening, updates, and offline launches. **Done — [PR #2](https://github.com/DeltaSNull/KidPhone/pull/2), merged as `49191c6`; Chromium and WebKit checks passed in CI ([run 37212605934](https://github.com/DeltaSNull/KidPhone/actions/runs/37212605934)) and on main before deploying. Real-iPhone check pending (T-09).**
-- [ ] **P1-08 — Session ending:** Add a parent-controlled session limit with a gentle end after the current activity; require parent authorization to extend it.
-- [ ] **P1-09 — Audio controls:** Separate essential lesson narration from optional animal sounds and celebrations. Avoid allowing a listening lesson to silently become unanswerable.
-- [ ] **P1-10 — Separate profiles:** Add independent preschool and toddler profiles with their own progress and adjustable starting levels. Keep profile data on the device.
-- [ ] **P1-11 — Together play:** Provide an untracked shared mode; do not attribute joint answers to an individual child.
-- [ ] **P1-12 — Existing progress migration:** Preserve shared ABC/Letter Path records as legacy history. Do not assign them to either child as demonstrated knowledge.
+- [ ] **P1-08 — Session ending:** Add a parent-controlled session limit with a gentle end after the current activity; require parent authorization to extend it. **In progress — Claude, 2026-10-04 (see [handoff](HANDOFF.md)).**
+- [ ] **P1-09 — Audio controls:** Separate essential lesson narration from optional animal sounds and celebrations. Avoid allowing a listening lesson to silently become unanswerable. **In progress — Claude, 2026-10-04 (see [handoff](HANDOFF.md)).**
+- [ ] **P1-10 — Separate profiles:** Add independent preschool and toddler profiles with their own progress and adjustable starting levels. Keep profile data on the device. **Deferred — owner's decision, 2026-10-04: no progress tracking while the toy is still being tested.**
+- [ ] **P1-11 — Together play:** Provide an untracked shared mode; do not attribute joint answers to an individual child. **Deferred — owner's decision, 2026-10-04: no progress tracking while the toy is still being tested.**
+- [ ] **P1-12 — Existing progress migration:** Preserve shared ABC/Letter Path records as legacy history. Do not assign them to either child as demonstrated knowledge. **Deferred — owner's decision, 2026-10-04: no progress tracking while the toy is still being tested.**
 - [x] **P1-13 — Parent guidance:** Explain that the PIN protects in-app settings and Guided Access keeps the child inside the app. **Done — [PR #2](https://github.com/DeltaSNull/KidPhone/pull/2), merged as `49191c6`; Chromium and WebKit checks passed in CI ([run 37212605934](https://github.com/DeltaSNull/KidPhone/actions/runs/37212605934)) and on main before deploying. Real-iPhone check pending (T-09).**
 
 Acceptance: unavailable sections cannot be reached through Home, nested navigation, restored state, or reload; no disallowed camera/motion prompts appear; disabling a camera stops its stream; profiles and Together play never mix individual progress.
 
 ## Phase 2 — Learning foundation and existing activity improvements
 
-- [ ] **P2-01 — Shared skill model:** Define stable skill IDs and store learner, skill, activity, first response, eventual completion, hint/demonstration use, session/date, and example/context separately.
-- [ ] **P2-02 — Honest learning states:** Use Introduced → Practicing → Independent → Remembered later, with explicit, reviewable transition rules. Completion and stars alone must not imply mastery.
-- [ ] **P2-03 — Separate literacy skills:** Track uppercase recognition, lowercase recognition, and sound–letter knowledge independently; replace ABC Snack's combined per-letter evidence.
-- [ ] **P2-04 — Assisted practice:** Keep gentle correction and demonstrations, but record assisted success separately from an independent answer.
-- [ ] **P2-05 — Repeated-tap handling:** Prevent repeated taps or retries within one question from counting as multiple independent successes.
-- [ ] **P2-06 — Review over time:** Revisit skills on later days and use fresh pictures, arrangements, and contexts before labeling them remembered.
-- [ ] **P2-07 — Difficulty adaptation:** Base changes on evidence for the specific skill, rather than number of animals fed or a global streak; retain parent overrides.
-- [ ] **P2-08 — Letter Path completion:** Separate lesson completion/unlocking from evidence of learning; revise “You learned” messages when only practice was completed.
-- [ ] **P2-09 — Optional tracing:** Track motor practice separately from letter/sound recognition. Preserve a way to skip without treating the current 25-second fallback as a successful trace.
-- [ ] **P2-10 — Consistent teaching sequence:** Align letter lessons and ABC Snack practice around one explicit sequence, while keeping A–Z exploration available.
-- [ ] **P2-11 — Recognition without color cues:** Add occasional neutral-colored letter checks and varied layouts so fixed letter colors do not supply the answer.
+- [ ] **P2-01 — Shared skill model:** Define stable skill IDs and store learner, skill, activity, first response, eventual completion, hint/demonstration use, session/date, and example/context separately. **Deferred — owner's decision, 2026-10-04: no progress tracking while the toy is still being tested.**
+- [ ] **P2-02 — Honest learning states:** Use Introduced → Practicing → Independent → Remembered later, with explicit, reviewable transition rules. Completion and stars alone must not imply mastery. **Deferred — owner's decision, 2026-10-04: no progress tracking while the toy is still being tested.**
+- [ ] **P2-03 — Separate literacy skills:** Track uppercase recognition, lowercase recognition, and sound–letter knowledge independently; replace ABC Snack's combined per-letter evidence. **Deferred — owner's decision, 2026-10-04: no progress tracking while the toy is still being tested.**
+- [ ] **P2-04 — Assisted practice:** Keep gentle correction and demonstrations, but record assisted success separately from an independent answer. **Deferred — owner's decision, 2026-10-04: no progress tracking while the toy is still being tested.**
+- [ ] **P2-05 — Repeated-tap handling:** Prevent repeated taps or retries within one question from counting as multiple independent successes. **Deferred — owner's decision, 2026-10-04: no progress tracking while the toy is still being tested.**
+- [ ] **P2-06 — Review over time:** Revisit skills on later days and use fresh pictures, arrangements, and contexts before labeling them remembered. **Deferred — owner's decision, 2026-10-04: no progress tracking while the toy is still being tested.**
+- [ ] **P2-07 — Difficulty adaptation:** Base changes on evidence for the specific skill, rather than number of animals fed or a global streak; retain parent overrides. **Deferred — owner's decision, 2026-10-04: no progress tracking while the toy is still being tested.**
+- [ ] **P2-08 — Letter Path completion:** Separate lesson completion/unlocking from evidence of learning; revise “You learned” messages when only practice was completed. **Deferred — owner's decision, 2026-10-04: no progress tracking while the toy is still being tested.**
+- [ ] **P2-09 — Optional tracing:** Track motor practice separately from letter/sound recognition. Preserve a way to skip without treating the current 25-second fallback as a successful trace. **In progress — Claude, 2026-10-04 (see [handoff](HANDOFF.md)).**
+- [ ] **P2-10 — Consistent teaching sequence:** Align letter lessons and ABC Snack practice around one explicit sequence, while keeping A–Z exploration available. **In progress — Claude, 2026-10-04 (see [handoff](HANDOFF.md)).**
+- [ ] **P2-11 — Recognition without color cues:** Add occasional neutral-colored letter checks and varied layouts so fixed letter colors do not supply the answer. **In progress — Claude, 2026-10-04 (see [handoff](HANDOFF.md)).**
 - [ ] **P2-12 — ABC/123 Zoo role:** Keep these as exploration and demonstrations; do not count watching or tapping a demonstration as independent skill evidence.
-- [ ] **P2-13 — Counting redesign:** Replace automatic target-sized tray completion with child-selected quantities, add/remove actions, and an explicit Feed/Done choice; retain guided counting as a teaching mode.
+- [ ] **P2-13 — Counting redesign:** Replace automatic target-sized tray completion with child-selected quantities, add/remove actions, and an explicit Feed/Done choice; retain guided counting as a teaching mode. **In progress — Claude, 2026-10-04 (see [handoff](HANDOFF.md)).**
 - [ ] **P2-14 — Shared lesson structure:** Support review, one new concept, guided practice, a fresh independent example, and an offline follow-through activity.
 - [ ] **P2-15 — Accessible interaction:** Preserve spoken prompts, replay buttons, large touch targets, clear visual feedback, and gentle correction; avoid speed-based scoring.
 
@@ -82,9 +82,9 @@ Acceptance: both learner paths are usable, the preschool activities require a me
 - [ ] **P4-03 — Pattern Train:** Complete simple repeating color/size patterns and gradually vary the examples.
 - [ ] **P4-04 — Feelings Friends:** Identify feelings and explore helpful responses to sadness, frustration, waiting, and taking turns.
 - [ ] **P4-05 — Curriculum coverage:** Map activities to language/literacy, early math, thinking/problem-solving, social learning, and motor/offline experiences; include quantity comparison, spatial concepts, and sequencing.
-- [ ] **P4-06 — Parent dashboard:** Show each child's independent skills, assisted practice, recent review, and recommended next activity. Avoid presenting stars or time spent as learning.
-- [ ] **P4-07 — Parent observations:** Let a parent record an offline demonstration separately from automatically observed app results.
-- [ ] **P4-08 — Actionable summaries:** Explain what was practiced, what still needs help, and one useful next step in plain language.
+- [ ] **P4-06 — Parent dashboard:** Show each child's independent skills, assisted practice, recent review, and recommended next activity. Avoid presenting stars or time spent as learning. **Deferred — owner's decision, 2026-10-04: no progress tracking while the toy is still being tested.**
+- [ ] **P4-07 — Parent observations:** Let a parent record an offline demonstration separately from automatically observed app results. **Deferred — owner's decision, 2026-10-04: no progress tracking while the toy is still being tested.**
+- [ ] **P4-08 — Actionable summaries:** Explain what was practiced, what still needs help, and one useful next step in plain language. **Deferred — owner's decision, 2026-10-04: no progress tracking while the toy is still being tested.**
 - [ ] **P4-09 — Refine progression:** Adjust teaching order, difficulty, and learning-state thresholds based on family observations and varied-example checks, without ranking the siblings.
 
 Acceptance: activities revisit prior skills, progress summaries distinguish evidence types, and parents receive useful next steps beyond “completed another game.”
@@ -92,11 +92,11 @@ Acceptance: activities revisit prior skills, progress summaries distinguish evid
 ## Technical work and verification
 
 - [ ] **T-01 — Gradual code organization:** Extract parent policy, profiles, skill tracking, lesson flow, and curriculum data from the large `index.html` as their phases are implemented. Preserve vanilla JS, the existing visual style, and offline deployment; no framework rewrite is required.
-- [ ] **T-02 — Data durability:** Version saved progress and verify migrations, reloads, and updates preserve records without mixing profiles.
+- [ ] **T-02 — Data durability:** Version saved progress and verify migrations, reloads, and updates preserve records without mixing profiles. **Deferred — owner's decision, 2026-10-04: no progress tracking while the toy is still being tested.**
 - [ ] **T-03 — Audio assets:** Generate recordings for new or changed lesson lines, verify clip coverage and offline availability, and retain iPhone audio behavior.
 - [ ] **T-04 — Human phonics review:** Listen to letter names, the 26 sounds, and lesson prompts on an actual phone; check that sounds are clear and appropriate. Automated recognition alone does not complete this task.
 - [x] **T-05 — Access-control tests:** Cover mode switching, nested routes, Home, restored state, reload/offline, camera shutdown, permission suppression, and incoming calls. **Done — `tests/parent-controls.cjs`, run in Chromium and WebKit by CI on every PR and push to main ([PR #2](https://github.com/DeltaSNull/KidPhone/pull/2)). WebKit checks the cached offline shell instead of a forced-offline reload, which crashes Playwright WebKit on Linux; Chromium does the full offline launch.**
-- [ ] **T-06 — Learning-record tests:** Cover profile isolation, Together mode, legacy migration, first responses, hints, retries, tracing skips, and later-session evidence.
+- [ ] **T-06 — Learning-record tests:** Cover profile isolation, Together mode, legacy migration, first responses, hints, retries, tracing skips, and later-session evidence. **Deferred — owner's decision, 2026-10-04: no progress tracking while the toy is still being tested.**
 - [ ] **T-07 — Lesson tests:** Verify counting requires an intentional quantity choice and repeated tapping cannot manufacture independent evidence; verify fresh-example review and session endings.
 - [ ] **T-08 — Browser regression checks:** Use the existing Chromium/WebKit and Pages checks for affected behavior, including the /KidPhone/ subfolder and offline assets.
 - [ ] **T-09 — Real-phone checks:** Verify Safari/home-screen use, portrait/landscape, touch interactions, Guided Access, sound, and session endings on the actual phone.
@@ -113,6 +113,7 @@ Use these as curriculum/design references, not as claims that app scores diagnos
 
 | Date | Change | Evidence |
 | --- | --- | --- |
+| 2026-10-04 | Progress tracking deferred while the toy is being tested (owner's decision): profiles, Together play, migration, the skill model and learning records, and the parent dashboard. Claude took P1-08, P1-09, P2-09, P2-10, P2-11 and P2-13. | [Handoff](HANDOFF.md) |
 | 2026-10-04 | Parent access controls merged and deployed (P1-01 to P1-07, P1-13, T-05). Claude fixed the WebKit offline step of the parent-controls test, the last failing CI job. Real-iPhone checks (T-09) pending. | [PR #2](https://github.com/DeltaSNull/KidPhone/pull/2), [run 37212605934](https://github.com/DeltaSNull/KidPhone/actions/runs/37212605934), main run [#26](https://github.com/DeltaSNull/KidPhone/actions/runs/37218633269) |
 | 2026-10-04 | Implemented parent access controls and shared Codex/Claude continuation workflow; integration and CI checks pending. | [Handoff](HANDOFF.md) |
 | 2026-10-04 | Recorded the reviewed School roadmap and progress checklist. All implementation tasks remain open. | Baseline: `413fbb1`; this documentation commit |
