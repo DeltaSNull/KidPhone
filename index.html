@@ -747,6 +747,21 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img{image-rendering:auto}
 .solo .db-b, .solo .pp-b{display:none}
 
 /* ---------- Parent settings ---------- */
+#parentGate{position:absolute; inset:0; z-index:58; display:grid; place-items:center; padding:12px; background:rgba(59,43,32,.65)}
+.pin-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin:8px 0}
+.pin-grid .sbtn{min-height:48px; font-size:24px}
+#pinDots{font-size:26px; text-align:center; letter-spacing:12px; min-height:32px; margin:8px 0}
+#pinMessage{min-height:36px}
+#parentGate .sheet{max-width:340px}
+#parentGate .shead{position:static}
+@media (orientation:landscape) and (max-height:500px){
+  #parentGate .sheet{width:min(100%,560px); max-width:560px; display:grid; grid-template-columns:1fr 1fr; column-gap:16px}
+  #parentGate .shead{grid-column:1 / -1}
+  #pinMessage{grid-column:1; grid-row:2; align-self:center; min-height:0}
+  #pinDots{grid-column:1; grid-row:3; align-self:center}
+  #pinKeys{grid-column:2; grid-row:2 / span 3}
+  #parentGate .sheet > p:last-child{grid-column:1; grid-row:4; align-self:center}
+}
 #settings{position:absolute; inset:0; z-index:50; display:grid; place-items:center; padding:12px; background:rgba(59,43,32,.5)}
 #ready{position:absolute; inset:0; z-index:55; display:grid; place-items:center; padding:12px; background:rgba(59,43,32,.5)}
 #ready[hidden]{display:none}
@@ -1055,10 +1070,28 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img{image-rendering:auto}
       </div>
     </section>
 
-    <!-- PARENT SETTINGS (hold the clock for 3 seconds) -->
+    <section id="parentGate" hidden role="dialog" aria-modal="true" aria-labelledby="pinTitle">
+      <div class="sheet">
+        <div class="shead"><h2 id="pinTitle">Parent PIN</h2><button class="sbtn" id="pinCancel">Cancel</button></div>
+        <p class="note" id="pinMessage" aria-live="polite"></p>
+        <div id="pinDots" aria-label="PIN entry"></div>
+        <div class="pin-grid" id="pinKeys"></div>
+        <p class="note">Forgot your PIN? Recovery instructions are in the repository README under Parent settings.</p>
+      </div>
+    </section>
+
+    <!-- PARENT SETTINGS (hold the clock for 3 seconds, then enter the configured PIN) -->
     <section id="settings" hidden aria-label="Parent settings">
       <div class="sheet">
         <div class="shead"><h2>Parent settings</h2><button class="sbtn done" id="doneBtn">Done</button></div>
+        <div class="srow"><span>App access</span>
+          <div class="seg"><button class="sbtn" data-access="school">School only</button><button class="sbtn" data-access="custom">Custom</button><button class="sbtn" data-access="full">Full phone</button></div>
+          <span class="vhint">School only opens straight into School and keeps Home there. Custom lets you choose the available apps. Set a parent PIN to protect restrictions.</span>
+          <span class="vhint" id="accessNote" aria-live="polite"></span>
+        </div>
+        <div class="vlist" id="accessApps" hidden></div>
+        <div class="srow"><span>Parent PIN</span><button class="sbtn" id="parentPinBtn">Set PIN</button>
+          <span class="vhint">A four-digit PIN protects settings on this device. Use iPhone Guided Access to keep the child inside ToyPhone. Your PIN and app choices stay on this device.</span></div>
         <div class="srow"><span>Incoming calls</span>
           <div class="seg"><button class="sbtn" data-incoming="1">On</button><button class="sbtn" data-incoming="0">Off</button></div></div>
         <div class="srow"><span>Volume</span><div class="seg" id="volSeg"></div></div>
@@ -4487,6 +4520,25 @@ settings.voice = Object.assign(Object.fromEntries(VOICE.map(v => [v.k, v.on])), 
 const voiceOn = area => !area || !!settings.voice[area];
 const saveSettings = () => store.set('settings', settings);
 
+/* Access policy is separate from sound/game settings and applies to all navigation and device entry points. */
+const ACCESS_APPS = ['school','games','camera','photos','music','phone'];
+const ACCESS_GROUP = {wildtap:'games', dinobuddies:'games', snacktime:'games', paintpals:'games',
+  letterpath:'school', abczoo:'school', abcsnack:'school', numzoo:'school', numsnack:'school'};
+const savedAccess = store.get('access', {}) || {};
+let access = {v:1, mode:['full','school','custom'].includes(savedAccess.mode) ? savedAccess.mode : 'full',
+  apps:Object.fromEntries(ACCESS_APPS.map(k => [k, savedAccess.apps?.[k] !== false])),
+  pin:savedAccess.pin?.salt && savedAccess.pin?.hash ? savedAccess.pin : null,
+  attempts:Math.max(0, Number(savedAccess.attempts) || 0), until:Math.max(0, Number(savedAccess.until) || 0)};
+if (!ACCESS_APPS.some(k => access.apps[k])) access.apps.school = true;
+const appAllowed = name => name === 'home' || (ACCESS_APPS.includes(ACCESS_GROUP[name] || name) &&
+  (access.mode === 'full' || (access.mode === 'school' ? (ACCESS_GROUP[name] || name) === 'school' : access.apps[ACCESS_GROUP[name] || name])));
+const accessHome = () => access.mode === 'school' ? 'school' : 'home';
+function saveAccess(next){
+  if (!store.set('access', next)){ $('#accessNote').textContent = 'Could not save. Free some browser storage and try again before handing over the phone.'; return false; }
+  access = next; return true;
+}
+
+
 /* ---------- Sound: synth effects ----------
    iPhone notes, learned the hard way:
    - The phone's own speech voice and "playback" mode don't mix: each spoken sentence takes the speaker away from the
@@ -5055,7 +5107,7 @@ const APPS = ['home','phone','camera','photos','music','games','wildtap','dinobu
 let current = 'home';
 const APP_SAY = {phone:'Phone! Who do you want to call?', camera:'Camera! Slide to look around. Then press the big button!', music:'Music! Let\'s play!', games:'Games! Pick a game!'};
 function go(name, fromEl){
-  if (!APPS.includes(name)) name = 'home';
+  if (!APPS.includes(name) || !appAllowed(name) || name === 'home') name = accessHome();
   clearLater(); hush();
   leaveApp(current);
   current = name;
@@ -5067,6 +5119,7 @@ function go(name, fromEl){
   enterApp(name);
 }
 function enterApp(name){
+  if (!appAllowed(name)) return;
   if (name === 'home'){ if (incomingDue) later(() => maybeRing(), 3500); }
   if (name === 'phone'){ showPhoneTab('contacts', true); say(APP_SAY.phone, 0, 'menus'); }
   if (name === 'camera'){ startCamera(); say(CAM_SAY[cam.mode] || APP_SAY.camera, 0, 'menus'); }
@@ -5222,6 +5275,7 @@ function stopCallSounds(){
   hush();
 }
 function dial(c){
+  if (!appAllowed('phone')) return;
   if (call) return;
   openCall(c, 'dialing');
   say('Calling ' + sp(c) + '!', 0, 'calls');
@@ -5302,16 +5356,18 @@ tap(callFace, () => { if (call && call.state === 'talking' && !call.c.family){ a
 let incomingTimer = null, incomingDue = false;
 function scheduleIncoming(){
   clearTimeout(incomingTimer); incomingDue = false;
-  if (!settings.incoming || !unlocked) return;
+  if (!appAllowed('phone') || !settings.incoming || !unlocked) return;
   incomingTimer = setTimeout(() => { incomingDue = true; maybeRing(); }, (60 + Math.random()*120) * 1000);
 }
 function maybeRing(force){
+  if (!appAllowed('phone') || !$('#parentGate').hidden) return;
   if (!force && (!incomingDue || !settings.incoming)) return;
   if (call || current !== 'home' || !$('#settings').hidden || document.visibilityState !== 'visible') return;
   incomingDue = false;
   ringIn(rnd(CONTACTS));
 }
 function ringIn(c){
+  if (!appAllowed('phone')) return;
   if (call) return;
   openCall(c, 'ringing');
   call.bus = makeBus();
@@ -5767,8 +5823,9 @@ function onOrient(e){
     AR.ok = true; AR.yaw = null; renderLookNote();
   }
 }
-function listenMotion(){ if (!AR.listening){ AR.listening = true; window.addEventListener('deviceorientation', onOrient); } }
+function listenMotion(){ if (appAllowed('camera') && settings.look === 'move' && !AR.listening){ AR.listening = true; window.addEventListener('deviceorientation', onOrient); } }
 function askMotion(){
+  if (!appAllowed('camera') || settings.look !== 'move') return Promise.resolve('disabled');
   const D = window.DeviceOrientationEvent;
   if (!D){ AR.perm = 'none'; return Promise.resolve('none'); }
   if (typeof D.requestPermission !== 'function'){ AR.perm = 'granted'; listenMotion(); return Promise.resolve('granted'); }
@@ -5825,6 +5882,7 @@ function setScene(k, speak){
 }
 /* opening the Camera: the mode the kids used last (of the ones a parent allows), pretend or real */
 function startCamera(){
+  if (!appAllowed('camera')) return;
   if (realBroken()) real.state = 'off';   // each time the camera opens it tries again (a parent may have allowed it since)
   const modes = camModes(), saved = store.get('camMode', '');
   cam.mode = modes.includes(saved) ? saved : modes[0];
@@ -6213,13 +6271,14 @@ const needsFx = () => { const L = LOOKS[curLook()]; return !!(L.px || L.fn || L.
 
 /* ----- the camera itself ----- */
 function openStream(facing){
+  if (!appAllowed('camera') || settings.camera === 'pretend') return Promise.resolve(false);
   if (real.stream && real.facing === facing && real.stream.active) return Promise.resolve(true);
   if (real.pending && real.pendingFacing === facing) return real.pending;
   closeStream();
   if (!canCamera()){ real.state = 'unsupported'; return Promise.resolve(false); }
   const my = ++real.seq; real.state = 'starting'; real.pendingFacing = facing;
-  const p = Promise.resolve().then(() => navigator.mediaDevices.getUserMedia({audio:false, video:{facingMode:{ideal:facing}, width:{ideal:1280}, height:{ideal:720}}})).then(async s => {
-    if (my !== real.seq){ s.getTracks().forEach(t => t.stop()); return false; }   // the kids moved on while it was starting
+  const p = Promise.resolve().then(() => { if (!appAllowed('camera') || settings.camera === 'pretend' || my !== real.seq) throw new Error('Camera disabled'); return navigator.mediaDevices.getUserMedia({audio:false, video:{facingMode:{ideal:facing}, width:{ideal:1280}, height:{ideal:720}}}); }).then(async s => {
+    if (my !== real.seq || !appAllowed('camera')){ s.getTracks().forEach(t => t.stop()); return false; }   // the kids moved on while it was starting
     real.stream = s; real.facing = facing; real.state = 'live'; real.ok = true; real.pending = null; try{ sessionStorage.setItem('toyphone.camOK', '1'); }catch(e){}
     camVideo.srcObject = s;
     try{ await camVideo.play(); }catch(e){}
@@ -6249,6 +6308,7 @@ function closeStream(){
   if (real.state === 'live' || real.state === 'starting') real.state = 'off';
 }
 async function startReal(){
+  if (!appAllowed('camera')) return;
   const mode = cam.mode; if (mode === 'safari') return;
   updateLookUI(); placeLenses();
   const ok = await openStream(mode === 'selfie' ? 'user' : 'environment');
@@ -6259,6 +6319,7 @@ async function startReal(){
 }
 /* while the settings sheet is up: ask for the camera now, so Safari's question comes while a parent is there */
 async function probeCamera(){
+  if (!appAllowed('camera') || settings.camera === 'pretend') return;
   if (current === 'camera'){ startCamera(); return; }
   real.state = 'off';
   await openStream('environment');
@@ -8067,9 +8128,111 @@ function clearHold(){ clearTimeout(holdT); clearTimeout(holdShow); clock.classLi
 clock.addEventListener('pointerdown', e => {
   e.preventDefault(); clearHold(); retrigger(clock, 'wig'); FX.tick();
   holdShow = setTimeout(() => clock.classList.add('holding'), 600);
-  holdT = setTimeout(() => { clearHold(); openSettings(); }, 3000);
+  holdT = setTimeout(() => { clearHold(); requestSettings(); }, 3000);
 });
 ['pointerup','pointercancel','pointerleave'].forEach(t => clock.addEventListener(t, clearHold));
+let gateMode = 'unlock', gateDigits = '', gateFirst = '', gateBusy = false, gateEpoch = 0, gateAfter = null;
+async function pinHash(pin, salt){
+  if (!globalThis.crypto?.subtle) throw new Error('PIN setup requires HTTPS or localhost.');
+  const bytes = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(salt + ':' + pin));
+  return Array.from(new Uint8Array(bytes), b => b.toString(16).padStart(2, '0')).join('');
+}
+function paintPin(){ $('#pinDots').textContent = '*'.repeat(gateDigits.length) + '_'.repeat(4 - gateDigits.length); }
+function cancelGate(){ gateEpoch++; gateBusy = false; gateDigits = gateFirst = ''; gateAfter = null; $('#parentGate').hidden = true; }
+function openGate(mode, after){
+  cancelGate(); gateMode = mode; gateAfter = after || null;
+  $('#settings').hidden = true; hush(); $('#parentGate').hidden = false;
+  $('#pinTitle').textContent = mode === 'unlock' ? 'Parent PIN' : 'Set parent PIN';
+  $('#pinMessage').textContent = mode === 'unlock' ? 'Enter your four-digit PIN.' : 'Choose a four-digit PIN. You will enter it twice.';
+  paintPin(); $('#pinCancel').focus();
+}
+function requestSettings(){ if (access.pin) openGate('unlock'); else openSettings(); }
+async function enterPinDigit(d){
+  if ($('#parentGate').hidden || gateBusy) return;
+  if (Date.now() < access.until){ $('#pinMessage').textContent = 'Please wait ' + Math.ceil((access.until - Date.now())/1000) + ' seconds before trying again.'; return; }
+  gateDigits += d; paintPin(); if (gateDigits.length < 4) return;
+  if (gateMode === 'create'){
+    gateFirst = gateDigits; gateDigits = ''; gateMode = 'confirm'; paintPin();
+    $('#pinMessage').textContent = 'Enter the same PIN again to confirm.'; return;
+  }
+  const epoch = gateEpoch, digits = gateDigits; gateDigits = ''; gateBusy = true;
+  try{
+    if (gateMode === 'unlock'){
+      const hash = await pinHash(digits, access.pin.salt); if (epoch !== gateEpoch) return;
+      if (hash !== access.pin.hash){
+        const attempts = access.attempts + 1, until = attempts >= 5 ? Date.now() + 30000 : 0;
+        // Keep the current session's cooldown even if browser storage is full.
+        const next = {...access, attempts:until ? 0 : attempts, until}; store.set('access', next); access = next;
+        $('#pinMessage').textContent = until ? 'Please wait 30 seconds before trying again.' : 'That PIN did not match. Try again.'; return;
+      }
+      const next = {...access, attempts:0, until:0}; store.set('access', next); access = next;
+      cancelGate(); openSettings();
+    } else {
+      if (digits !== gateFirst){ gateMode = 'create'; gateFirst = ''; $('#pinMessage').textContent = 'The PINs did not match. Choose your PIN again.'; return; }
+      const salt = Array.from(crypto.getRandomValues(new Uint8Array(16)), b => b.toString(16).padStart(2, '0')).join('');
+      const hash = await pinHash(digits, salt); if (epoch !== gateEpoch) return;
+      if (!saveAccess({...access, pin:{salt, hash}, attempts:0, until:0})){ $('#pinMessage').textContent = 'Could not save the PIN. Free browser storage, then try again.'; return; }
+      const after = gateAfter; cancelGate(); openSettings(); if (after) after();
+    }
+  } catch(e){ if (epoch === gateEpoch) $('#pinMessage').textContent = 'Could not save or check the PIN. Open ToyPhone over HTTPS and try again.'; }
+  finally{ if (epoch === gateEpoch){ gateBusy = false; paintPin(); } }
+}
+['1','2','3','4','5','6','7','8','9','Back','0','Clear'].forEach(key => {
+  const b = document.createElement('button'); b.className = 'sbtn'; b.dataset.pin = key; b.textContent = key;
+  const press = () => { if (gateBusy) return; if (key === 'Back') gateDigits = gateDigits.slice(0,-1); else if (key === 'Clear') gateDigits = ''; else { enterPinDigit(key); return; } paintPin(); };
+  tap(b, press, {bump:false});
+  b.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); press(); } });
+  $('#pinKeys').appendChild(b);
+});
+tap($('#pinCancel'), cancelGate);
+$('#pinCancel').addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); cancelGate(); } });
+$('#parentGate').addEventListener('keydown', e => {
+  if (e.key === 'Escape'){ cancelGate(); return; }
+  if (/^[0-9]$/.test(e.key)){ e.preventDefault(); enterPinDigit(e.key); }
+  else if (e.key === 'Backspace' && !gateBusy){ e.preventDefault(); gateDigits = gateDigits.slice(0,-1); paintPin(); }
+  else if (e.key === 'Tab'){
+    const bs = $$('button', $('#parentGate')), i = bs.indexOf(document.activeElement);
+    if (e.shiftKey && i <= 0){ e.preventDefault(); bs[bs.length-1].focus(); }
+    else if (!e.shiftKey && i === bs.length-1){ e.preventDefault(); bs[0].focus(); }
+  }
+});
+function renderAccess(){
+  $$('[data-access]').forEach(b => { const on = b.dataset.access === access.mode; b.classList.toggle('on', on); b.setAttribute('aria-pressed', String(on)); });
+  $('#accessApps').hidden = access.mode !== 'custom';
+  $$('[data-allow]').forEach(b => { const on = access.apps[b.dataset.allow]; b.classList.toggle('on', on); b.setAttribute('aria-checked', String(on)); });
+  $('#parentPinBtn').textContent = access.pin ? 'Change PIN' : 'Set PIN';
+  $('#accessNote').textContent = access.mode === 'school' ? 'School only is on. Other apps and incoming calls are blocked.' : access.pin ? 'Settings are protected by your PIN.' : 'No PIN yet. Set one before handing over the phone.';
+  $$('[data-camera], [data-look]').forEach(b => b.disabled = !appAllowed('camera'));
+  $$('[data-incoming], #testRing').forEach(b => b.disabled = !appAllowed('phone'));
+}
+function applyAccess(){
+  $$('.appicon').forEach(b => b.hidden = !appAllowed(b.dataset.app));
+  if (!appAllowed('camera')){
+    stopCamera(); window.removeEventListener('deviceorientation', onOrient); AR.listening = false; AR.ok = false;
+    READY.motion = READY.camera = false; $('#ready').hidden = true;
+  }
+  if (!appAllowed('phone') && call){ stopCallSounds(); closeCall(); }
+  scheduleIncoming();
+  if (!appAllowed(current) || (current === 'home' && access.mode === 'school')) go(accessHome());
+  renderAccess();
+}
+function setAccessMode(mode){
+  const change = () => { if (saveAccess({...access, mode})){ applyAccess(); FX.pop(); } };
+  if (mode !== 'full' && !access.pin) openGate('create', change); else change();
+}
+$$('[data-access]').forEach(b => tapInScroll(b, () => setAccessMode(b.dataset.access)));
+ACCESS_APPS.forEach(k => {
+  const b = document.createElement('button'); b.className = 'vopt'; b.dataset.allow = k; b.setAttribute('role', 'checkbox');
+  b.innerHTML = '<span class="vbox">' + ART.check + '</span><span class="vtxt"><b>' + k[0].toUpperCase() + k.slice(1) + '</b></span>';
+  tapInScroll(b, () => {
+    if (access.mode !== 'custom' || !access.pin) return;
+    const apps = {...access.apps, [k]:!access.apps[k]};
+    if (!ACCESS_APPS.some(a => apps[a])){ $('#accessNote').textContent = 'Keep at least one app available.'; return; }
+    if (saveAccess({...access, apps})) applyAccess();
+  });
+  $('#accessApps').appendChild(b);
+});
+tapInScroll($('#parentPinBtn'), () => openGate('create'));
 const volSeg = $('#volSeg');
 ['Quiet','Soft','Medium','Loud'].forEach((l, i) => { const b = document.createElement('button'); b.className = 'sbtn'; b.textContent = l; b.dataset.vol = i; volSeg.appendChild(b); });
 /* one checkbox per place the voice can talk; a scroll that starts on a row doesn't flip it */
@@ -8089,7 +8252,7 @@ function renderSettings(){
   const n = Photos.list.length; $('#photoCount').textContent = n + (n === 1 ? ' photo' : ' photos');
   $('#clearBtn').disabled = !n;
 }
-function openSettings(){ hush(); $('#confirmClear').hidden = true; $('#confirmPath').hidden = true; renderSettings(); pickVoice(); showSound(); $('#settings').hidden = false; FX.cheer(); }
+function openSettings(){ renderAccess(); hush(); $('#confirmClear').hidden = true; $('#confirmPath').hidden = true; renderSettings(); pickVoice(); showSound(); $('#settings').hidden = false; FX.cheer(); }
 /* is the sound engine running? (the animals, drums and ringtones all come from it; the voice doesn't) */
 function showSound(){
   const n = $('#soundNote'); if (!n) return;
@@ -8099,7 +8262,7 @@ function showSound(){
       : ' It follows the ring/silent switch: if it\'s quiet, flip the switch to ring.')
     + (rebuilds ? ` (Restarted ${rebuilds} time${rebuilds > 1 ? 's' : ''}.)` : '');
 }
-function closeSettings(){ $('#settings').hidden = true; if (current === 'letterpath') LetterPath.refresh(); }
+function closeSettings(){ cancelGate(); $('#settings').hidden = true; if (current === 'letterpath') LetterPath.refresh(); }
 $$('[data-incoming]').forEach(b => tap(b, () => { settings.incoming = b.dataset.incoming === '1'; saveSettings(); renderSettings(); scheduleIncoming(); }));
 $$('[data-abc]').forEach(b => tap(b, () => { settings.abc = b.dataset.abc; saveSettings(); renderSettings(); FX.cheer(); }));
 $$('[data-path]').forEach(b => tap(b, () => { settings.path = b.dataset.path; saveSettings(); renderSettings(); FX.cheer(); }));
@@ -8134,6 +8297,7 @@ tap($('#doneBtn'), () => { closeSettings(); FX.pop(); });
    the questions in turn. Nothing to ask (allowed before, or turned off in settings): no card. */
 const READY = {motion:false, camera:false};
 async function readyCheck(){
+  if (!appAllowed('camera')) return;
   READY.motion = settings.look === 'move' && typeof window.DeviceOrientationEvent?.requestPermission === 'function' && (await askMotion()) !== 'granted' && AR.perm !== 'denied';
   if (settings.look === 'move' && !READY.motion) askMotion().then(renderLookNote);   // (no question here: Safari only reuses an earlier yes)
   READY.camera = false;
@@ -8141,7 +8305,7 @@ async function readyCheck(){
   if (!camOK && settings.camera !== 'pretend' && canCamera() && navigator.mediaDevices && navigator.permissions){
     try{ READY.camera = (await navigator.permissions.query({name:'camera'})).state === 'prompt'; }catch(e){}
   }
-  if (!READY.motion && !READY.camera) return;
+  if (!appAllowed('camera') || (!READY.motion && !READY.camera)) return;
   $('#readyWhat').innerHTML = (READY.motion ? '<li><b>Motion</b>: the pretend camera looks around as the phone moves</li>' : '') + (READY.camera ? '<li><b>Camera</b>: real photos and selfies (pictures only, never the microphone)</li>' : '');
   $('#ready').hidden = false;
 }
@@ -8163,7 +8327,7 @@ let lastTouch = 0;
 document.addEventListener('touchend', e => { const now = Date.now(); if (now - lastTouch < 350 && !inScroll(e)) e.preventDefault(); lastTouch = now; }, {passive:false});
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible'){ keepAwake(); updateClock(); if (current === 'camera' && cam.mode !== 'safari') startReal(); if (settings.look === 'move' && !AR.listening) askMotion().then(renderLookNote); }
-  else { stopSong(); if (call){ stopCallSounds(); closeCall(); } closeStream(); stopFx(); }   // the camera never runs off screen
+  else { closeSettings(); stopSong(); if (call){ stopCallSounds(); closeCall(); } closeStream(); stopFx(); }   // the camera never runs off screen
 });
 let resizeT = 0;
 window.addEventListener('resize', () => { clearTimeout(resizeT); resizeT = setTimeout(() => { fillScreen(); fitContacts(); if (current === 'camera'){ sizeCamera(); if (cam.mode !== 'safari'){ updateLookUI(); placeLenses(); } } if (!bgWatch) paintBackgrounds(); }, 120); });
@@ -8178,10 +8342,11 @@ buildContacts();
 loadFamily();
 loadSounds();
 loadVoiceBank();
+applyAccess();
 readyCheck();
 seedPhotos();
 window.claude?.hot?.snapshot?.(() => ({ app: current, scene: cam.scene }));
-const start = (data) => { if (data && data.scene && SCENES[data.scene]) cam.scene = data.scene; if (data && data.app && data.app !== 'home') go(data.app); };
+const start = (data) => { if (data && data.scene && SCENES[data.scene]) cam.scene = data.scene; go(data?.app || accessHome()); };
 window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? {});
 /* Every line the toy can say, for tools/voices to record: the narrator's lines, then each animal's own phone lines */
 function voiceLines(){

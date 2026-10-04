@@ -1,25 +1,50 @@
 # Model handoff
 
-Read SCHOOL_ROADMAP.md first. It is the agreed plan for development; this file records where to resume.
+Read SCHOOL_ROADMAP.md first, then AGENTS.md. This is the agreed plan going forward for both Claude and Codex. For “continue,” resume the next unfinished item here after fetching current main and inspecting open PRs.
 
-## Active batch
+## Current batch
 
-- Status: In progress — Codex, 2026-10-04.
-- Starting main: 3ac581338293cfef565574c9552939b95514fd58.
-- Scope: Phase 1 parental access controls (PIN, School-only/Custom/Full modes, navigation and camera/call restrictions), focused tests, and shared continuation instructions.
-- Intended branch: codex/school-parent-controls.
-- Files expected to change: index.html, tests/parent-controls.cjs, package.json, CI workflow, README.md, SCHOOL_ROADMAP.md, HANDOFF.md.
-- Claude: read this and the roadmap before any work. Avoid concurrent edits to the listed files while this batch is active; inspect the branch/PR for updated work before starting.
-- Profiles, session limits, audio-control redesign, learning logic, and new lessons are not part of this first batch.
+- Status: In progress — Codex, 2026-10-04; implementation complete, validation/integration underway.
+- Branch: `codex/school-parent-controls` (based on `ddee957`).
+- Scope: P1-01 through P1-07 and P1-13: parent PIN, School-only/Custom/Full phone, navigation enforcement, camera/call shutdown, permission suppression, local persistence, and parent guidance.
+- Files changed: `index.html`, `tests/parent-controls.cjs`, `package.json`, `.github/workflows/deploy-pages.yml`, `README.md`, roadmap, and this handoff.
+- Do not duplicate the active batch. Inspect its PR and CI first. Changes are not available on the live site until integrated and deployed.
 
-## Next continuation
+## Implemented behavior
 
-Finish or review the active batch first. Once it is integrated, proceed to separate child profiles and legacy-progress migration (P1-10 through P1-12). Check the final handoff for exact tests, limitations, and remaining task order.
+- Full phone remains the initial experience. School-only/Custom require creating and confirming a four-digit PIN. Clock hold opens the PIN gate once configured; changing the PIN happens inside unlocked settings.
+- Salted SHA-256 digest and access choices are local under `toyphone.access`; no plaintext PIN is stored. Five wrong attempts trigger a persisted 30-second cooldown. Home, settings completion, and backgrounding close the parent session.
+- School-only routes Home and restored/disabled screens to School. Custom has independent app toggles and requires at least one available app. Nested school/game screens inherit their section policy.
+- Disabling Camera stops active/pending streams and motion listening. Permission entry points check policy. Disabling Phone ends calls and suppresses incoming/test rings.
+- Failed persistence is reported; a failed policy save does not falsely apply it. PIN recovery and Guided Access are documented in README.
 
-## Working convention
+## Validation so far
 
-For "continue": fetch current main, inspect open PRs, read the roadmap and this handoff, and resume the next incomplete item. Record unfinished work explicitly. Do not mark a feature complete just because it appears in the plan.
+- Focused Chromium parent-control checks passed, including setup confirmation, wrong/changed PINs, cooldown across reloads, blocked nested routes, Custom selections, calls, live fake-camera shutdown, background relock, and cached offline launch.
+- Landscape PIN layout was inspected and adjusted so all keypad rows fit. Final layout checks passed; a restored-Camera startup case was then added for CI.
+- Chromium Pages/offline suite passed.
+- Existing portrait smoke suite is still running at this checkpoint.
+- WebKit browser downloaded, but local host dependencies could not be installed (system package permissions). Run the WebKit suites in GitHub CI; do not claim local WebKit validation.
+- Real iPhone Safari/home-screen and family usability checks remain pending. Automated tests do not verify a child's learning.
 
-## Verification
+## Next actions for this batch
 
-No implementation tests have run for this batch yet. Previous review was source-code review; actual iPhone/family validation remains pending.
+1. Finish the portrait smoke run and inspect any failures.
+2. Run/inspect CI for this branch, including both parent-control engines and existing gates. Resolve failures without weakening assertions.
+3. Recheck current main for concurrent Claude changes, integrate without overwriting them, then verify deployment.
+4. Check off verified roadmap tasks and update this handoff with final commit/PR, test results, and remaining limitations.
+
+## Next implementation batch after integration
+
+Start P1-10, P1-11, and P1-12: separate learner profiles, untracked Together mode, and preservation of legacy shared progress. ABC Snack currently captures its progress object inside its closure and Letter Path does the same; both need deliberate profile switching/reset/loading. Do not simply rename storage keys and accidentally retain the other child's in-memory records. Keep private child details and observations off GitHub.
+
+Then finish P1-08 (session ending) and P1-09 (lesson/effect audio controls), followed by Phase 2. Leave the roadmap as the source of truth for all 56 items.
+
+## Explicitly unfinished / limitations
+
+- No individual profiles, Together learning mode, migration, session limits, or separate lesson/effect audio controls yet.
+- Learning scores, tracing skip, lesson progression, and activities are unchanged by this batch. No new lesson narration needs recording.
+- Parent policy is still inside the single-file app; gradual module extraction (T-01) remains future work.
+- PIN is a toddler-facing settings gate, not device security or a server account. Clearing website storage resets it and may erase progress/photos; README explains targeted vs full recovery.
+- Policy is stored per browser/home-screen storage. Configure the copy handed to the child; there is no cloud sync.
+- GitHub instructions support switching models, but another model cannot see uncommitted/unpushed edits. Read current branch/PR state before continuing and avoid concurrent edits to the same files.

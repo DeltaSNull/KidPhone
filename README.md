@@ -102,7 +102,8 @@ Guided Access. It's one self-contained `index.html` (vanilla JS, no build step),
     stage and the letters it has seen the child know, with a way to fix it at big letters, little letters or sounds.
 ## School roadmap and progress
 
-Track the planned learning improvements in [School learning roadmap](SCHOOL_ROADMAP.md).
+Track the learning improvements in [School learning roadmap](SCHOOL_ROADMAP.md).
+For a Codex/Claude handoff or a request to “continue,” read [HANDOFF.md](HANDOFF.md) and [AGENTS.md](AGENTS.md) before editing.
 The checklist covers parental controls, School-only mode, separate child profiles, meaningful
 learning progress, guided lessons, new activities, and verification.
 
@@ -301,7 +302,23 @@ top of the screen, which would leave a status-bar-high strip empty at the bottom
 
 ## Parent settings
 
-Hold the clock in the top-left corner for **3 seconds**. A quick tap only wiggles it, so toddlers won't get in by accident.
+Hold the clock in the top-left corner for **3 seconds**. If you have set a parent PIN, enter it to open settings. A quick tap only wiggles the clock.
+
+### App access and parent PIN
+
+- **School only:** launches directly into School; Home returns there. Phone, incoming calls, Games (including nested games), Camera, Photos, and Music are unavailable.
+- **Custom:** choose which of the six apps are available. At least one must remain available. Disabled sections are hidden and blocked at navigation entry points.
+- **Full phone:** all six apps are available, preserving the original experience.
+- Choosing School only or Custom first asks you to create and confirm a **four-digit PIN**. You can also choose **Set PIN** while using Full phone. Later, **Change PIN** is available inside unlocked parent settings.
+- Camera and motion permissions are not requested while Camera is disabled. Disabling Camera stops its stream; disabling Phone ends an active call.
+- Access choices and the PIN digest are saved locally. Closing/reopening and offline use preserve them. Safari and the home-screen app can have separate storage, so configure each copy you use.
+- Five incorrect PIN attempts cause a 30-second delay that survives reloading. Leaving settings, pressing Home, or backgrounding the app closes the parent session.
+- The PIN is a child-facing settings gate, not device security. Continue using **Guided Access** to keep the child inside ToyPhone.
+
+**Forgotten PIN:** there is no child-accessible bypass. If a parent has access to browser developer tools, removing only the local storage key `toyphone.access` resets the PIN and app policy while preserving other ToyPhone data. Otherwise, removing this site's browser/app website data resets the PIN **and also deletes locally stored progress and photos**. Recovery returns the app to Full phone; configure restrictions again before handing it over. The app cannot recover a forgotten PIN.
+
+**Still planned:** child profiles, session limits, separate lesson/effect audio controls, and the redesigned learning experience. See [the roadmap](SCHOOL_ROADMAP.md) and [current handoff](HANDOFF.md).
+
 
 **Getting ready**: when the toy opens and Safari still needs an OK for something it's set to use (motion for *Move the
 phone*, the camera for Real or Both), a card asks a grown-up for one tap before handing it over: **Start** runs Safari's
@@ -398,6 +415,8 @@ The automated test runs in Chromium, so these need a person and the phone:
 ```sh
 npm install        # Playwright + the two pixel fonts for offline test rendering
 npm test           # iPhone portrait 390×844, landscape 844×390, and 390×664 (Safari with bars)
+npm run test:parents # parent PIN, restrictions, camera/call shutdown, and offline persistence
+npm run test:parents:webkit # the same policy checks in WebKit (live camera tested in Chromium)
 npm run test:pages # the published site, served from a /KidPhone/ subfolder like GitHub Pages
 npm run sprites    # draws every sprite on screenshots/sprites.png
 npm run icons      # after editing the appIcon sprite
