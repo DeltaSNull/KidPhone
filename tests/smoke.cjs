@@ -147,7 +147,7 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   const center = async sel => { const l = page.locator(sel).first(); if (await l.isVisible()) await l.evaluate(el => el.scrollIntoView({ block: 'nearest' })); const b = await l.boundingBox(); if (!b) throw new Error('not visible: ' + sel); return [b.x + b.width / 2, b.y + b.height / 2]; };
   const tapXY = async (x, y) => { await page.touchscreen.tap(x, y); await sleep(140); };
   const tap = async sel => { const [x, y] = await center(sel); await tapXY(x, y); };
-  const tapAll = async sel => { const n = await page.locator(sel).count(); for (let i = 0; i < n; i++) { const b = await page.locator(sel).nth(i).boundingBox(); if (b) await tapXY(b.x + b.width / 2, b.y + b.height / 2); } return n; };
+  const tapAll = async sel => { const n = await page.locator(sel).count(); for (let i = 0; i < n; i++) { const loc = page.locator(sel).nth(i); await loc.evaluate(el => { if (el.closest('.sheet')) el.scrollIntoView({ block: 'center' }); }); const b = await loc.boundingBox(); if (b) await tapXY(b.x + b.width / 2, b.y + b.height / 2); } return n; };
   const touch = (type, points) => cdp.send('Input.dispatchTouchEvent', { type, touchPoints: points.map(([x, y], id) => ({ x, y, id })) });
   const drag = async (from, to, steps = 10) => { await touch('touchStart', [from]); for (let i = 1; i <= steps; i++) { await touch('touchMove', [[from[0] + (to[0] - from[0]) * i / steps, from[1] + (to[1] - from[1]) * i / steps]]); await sleep(16); } await touch('touchEnd', []); await sleep(150); };
   const shot = async n => page.screenshot({ path: path.join(OUT, `${name}-${n}.png`) });

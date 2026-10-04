@@ -50,6 +50,8 @@ const check = (condition, message) => { assert.ok(condition, message); console.l
     await page.goto(url); await page.waitForFunction(() => window.__toyPhone);
     check(await visible('#home'), 'legacy/default launch preserves full phone');
     await hold(); await waitVisible('#settings');
+    await tap('[data-vol="3"]');
+    check(await page.evaluate(() => JSON.parse(localStorage.getItem('toyphone.settings')).vol) === 3, 'volume still saves from the expanded settings sheet');
     await tap('[data-access="school"]'); await waitVisible('#parentGate');
     check(!(await visible('#settings')), 'enabling restrictions requires PIN setup first');
     await pin('2580'); await pin('2581');

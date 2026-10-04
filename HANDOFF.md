@@ -5,7 +5,7 @@ Read SCHOOL_ROADMAP.md first, then AGENTS.md. This is the agreed plan going forw
 ## Current batch
 
 - Status: In progress — Codex, 2026-10-04; implementation complete, validation/integration underway.
-- Branch: `codex/school-parent-controls` (based on `ddee957`).
+- Branch: `codex/school-parent-controls` (based on `ddee957`); [PR #2](https://github.com/DeltaSNull/KidPhone/pull/2).
 - Scope: P1-01 through P1-07 and P1-13: parent PIN, School-only/Custom/Full phone, navigation enforcement, camera/call shutdown, permission suppression, local persistence, and parent guidance.
 - Files changed: `index.html`, `tests/parent-controls.cjs`, `package.json`, `.github/workflows/deploy-pages.yml`, `README.md`, roadmap, and this handoff.
 - Do not duplicate the active batch. Inspect its PR and CI first. Changes are not available on the live site until integrated and deployed.
@@ -23,7 +23,7 @@ Read SCHOOL_ROADMAP.md first, then AGENTS.md. This is the agreed plan going forw
 - Focused Chromium parent-control checks passed, including setup confirmation, wrong/changed PINs, cooldown across reloads, blocked nested routes, Custom selections, calls, live fake-camera shutdown, background relock, and cached offline launch.
 - Landscape PIN layout was inspected and adjusted so all keypad rows fit. Final layout checks passed; a restored-Camera startup case was then added for CI.
 - Chromium Pages/offline suite passed.
-- Existing portrait smoke suite is still running at this checkpoint.
+- Existing portrait smoke completed with one failure: its tapAll helper did not scroll to Volume after the new controls pushed it below the viewport. The helper now centers settings-sheet targets before tapping; a direct volume-persistence assertion was added to the focused suite. CI must verify the corrected full suite.
 - WebKit browser downloaded, but local host dependencies could not be installed (system package permissions). Run the WebKit suites in GitHub CI; do not claim local WebKit validation.
 - Real iPhone Safari/home-screen and family usability checks remain pending. Automated tests do not verify a child's learning.
 
