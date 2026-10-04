@@ -596,6 +596,34 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img{image-rendering:auto}
 .as-cookie{width:86%; aspect-ratio:1; display:grid; place-items:center; background:var(--d-cookie) center/100% 100% no-repeat; pointer-events:none}
 .as-cookie .glyph{height:66%; width:auto; margin-top:-6%}
 
+/* ---------- School: numbers. A ten-frame: two rows of five boxes ---------- */
+.g-num{background:#C9F2E4} .g-numsnack{background:#FFE1C9}
+#numzoo{display:grid; grid-template-rows:minmax(0,1fr) auto}
+@media (orientation:landscape){ #numzoo{grid-template-rows:none; grid-template-columns:minmax(0,1fr) auto} }
+.nz-show{display:flex; flex-direction:column; align-items:center; gap:8px; margin-top:44px; touch-action:none}   /* the number over its ten-frame */
+@media (orientation:landscape){ .nz-show{margin-top:0; gap:4px} .nz-num{min-height:0} .nz-num .glyph{height:clamp(48px, 17vh, 90px)} }
+.nz-num{display:flex; min-height:clamp(64px, min(16vh, 24vw), 150px)} .nz-num .glyph{height:clamp(64px, min(16vh, 24vw), 150px); width:auto; display:block}
+.nz-frame{--c:clamp(40px, min(13vw, 8vh), 64px); display:grid; grid-template-columns:repeat(var(--cols, 5), var(--c)); gap:5px; justify-content:center}
+@media (orientation:landscape){ .nz-frame{--c:clamp(36px, min(6.5vw, 13vh), 60px)} }
+.nz-cell{position:relative; width:var(--c); height:var(--c); display:grid; place-items:center; border-style:solid; border-color:transparent; border-width:4px 4px 6px; border-image:var(--t-paper) 6 6 9 fill / 4px 4px 6px stretch}
+.nz-cell .art{font-size:calc(var(--c) * .62)} .nz-cell .art .px{width:1.15em; height:1.15em}
+.nz-cell.in .art{animation:lp-unlock .45s cubic-bezier(.3,1.6,.5,1)}
+.nz-badge{position:absolute; right:-6px; bottom:-8px; display:flex; pointer-events:none} .nz-badge .glyph{height:calc(var(--c) * .5); width:auto; display:block}
+.nz-grid{grid-template-columns:repeat(5,minmax(0,1fr))}
+@media (orientation:landscape){ .nz-grid{--t:min(72px, calc((100dvh - 110px) / 2.6)); grid-template-columns:repeat(5,var(--t)); grid-auto-rows:var(--t); align-content:center; padding:0} }
+.nz-grid .az-tile .glyph{height:80%; width:auto; max-width:92%} .nz-num .glyph{max-width:none}
+.az-song .glyph{height:30px; width:auto; max-width:46px; margin-top:-4px}
+.ns-tray{flex-direction:column; gap:10px; padding-top:10px}
+.ns-frame{--c:clamp(40px, min(15vw, 6.5vh), 60px); align-self:center; min-height:var(--c)}
+@media (orientation:landscape){ .ns-frame{--c:clamp(30px, min(5.5vw, 10vh), 48px)} }
+.ns-frame.full .nz-cell{animation:hop .45s cubic-bezier(.3,1.6,.5,1)}
+.ns-basket{flex:none; width:min(64vw, 280px); height:calc(var(--fs) * .78); display:grid; grid-template-columns:repeat(3, auto); place-content:center; gap:4px; padding:0; --fr:var(--f-cream);
+  border-style:solid; border-color:transparent; border-width:9px 9px 15px; border-image:var(--fr) 9 9 15 fill / 9px 9px 15px stretch}
+@media (orientation:landscape){ .ns-basket{width:calc(var(--fs) * 1.3); height:var(--fs); grid-template-columns:repeat(2, auto)} .ns-basket .art{font-size:calc(var(--fs) * .3)} .ns-basket .art:first-child{grid-column:span 2; justify-self:center} }
+.ns-basket .art{font-size:calc(var(--fs) * .36)}
+.ns-basket.bump{animation:bump .24s ease-out}
+.ns .st-want .glyph{width:auto; height:1.15em; display:block; max-width:none}
+
 /* ---------- School: Letter Path. A snake of stepping stones (four across standing up, seven lying down); a lesson slides over it ---------- */
 #letterpath{padding:0; display:block; background:#D8F2C4}
 .lp-map{position:absolute; inset:80px 10px 14px; --s:64px}
@@ -885,7 +913,34 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img{image-rendering:auto}
         <div class="st-foods" id="asFoods" aria-label="Letter cookies"></div>
       </section>
 
-      <!-- SCHOOL: Letter Path (one letter at a time, in phonics order: meet it, trace it, hear it, find it) -->
+      <!-- SCHOOL: 123 Zoo (tap a number: that many animals hop into a ten-frame, counted out loud) -->
+      <section class="app az nz" id="numzoo" hidden aria-label="123 Zoo">
+        <div class="az-stage" id="nzStage">
+          <button class="sc-back" aria-label="School"></button>
+          <button class="az-btn az-song" id="nzCount" aria-label="Count to ten"></button>
+          <div class="nz-show" id="nzShow" role="button" aria-label="Count again">
+            <div class="nz-num" id="nzNum"></div>
+            <div class="nz-frame" id="nzFrame"></div>
+            <div class="az-word nz-word" id="nzWord"></div>
+          </div>
+        </div>
+        <div class="az-grid nz-grid" id="nzGrid"></div>
+      </section>
+
+      <!-- SCHOOL: 123 Snack (an animal wants a number of snacks: fill that many boxes, one tap each, counted out loud) -->
+      <section class="app st ns" id="numsnack" hidden aria-label="123 Snack">
+        <div class="st-scene" id="nsScene">
+          <button class="sc-back" aria-label="School"></button>
+          <div class="wt-stickers st-fed" id="nsFed" aria-label="Animals fed"></div>
+          <div class="st-stand"><div class="st-spot">
+            <div class="st-think" id="nsThink" role="button" aria-label="How many"><span class="st-want" id="nsWant"></span></div>
+            <div class="st-animal" id="nsAnimal" role="button"></div>
+          </div></div>
+        </div>
+        <div class="st-foods ns-tray"><div class="nz-frame ns-frame" id="nsFrame"></div><button class="ns-basket" id="nsBasket" aria-label="Snacks"></button></div>
+      </section>
+
+      <!-- SCHOOL: Letter Path (one letter at a time, A to Z: meet it, trace it, hear it, find it) -->
       <section class="app lp" id="letterpath" hidden aria-label="Letter Path">
         <button class="sc-back" aria-label="School"></button>
         <div class="lp-map" id="lpMap"></div>
@@ -1017,11 +1072,11 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img{image-rendering:auto}
           <span class="vhint" id="lookNote"></span></div>
         <div class="srow"><span>ABC Snack</span>
           <div class="seg"><button class="sbtn" data-abc="auto">Grows</button><button class="sbtn" data-abc="big">Big letters</button><button class="sbtn" data-abc="little">Little letters</button><button class="sbtn" data-abc="sound">Sounds</button></div>
-          <span class="vhint">The animal asks for a letter out loud and the child finds it (the letter is never shown first). Grows: big letters by name until the child gets eight in a row, then mostly little letters, then eight more in a row and letter sounds ("Which letter says /s/?"). Letters come in the order phonics programs teach them, a few at a time; sounds are asked for the letters done on the Letter Path.</span>
+          <span class="vhint">The animal asks for a letter out loud and the child finds it (the letter is never shown first). Grows: big letters by name until the child gets eight in a row, then mostly little letters, then eight more in a row and letter sounds ("Monkey wants /s/!"). Letters come a few at a time, the easiest first (s a t i p n); sounds are asked for the letters done on the Letter Path.</span>
           <span class="vhint" id="abcNote"></span></div>
         <div class="srow"><span>Letter Path</span>
           <div class="seg"><button class="sbtn" data-path="order">In order</button><button class="sbtn" data-path="open">All open</button></div>
-          <span class="vhint">One letter at a time, in phonics order (s a t i p n first, since they make words soonest): meet it, trace it, hear words that start with its sound, then find it. In order: each letter opens when the one before it is done. All open: any letter, any time. Tap a letter below to hear it and see how to say its sound.</span>
+          <span class="vhint">One letter at a time, A to Z: meet it, trace it, hear words that start with its sound, then find it. In order: each letter opens when the one before it is done. All open: any letter, any time. Tap a letter below to hear it and see how to say its sound.</span>
           <span class="vhint" id="pathNote"></span>
           <div class="lp-grid" id="pathGrid"></div>
           <div class="lp-info" id="pathInfo" hidden></div>
@@ -4287,7 +4342,7 @@ const BGS = [
   ['.db-a', BG.dbSide('#A6E39A', '#6CC46A', '#3E9447')], ['.db-b', BG.dbSide('#A9DDF7', '#5BB8E8', '#2F86C4')], ['.db-mid', BG.sand],
   ['#stScene', BG.snack], ['#asScene', BG.snack], ['.st-foods', BG.picnic],
   ['#school', BG.stripey(['#FFF0B8', '#FFE28A', '#FFD466', '#FFC746'], '#FFF6D2')], ['.g-abc', BG.grad(['#FFF6D2', '#FFE8A3', '#FFDB7A'])], ['.g-abcsnack', BG.grad(['#E4F6FF', '#C9ECFF', '#ADE0FF'])],
-  ['#abczoo', BG.grad(['#FFF8DC', '#FFF0BE', '#FFE7A0', '#FFDE85'])], ['#letterpath', BG.grad(['#EAF9DD', '#D8F2C4', '#C6EAAE', '#B4E09A'])], ['.lp-lesson', BG.grad(['#FFF8DC', '#FFF0BE', '#FFE7A0', '#FFDE85'])], ['.g-path', BG.grad(['#EAF9DD', '#D2F0BE', '#B4E09A'])],
+  ['#abczoo', BG.grad(['#FFF8DC', '#FFF0BE', '#FFE7A0', '#FFDE85'])], ['#letterpath', BG.grad(['#EAF9DD', '#D8F2C4', '#C6EAAE', '#B4E09A'])], ['#numzoo', BG.grad(['#E4FBF3', '#CDF3E6', '#B6EAD8', '#A0E0CB'])], ['#nsScene', BG.snack], ['.g-num', BG.grad(['#E4FBF3', '#C9F2E4', '#A8E6D2'])], ['.g-numsnack', BG.grad(['#FFF1E4', '#FFE1C9', '#FFD0AA'])], ['.lp-lesson', BG.grad(['#FFF8DC', '#FFF0BE', '#FFE7A0', '#FFDE85'])], ['.g-path', BG.grad(['#EAF9DD', '#D2F0BE', '#B4E09A'])],
   ['.pp-a', BG.ppSide('#FFE4CC', '#FFC99E', ['#FF9F43', '#E8506E', '#FFC83D'], 3)], ['.pp-b', BG.ppSide('#E6DFFC', '#C9BCF5', ['#8A6FD1', '#3D8FE0', '#5CC9B5'], 9)], ['.pp-mid', BG.wood],
   ['#dinobuddies .who', BG.split], ['#paintpals .who', BG.paint]
 ];
@@ -4402,7 +4457,7 @@ const VOICE = [
   {k:'menus', on:false, t:'Opening apps', d:'“Hi buddy!”, “Phone! Who do you want to call?”, “Tap the egg!”'},
   {k:'names', on:false, t:'Animal names', d:'Names the animals in the games: after each sound in Wild Tap, a hatched egg, what each Snack Time animal wants, a finished painting.'},
   {k:'camera', on:false, t:'Camera and Photos', d:'Names the animals in view and in each picture.'},
-  {k:'school', on:true, t:'School', d:'Letter names and words in the School games. They need it.'},
+  {k:'school', on:true, t:'School', d:'Letters, words and counting in the School games. They need it.'},
   {k:'numbers', on:false, t:'Keypad numbers', d:'Says each number you press.'},
   {k:'music', on:false, t:'Music', d:'Names the instruments and songs.'}
 ];
@@ -4980,7 +5035,7 @@ function updateClock(){ const d = new Date(); $('#clockTxt').textContent = ((d.g
 updateClock(); setInterval(updateClock, 10000);
 
 /* ---------- Navigation ---------- */
-const APPS = ['home','phone','camera','photos','music','games','wildtap','dinobuddies','snacktime','paintpals','school','letterpath','abczoo','abcsnack'];
+const APPS = ['home','phone','camera','photos','music','games','wildtap','dinobuddies','snacktime','paintpals','school','letterpath','abczoo','abcsnack','numzoo','numsnack'];
 let current = 'home';
 const APP_SAY = {phone:'Phone! Who do you want to call?', camera:'Camera! Slide to look around. Then press the big button!', music:'Music! Let\'s play!', games:'Games! Pick a game!'};
 function go(name, fromEl){
@@ -5010,6 +5065,8 @@ function enterApp(name){
   if (name === 'abczoo') AbcZoo.enter();
   if (name === 'abcsnack') AbcSnack.enter();
   if (name === 'letterpath') LetterPath.enter();
+  if (name === 'numzoo') NumZoo.enter();
+  if (name === 'numsnack') NumSnack.enter();
 }
 function leaveApp(name){
   if (name === 'camera') stopCamera();
@@ -5022,6 +5079,8 @@ function leaveApp(name){
   if (name === 'abczoo') AbcZoo.leave();
   if (name === 'abcsnack') AbcSnack.leave();
   if (name === 'letterpath') LetterPath.leave();
+  if (name === 'numzoo') NumZoo.leave();
+  if (name === 'numsnack') NumSnack.leave();
 }
 $('#homeBtn').innerHTML = ICON.home;
 tap($('#homeBtn'), () => {
@@ -6418,11 +6477,15 @@ const GLYPH = {
   l:'L7.5,2,7.5,16', m:'L2,8,2,16 A4.8,11,2.8,3.5,180,360 L7.5,11,7.5,16 A10.2,11,2.8,3.5,180,360 L13,11,13,16', n:'L3,8,3,16 A7,11,4,3.5,180,360 L11,11,11,16',
   o:'A7.5,11.5,4.5,4.5,290,-70', p:'L3,8,3,20 A7,11.5,4,4.5,180,540', q:'A7,11.5,4,4.5,320,-40 L11,8,11,20 L11,20,13.5,18.5', r:'L3,8,3,16 A7.5,11.5,4.5,3.5,180,300',
   s:'A7.5,9.3,3.6,2.3,340,90 A7.5,13.7,3.9,2.3,-90,200', t:'L7,4,7,14 A9.5,14,2.5,2,180,20 L4,8,11,8', u:'L3,8,3,12 A7,12,4,4,180,0 L11,8,11,16',
-  v:'L3,8,7.5,16 L7.5,16,12,8', w:'L1.5,8,4.5,16 L4.5,16,7.5,10 L7.5,10,10.5,16 L10.5,16,13.5,8', x:'L3,8,12,16 L12,8,3,16', y:'L3,8,7.5,16 L12,8,5,20', z:'L3,8,12,8 L12,8,3,16 L3,16,12,16'
+  v:'L3,8,7.5,16 L7.5,16,12,8', w:'L1.5,8,4.5,16 L4.5,16,7.5,10 L7.5,10,10.5,16 L10.5,16,13.5,8', x:'L3,8,12,16 L12,8,3,16', y:'L3,8,7.5,16 L12,8,5,20', z:'L3,8,12,8 L12,8,3,16 L3,16,12,16',
+  /* numbers, the same height as the capitals */
+  0:'A7.5,9,4.8,7,-90,270', 1:'L4.5,5,8,2 L8,2,8,16', 2:'A7.5,6.3,4.5,4.3,195,385 L11.6,8.1,3,16 L3,16,12.5,16', 3:'A7.5,5.8,4,3.8,210,450 A7.5,12.6,4.6,3.6,-90,150',
+  4:'L8.5,2,2.5,11.5 L2.5,11.5,12.5,11.5 L10,5.5,10,16', 5:'L4,2,3.6,8.4 A7.5,11.7,4.6,4.3,-145,150 L4,2,11.5,2', 6:'A8.8,10,5.4,8,-55,-180 A7.5,12,4.3,4,180,-180',
+  7:'L3,2,12,2 L12,2,6,16', 8:'A7.5,5.6,3.6,3.6,0,360 A7.5,12.4,4.5,3.8,0,360', 9:'A7.5,6.5,4.3,4.3,0,360 L11.8,6.5,11.5,16'
 };
 const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
 const LETTER_COL = ['#F0524F','#FF9F43','#E8B020','#5CB85C','#2FA8A0','#3D8FE0','#8A6FD1','#E8506E'];   // a steady color for each letter
-const letterCol = ch => LETTER_COL[LETTERS.indexOf(ch.toUpperCase()) % LETTER_COL.length];
+const letterCol = ch => /\d/.test(ch) ? LETTER_COL[(+ch + 5) % LETTER_COL.length] : LETTER_COL[LETTERS.indexOf(ch.toUpperCase()) % LETTER_COL.length];   // (numbers get colors too)
 const GS = 2, GR = 1.75;   // each grid unit is 2 pixels; the pen is 3.5 pixels wide
 function glyphCanvas(ch, col = letterCol(ch)){
   return once('gl' + ch + col, () => {
@@ -6569,9 +6632,11 @@ function abcSound(e, at = 0){
 
 /* ----- the School menu: one card per learning game ----- */
 const SCHOOL = [
-  {id:'letterpath', n:'Letter Path', note:'One letter at a time', cls:'g-path', art:() => `<span class="art">${glyphImg('s')}</span><span class="art big">${ART.owl}</span><span class="art">${glyphImg('a')}</span>`},
   {id:'abczoo', n:'ABC Zoo', note:'Every letter, A to Z', cls:'g-abc', art:() => `<span class="art">${glyphImg('A')}</span><span class="art big">${glyphImg('B')}</span><span class="art">${glyphImg('C')}</span>`},
-  {id:'abcsnack', n:'ABC Snack', note:'Feed the letter', cls:'g-abcsnack', art:() => `<span class="art big">${ART.monkey}</span><span class="art">${glyphImg('a')}</span>`}
+  {id:'letterpath', n:'Letter Path', note:'One letter at a time', cls:'g-path', art:() => `<span class="art">${glyphImg('a')}</span><span class="art big">${ART.owl}</span><span class="art">${glyphImg('b')}</span>`},
+  {id:'abcsnack', n:'ABC Snack', note:'Feed the letter', cls:'g-abcsnack', art:() => `<span class="art big">${ART.monkey}</span><span class="art">${glyphImg('a')}</span>`},
+  {id:'numzoo', n:'123 Zoo', note:'Count to ten', cls:'g-num', art:() => `<span class="art">${glyphImg('1')}</span><span class="art big">${glyphImg('2')}</span><span class="art">${glyphImg('3')}</span>`},
+  {id:'numsnack', n:'123 Snack', note:'Count the snacks', cls:'g-numsnack', art:() => `<span class="art big">${ART.dog}</span><span class="art">${glyphImg('3')}</span>`}
 ];
 SCHOOL.forEach(g => {
   const b = document.createElement('button'); b.className = 'gamecard ' + g.cls; b.setAttribute('aria-label', g.n);
@@ -6584,13 +6649,13 @@ const SCHOOL_SAY = {school:'School! What do you want to learn?', abczoo:'ABC Zoo
 const cap = w => w[0].toUpperCase() + w.slice(1);
 const isFor = e => e.L === 'X' ? `X is in ${e.w}!` : `${e.L} is for ${e.w}!`;
 
-/* ----- Letter Path: one letter at a time, in the order phonics programs teach them (s a t i p n first: they make words
-   soonest). A trail of stepping stones, little letters first, each earning up to three stars. A lesson is four short steps:
+/* ----- Letter Path: one letter at a time, A to Z. A trail of stepping stones, little letters first, each earning up to
+   three stars. A lesson is four short steps:
    Meet (the letter, big and little, its sound and a word), Trace (follow the star along each stroke, in writing order),
    Hear (which picture starts with the sound?) and Find (which letter makes the sound?, with letters learned before mixed
    in). Nothing is ever failed: a wrong tap names what was tapped, after two tries the right one glows, and every lesson
    ends with at least one star. Sounds are written /s/ in the lines: the voice tool records each one cut from a word. ----- */
-const PATH = 'satipnckehrmdgoulfbjzwvyxq'.split('');
+const PATH = 'abcdefghijklmnopqrstuvwxyz'.split('');
 /* a second word for each letter that has one, so Hear also asks about a word the lesson hasn't shown */
 const WORD2 = {s:'sun', a:['alligator','crocodile'], t:'turtle', i:'igloo', p:'panda', n:'nest', c:'cow', k:'kite', e:'egg', h:'hand', r:'rocket', m:'moon',
   d:'duck', g:'gift', l:'leaf', f:'fish', b:'bus', j:'jam', w:'watermelon', v:'van', x:'box'};
@@ -6625,9 +6690,8 @@ const starRow = (n, cls) => `<span class="${cls}">${[1, 2, 3].map(k => `<i class
 const pathWord = (w, l) => { const i = l === 'x' ? w.lastIndexOf('x') : 0; return `${w.slice(0, i)}<b>${w[i]}</b>${w.slice(i + 1)}`; };
 
 /* ----- ABC Zoo: tap a letter to see it little and big, its word and picture; the picture makes its sound, then the
-   voice says the letter's sound and "L is for lion!". Little letters first (the ones in books); the case button shows
-   capitals. The song button plays the ABC song (the Twinkle Twinkle tune) and lights each letter. ----- */
-const zooSays = e => `${e.L} says /${e.L.toLowerCase()}/!`;
+   voice says "L is for lion!". Little letters first (the ones in books); the case button shows capitals. The song
+   button plays the ABC song (the Twinkle Twinkle tune) and lights each letter. ----- */
 const AbcZoo = (() => {
   const grid = $('#azGrid'), show = $('#azShow'), lettersEl = $('#azLetters'), picEl = $('#azPic'), wordEl = $('#azWord');
   let cur = ABC[0], small = true, singing = 0, quietUntil = 0;
@@ -6645,13 +6709,13 @@ const AbcZoo = (() => {
     retrigger(show, 'pop');
     if (!speak) return;
     hush(); FX.pop(); const end = abcSound(e); quietUntil = performance.now() + end*1000;
-    say(zooSays(e) + ' ' + isFor(e), 0, 'school');
+    say(isFor(e), 0, 'school');
   }
   /* tap the big letters to hear the letter, or the picture to hear its sound and word */
   show.addEventListener('pointerdown', e => {
     e.preventDefault(); keepAwake(); if (singing) return;
     if (e.target.closest('#azPic')){ if (performance.now() < quietUntil) return; quietUntil = performance.now() + abcSound(cur)*1000; retrigger(picEl, 'hop'); say(cap(cur.w) + '!', 0, 'school'); }
-    else { FX.pop(); retrigger(lettersEl, 'hop'); hush(); say(`${cur.L}! /${cur.L.toLowerCase()}/!`, 0, 'school'); }
+    else { FX.pop(); retrigger(lettersEl, 'hop'); hush(); say(cur.L + '!', 0, 'school'); }
   });
   $('#azCase').innerHTML = glyphImg(small ? 'A' : 'a', '#3B2B20');
   tap($('#azCase'), () => { FX.pop(); small = !small; $('#azCase').innerHTML = glyphImg(small ? 'A' : 'a', '#3B2B20'); paintTiles(); say(small ? 'Little letters!' : 'Big letters!', 0, 'school'); });
@@ -6679,23 +6743,25 @@ const AbcZoo = (() => {
     enter(){ stopSong(); pick(cur, false); say(SCHOOL_SAY.abczoo, 0, 'school'); },
     leave(){ stopSong(); },
     state: () => ({letter:cur.L, small, singing:!!singing}),
-    lines: () => [SCHOOL_SAY.abczoo, 'Little letters!', 'Big letters!', 'Now I know my ABCs!', ...ABC.flatMap(e => [zooSays(e) + ' ' + isFor(e), e.L + '!', cap(e.w) + '!'])]
+    lines: () => [SCHOOL_SAY.abczoo, 'Little letters!', 'Big letters!', 'Now I know my ABCs!', ...ABC.flatMap(e => [isFor(e), e.L + '!', cap(e.w) + '!'])]
   };
 })();
 
-/* ----- ABC Snack: Snack Time with letter cookies. An animal asks for a letter out loud (its bubble shows an ear, never the
-   letter: the child has to know it); feed it that cookie. It grows with the child: big letters by name, then little
-   letters by name, then letter sounds ("Which letter says /s/?"), asked about the letters done on the Letter Path once
-   there are a few. Letters come a few at a time, in the order phonics programs teach them (s a t i p n first), and a new
-   group joins once most of the current ones are known. Nothing is ever lost: a wrong cookie gets a head shake and the
-   voice names the letter that was tapped; after two tries the right one glows. ----- */
+/* ----- ABC Snack: Snack Time with letter cookies. An animal asks for a letter out loud in a few words ("Puppy wants an
+   S!"; its bubble shows an ear, never the letter: the child has to know it); feed it that cookie. It grows with the
+   child: big letters by name, then little letters ("Frog wants a little b!"), then letter sounds ("Monkey wants /s/!"),
+   asked about the letters done on the Letter Path once there are a few. Letters come a few at a time, in the order
+   phonics programs teach them (s a t i p n first), and a new group joins once most of the current ones are known.
+   Nothing is ever lost: a wrong cookie gets a head shake and the voice names the letter that was tapped ("That's N!");
+   after two tries the right one glows. ----- */
 const AbcSnack = (() => {
   const EATERS = [{a:'monkey', n:'monkey', x:'ooh', m:[.47,.5]}, {a:'penguin', n:'penguin', x:'bray', m:[.27,.34]}, {a:'dog', n:'puppy', x:'woof', m:[.19,.56]},
     {a:'panda', n:'panda', x:'', m:[.47,.49]}, {a:'giraffe', n:'giraffe', x:'munch', m:[.1,.19]}, {a:'chick', n:'chick', x:'peep', m:[.11,.39]},
     {a:'frog', n:'frog', x:'ribbit', m:[.5,.6]}, {a:'hippo', n:'hippo', x:'hippo', m:[.1,.65]}, {a:'cow', n:'cow', x:'moo', m:[.21,.54]}];
   const ORDER = 'SATIPNCKEHRMDGOULFBJZWVYXQ'.split('');
   const MIRROR = ['bd', 'pq', 'mw', 'nu', 'MW', 'NZ'];   // easy to mix up: kept apart until the child knows most letters
-  const WANTS = s => `The ${s.n} wants a letter!`, FIND = (L, small) => small ? `Find the little ${L.toLowerCase()}!` : `Find the ${L}!`;
+  const anL = L => (/^[AEFHILMNORSX]$/.test(L) ? 'an ' : 'a ') + L;   // "an S", "a B": by how the letter's name starts
+  const WANT = (s, L, mode) => `${cap(s.n)} wants ${mode === 'sound' ? `/${L.toLowerCase()}/` : mode === 'little' ? 'a little ' + L.toLowerCase() : anL(L)}!`;   // "Puppy wants an S!"
   const root = $('#abcsnack'), scene = $('#asScene'), animalEl = $('#asAnimal'), think = $('#asThink'), wantEl = $('#asWant'), foodsEl = $('#asFoods'), fedEl = $('#asFed');
   const prog = Object.assign({lv:0, open:6, streak:0, down:0, stats:{}}, store.get('abc', {}));
   if (prog.v !== 2){ prog.lv = prog.lv >= 2 ? 1 : 0; prog.v = 2; }   // (the old match / listen / big-and-little stages)
@@ -6716,8 +6782,7 @@ const AbcSnack = (() => {
     return rnd(from);
   }
   const say2 = (lines, tries = 0) => { if (speaking() && tries < 15){ later(() => say2(lines, tries + 1), 300); return; } say(lines, 0, 'school'); };
-  const ask = () => { if (!cur || eating) return; say2(WANTS(cur) + ' ' + want()); };
-  const want = () => mode === 'sound' ? P_SAY.find(letter.toLowerCase()) : FIND(letter, mode === 'little');
+  const ask = () => { if (!cur || eating) return; say2(WANT(cur, letter, mode)); };
   const small = () => mode !== 'big';
   function arrive(){
     const prev = cur;
@@ -6761,7 +6826,7 @@ const AbcSnack = (() => {
     if (L !== letter){
       misses++; uhuh(); retrigger(b, 'no'); act('nope'); retrigger(think, 'wig');
       if (misses === 1) score(false);
-      hush(); say(`That's ${small() ? L.toLowerCase() : L}! ` + want(), 0, 'school');
+      hush(); say(`That's ${small() ? L.toLowerCase() : L}!`, 0, 'school');
       if (misses >= 2) foodsEl.querySelector(`[data-l="${letter}"]`)?.classList.add('hint');
       return;
     }
@@ -6782,7 +6847,7 @@ const AbcSnack = (() => {
     const end = s.x === 'munch' ? FX.munch(0) : call(s, FX.crunch(0) + .05);
     fed++; addSticker(L);
     later(() => { act('hop'); hearts(); }, 700);
-    say('Yum! ' + (mode === 'sound' ? P_SAY.says(L.toLowerCase()) : isFor(abcOf(L))), 0, 'school');
+    say('Yum!', 0, 'school');
     const party = fed % 5 === 0, stay = end*1000 + (party ? 2400 : 900);
     if (party) later(celebrate, end*1000 + 100);
     later(() => { act('out'); steps(); }, stay);
@@ -6800,7 +6865,7 @@ const AbcSnack = (() => {
     progress: () => ({lv: prog.lv, open: prog.open, known: ORDER.filter(known)}),
     reset(){ Object.assign(prog, {lv:0, open:6, streak:0, down:0, stats:{}}); save(); },
     lines: () => [SCHOOL_SAY.abcsnack, 'Hooray! Five full tummies!', 'Now little letters too!', 'Now letter sounds too!',
-      ...EATERS.map(WANTS), ...LETTERS.flatMap(L => [FIND(L, false), FIND(L, true), `That's ${L}!`, `That's ${L.toLowerCase()}!`, 'Yum! ' + isFor(abcOf(L))])]
+      'Yum!', ...EATERS.flatMap(e => LETTERS.flatMap(L => ['big', 'little', 'sound'].map(m => WANT(e, L, m)))), ...LETTERS.flatMap(L => [`That's ${L}!`, `That's ${L.toLowerCase()}!`])]
   };
 })();
 function renderAbcNote(){
@@ -7074,6 +7139,153 @@ function renderPathNote(){
   tap($('[data-hear="sound"]', box), () => say(P_SAY.sound(l)));
   tap($('[data-hear="words"]', box), () => say([P_SAY.meet(l), P_SAY.word({w:e.w, l}), ...(w2 ? [P_SAY.word(w2)] : [])].join(' ')));
 }
+
+/* ======================= NUMBERS ======================= */
+/* Counting with a ten-frame: two rows of five boxes, filled left to right, the way early math classes show a number
+   (seven is "five and two more"). Numbers are drawn in the same school-print pixel style as the letters. */
+const NUMW = ['zero','one','two','three','four','five','six','seven','eight','nine','ten'];
+/* a number as one picture: its digits side by side, a little overlapped (so 10 sizes like any single glyph) */
+function numCanvas(n){
+  return once('num' + n, () => { const ds = String(n).split('').map(d => glyphCanvas(d)), ov = Math.round(ds[0].width*.16), c = document.createElement('canvas');
+    c.width = ds.reduce((t, d) => t + d.width, 0) - ov*(ds.length - 1); c.height = ds[0].height;
+    const g = c.getContext('2d'); let x = 0; ds.forEach(d => { g.drawImage(d, x, 0); x += d.width - ov; }); return c; });
+}
+const numImg = n => n < 10 ? glyphImg(String(n)) : `<img class="px glyph" src="${pxURL(numCanvas(n), 4).slice(5, -2)}" alt="" draggable="false">`;   // (10 stays on one line)
+const countWord = i => cap(NUMW[i]) + '!';   // "Three!"
+/* a ten-frame of n boxes (all ten for the zoo), five to a row; returns the boxes */
+function tenFrame(el, n){
+  el.innerHTML = Array.from({length:n}, (_, i) => `<span class="nz-cell" data-i="${i}"></span>`).join('');
+  el.style.setProperty('--cols', Math.min(5, n));
+  return [...el.children];
+}
+
+/* ----- 123 Zoo: tap a number and that many animals hop into the ten-frame, one at a time, counted out loud ("One! Two!
+   Three!"), then "Three zebras!" and the animals call. Tap the frame to count again; the count button counts to ten. ----- */
+const NUM_ZOO = [null, ['lion','lions','roar'], ['elephant','elephants','trumpet'], ['zebra','zebras','neigh'], ['penguin','penguins','bray'], ['frog','frogs','ribbit'],
+  ['duck','ducks','quack'], ['monkey','monkeys','ooh'], ['butterfly','butterflies','flutter'], ['chick','chicks','peep'], ['fish','fish','splash']];
+const zooCount = n => `${cap(NUMW[n])} ${n === 1 ? NUM_ZOO[n][0] : NUM_ZOO[n][1]}!`;   // "Three zebras!"
+const NumZoo = (() => {
+  const grid = $('#nzGrid'), show = $('#nzShow'), numEl = $('#nzNum'), frame = $('#nzFrame'), wordEl = $('#nzWord'), countBtn = $('#nzCount');
+  let cur = 1, run = 0, shown = 0, counting = false;
+  const tiles = Array.from({length:10}, (_, i) => {
+    const b = document.createElement('button'); b.className = 'az-tile'; b.dataset.n = i + 1; b.setAttribute('aria-label', String(i + 1)); b.innerHTML = numImg(i + 1);
+    tap(b, () => pick(i + 1), {bump:false});
+    grid.appendChild(b); return b;
+  });
+  function stop(){ run++; counting = false; countBtn.classList.remove('on'); }
+  /* the animals hop in one by one, each counted; then the total, and their call */
+  function fill(n, sprite, done){
+    const id = ++run, cells = tenFrame(frame, 10); shown = 0;
+    for (let i = 0; i < n; i++) later(() => {
+      if (id !== run) return;
+      cells[i].innerHTML = `<span class="art">${sprite}</span>`; retrigger(cells[i], 'in'); FX.pop(); shown = i + 1;
+      hush(); say(countWord(i + 1), 0, 'school');
+      tiles.forEach(t => t.classList.toggle('sing', counting && +t.dataset.n === i + 1));
+    }, 350 + i*720);
+    later(() => { if (id === run) done(); }, 350 + n*720 + 250);
+  }
+  function pick(n){
+    stop(); cur = n; hush();
+    tiles.forEach(t => t.classList.toggle('on', +t.dataset.n === n));
+    numEl.innerHTML = numImg(n); retrigger(show, 'pop'); wordEl.textContent = n === 1 ? NUM_ZOO[n][0] : NUM_ZOO[n][1];
+    fill(n, ART[NUM_ZOO[n][0]], () => { FX[NUM_ZOO[n][2]]?.(); later(() => say(zooCount(n), 0, 'school'), 200); });
+  }
+  show.addEventListener('pointerdown', e => { e.preventDefault(); keepAwake(); if (!counting) pick(cur); });
+  function countTen(){
+    if (counting){ stop(); return; }
+    stop(); counting = true; countBtn.classList.add('on'); hush();
+    numEl.innerHTML = numImg(10); wordEl.textContent = 'stars'; tiles.forEach(t => t.classList.remove('on'));
+    say('Count to ten!', 0, 'school');
+    later(() => fill(10, ART.star, () => { stop(); FX.cheer(); const [x, y] = rel(frame); confetti(x, y, 40); say('You counted to ten!', 0, 'school'); }), 900);
+  }
+  tap(countBtn, () => { FX.pop(); countTen(); });
+  countBtn.innerHTML = numImg(10);
+  return {
+    enter(){ stop(); tiles.forEach(t => t.classList.remove('on')); numEl.innerHTML = ''; wordEl.textContent = ''; tenFrame(frame, 10); say('123 Zoo! Tap a number!', 0, 'school'); },
+    leave(){ stop(); },
+    state: () => ({n:cur, shown, counting}),
+    lines: () => ['123 Zoo! Tap a number!', 'Count to ten!', 'You counted to ten!', ...NUMW.slice(1).map((_, i) => countWord(i + 1)), ...NUM_ZOO.slice(1).map((_, i) => zooCount(i + 1))]
+  };
+})();
+
+/* ----- 123 Snack: an animal wants a number of snacks ("Puppy wants three bones!"; its bubble shows the number). The tray
+   has that many empty boxes; each tap on the basket drops one snack into the next box, counted out loud. When the boxes
+   are full the animal eats them all. One snack per box, so the count always comes out right: counting each thing once
+   is the skill. It grows: up to three at first, then five, then ten. ----- */
+const NumSnack = (() => {
+  const EATERS = [
+    {a:'monkey', n:'monkey', f:'banana', one:'banana', many:'bananas', x:'ooh', m:[.47,.5]}, {a:'penguin', n:'penguin', f:'fish', one:'fish', many:'fish', x:'bray', m:[.27,.34]},
+    {a:'dog', n:'puppy', f:'bone', one:'bone', many:'bones', x:'woof', m:[.19,.56]}, {a:'giraffe', n:'giraffe', f:'leaf', one:'leaf', many:'leaves', x:'munch', m:[.1,.19]},
+    {a:'turtle', n:'turtle', f:'strawberry', one:'strawberry', many:'strawberries', x:'', m:[.1,.6]}, {a:'parrot', n:'parrot', f:'blueberry', one:'blueberry', many:'blueberries', x:'squawk', m:[.21,.4]},
+    {a:'frog', n:'frog', f:'fly', one:'fly', many:'flies', x:'ribbit', m:[.5,.6]}, {a:'elephant', n:'elephant', f:'peanut', one:'peanut', many:'peanuts', x:'trumpet', m:[.18,.6]},
+    {a:'kangaroo', n:'kangaroo', f:'carrot', one:'carrot', many:'carrots', x:'boing', m:[.12,.36]}, {a:'gorilla', n:'gorilla', f:'orange', one:'orange', many:'oranges', x:'thump', m:[.45,.45]},
+    {a:'rhino', n:'rhino', f:'apple', one:'apple', many:'apples', x:'snort', m:[.07,.6]}];
+  const noun = (s, n) => n === 1 ? s.one : s.many;
+  const WANT = (s, n) => `${cap(s.n)} wants ${NUMW[n]} ${noun(s, n)}!`, GOT = (s, n) => `${cap(NUMW[n])} ${noun(s, n)}!`;
+  const pic = f => ART[f] || schoolPic(f);
+  const root = $('#numsnack'), scene = $('#nsScene'), animalEl = $('#nsAnimal'), think = $('#nsThink'), wantEl = $('#nsWant'), frame = $('#nsFrame'), basket = $('#nsBasket'), fedEl = $('#nsFed');
+  let cur = null, n = 1, got = 0, cells = [], fed = 0, queue = [], eating = true, last = 0, quietUntil = 0;
+  const steps = () => [0,.16,.32,.48,.64].forEach(d => tone(190, 150, .07, 'sine', .14, d));
+  const yum = at => { tone(523, 784, .14, 'triangle', .14, at); tone(659, 1047, .2, 'triangle', .13, at + .13); return at + .35; };
+  const call = (s, at = 0) => s.x ? FX[s.x](at) : yum(at);
+  const most = () => fed < 3 ? 3 : fed < 10 ? 5 : 10;
+  function act(cls){ animalEl.classList.remove('in', 'out', 'hop', 'nope', 'chomp'); void animalEl.offsetWidth; animalEl.classList.add(cls); }
+  const say2 = (t, tries = 0) => { if (speaking() && tries < 15){ later(() => say2(t, tries + 1), 300); return; } say(t, 0, 'school'); };
+  function arrive(){
+    const prev = cur;
+    if (!queue.length) queue = shuffle(EATERS).filter(s => s !== prev);
+    cur = queue.shift(); got = 0; eating = true;
+    do { n = 1 + Math.floor(Math.random()*most()); } while (n === last && most() > 1); last = n;
+    put(animalEl, ART[cur.a]); animalEl.setAttribute('aria-label', cur.n);
+    think.classList.remove('on'); wantEl.innerHTML = numImg(n);
+    cells = tenFrame(frame, n); frame.classList.remove('full');
+    basket.innerHTML = `<span class="art">${pic(cur.f)}</span><span class="art">${pic(cur.f)}</span><span class="art">${pic(cur.f)}</span>`;
+    act('in'); steps();
+    later(() => { think.classList.add('on'); FX.pop(); eating = false; say2(WANT(cur, n)); }, 950);
+  }
+  /* one snack from the basket into the next box, counted */
+  function drop(){
+    if (eating || !cur || got >= n) return;
+    const i = got++, cell = cells[i], a = root.getBoundingClientRect(), from = basket.getBoundingClientRect(), to = cell.getBoundingClientRect();
+    const t = document.createElement('div'); t.className = 'st-bite art'; t.innerHTML = pic(cur.f); root.appendChild(t);
+    const x0 = from.left - a.left + from.width/2 - 32, y0 = from.top - a.top + from.height/2 - 32, x1 = to.left - a.left + to.width/2 - 32, y1 = to.top - a.top + to.height/2 - 32;
+    t.animate([{transform:`translate(${x0}px,${y0}px) scale(.9)`}, {transform:`translate(${(x0 + x1)/2}px,${Math.min(y0, y1) - 50}px) scale(1.1)`, offset:.5}, {transform:`translate(${x1}px,${y1}px) scale(.8)`}],
+      {duration:420, easing:'ease-in-out', fill:'forwards'}).onfinish = () => {
+        t.remove(); cell.innerHTML = `<span class="art">${pic(cur.f)}</span><span class="nz-badge">${numImg(i + 1)}</span>`; retrigger(cell, 'in');
+      };
+    FX.pop(); retrigger(basket, 'bump'); hush(); say(countWord(i + 1), 0, 'school');
+    if (got === n){ eating = true; frame.classList.add('full'); later(eat, 1100); }
+  }
+  /* the boxes are full: everything flies to the animal, then munching, "Yum! Three bones!" */
+  function eat(){
+    if (!cur || current !== 'numsnack') return;
+    const s = cur, a = root.getBoundingClientRect(), ar = animalEl.getBoundingClientRect(), x1 = ar.left - a.left + ar.width*s.m[0] - 32, y1 = ar.top - a.top + ar.height*s.m[1] - 32;
+    think.classList.remove('on'); FX.swoosh();
+    cells.forEach((c, i) => { const r = c.getBoundingClientRect(), t = document.createElement('div'); t.className = 'st-bite art'; t.innerHTML = pic(s.f); root.appendChild(t); c.innerHTML = '';
+      t.animate([{transform:`translate(${r.left - a.left + r.width/2 - 32}px,${r.top - a.top + r.height/2 - 32}px) scale(.8)`}, {transform:`translate(${x1}px,${y1}px) scale(.3)`}],
+        {duration:550, delay:i*60, easing:'ease-in', fill:'forwards'}).onfinish = () => t.remove(); });
+    later(() => {
+      act('chomp'); const end = s.x === 'munch' ? FX.munch(0) : call(s, FX.crunch(0) + .05);
+      fed++; if (fedEl.children.length >= 10) fedEl.innerHTML = ''; const sp = document.createElement('span'); sp.className = 's art'; sp.innerHTML = ART[s.a]; fedEl.appendChild(sp);
+      later(() => { act('hop'); const [x, y] = rel(animalEl), r = animalEl.getBoundingClientRect(); for (let k=0;k<5;k++) later(() => flyNote(x + (Math.random() - .5)*r.width*.7, y - r.height*.3, rnd([ART.heart, ART.heartYellow, ART.heartGreen])), k*110); }, 700);
+      say('Yum! ' + GOT(s, n), 0, 'school');
+      const party = fed % 5 === 0, stay = end*1000 + (party ? 2400 : 1100);
+      if (party) later(() => { FX.cheer(); const [x, y] = rel(scene); confetti(x, y, 44); say('Hooray! Five full tummies!', 0, 'school'); }, end*1000 + 300);
+      later(() => { act('out'); steps(); }, stay);
+      later(arrive, stay + 850);
+    }, 700 + n*60);
+  }
+  tap(basket, drop, {bump:false, throttle:180});
+  tap(animalEl, () => { const now = performance.now(); if (!cur || now < quietUntil) return; act('hop'); quietUntil = now + call(cur)*1000; }, {bump:false});
+  tap(think, () => { if (eating || !cur) return; FX.pop(); retrigger(think, 'wig'); hush(); say(WANT(cur, n), 0, 'school'); }, {bump:false});
+  return {
+    enter(){ say("123 Snack! Let's count snacks!", 0, 'school'); cur = null; fed = 0; last = 0; arrive(); },
+    leave(){ $$('.st-bite', root).forEach(t => t.remove()); eating = true; },
+    state: () => ({want: cur && !eating ? n : null, got, animal: cur && cur.a, fed, cells: cells.length, filled: cells.filter(c => c.children.length).length}),
+    lines: () => ["123 Snack! Let's count snacks!", 'Yum!', 'Hooray! Five full tummies!', ...NUMW.slice(1).map((_, i) => countWord(i + 1)),
+      ...EATERS.flatMap(s => Array.from({length:10}, (_, i) => [WANT(s, i + 1), GOT(s, i + 1)]).flat())]
+  };
+})();
 
 /* ======================= MUSIC ======================= */
 let musicTab = 'xylo';
@@ -7963,7 +8175,7 @@ function voiceLines(){
     ...Object.values(CAM_SAY), ...Object.values(MODE_SAY), 'Move the phone to look all around!', ...COSTUMES.map(c => `You're ${article(COSTUME_NAME[c])}!`), ...LOOK_ORDER.slice(1).map(k => LOOKS[k].say),
     ...Object.values(MUSIC_SAY), ...SONGS.map(x => x.n + '!'), 'Yay! Great dancing!', 'Stop!', 'Hello! This is how loud I am.',
     ...WildTap.lines(), ...DinoBuddies.lines(), ...SnackTime.lines(), ...PaintPals.lines(),
-    SCHOOL_SAY.school, ...LetterPath.lines(), ...AbcZoo.lines(), ...AbcSnack.lines()
+    SCHOOL_SAY.school, ...LetterPath.lines(), ...AbcZoo.lines(), ...AbcSnack.lines(), ...NumZoo.lines(), ...NumSnack.lines()
   ];
   /* the narrator records whole lines and their sentences (for lines put together at play time); animals record whole lines */
   const out = new Map(), put1 = (who, x) => out.set(who + '|' + x, {who, s:x});
@@ -7996,6 +8208,7 @@ window.__toyPhone = { go, renderFx, speakable, voiceLines, lineMs,
   camLook: i => setLook(i), camLens: i => setLens(i),
   school: () => ({zoo:AbcZoo.state(), snack:AbcSnack.state(), progress:AbcSnack.progress()}),
   schoolPics: names => names.map(n => schoolPic(n) || ART[n] || ''),   // (pictures by name, for checking them by eye)
+  numbers: () => ({zoo:NumZoo.state(), snack:NumSnack.state()}),
   path: () => LetterPath.state(), pathPts: () => LetterPath.strokePts(), pathProgress: () => LetterPath.progress(),
   glyphSheet: () => { const k = 3, cw = 34, ch = 46, c = document.createElement('canvas'); c.width = 26*cw*k; c.height = 2*ch*k; const g = c.getContext('2d'); g.fillStyle = '#FFFDF6'; g.fillRect(0, 0, c.width, c.height); g.imageSmoothingEnabled = false;
     LETTERS.forEach((L, i) => { g.drawImage(glyphCanvas(L), i*cw*k, 0, cw*k, ch*k); g.drawImage(glyphCanvas(L.toLowerCase()), i*cw*k, ch*k, cw*k, ch*k); });

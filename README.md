@@ -50,44 +50,53 @@ Guided Access. It's one self-contained `index.html` (vanilla JS, no build step),
 
 - **School**: learning games, made for a home-school morning. Letters are drawn in a school-print pixel alphabet (circles
   and sticks, the way children learn to write them: one-story a and g, a crossed t, a tailed q), each letter always in
-  its own color. A grid button in each game goes back to the School menu.
-  - *Letter Path*: the letters one at a time, in the order phonics programs teach them (s a t i p n first, since they
-    make words soonest; then c k e h r m d, g o u l f b, j z w v y x q). A trail of 26 stepping stones, little letters
-    first; the next one bounces with an owl beside it, and each one opens when the one before is done. A lesson is four
-    short steps, shown as four dots at the top:
-    1. *Meet*: the little letter big, its capital beside it, and its word: "This is s. It says /s/, like star!" Tap the
-       letters for the sound, the picture for the word.
+  its own color; numbers are drawn the same way. A grid button in each game goes back to the School menu.
+  - *ABC Zoo* (first in School): all 26 letters, little letters first. Tap one to see it little and big, with a word
+    and picture for it; the picture makes its sound, then the voice says "L is for lion!" Tap the big letters to hear
+    the letter again, or the picture for its word. A button switches the board to capitals and back, and the song
+    button plays the ABC song (the Twinkle Twinkle tune) with each letter lighting up in time. Words: apple, butterfly,
+    cat, dog, elephant, frog, gorilla, hippo, iguana, jellyfish, kangaroo, lion, monkey, note, octopus, penguin, queen,
+    rhino, star, tiger, umbrella, volcano, whale, fox ("X is in fox!"), yo-yo, zebra.
+  - *Letter Path*: the letters one at a time, a to z. A trail of 26 stepping stones, little letters first; the next one
+    bounces with an owl beside it, and each one opens when the one before is done. A lesson is four short steps, shown
+    as four dots at the top:
+    1. *Meet*: the little letter big, its capital beside it, and its word: "This is a. It says /a/, like apple!" Tap
+       the letters for the sound, the picture for the word.
     2. *Trace*: the letter on writing lines. Follow the star along each stroke, in the order and direction children are
        taught to write it (round letters start at the top right and go counter-clockwise; b and p go down the stick, then
        back up and around). The ink only moves forward along the stroke, so a scribble can't skip ahead; left alone for a
        moment, a ghost star shows the way.
-    3. *Hear*: "Which one starts with /s/?" Three pictures: the lesson's word, then a second word where there is one
-       (sun, alligator, turtle, igloo, panda, nest, cow, kite, egg, hand, rocket, moon, duck, gift, leaf, fish, bus,
-       jam, watermelon, van). Sounds too alike for a first lesson (p and b, m and n, the short vowels) are never asked
-       against each other. For x it's "Which one ends with /x/?" (fox, box).
-    4. *Find*: "Which letter says /s/?" Three letters, with ones learned before mixed in; c, k and q (one sound) and
+    3. *Hear*: "Which one starts with /a/?" Three pictures: the lesson's word, then a second word where there is one
+       (alligator, bus, cow, duck, egg, fish, gift, hand, igloo, jam, kite, leaf, moon, nest, panda, rocket, sun,
+       turtle, van, watermelon). Sounds too alike for a first lesson (p and b, m and n, the short vowels) are never
+       asked against each other. For x it's "Which one ends with /x/?" (fox, box).
+    4. *Find*: "Which letter says /a/?" Three letters, with ones learned before mixed in; c, k and q (one sound) and
        mirror letters (b and d, p and q) are never side by side.
     A wrong tap is answered by name ("Van starts with /v/!", "That's t!") and asked again; after two tries the right
     one glows. A lesson ends with one to three stars (three for no wrong taps); the best is kept, and any lesson done
     can be done again.
     The sounds are the pure sounds a phonics teacher makes (/s/ is a hiss, not "suh"), each cut by the voice tool from
     the narrator saying a word (see [`tools/voices/`](tools/voices/README.md)).
-  - *ABC Zoo*: all 26 letters, little letters first. Tap one to see it little and big, with a word and picture for it;
-    the picture makes its sound, then the voice says the letter's sound and word: "L says /l/! L is for lion!" Tap the
-    big letters to hear the letter and its sound again, or the picture for its word. A button switches the board to
-    capitals and back, and the song button plays the ABC song (the Twinkle Twinkle tune) with each letter lighting up in
-    time. Words: apple, butterfly, cat, dog, elephant, frog, gorilla, hippo, iguana, jellyfish, kangaroo, lion, monkey,
-    note, octopus, penguin, queen, rhino, star, tiger, umbrella, volcano, whale, fox ("X is in fox!": phonics teaches x
-    at the end of a word), yo-yo, zebra.
-  - *ABC Snack*: Snack Time with letter cookies. An animal asks for a letter out loud ("Find the T!"); its thought
-    bubble shows an ear, never the letter, so the child has to know it (tap the bubble to hear it again). It grows with
-    the child: big letters by name, then (after eight right on the first try in a row) mostly little letters by name,
-    then (eight more) letter sounds, "Which letter says /s/?", asked about the letters done on the Letter Path once
-    there are three; three misses in a row steps back. Letters come in phonics order, a few at a time; a new group joins
-    once most of the current ones are known. A wrong cookie is never a loss: a head shake, the voice names the cookie
-    that was tapped ("That's N!") and asks again, and after two tries the right one glows. Look-alikes (b and d, p and
-    q) stay apart until the child knows most letters, and c and k never meet when the question is a sound. Every right
-    cookie: "Yum! T is for tiger!" (or "Yum! s says /s/!").
+  - *ABC Snack*: Snack Time with letter cookies. After the first "feed the animals" line, each animal just asks:
+    "Puppy wants an S!" Its thought bubble shows an ear, never the letter, so the child has to know it (tap the bubble
+    to hear it again). It grows with the child: big letters, then (after eight right on the first try in a row) mostly
+    little letters ("Frog wants a little b!"), then (eight more) letter sounds ("Monkey wants /s/!"), asked about the
+    letters done on the Letter Path once there are three; three misses in a row steps back. Letters come a few at a
+    time, the easiest first (s a t i p n); a new group joins once most of the current ones are known. A wrong cookie is
+    never a loss: a head shake, the voice names the cookie that was tapped ("That's N!") and asks again, and after two
+    tries the right one glows. Look-alikes (b and d, p and q) stay apart until the child knows most letters, and c and
+    k never meet when the question is a sound. A right cookie gets a crunch and "Yum!"
+  - *123 Zoo*: the numbers 1 to 10 in the same pixel print. Tap one and that many animals hop into a ten-frame (two
+    rows of five, the way early math shows a number: seven is "five and two more"), each counted out loud ("One! Two!
+    Three!"), then "Three zebras!" and they all call. One lion, two elephants, three zebras, four penguins, five frogs,
+    six ducks, seven monkeys, eight butterflies, nine chicks, ten fish. Tap the frame to count again; the 10 button
+    counts ten stars ("Count to ten!") and cheers.
+  - *123 Snack*: an animal walks in thinking of a number: "Puppy wants three bones!" Under it, that many empty boxes and
+    a basket of its food. Each tap on the basket drops one snack into the next box, counted out loud and numbered; when
+    the boxes are full the animal eats them all ("Yum! Three bones!") and earns a sticker. Up to three for the first three
+    animals, then up to five, and up to ten after ten. Monkey and bananas, penguin and fish, puppy and bones, giraffe and
+    leaves, turtle and strawberries, parrot and blueberries, frog and flies, elephant and peanuts, kangaroo and carrots,
+    gorilla and oranges, rhino and apples.
   - Parents get a page in settings: every Letter Path letter with its stars (tap one to hear its sound and lesson
     line, see its words and how to say the sound), In order or All open, and starting the path over; and ABC Snack's
     stage and the letters it has seen the child know, with a way to fix it at big letters, little letters or sounds.
@@ -303,7 +312,7 @@ turned off in settings): no card.
   | Opening apps | "Hi buddy!", "Phone! Who do you want to call?", "Tap the egg!" | off |
   | Animal names | The animal's name after its sound, Wild Tap facts, hatched babies, what each Snack Time animal wants, finished paintings | off |
   | Camera and Photos | The animals in view and in each picture | off |
-  | School | Letter names, sounds and words in the School games | on (the games need it) |
+  | School | Letters, sounds, words and counting in the School games | on (the games need it) |
   | Keypad numbers | Each number pressed | off |
   | Music | Instrument and song names | off |
 
@@ -338,7 +347,7 @@ The automated test runs in Chromium, so these need a person and the phone:
       moves the scenes the same way, a full turn comes back round, laying the phone flat goes back to dragging, and it
       still works in Guided Access with Motion on. Then close Safari, open the toy again and see whether it still moves
       without asking (the settings note says)
-- [ ] The letter names in School sound right ("Find the B!", "That's Q!", "A is for apple!"). The voice model is given
+- [ ] The letter names in School sound right ("Puppy wants an S!", "That's Q!", "A is for apple!"). The voice model is given
       each letter's name as exact phonemes (respelling made "A" sound like "eye"), and a speech recognizer heard them,
       but listen once
 - [ ] The 26 letter sounds (settings, Letter Path, tap a letter, *Hear the sound*): each is cut from a word and was
@@ -404,7 +413,7 @@ does. Screenshots go to `tests/screenshots/`.
   restart is replaced. The voice waits for a sound to finish rather than talking over it.
 - A call nobody hangs up says goodbye by itself after 3 minutes (`CALL_MAX_MS`), so a forgotten phone doesn't chat all afternoon.
 - In portrait, the 8 xylophone bars and 8 piano keys are about 66px tall but span the full width, the ABC Zoo
-  letters are about 53px and the Letter Path stones about 68px (47px with Safari's bars showing; 26 share the screen, so the whole path shows
+  letters are about 53px, the 123 Zoo numbers about 65px, and the Letter Path stones about 68px (47px with Safari's bars showing; 26 share the screen, so the whole path shows
   without scrolling). Every other kid control is 80px or more.
 - With five app icons, the three animals on the home-screen hill only show on tall portrait screens (800px or more).
 - Every picture is a pixel sprite in `index.html`, so the toy looks the same on every phone, and walking animals always face the way they walk. The test fails if an emoji or an SVG sneaks back in, or if a sprite has uneven rows or a letter with no color.

@@ -623,26 +623,27 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   // --- SCHOOL: the Letter Path, ABC Zoo, ABC Snack
   const school = () => page.evaluate(() => window.__toyPhone.school());
   await tap('[data-app="school"]'); await sleep(600);
-  check(await page.locator('#schoolList .gamecard').count() === 3, 'School shows its learning games');
+  check(await page.locator('#schoolList .gamecard').count() === 5, 'School shows its learning games');
+  check((await page.$$eval('#schoolList .gamecard', bs => bs.map(b => b.getAttribute('aria-label')))).join() === 'ABC Zoo,Letter Path,ABC Snack,123 Zoo,123 Snack', 'ABC Zoo first, then the Letter Path, ABC Snack and the two counting games');
   await shot('28-school'); await fits('school');
   const lp = () => page.evaluate(() => window.__toyPhone.path());
   const until = async (fn, n = 30) => { for (let i = 0; i < n && !(await fn()); i++) await sleep(300); return fn(); };
   await tap('.gamecard[aria-label="Letter Path"]'); await sleep(900);
   const order = await page.$$eval('.lp-stone', bs => bs.map(b => b.dataset.l).join(''));
-  check(order === 'satipnckehrmdgoulfbjzwvyxq' && (await lp()).open.join('') === 's', `Letter Path: 26 stones in phonics order, only s open (${order})`);
+  check(order === 'abcdefghijklmnopqrstuvwxyz' && (await lp()).open.join('') === 'a', `Letter Path: 26 stones from a to z, only a open (${order})`);
   await shot('28b-letterpath'); await fits('letter path');
-  await tap('.lp-stone[data-l="t"]'); await sleep(700);
+  await tap('.lp-stone[data-l="c"]'); await sleep(700);
   check(!(await lp()).lesson && (await said()).includes('Not yet! Tap the bouncing letter!'), 'a stone not open yet: "Not yet! Tap the bouncing letter!"');
-  await tap('.lp-stone[data-l="s"]'); await sleep(1000);
+  await tap('.lp-stone[data-l="a"]'); await sleep(1000);
   let ls = await lp();
-  check(ls.lesson && ls.letter === 's' && ls.step === 'meet', 'the bouncing stone starts the s lesson with Meet');
+  check(ls.lesson && ls.letter === 'a' && ls.step === 'meet', 'the bouncing stone starts the a lesson with Meet');
   await until(async () => (await lp()).next);
-  check((await said()).includes('This is s. It says /s/, like star!') && (await lp()).next, 'Meet: "This is s. It says /s/, like star!", then the next arrow');
+  check((await said()).includes('This is a. It says /a/, like apple!') && (await lp()).next, 'Meet: "This is a. It says /a/, like apple!", then the next arrow');
   before = await osc(); await tap('.lp-letters'); await sleep(900);
-  check((await said()).includes('/s/!') && await osc() > before, 'tapping the letters plays the s sound');
+  check((await said()).includes('/a/!') && await osc() > before, 'tapping the letters plays the a sound');
   await shot('28c-meet'); await fits('meet');
   await tap('#lpNext'); await sleep(900);
-  check((await lp()).step === 'trace' && (await lp()).strokes === 1, 'Trace: s is one stroke');
+  check((await lp()).step === 'trace' && (await lp()).strokes === 2, 'Trace: a is two strokes');
   const cvb = await page.locator('.lp-paper canvas').boundingBox();
   await drag([cvb.x + cvb.width * 0.1, cvb.y + cvb.height * 0.95], [cvb.x + cvb.width * 0.9, cvb.y + cvb.height * 0.95]);
   check((await lp()).stroke === 0 && !(await lp()).traced, 'a scribble away from the letter traces nothing');
@@ -651,44 +652,45 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
     await touch('touchStart', [pts[0]]); for (let i = 1; i < pts.length; i += 2) await touch('touchMove', [pts[i]]);
     await touch('touchMove', [pts[pts.length - 1]]); await touch('touchEnd', []); await sleep(200);
   }
-  check((await lp()).traced === true, 'following the star along the stroke traces s');
+  check((await lp()).traced === true, 'following the star along each stroke traces a');
   await shot('28d-trace');
   ls = await until(async () => { const x = await lp(); return x.step === 'hear' && x; });
-  check(ls && ls.choices.length === 3 && ls.choices.includes('star'), `Hear: three pictures, one of them starts with /s/ ${JSON.stringify(ls && ls.choices)}`);
-  await until(async () => (await said()).includes('Which one starts with /s/?'));
-  check((await said()).includes('Which one starts with /s/?'), 'Hear asks "Which one starts with /s/?"');
+  check(ls && ls.choices.length === 3 && ls.choices.includes('apple'), `Hear: three pictures, one of them starts with /a/ ${JSON.stringify(ls && ls.choices)}`);
+  await until(async () => (await said()).includes('Which one starts with /a/?'));
+  check((await said()).includes('Which one starts with /a/?'), 'Hear asks "Which one starts with /a/?"');
   await shot('28e-hear'); await fits('hear');
   const wrongW = ls.choices.find(c => c !== ls.want);
   await tap(`.lp-card[data-k="${wrongW}"]`); await sleep(600);
   check((await said()).some(t => t.toLowerCase().startsWith(wrongW + ' ') && /(starts|ends) with \/\w\//.test(t)) && (await lp()).misses === 1, `a wrong picture: the voice says what ${wrongW} starts with, and asks again`);
-  for (let r = 0; r < 3 && (await lp()).step === 'hear'; r++) { const s1 = await lp(); await tap(`.lp-card[data-k="${s1.want}"]`); await until(async () => { const x = await lp(); return x.step !== 'hear' || x.round !== s1.round; }); }
+  // each round deals its cards in, growing from nothing: wait for them to land before tapping
+  for (let r = 0; r < 4 && (await lp()).step === 'hear'; r++) { await sleep(500); const s1 = await lp(); await tap(`.lp-card[data-k="${s1.want}"]`); await until(async () => { const x = await lp(); return x.step !== 'hear' || x.round !== s1.round; }); }
   ls = await lp();
-  check(ls.step === 'find' && ls.choices.length === 3 && ls.choices.includes('s') && ls.want === 's', `Find: three letters, which says /s/? ${JSON.stringify(ls.choices)}`);
-  await until(async () => (await said()).includes('Which letter says /s/?'));
-  check((await said()).includes('Which letter says /s/?'), 'Find asks "Which letter says /s/?"');
+  check(ls.step === 'find' && ls.choices.length === 3 && ls.choices.includes('a') && ls.want === 'a', `Find: three letters, which says /a/? ${JSON.stringify(ls.choices)}`);
+  await until(async () => (await said()).includes('Which letter says /a/?'));
+  check((await said()).includes('Which letter says /a/?'), 'Find asks "Which letter says /a/?"');
   await shot('28f-find'); await fits('find');
-  for (let r = 0; r < 4 && (await lp()).step === 'find'; r++) { const s1 = await lp(); await tap(`.lp-card[data-k="${s1.want}"]`); await until(async () => { const x = await lp(); return x.step !== 'find' || x.round !== s1.round; }); }
-  check((await said()).some(t => t.endsWith('s says /s/!')), 'a right letter: "Yes! s says /s/!"');
+  for (let r = 0; r < 5 && (await lp()).step === 'find'; r++) { await sleep(500); const s1 = await lp(); await tap(`.lp-card[data-k="${s1.want}"]`); await until(async () => { const x = await lp(); return x.step !== 'find' || x.round !== s1.round; }); }
+  check((await said()).some(t => t.endsWith('a says /a/!')), 'a right letter: "Yes! a says /a/!"');
   ls = await lp();
-  check(ls.lesson && ls.step === null && ls.stars.s === 2, `the lesson ends with stars: two, for one wrong tap ${JSON.stringify(ls.stars)}`);
-  await until(async () => (await said()).includes('You learned s!'));
+  check(ls.lesson && ls.step === null && ls.stars.a === 2, `the lesson ends with stars: two, for one wrong tap ${JSON.stringify(ls.stars)}`);
+  await until(async () => (await said()).includes('You learned a!'));
   await shot('28g-done');
   await until(async () => !(await lp()).lesson, 25);
   ls = await lp();
-  check(!ls.lesson && ls.open.join('') === 'sa' && await page.locator('.lp-stone[data-l="s"] .lp-stars i.on').count() === 2, `back on the trail: s shows its two stars and a is open (${ls.open.join('')})`);
-  await until(async () => (await said()).includes('Next is a!'));
-  check((await said()).includes('Next is a!'), 'and the voice says "Next is a!"');
+  check(!ls.lesson && ls.open.join('') === 'ab' && await page.locator('.lp-stone[data-l="a"] .lp-stars i.on').count() === 2, `back on the trail: a shows its two stars and b is open (${ls.open.join('')})`);
+  await until(async () => (await said()).includes('Next is b!'));
+  check((await said()).includes('Next is b!'), 'and the voice says "Next is b!"');
   await tap('#letterpath .sc-back'); await sleep(500);
   await tap('.gamecard[aria-label="ABC Zoo"]'); await sleep(700);
-  check(await page.locator('.az-tile').count() === 26, 'ABC Zoo shows all 26 letters');
-  before = await osc();
+  check(await page.locator('#azGrid .az-tile').count() === 26, 'ABC Zoo shows all 26 letters');
+  before = await osc(); const zs = (await said()).length;
   await tap('.az-tile[data-l="M"]'); await sleep(2600);
   let sc = await school();
   check(sc.zoo.letter === 'M' && await osc() > before, `tapping a letter shows it and its picture makes its sound (${sc.zoo.letter})`);
-  check((await said()).includes('M says /m/! M is for monkey!'), 'and the voice says "M says /m/! M is for monkey!"');
+  check((await said()).slice(zs).includes('M is for monkey!') && !(await said()).slice(zs).some(t => / says /.test(t)), 'and the voice says "M is for monkey!" (no letter sound)');
   await shot('29-abczoo'); await fits('abc zoo');
   await tap('#azCase'); await sleep(300);
-  check(!(await school()).zoo.small && await page.locator('.az-tile img').count() === 26, 'little letters first; the case button shows the capitals');
+  check(!(await school()).zoo.small && await page.locator('#azGrid .az-tile img').count() === 26, 'little letters first; the case button shows the capitals');
   await tap('#azSong'); await sleep(1500);
   check((await school()).zoo.singing, 'the song button sings the ABCs, lighting each letter');
   await tap('#azSong'); await sleep(300);
@@ -700,9 +702,10 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   sc = await school();
   check(sc.snack.want && sc.snack.mode === 'big' && sc.snack.choices.length === 2 && sc.snack.choices.includes(sc.snack.want) && 'SATIPN'.includes(sc.snack.want),
     `ABC Snack: an animal asks for a big letter from the first group (s a t i p n), with 2 cookies ${JSON.stringify(sc.snack)}`);
-  for (let i = 0; i < 25 && !(await said()).some(t => t.includes(`Find the ${sc.snack.want}!`)); i++) await sleep(300);   // it waits for the intro line
-  check(await page.locator('#asWant .glyph').count() === 0 && (await said()).some(t => t.includes(`Find the ${sc.snack.want}!`)),
-    'the letter is asked for out loud, never shown in the bubble (the child has to know it)');
+  const asked = () => said().then(a => a.find(t => / wants (an? [A-Z]|a little [a-z])!$/.test(t) && t.toUpperCase().endsWith(` ${sc.snack.want}!`)));
+  for (let i = 0; i < 25 && !(await asked()); i++) await sleep(300);   // it waits for the intro line
+  check(await page.locator('#asWant .glyph').count() === 0 && !!(await asked()),
+    `the letter is asked for out loud, in a few words ("${await asked()}"), never shown in the bubble (the child has to know it)`);
   await shot('30-abcsnack'); await fits('abc snack');
   const wrongL = sc.snack.choices.find(L => L !== sc.snack.want);
   await tap(`#asFoods .st-food[data-l="${wrongL}"]`); await sleep(1800);
@@ -731,6 +734,46 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   check((await lp()).open.length === 26 && await page.locator('.lp-stone.locked').count() === 0, 'the "All open" setting opens every letter');
   await home();
   await holdClock(); await tapSetting('[data-path="order"]'); await tap('#doneBtn'); await sleep(300);
+
+  // --- SCHOOL: counting, 123 Zoo and 123 Snack
+  const nums = () => page.evaluate(() => window.__toyPhone.numbers());
+  await tap('[data-app="school"]'); await sleep(500); await tap('.gamecard[aria-label="123 Zoo"]'); await sleep(900);
+  check(await page.locator('#nzGrid .az-tile').count() === 10 && await page.locator('#nzFrame .nz-cell').count() === 10, '123 Zoo: the numbers 1 to 10 and an empty ten-frame');
+  let c0 = (await said()).length; before = await osc();
+  await tap('#nzGrid .az-tile[data-n="3"]');
+  await until(async () => (await said()).slice(c0).includes('Three zebras!'), 25);
+  let nm = await nums(), heard = (await said()).slice(c0);
+  check(nm.zoo.n === 3 && nm.zoo.shown === 3 && await page.locator('#nzFrame .nz-cell .art').count() === 3, `tapping 3: three zebras hop into the ten-frame ${JSON.stringify(nm.zoo)}`);
+  check(['One!', 'Two!', 'Three!', 'Three zebras!'].every(t => heard.includes(t)) && heard.indexOf('Three!') < heard.indexOf('Three zebras!') && await osc() > before,
+    `each one is counted out loud, then "Three zebras!" and they neigh ${JSON.stringify(heard)}`);
+  check(await page.locator('#nzNum img, #nzNum canvas').count() > 0, 'the number shows big above the frame');
+  await shot('31-123zoo'); await fits('123 zoo');
+  c0 = (await said()).length;
+  await tap('#nzCount');
+  await until(async () => (await said()).slice(c0).includes('You counted to ten!'), 45);
+  nm = await nums(); heard = (await said()).slice(c0);
+  check(['Count to ten!', 'One!', 'Five!', 'Ten!', 'You counted to ten!'].every(t => heard.includes(t)) && nm.zoo.shown === 10 && !nm.zoo.counting,
+    'the 10 button counts ten stars: "Count to ten!", "One!" to "Ten!", then "You counted to ten!"');
+  await tap('#numzoo .sc-back'); await sleep(500);
+  await tap('.gamecard[aria-label="123 Snack"]'); await sleep(1500);
+  let sn = (await until(async () => { const x = await nums(); return x.snack.want && x; })).snack;
+  check(sn.want >= 1 && sn.want <= 3 && sn.cells === sn.want && sn.filled === 0, `123 Snack: an animal wants one to three snacks, with that many empty boxes ${JSON.stringify(sn)}`);
+  await until(async () => (await said()).some(t => / wants (one|two|three) \w+!$/.test(t)));
+  check((await said()).some(t => / wants (one|two|three) \w+!$/.test(t)), `and says how many ("${(await said()).find(t => / wants (one|two|three) /.test(t))}")`);
+  check(await page.locator('#nsWant img, #nsWant canvas').count() > 0, 'the number shows in its thought bubble');
+  await shot('32-123snack'); await fits('123 snack');
+  c0 = (await said()).length;
+  for (let i = 0; i < sn.want; i++) { await tap('#nsBasket'); await sleep(550); }
+  const sn1 = (await nums()).snack; heard = (await said()).slice(c0);
+  check(sn1.got === sn.want && sn1.filled === sn.want && await page.locator('#nsFrame .nz-badge').count() === sn.want, `each tap on the basket puts one snack in the next box, numbered ${JSON.stringify(sn1)}`);
+  check(['One!', 'Two!', 'Three!'].slice(0, sn.want).every(t => heard.includes(t)), `and counts it out loud ${JSON.stringify(heard)}`);
+  await shot('33-123snack-full');
+  await until(async () => (await said()).slice(c0).some(t => /^Yum! (One|Two|Three) \w+!$/.test(t)), 25);
+  check((await nums()).snack.fed === 1 && await page.locator('#nsFed .s').count() === 1 && (await said()).slice(c0).some(t => /^Yum! (One|Two|Three) \w+!$/.test(t)),
+    'when the boxes are full the animal eats them all: "Yum! Three bones!" and a sticker');
+  sn = (await until(async () => { const x = await nums(); return x.snack.want && x; })).snack;
+  check(!!sn.want && sn.filled === 0, `the next animal walks in (${sn.animal} wants ${sn.want})`);
+  await home();
 
   // --- PAINT PALS (two players): both kids rub their own picture at the same time
   await tap('[data-app="games"]'); await sleep(500);

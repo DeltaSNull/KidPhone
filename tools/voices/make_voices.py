@@ -32,7 +32,7 @@ BITRATE = '40k'
 VERSION = 4             # bump to re-record everything after changing the processing below
 
 # Words the model says wrong ("Grr" comes out letter by letter), respelled for it only; the page keeps the real words.
-RESPELL = [(r'\bgrr+\b', 'Gurr'), (r'\bbrr+\b', 'Burr'), (r'\bla la la\b', 'Lah lah lah'), (r'\bpawoo\b', 'Pah-woo')]
+RESPELL = [(r'\bgrr+\b', 'Gurr'), (r'\bbrr+\b', 'Burr'), (r'\bla la la\b', 'Lah lah lah'), (r'\bpawoo\b', 'Pah-woo'), (r'\b123\b', 'One, two, three')]
 
 
 # A letter on its own ("Find the B!", "That's b!", "B is for bear!") is said as its name. Respelling doesn't work (the
