@@ -1,0 +1,114 @@
+# School learning roadmap
+
+Created: 2026-10-04  
+Review baseline: `413fbb1c45b559d260f58ec98fa59a0279c4e26f`  
+Status: Planned — implementation has not started.
+
+## Goal
+
+Build a purposeful learning experience for a preschool learner and a toddler learner while preserving ToyPhone's animals, voices, playful feedback, and offline use. Give parents a protected School-only mode and meaningful evidence of what each child can do.
+
+## Progress tracking
+
+This file is the source of truth for the suggestions from the School review. Check an item only after its implementation and relevant verification are complete. Add a commit/PR link and verification note to the completed item. For work underway, append **In progress**; for a dependency or unresolved decision, append **Blocked — reason**. Update the phase table and change log with each completed batch. Do not mark a phase complete until its acceptance checks pass.
+
+| Phase | Status | Completion evidence |
+| --- | --- | --- |
+| 1. Parent controls and child profiles | Not started | — |
+| 2. Learning foundation and existing activity improvements | Not started | — |
+| 3. First guided learning journey | Not started | — |
+| 4. Broader curriculum and parent summaries | Not started | — |
+
+Recommended order: Phase 1 → Phase 2 → Phase 3 → Phase 4. Dino Picnic and Animal Delivery are the first new activity priorities. Technical and validation tasks below belong to the phase they support.
+
+## Phase 1 — Parent controls and child profiles
+
+- [ ] **P1-01 — Parent PIN:** Keep the clock hold as an entry point and require a parent PIN before changing protected settings. Define setup, change, and recovery behavior.
+- [ ] **P1-02 — Access modes:** Add School only, Custom, and Full phone. Custom independently enables School, Games, Camera, Photos, Music, and Phone.
+- [ ] **P1-03 — School home:** Open directly into School in School-only mode; the Home button also returns to School.
+- [ ] **P1-04 — Navigation enforcement:** Centralize access checks for every entry point, including nested games, shortcuts, restored screens, and app transitions. Hide unavailable icons as well as blocking routes.
+- [ ] **P1-05 — Camera and call shutdown:** End an active camera or call when disabled; suppress incoming calls in School-only mode. Separate Camera app availability from Pretend/Real/Both settings.
+- [ ] **P1-06 — Permission handling:** Skip camera and motion permission requests when those features are unavailable, including startup, settings completion, and resume.
+- [ ] **P1-07 — Persistent restrictions:** Preserve access policy across reloads, closing/reopening, updates, and offline launches.
+- [ ] **P1-08 — Session ending:** Add a parent-controlled session limit with a gentle end after the current activity; require parent authorization to extend it.
+- [ ] **P1-09 — Audio controls:** Separate essential lesson narration from optional animal sounds and celebrations. Avoid allowing a listening lesson to silently become unanswerable.
+- [ ] **P1-10 — Separate profiles:** Add independent preschool and toddler profiles with their own progress and adjustable starting levels. Keep profile data on the device.
+- [ ] **P1-11 — Together play:** Provide an untracked shared mode; do not attribute joint answers to an individual child.
+- [ ] **P1-12 — Existing progress migration:** Preserve shared ABC/Letter Path records as legacy history. Do not assign them to either child as demonstrated knowledge.
+- [ ] **P1-13 — Parent guidance:** Explain that the PIN protects in-app settings and Guided Access keeps the child inside the app.
+
+Acceptance: unavailable sections cannot be reached through Home, nested navigation, restored state, or reload; no disallowed camera/motion prompts appear; disabling a camera stops its stream; profiles and Together play never mix individual progress.
+
+## Phase 2 — Learning foundation and existing activity improvements
+
+- [ ] **P2-01 — Shared skill model:** Define stable skill IDs and store learner, skill, activity, first response, eventual completion, hint/demonstration use, session/date, and example/context separately.
+- [ ] **P2-02 — Honest learning states:** Use Introduced → Practicing → Independent → Remembered later, with explicit, reviewable transition rules. Completion and stars alone must not imply mastery.
+- [ ] **P2-03 — Separate literacy skills:** Track uppercase recognition, lowercase recognition, and sound–letter knowledge independently; replace ABC Snack's combined per-letter evidence.
+- [ ] **P2-04 — Assisted practice:** Keep gentle correction and demonstrations, but record assisted success separately from an independent answer.
+- [ ] **P2-05 — Repeated-tap handling:** Prevent repeated taps or retries within one question from counting as multiple independent successes.
+- [ ] **P2-06 — Review over time:** Revisit skills on later days and use fresh pictures, arrangements, and contexts before labeling them remembered.
+- [ ] **P2-07 — Difficulty adaptation:** Base changes on evidence for the specific skill, rather than number of animals fed or a global streak; retain parent overrides.
+- [ ] **P2-08 — Letter Path completion:** Separate lesson completion/unlocking from evidence of learning; revise “You learned” messages when only practice was completed.
+- [ ] **P2-09 — Optional tracing:** Track motor practice separately from letter/sound recognition. Preserve a way to skip without treating the current 25-second fallback as a successful trace.
+- [ ] **P2-10 — Consistent teaching sequence:** Align letter lessons and ABC Snack practice around one explicit sequence, while keeping A–Z exploration available.
+- [ ] **P2-11 — Recognition without color cues:** Add occasional neutral-colored letter checks and varied layouts so fixed letter colors do not supply the answer.
+- [ ] **P2-12 — ABC/123 Zoo role:** Keep these as exploration and demonstrations; do not count watching or tapping a demonstration as independent skill evidence.
+- [ ] **P2-13 — Counting redesign:** Replace automatic target-sized tray completion with child-selected quantities, add/remove actions, and an explicit Feed/Done choice; retain guided counting as a teaching mode.
+- [ ] **P2-14 — Shared lesson structure:** Support review, one new concept, guided practice, a fresh independent example, and an offline follow-through activity.
+- [ ] **P2-15 — Accessible interaction:** Preserve spoken prompts, replay buttons, large touch targets, clear visual feedback, and gentle correction; avoid speed-based scoring.
+
+Acceptance: hints, retries, skipped tracing, demonstrations, and joint play cannot generate independent-skill credit. A later independent check can distinguish retained knowledge from completing the same sequence repeatedly.
+
+## Phase 3 — First guided learning journey
+
+- [ ] **P3-01 — Today's Adventure:** Make a short guided sequence the main School entry point while retaining free exploration.
+- [ ] **P3-02 — Preschool path:** Offer adjustable lessons in letters/sounds, name recognition, counting and making sets of 1–5, vocabulary, and following directions.
+- [ ] **P3-03 — Toddler Play Together:** Offer adult-guided naming, pointing, sound imitation, familiar-object matching, one/more, in/out, open/closed, clapping, waving, and turn-taking. Do not present this as a smaller preschool test.
+- [ ] **P3-04 — Dino Picnic:** Reuse animal/food art for “give three snacks”; allow adding/removing snacks and choosing Feed. Vary quantities and arrangements; provide a simpler adult-guided toddler version.
+- [ ] **P3-05 — Sound Safari:** Extend the listening-based ABC Snack approach to picture and letter choices with separate sound and letter-name objectives.
+- [ ] **P3-06 — Animal Delivery:** Teach directions and vocabulary, starting with “put the apple under the tree,” then combining attributes and quantity when ready. Include simple toddler in/out activities.
+- [ ] **P3-07 — Session structure:** Give each adventure a clear beginning and ending, with a manageable mix of review and new material rather than endless auto-advancement.
+- [ ] **P3-08 — Offline follow-through:** End with a related action such as bringing three toy animals, finding an object, or following a spoken direction with a parent.
+- [ ] **P3-09 — First family trial:** Observe each learner using the appropriate experience. Record usability and teaching changes needed without publishing private child observations in the repository.
+
+Acceptance: both learner paths are usable, the preschool activities require a meaningful choice, and the toddler experience prompts interaction with an adult. Check whether a concept transfers to a new example or real-world action before expanding the catalog.
+
+## Phase 4 — Broader curriculum and parent summaries
+
+- [ ] **P4-01 — Sorting Station:** Match identical objects, then sort by color, shape, or size; later change the sorting rule.
+- [ ] **P4-02 — Story Time:** Add short illustrated stories with vocabulary, prediction, simple questions, event ordering, and parent conversation prompts.
+- [ ] **P4-03 — Pattern Train:** Complete simple repeating color/size patterns and gradually vary the examples.
+- [ ] **P4-04 — Feelings Friends:** Identify feelings and explore helpful responses to sadness, frustration, waiting, and taking turns.
+- [ ] **P4-05 — Curriculum coverage:** Map activities to language/literacy, early math, thinking/problem-solving, social learning, and motor/offline experiences; include quantity comparison, spatial concepts, and sequencing.
+- [ ] **P4-06 — Parent dashboard:** Show each child's independent skills, assisted practice, recent review, and recommended next activity. Avoid presenting stars or time spent as learning.
+- [ ] **P4-07 — Parent observations:** Let a parent record an offline demonstration separately from automatically observed app results.
+- [ ] **P4-08 — Actionable summaries:** Explain what was practiced, what still needs help, and one useful next step in plain language.
+- [ ] **P4-09 — Refine progression:** Adjust teaching order, difficulty, and learning-state thresholds based on family observations and varied-example checks, without ranking the siblings.
+
+Acceptance: activities revisit prior skills, progress summaries distinguish evidence types, and parents receive useful next steps beyond “completed another game.”
+
+## Technical work and verification
+
+- [ ] **T-01 — Gradual code organization:** Extract parent policy, profiles, skill tracking, lesson flow, and curriculum data from the large `index.html` as their phases are implemented. Preserve vanilla JS, the existing visual style, and offline deployment; no framework rewrite is required.
+- [ ] **T-02 — Data durability:** Version saved progress and verify migrations, reloads, and updates preserve records without mixing profiles.
+- [ ] **T-03 — Audio assets:** Generate recordings for new or changed lesson lines, verify clip coverage and offline availability, and retain iPhone audio behavior.
+- [ ] **T-04 — Human phonics review:** Listen to letter names, the 26 sounds, and lesson prompts on an actual phone; check that sounds are clear and appropriate. Automated recognition alone does not complete this task.
+- [ ] **T-05 — Access-control tests:** Cover mode switching, nested routes, Home, restored state, reload/offline, camera shutdown, permission suppression, and incoming calls.
+- [ ] **T-06 — Learning-record tests:** Cover profile isolation, Together mode, legacy migration, first responses, hints, retries, tracing skips, and later-session evidence.
+- [ ] **T-07 — Lesson tests:** Verify counting requires an intentional quantity choice and repeated tapping cannot manufacture independent evidence; verify fresh-example review and session endings.
+- [ ] **T-08 — Browser regression checks:** Use the existing Chromium/WebKit and Pages checks for affected behavior, including the /KidPhone/ subfolder and offline assets.
+- [ ] **T-09 — Real-phone checks:** Verify Safari/home-screen use, portrait/landscape, touch interactions, Guided Access, sound, and session endings on the actual phone.
+- [ ] **T-10 — Documentation upkeep:** Update the README and this tracker as features ship. Attach implementation and verification evidence before checking off tasks.
+
+## Design references
+
+Use these as curriculum/design references, not as claims that app scores diagnose development or establish school readiness.
+
+- [Head Start Early Learning Outcomes Framework](https://www.headstart.gov/interactive-head-start-early-learning-outcomes-framework-ages-birth-five): broad early-learning domains and developmental progressions.
+- [NAEYC: Technology and Young Children — Infants and Toddlers](https://www.naeyc.org/node/1354): adult conversation and shared interaction when technology is used.
+
+## Change log
+
+| Date | Change | Evidence |
+| --- | --- | --- |
+| 2026-10-04 | Recorded the reviewed School roadmap and progress checklist. All implementation tasks remain open. | Baseline: `413fbb1`; this documentation commit |
