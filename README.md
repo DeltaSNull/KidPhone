@@ -100,6 +100,22 @@ Guided Access. It's one self-contained `index.html` (vanilla JS, no build step),
   - Parents get a page in settings: every Letter Path letter with its stars (tap one to hear its sound and lesson
     line, see its words and how to say the sound), In order or All open, and starting the path over; and ABC Snack's
     stage and the letters it has seen the child know, with a way to fix it at big letters, little letters or sounds.
+## School roadmap and progress
+
+Track the planned learning improvements in [School learning roadmap](SCHOOL_ROADMAP.md).
+The checklist covers parental controls, School-only mode, separate child profiles, meaningful
+learning progress, guided lessons, new activities, and verification.
+
+| Phase | Planned work |
+| --- | --- |
+| 1 | Parent PIN, app restrictions, School-only mode, and child profiles |
+| 2 | Skill tracking, better feedback, and improvements to existing learning activities |
+| 3 | Today's Adventure, Dino Picnic, Sound Safari, and Animal Delivery |
+| 4 | Sorting, stories, patterns, feelings, and useful parent summaries |
+
+Implementation status and completion evidence are maintained in the roadmap. Check off tasks
+there as they are implemented and verified.
+
 ## Animal voices
 
 Most animals are **real recordings** from [Wikimedia Commons](https://commons.wikimedia.org/), all public domain, CC0,
