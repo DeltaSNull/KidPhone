@@ -66,9 +66,9 @@ Acceptance: hints, retries, skipped tracing, demonstrations, and joint play cann
 - [ ] **P3-01 — Today's Adventure:** Make a short guided sequence the main School entry point while retaining free exploration.
 - [ ] **P3-02 — Preschool path:** Offer adjustable lessons in letters/sounds, name recognition, counting and making sets of 1–5, vocabulary, and following directions.
 - [ ] **P3-03 — Toddler Play Together:** Offer adult-guided naming, pointing, sound imitation, familiar-object matching, one/more, in/out, open/closed, clapping, waving, and turn-taking. Do not present this as a smaller preschool test.
-- [ ] **P3-04 — Dino Picnic:** Reuse animal/food art for “give three snacks”; allow adding/removing snacks and choosing Feed. Vary quantities and arrangements; provide a simpler adult-guided toddler version.
+- [ ] **P3-04 — Dino Picnic:** Reuse animal/food art for “give three snacks”; allow adding/removing snacks and choosing Feed. Vary quantities and arrangements; provide a simpler adult-guided toddler version. **In progress — Claude, 2026-10-04.**
 - [ ] **P3-05 — Sound Safari:** Extend the listening-based ABC Snack approach to picture and letter choices with separate sound and letter-name objectives.
-- [ ] **P3-06 — Animal Delivery:** Teach directions and vocabulary, starting with “put the apple under the tree,” then combining attributes and quantity when ready. Include simple toddler in/out activities.
+- [ ] **P3-06 — Animal Delivery:** Teach directions and vocabulary, starting with “put the apple under the tree,” then combining attributes and quantity when ready. Include simple toddler in/out activities. **In progress — Claude, 2026-10-04.**
 - [ ] **P3-07 — Session structure:** Give each adventure a clear beginning and ending, with a manageable mix of review and new material rather than endless auto-advancement.
 - [ ] **P3-08 — Offline follow-through:** End with a related action such as bringing three toy animals, finding an object, or following a spoken direction with a parent.
 - [ ] **P3-09 — First family trial:** Observe each learner using the appropriate experience. Record usability and teaching changes needed without publishing private child observations in the repository.

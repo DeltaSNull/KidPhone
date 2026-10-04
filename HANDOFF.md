@@ -4,8 +4,7 @@ Read SCHOOL_ROADMAP.md first, then AGENTS.md. This is the agreed plan going forw
 
 ## Active batch
 
-- None claimed. The last batch (below) is done; the next unfinished, untracked items are in the roadmap (Phase 3 activities such as Today's Adventure, Dino Picnic, Sound Safari and Animal Delivery, after the owner's real-phone check).
-- Owner's decision: hold off on progress tracking while the toy is being tested. Profiles, Together play, legacy migration (P1-10 to P1-12), the skill model and learning records (P2-01 to P2-08, T-02, T-06) and the parent dashboard (P4-06 to P4-08) are deferred in the roadmap. Don't start them until the owner asks.
+- Claimed: Claude, 2026-10-04, on `main`: P3-06 Animal Delivery and P3-04 Dino Picnic (new School activities, no progress tracking).
 
 ## Owner's request, 2026-10-04: ABC Snack asks by letter name only
 
