@@ -7802,8 +7802,13 @@ $$('[data-camera]').forEach(b => tap(b, () => {
   renderSettings();
   if (current === 'camera') startCamera(); else if (settings.camera !== 'pretend') probeCamera();
 }));
-/* a parent's tap is what lets Safari ask about motion; leaving settings with the setting on asks too, if it's still off */
-$$('[data-look]').forEach(b => tap(b, () => { settings.look = b.dataset.look; saveSettings(); FX.cheer(); renderSettings(); if (settings.look === 'move') askMotion().then(renderLookNote); }));
+$$('[data-look]').forEach(b => tap(b, () => { settings.look = b.dataset.look; saveSettings(); FX.cheer(); renderSettings(); }));
+/* A parent's tap is what lets Safari ask about motion, and Safari only asks when the finger lifts (touchend or click):
+   a finger going down (pointerdown, which every button here answers) gets a silent no. Choosing Move the phone asks;
+   leaving settings with it on asks too, if motion is still off. */
+function onLift(el, fn){ let last = 0; const go = () => { const now = performance.now(); if (now - last > 600){ last = now; fn(); } }; el.addEventListener('touchend', go); el.addEventListener('click', go); }
+onLift($('[data-look="move"]'), () => { if (settings.look === 'move') askMotion().then(renderLookNote); });
+onLift($('#doneBtn'), () => { if (settings.look === 'move' && !AR.ok) askMotion(); });
 $$('[data-silent]').forEach(b => tap(b, () => { settings.silent = b.dataset.silent === '1'; saveSettings(); setSession(); renderSettings(); showSound(); FX.cheer(); }));
 $$('[data-vol]').forEach(b => tap(b, () => { settings.vol = +b.dataset.vol; saveSettings(); if (master) master.gain.value = VOLS[settings.vol]; renderSettings(); FX.cheer(); }));
 tap($('#clearBtn'), () => { if (Photos.list.length) $('#confirmClear').hidden = false; });
@@ -7811,7 +7816,7 @@ tap($('#noClear'), () => { $('#confirmClear').hidden = true; });
 tap($('#yesClear'), () => { Photos.clear(); store.set('seeded', true); $('#confirmClear').hidden = true; renderSettings(); if (current === 'photos'){ closeViewer(true); renderGrid(); } showThumb(); });
 tap($('#testSound'), () => { FX.cheer(); say('Hello! This is how loud I am.'); });
 tap($('#testRing'), () => { closeSettings(); if (call) return; if (current !== 'home') go('home'); setTimeout(() => maybeRing(true), 600); });
-tap($('#doneBtn'), () => { if (settings.look === 'move' && !AR.ok) askMotion(); closeSettings(); FX.pop(); });
+tap($('#doneBtn'), () => { closeSettings(); FX.pop(); });
 
 /* ---------- Toddler-proofing ---------- */
 ['gesturestart','gesturechange','gestureend','contextmenu','selectstart','dragstart'].forEach(t => document.addEventListener(t, e => e.preventDefault()));

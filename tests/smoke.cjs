@@ -101,6 +101,9 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   page.on('console', m => { if (m.type() === 'error') errors.push(m.text()); });
   page.on('pageerror', e => errors.push('pageerror: ' + e.message));
   await page.addInitScript(instrument);
+  // like an iPhone: motion needs permission, and Safari asks only during a finished tap (touchend or click), otherwise a silent no
+  await page.addInitScript(() => { window.__motionAsks = []; DeviceOrientationEvent.requestPermission = () => { const t = (window.event && window.event.type) || 'none'; window.__motionAsks.push(t);
+    return ['touchend', 'click'].includes(t) ? Promise.resolve('granted') : Promise.reject(new DOMException('Requesting device orientation access requires a user gesture', 'NotAllowedError')); }; });
   // random incoming calls (every 1-3 min) would interrupt the scripted taps; "Ring now" still tests them
   await page.addInitScript(() => { if (!localStorage.getItem('toyphone.settings')) localStorage.setItem('toyphone.settings', JSON.stringify({ incoming: false, vol: 2 })); });
   const css = fontCss();
@@ -326,6 +329,14 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   const hold = async (yaw, pitch, ms = 500) => { const t0 = Date.now(); while (Date.now() - t0 < ms) { await orient(-yaw, 90 + pitch, 0); await sleep(30); } };   // portrait, upright, turned and tipped by degrees
   const turned = (a, b) => ((a - b + 4800) % 3200) - 1600;
   check(!(await look()).ar, 'until the phone sends its motion, the pretend camera drags as before');
+  await home(); await holdClock();
+  check(/tap Move the phone/.test(await page.locator('#lookNote').textContent()), 'before motion is allowed, settings say to tap Move the phone');
+  await tapSetting('[data-look="move"]'); await sleep(300);
+  const asks = await page.evaluate(() => window.__motionAsks);
+  check(asks.includes('touchend') && asks.every(t => ['none', 'touchend', 'click'].includes(t)) && (await look()).perm === 'granted',
+    `tapping Move the phone asks for motion when the finger lifts (the only time Safari asks), and the toy never asks by itself (${asks.join(', ')})`);
+  await tap('#doneBtn'); await sleep(300);
+  await tap('[data-app="camera"]'); await sleep(700);
   await hold(0, 0, 800);
   let lk = await look();
   check(lk.ar && lk.following, 'once the phone sends its motion, the pretend camera follows it');

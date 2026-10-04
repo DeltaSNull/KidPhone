@@ -184,7 +184,8 @@ tufts) carry on above and below for looking up and down.
 - **Dragging still steers**: a drag adds a turn; a drag up or down drifts back to where the phone points.
 - **Laid flat** (on a table or a lap), the phone goes back to plain dragging and the usual view, so a toddler doesn't
   just see the ground. Lifted again, it follows the phone from where the picture is.
-- **Permission**: iPhone asks once before a website can use motion, and only after a tap. The toy only asks from a
+- **Permission**: iPhone asks once before a website can use motion, and only as a finger lifts at the end of a tap
+  (asking as it touches down, which is when the toy's buttons answer, gets a silent no). The toy only asks from a
   parent's tap in settings (choosing *Move the phone*, or *Done* while motion is still off), never in front of the kids.
   When the toy opens, Safari quietly reuses an earlier yes. The settings note says whether motion is working now; if
   Safari has forgotten (it may after it's closed), tap *Move the phone* again. In Guided Access, leave **Motion** on
@@ -376,7 +377,8 @@ console error. It also turns on the real camera, with Chromium's fake camera sta
 zoom, looks, the costume strip, saved photos, that the camera stops off screen and that a refused camera falls back
 to the pretend one. Orientation readings stand in for a moving phone: the pretend camera has to follow a 45 degree
 turn exactly, come back round after a full turn, look up into the sky, go back to dragging when laid flat, and stop
-following with Drag only. Screenshots go to `tests/screenshots/`.
+following with Drag only; a stand-in for Safari's motion question grants it only during a finished tap, as an iPhone
+does. Screenshots go to `tests/screenshots/`.
 
 ## Notes
 
