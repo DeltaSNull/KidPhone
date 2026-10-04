@@ -1,5 +1,5 @@
 # Test every change to main (and every PR), then publish the toy phone to GitHub Pages.
-# The deployed site is plain HTML/CSS/JavaScript; the test job is the release gate.
+# The deployed site is plain HTML/CSS/JavaScript; all test jobs must pass before deployment.
 name: Test and deploy GitHub Pages
 
 on:
@@ -19,10 +19,14 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test:
-    name: Chromium + WebKit
+  chromium-smoke:
+    name: Chromium smoke (${{ matrix.viewport }})
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        viewport: [portrait, landscape, safari-bars]
     steps:
       - uses: actions/checkout@v4
 
@@ -31,28 +35,74 @@ jobs:
           node-version: 22
           cache: npm
 
-      - name: Install dependencies
-        run: npm ci
+      - run: npm ci
 
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium webkit
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
 
-      - name: Run release test suite
-        run: npm run test:ci
+      - name: Run ${{ matrix.viewport }} smoke suite
+        run: ONLY=${{ matrix.viewport }} npm test
 
       - name: Upload smoke-test screenshots on failure
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: kidphone-test-screenshots-${{ github.run_id }}
+          name: smoke-${{ matrix.viewport }}-${{ github.run_id }}
           path: tests/screenshots/
           if-no-files-found: ignore
           retention-days: 7
 
+  pages:
+    name: Pages/offline (${{ matrix.engine }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - engine: chromium
+            command: npm run test:pages
+          - engine: webkit
+            command: npm run test:pages:webkit
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Install ${{ matrix.engine }}
+        run: npx playwright install --with-deps ${{ matrix.engine }}
+
+      - name: Run Pages/offline checks
+        run: ${{ matrix.command }}
+
+  webkit-smoke:
+    name: WebKit iPhone smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Install WebKit
+        run: npx playwright install --with-deps webkit
+
+      - run: npm run test:webkit
+
   deploy:
     name: Deploy
-    if: github.event_name != 'pull_request'
-    needs: test
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: [chromium-smoke, pages, webkit-smoke]
     runs-on: ubuntu-latest
     permissions:
       contents: read
