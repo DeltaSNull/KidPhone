@@ -2,7 +2,9 @@
    under /KidPhone/ the way GitHub Pages serves a project site (https://<user>.github.io/<repo>/), then opens it as an
    iPhone (Safari) and as an Android phone (Chrome): every file the page asks for must load from the subpath, taps
    must work, and the offline cache must work from the subpath too. Run: npm run test:pages */
-const { chromium } = require('playwright');
+const { chromium, webkit } = require('playwright');
+const ENGINE = process.argv.includes('--webkit') ? 'webkit' : 'chromium';
+const BROWSER = { chromium, webkit }[ENGINE];
 const { execFileSync } = require('child_process');
 const http = require('http');
 const fs = require('fs');
@@ -56,7 +58,7 @@ const PHONES = {
 };
 
 async function run(browser, origin, name) {
-  console.log(`\n=== ${name}, served from ${origin}${BASE}`);
+  console.log(`\n=== ${ENGINE} ${name}, served from ${origin}${BASE}`);
   const context = await browser.newContext({ ...PHONES[name], isMobile: true, hasTouch: true });
   await context.addInitScript(() => { if (!localStorage.getItem('toyphone.settings')) localStorage.setItem('toyphone.settings', JSON.stringify({ incoming: false })); });
   await context.route('https://fonts.googleapis.com/**', r => r.fulfill({ contentType: 'text/css', body: '' }));
@@ -111,11 +113,24 @@ async function run(browser, origin, name) {
      (The page registers it itself on https; this local server is http, so register it the same way here.) */
   const scope = await page.evaluate(async () => { const r = await navigator.serviceWorker.register('sw.js'); await navigator.serviceWorker.ready; return r.scope; });
   check(scope === origin + BASE, `service worker scope is ${BASE}`);
-  await page.reload(); await sleep(800);   // a load under the worker fills its cache
-  await context.setOffline(true);
-  await page.reload(); await sleep(800);
-  check(await shown('#home'), 'with no network, the toy still opens from the offline cache');
-  await context.setOffline(false);
+  if (ENGINE === 'webkit') {
+    /* Playwright WebKit on Linux can throw an internal browser error when a service-worker-controlled page is
+       reloaded after context.setOffline(true). The worker's install event already cached the offline shell, so inspect
+       Cache Storage directly without an unnecessary reload (which can also abort a background voice prefetch and make
+       WebKit log a misleading access-control error). Chromium below still does the full forced-offline navigation. */
+    const cached = await page.evaluate(async () => ({
+      index: !!(await caches.match('index.html')),
+      manifest: !!(await caches.match('manifest.webmanifest')),
+      icon: !!(await caches.match('icons/icon-180.png'))
+    }));
+    check(cached.index && cached.manifest && cached.icon, `WebKit service worker cached the offline core ${JSON.stringify(cached)}`);
+  } else {
+    await page.reload(); await sleep(800);   // a load under the worker fills its cache
+    await context.setOffline(true);
+    await page.reload(); await sleep(800);
+    check(await shown('#home'), 'with no network, the toy still opens from the offline cache');
+    await context.setOffline(false);
+  }
 
   check(!bad.length, `every file loads from ${BASE} ${bad.length ? JSON.stringify(bad.slice(0, 6)) : ''}`);
   check(!errors.length, `no console errors ${errors.length ? JSON.stringify(errors.slice(0, 4)) : ''}`);
@@ -131,7 +146,7 @@ async function run(browser, origin, name) {
   check(!published.some(f => /^(tests|tools|node_modules|dist)\b|^assets\/family\/|package/.test(f)), 'only the toy is published (no tests, tools or family files)');
   const srv = await serve(site);
   const origin = `http://127.0.0.1:${srv.address().port}`;
-  const browser = await chromium.launch();
+  const browser = await BROWSER.launch();
   try { for (const name of Object.keys(PHONES)) await run(browser, origin, name); }
   finally { await browser.close(); srv.close(); fs.rmSync(path.dirname(site), { recursive: true, force: true }); }
   console.log(failures.length ? `\n${failures.length} check(s) failed.` : '\nAll checks passed.');

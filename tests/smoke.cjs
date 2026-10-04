@@ -928,9 +928,10 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   // a fake camera (a moving test picture) stands in for the phone's, and its permission question is answered yes
   const browser = await chromium.launch({ args: ['--autoplay-policy=no-user-gesture-required', '--use-fake-device-for-media-stream', '--use-fake-ui-for-media-stream'] });
   try {
-    if (process.env.ONLY !== 'landscape') await run(browser, base, 'portrait', { width: 390, height: 844 });
-    if (process.env.ONLY !== 'portrait') await run(browser, base, 'landscape', { width: 844, height: 390 });
-    if (!process.env.QUICK) await run(browser, base, 'safari-bars', { width: 390, height: 664 }, { family: false });
+    const only = process.env.ONLY || '';
+    if (!only || only === 'portrait') await run(browser, base, 'portrait', { width: 390, height: 844 });
+    if (!only || only === 'landscape') await run(browser, base, 'landscape', { width: 844, height: 390 });
+    if ((!only && !process.env.QUICK) || only === 'safari-bars') await run(browser, base, 'safari-bars', { width: 390, height: 664 }, { family: false });
     await homeScreen(browser, base);
   } catch (e) { failures.push('crashed: ' + e.stack); console.error(e); }
   await browser.close(); srv.close();
