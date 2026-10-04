@@ -2,7 +2,9 @@
    under /KidPhone/ the way GitHub Pages serves a project site (https://<user>.github.io/<repo>/), then opens it as an
    iPhone (Safari) and as an Android phone (Chrome): every file the page asks for must load from the subpath, taps
    must work, and the offline cache must work from the subpath too. Run: npm run test:pages */
-const { chromium } = require('playwright');
+const { chromium, webkit } = require('playwright');
+const ENGINE = process.argv.includes('--webkit') ? 'webkit' : 'chromium';
+const BROWSER = { chromium, webkit }[ENGINE];
 const { execFileSync } = require('child_process');
 const http = require('http');
 const fs = require('fs');
@@ -56,7 +58,7 @@ const PHONES = {
 };
 
 async function run(browser, origin, name) {
-  console.log(`\n=== ${name}, served from ${origin}${BASE}`);
+  console.log(`\n=== ${ENGINE} ${name}, served from ${origin}${BASE}`);
   const context = await browser.newContext({ ...PHONES[name], isMobile: true, hasTouch: true });
   await context.addInitScript(() => { if (!localStorage.getItem('toyphone.settings')) localStorage.setItem('toyphone.settings', JSON.stringify({ incoming: false })); });
   await context.route('https://fonts.googleapis.com/**', r => r.fulfill({ contentType: 'text/css', body: '' }));
@@ -131,7 +133,7 @@ async function run(browser, origin, name) {
   check(!published.some(f => /^(tests|tools|node_modules|dist)\b|^assets\/family\/|package/.test(f)), 'only the toy is published (no tests, tools or family files)');
   const srv = await serve(site);
   const origin = `http://127.0.0.1:${srv.address().port}`;
-  const browser = await chromium.launch();
+  const browser = await BROWSER.launch();
   try { for (const name of Object.keys(PHONES)) await run(browser, origin, name); }
   finally { await browser.close(); srv.close(); fs.rmSync(path.dirname(site), { recursive: true, force: true }); }
   console.log(failures.length ? `\n${failures.length} check(s) failed.` : '\nAll checks passed.');
