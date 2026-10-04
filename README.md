@@ -50,7 +50,8 @@ Guided Access. It's one self-contained `index.html` (vanilla JS, no build step),
 
 - **School**: learning games, made for a home-school morning. Letters are drawn in a school-print pixel alphabet (circles
   and sticks, the way children learn to write them: one-story a and g, a crossed t, a tailed q), each letter always in
-  its own color; numbers are drawn the same way. A grid button in each game goes back to the School menu.
+  its own color; numbers are drawn the same way. The School menu shows its seven games as picture cards (two across,
+  four in landscape). A grid button in each game goes back to the School menu.
   - *ABC Zoo* (first in School): all 26 letters, little letters first. Tap one to see it little and big, with a word
     and picture for it; the picture makes its sound, then the voice says "L is for lion!" Tap the big letters to hear
     the letter again, or the picture for its word. A button switches the board to capitals and back, and the song
@@ -103,6 +104,19 @@ Guided Access. It's one self-contained `index.html` (vanilla JS, no build step),
     to ten after ten. Monkey and bananas, penguin and fish, puppy and bones, giraffe and
     leaves, turtle and strawberries, parrot and blueberries, frog and flies, elephant and peanuts, kangaroo and carrots,
     gorilla and oranges, rhino and apples.
+  - *Dino Picnic*: a dinosaur wants a number of snacks ("T rex wants three drumsticks!", the number in its bubble).
+    More snacks than it wants lie scattered on the picnic blanket; tap them onto its plate, where they land in a jumble
+    (no boxes to read the number from), so the child counts the snacks themselves. Tap the plate to put the last one
+    back, and the green check to feed it: "Yum! Three drumsticks!" Too few or too many is said gently, and after two
+    tries rings on the plate show how many. One to three for the first three dinos, then up to five. T rex and
+    drumsticks, long neck and leaves, triceratops and ferns, stegosaurus and strawberries, pterodactyl and fish. With
+    *Help count* the rings are there from the start and the dino eats as soon as they're filled.
+  - *Animal Delivery*: following directions. An animal brings something and the voice says where it goes: "Put the
+    apple under the tree!" Drag it there (or tap a glowing spot). It starts with in and on (the box), adds on and under
+    the table after three right, then under the tree and next to the box after six; each time the game opens it starts
+    over. A wrong spot is named ("That's on the table.") and the thing comes back; after two tries the right spot
+    glows. Ten things to deliver: an apple, a banana, a present, a star, an egg, a duck, a chick, a kitty, a frog and a
+    ball.
   - Parents get a page in settings: every Letter Path letter with its stars (tap one to hear its sound and lesson
     line, see its words and how to say the sound), In order or All open, and starting the path over; and ABC Snack's
     stage and the letters it has seen the child know, with a way to fix it at big letters, little letters or sounds.

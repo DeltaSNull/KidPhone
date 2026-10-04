@@ -4,7 +4,14 @@ Read SCHOOL_ROADMAP.md first, then AGENTS.md. This is the agreed plan going forw
 
 ## Active batch
 
-- Claimed: Claude, 2026-10-04, on `main`: P3-06 Animal Delivery and P3-04 Dino Picnic (new School activities, no progress tracking).
+- None claimed. Next untracked candidates: Today's Adventure (P3-01, P3-07, P3-08), Toddler Play Together (P3-03), Sorting Station, Pattern Train, Story Time, Feelings Friends (P4-01 to P4-04). Sound Safari (P3-05) waits on the letter sounds (T-04).
+
+## Last batch: Dino Picnic and Animal Delivery (done)
+
+- Claude, 2026-10-04, on `main`. Both are School games (`ACCESS_GROUP` school), with School-menu cards; the School menu became a two-column picture grid (four across in landscape) to fit seven cards.
+- `Delivery` (P3-06): a 4:3 garden (`#adWorld`, ground at 75%, grass `.ad-ground` running past its edges) with tree/box/table pictures (`SCHOOL_PIX.tree`, `table`, new `ball`), spots `SPOTS` in percent; `LEVELS` add spots after 3 and 6 right in the session (nothing stored). Drag from `#adParcel` or tap a spot; wrong spots are named, the right one glows after two misses. Hook: `delivery()`.
+- `DinoPicnic` (P3-04): `.st` layout; snacks scattered on `#dpSpread`, tapped onto `#dpPlate` at shuffled `SLOTS`; plate tap takes back; `#dpFeed` checks; rings after two misses; `settings.count === 'help'` shows rings and auto-eats. Hook: `dinos()`.
+- Voice lines recorded (120). Smoke tests cover both games (drag, wrong spot, level step, hint; too many, take back, feed, Help count) in all three layouts.
 
 ## Owner's request, 2026-10-04: ABC Snack asks by letter name only
 
