@@ -2,7 +2,9 @@
 
 Created: 2026-10-04  
 Review baseline: `413fbb1c45b559d260f58ec98fa59a0279c4e26f`  
-Status: Planned — implementation has not started.
+Status: Phase 1 in progress — parent access controls implemented on `codex/school-parent-controls`; profiles, session limits, and audio controls remain open.
+
+**Continuing with either model? Read [HANDOFF.md](HANDOFF.md) and [AGENTS.md](AGENTS.md) before editing.**
 
 ## Goal
 
@@ -14,7 +16,7 @@ This file is the source of truth for the suggestions from the School review. Che
 
 | Phase | Status | Completion evidence |
 | --- | --- | --- |
-| 1. Parent controls and child profiles | Not started | — |
+| 1. Parent controls and child profiles | In progress | Parent access controls implemented; see [handoff](HANDOFF.md) for validation and integration status. |
 | 2. Learning foundation and existing activity improvements | Not started | — |
 | 3. First guided learning journey | Not started | — |
 | 4. Broader curriculum and parent summaries | Not started | — |
@@ -23,19 +25,19 @@ Recommended order: Phase 1 → Phase 2 → Phase 3 → Phase 4. Dino Picnic and 
 
 ## Phase 1 — Parent controls and child profiles
 
-- [ ] **P1-01 — Parent PIN:** Keep the clock hold as an entry point and require a parent PIN before changing protected settings. Define setup, change, and recovery behavior.
-- [ ] **P1-02 — Access modes:** Add School only, Custom, and Full phone. Custom independently enables School, Games, Camera, Photos, Music, and Phone.
-- [ ] **P1-03 — School home:** Open directly into School in School-only mode; the Home button also returns to School.
-- [ ] **P1-04 — Navigation enforcement:** Centralize access checks for every entry point, including nested games, shortcuts, restored screens, and app transitions. Hide unavailable icons as well as blocking routes.
-- [ ] **P1-05 — Camera and call shutdown:** End an active camera or call when disabled; suppress incoming calls in School-only mode. Separate Camera app availability from Pretend/Real/Both settings.
-- [ ] **P1-06 — Permission handling:** Skip camera and motion permission requests when those features are unavailable, including startup, settings completion, and resume.
-- [ ] **P1-07 — Persistent restrictions:** Preserve access policy across reloads, closing/reopening, updates, and offline launches.
+- [ ] **P1-01 — Parent PIN:** Keep the clock hold as an entry point and require a parent PIN before changing protected settings. Define setup, change, and recovery behavior. **Implemented — Chromium checks passed; cross-browser CI/integration pending. See [handoff](HANDOFF.md).**
+- [ ] **P1-02 — Access modes:** Add School only, Custom, and Full phone. Custom independently enables School, Games, Camera, Photos, Music, and Phone. **Implemented — Chromium checks passed; cross-browser CI/integration pending. See [handoff](HANDOFF.md).**
+- [ ] **P1-03 — School home:** Open directly into School in School-only mode; the Home button also returns to School. **Implemented — Chromium checks passed; cross-browser CI/integration pending. See [handoff](HANDOFF.md).**
+- [ ] **P1-04 — Navigation enforcement:** Centralize access checks for every entry point, including nested games, shortcuts, restored screens, and app transitions. Hide unavailable icons as well as blocking routes. **Implemented — Chromium checks passed; cross-browser CI/integration pending. See [handoff](HANDOFF.md).**
+- [ ] **P1-05 — Camera and call shutdown:** End an active camera or call when disabled; suppress incoming calls in School-only mode. Separate Camera app availability from Pretend/Real/Both settings. **Implemented — Chromium checks passed; cross-browser CI/integration pending. See [handoff](HANDOFF.md).**
+- [ ] **P1-06 — Permission handling:** Skip camera and motion permission requests when those features are unavailable, including startup, settings completion, and resume. **Implemented — Chromium checks passed; cross-browser CI/integration pending. See [handoff](HANDOFF.md).**
+- [ ] **P1-07 — Persistent restrictions:** Preserve access policy across reloads, closing/reopening, updates, and offline launches. **Implemented — Chromium checks passed; cross-browser CI/integration pending. See [handoff](HANDOFF.md).**
 - [ ] **P1-08 — Session ending:** Add a parent-controlled session limit with a gentle end after the current activity; require parent authorization to extend it.
 - [ ] **P1-09 — Audio controls:** Separate essential lesson narration from optional animal sounds and celebrations. Avoid allowing a listening lesson to silently become unanswerable.
 - [ ] **P1-10 — Separate profiles:** Add independent preschool and toddler profiles with their own progress and adjustable starting levels. Keep profile data on the device.
 - [ ] **P1-11 — Together play:** Provide an untracked shared mode; do not attribute joint answers to an individual child.
 - [ ] **P1-12 — Existing progress migration:** Preserve shared ABC/Letter Path records as legacy history. Do not assign them to either child as demonstrated knowledge.
-- [ ] **P1-13 — Parent guidance:** Explain that the PIN protects in-app settings and Guided Access keeps the child inside the app.
+- [ ] **P1-13 — Parent guidance:** Explain that the PIN protects in-app settings and Guided Access keeps the child inside the app. **Implemented — Chromium checks passed; cross-browser CI/integration pending. See [handoff](HANDOFF.md).**
 
 Acceptance: unavailable sections cannot be reached through Home, nested navigation, restored state, or reload; no disallowed camera/motion prompts appear; disabling a camera stops its stream; profiles and Together play never mix individual progress.
 
@@ -111,4 +113,5 @@ Use these as curriculum/design references, not as claims that app scores diagnos
 
 | Date | Change | Evidence |
 | --- | --- | --- |
+| 2026-10-04 | Implemented parent access controls and shared Codex/Claude continuation workflow; integration and CI checks pending. | [Handoff](HANDOFF.md) |
 | 2026-10-04 | Recorded the reviewed School roadmap and progress checklist. All implementation tasks remain open. | Baseline: `413fbb1`; this documentation commit |
