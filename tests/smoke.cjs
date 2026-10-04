@@ -647,8 +647,8 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   // --- SCHOOL: the Letter Path, ABC Zoo, ABC Snack
   const school = () => page.evaluate(() => window.__toyPhone.school());
   await tap('[data-app="school"]'); await sleep(600);
-  check(await page.locator('#schoolList .gamecard').count() === 5, 'School shows its learning games');
-  check((await page.$$eval('#schoolList .gamecard', bs => bs.map(b => b.getAttribute('aria-label')))).join() === 'ABC Zoo,Letter Path,ABC Snack,123 Zoo,123 Snack', 'ABC Zoo first, then the Letter Path, ABC Snack and the two counting games');
+  check(await page.locator('#schoolList .gamecard').count() === 7, 'School shows its learning games');
+  check((await page.$$eval('#schoolList .gamecard', bs => bs.map(b => b.getAttribute('aria-label')))).join() === 'ABC Zoo,Letter Path,ABC Snack,123 Zoo,123 Snack,Dino Picnic,Animal Delivery', 'ABC Zoo first, then the Letter Path, ABC Snack, the counting games, Dino Picnic and Animal Delivery');
   await shot('28-school'); await fits('school');
   const lp = () => page.evaluate(() => window.__toyPhone.path());
   const until = async (fn, n = 30) => { for (let i = 0; i < n && !(await fn()); i++) await sleep(300); return fn(); };
@@ -844,6 +844,70 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   for (let i = 0; i < sn.want; i++) { await tap('#nsBasket'); await sleep(550); }
   await until(async () => (await nums()).snack.fed === 1, 25);
   check((await nums()).snack.fed === 1, 'and it eats as soon as the boxes are full');
+  await home();
+  await holdClock(); await tapSetting('[data-count="self"]'); await tap('#doneBtn'); await sleep(300);
+
+  // --- ANIMAL DELIVERY: put each thing where the voice says (in, on, under, next to)
+  const dv = () => page.evaluate(() => window.__toyPhone.delivery());
+  await tap('[data-app="school"]'); await sleep(500); await tap('.gamecard[aria-label="Animal Delivery"]'); await sleep(900);
+  let d = await dv();
+  check(d.spots.join() === 'inBox,onBox' && ['inBox', 'onBox'].includes(d.target) && !!d.item, `Animal Delivery starts with in and on: two spots, at the box ${JSON.stringify(d)}`);
+  const PLACE = { inBox: 'in the box', onBox: 'on the box', nextBox: 'next to the box', onTable: 'on the table', underTable: 'under the table', underTree: 'under the tree' };
+  await until(async () => (await said()).some(t => t.endsWith(`Put the ${d.item} ${PLACE[d.target]}!`)), 15);
+  check((await said()).some(t => t.includes('Animal Delivery! Put each thing where it goes!') && t.endsWith(`Put the ${d.item} ${PLACE[d.target]}!`)), `and says where: "Put the ${d.item} ${PLACE[d.target]}!"`);
+  await shot('35-delivery'); await fits('animal delivery');
+  const wrongSpot = d.spots.find(k => k !== d.target);
+  c0 = (await said()).length;
+  await tap(`.ad-spot[data-spot="${wrongSpot}"]`); await sleep(900);
+  d = await dv();
+  check(d.misses === 1 && d.rights === 0 && (await said()).slice(c0).some(t => t.startsWith(`That's ${PLACE[wrongSpot]}.`)), `a wrong spot is named ("That's ${PLACE[wrongSpot]}.") and it asks again`);
+  await until(async () => !(await dv()).busy, 10);
+  // drag the thing from the parcel to the right spot, with a finger
+  const from = await center('#adParcel'), to = await center(`.ad-spot[data-spot="${d.target}"]`);
+  c0 = (await said()).length;
+  await drag(from, to, 12); await sleep(900);
+  d = await dv();
+  check(d.rights === 1 && d.placed === 1 && (await said()).slice(c0).some(t => /^Yes! (In|On) the box!$/.test(t)), `dragging it to the right spot: it stays there, "Yes! In the box!" ${JSON.stringify(d)}`);
+  for (let k = 0; k < 2; k++) { await until(async () => { const x = await dv(); return !x.busy && x.placed === 0; }, 15); const x = await dv(); await tap(`.ad-spot[data-spot="${x.target}"]`); await sleep(400); }
+  await until(async () => { const x = await dv(); return !x.busy && x.placed === 0; }, 15);
+  d = await dv();
+  check(d.level === 1 && d.spots.join() === 'inBox,onBox,onTable,underTable' && ['onTable', 'underTable'].includes(d.target), `after three right, the table joins: on and under (and it asks about one of them) ${JSON.stringify(d)}`);
+  await shot('36-delivery-table');
+  await tap(`.ad-spot[data-spot="${d.spots.find(k => k !== d.target)}"]`); await sleep(500);
+  await until(async () => !(await dv()).busy, 10);
+  d = await dv(); await tap(`.ad-spot[data-spot="${d.spots.find(k => k !== d.target)}"]`); await sleep(500);
+  await until(async () => !(await dv()).busy, 10);
+  check((await dv()).hint.join() === d.target, 'after two tries the right spot glows');
+  await home();
+
+  // --- DINO PICNIC: give the dino as many snacks as it wants, from a scattered spread, then the check
+  const dino = () => page.evaluate(() => window.__toyPhone.dinos());
+  await tap('[data-app="school"]'); await sleep(500); await tap('.gamecard[aria-label="Dino Picnic"]'); await sleep(1500);
+  let dp = await until(async () => { const x = await dino(); return x.want && x; });
+  check(dp.want >= 1 && dp.want <= 3 && dp.spread >= dp.want + 3 && dp.feed && dp.rings === 0, `Dino Picnic: a dino wants one to three snacks; more lie scattered on the blanket, and the plate has no boxes ${JSON.stringify(dp)}`);
+  await until(async () => (await said()).some(t => / wants (one|two|three) \w+!/.test(t) && t.includes('Tap the snacks to give them, then tap the check!')), 15);
+  check((await said()).some(t => / wants (one|two|three) \w+!/.test(t)), `and says what it wants ("${(await said()).find(t => / wants (one|two|three) \w+!/.test(t))}")`);
+  await shot('37-dinopicnic'); await fits('dino picnic');
+  c0 = (await said()).length;
+  for (let i = 0; i <= dp.want; i++) { await tap('#dpSpread .dp-snack:not(.gone)'); await sleep(550); }
+  let dp1 = await dino(); heard = (await said()).slice(c0);
+  check(dp1.got === dp.want + 1 && dp1.spread === dp.spread - dp.want - 1 && ['One!', 'Two!', 'Three!', 'Four!'].slice(0, dp.want + 1).every(t => heard.includes(t)), `each snack tapped goes onto the plate, counted out loud ${JSON.stringify(dp1)}`);
+  c0 = (await said()).length; await tap('#dpFeed'); await sleep(700);
+  check((await dino()).fed === 0 && (await said()).slice(c0).some(t => t.startsWith(`${['One', 'Two', 'Three', 'Four'][dp.want]} is too many!`)), 'one too many and the check: "… is too many!", nothing eaten');
+  await tap('#dpPlate'); await sleep(600);
+  dp1 = await dino();
+  check(dp1.got === dp.want && dp1.spread === dp.spread - dp.want, `tapping the plate puts the last snack back on the blanket ${JSON.stringify(dp1)}`);
+  c0 = (await said()).length; await tap('#dpFeed');
+  await until(async () => (await said()).slice(c0).some(t => /^Yum! (One|Two|Three) \w+!$/.test(t)), 25);
+  check((await dino()).fed === 1 && await page.locator('#dpFed .s').count() === 1, 'the right number and the check: the dino eats them, "Yum!", and a sticker');
+  await home();
+  await holdClock(); await tapSetting('[data-count="help"]'); await tap('#doneBtn'); await sleep(300);
+  await tap('[data-app="school"]'); await sleep(500); await tap('.gamecard[aria-label="Dino Picnic"]'); await sleep(1500);
+  dp = await until(async () => { const x = await dino(); return x.want && x; });
+  check(dp.mode === 'help' && dp.rings === dp.want && !dp.feed, `Help count: rings on the plate show how many, no check button ${JSON.stringify(dp)}`);
+  for (let i = 0; i < dp.want; i++) { await tap('#dpSpread .dp-snack:not(.gone)'); await sleep(550); }
+  await until(async () => (await dino()).fed === 1, 25);
+  check((await dino()).fed === 1, 'and the dino eats as soon as the rings are filled');
   await home();
   await holdClock(); await tapSetting('[data-count="self"]'); await tap('#doneBtn'); await sleep(300);
 

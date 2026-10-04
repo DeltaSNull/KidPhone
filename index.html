@@ -560,8 +560,16 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img{image-rendering:auto}
 
 /* ---------- School: learning games. Letters are a school-print pixel alphabet (see GLYPH) ---------- */
 .g-abc{background:#FFE8A3} .g-abcsnack{background:#BFE9FF} .g-path{background:#D4F2C4}
-#schoolList{grid-auto-rows:minmax(0,230px); align-content:center}
-@media (orientation:landscape){ #schoolList{grid-auto-rows:minmax(0,1fr)} }
+/* School has seven games: picture cards in a grid (two across, four in landscape), the picture over the name */
+#schoolList{grid-template-columns:repeat(2,minmax(0,1fr)); grid-auto-rows:minmax(0,1fr); gap:10px}
+@media (orientation:landscape){ #schoolList{grid-template-columns:repeat(4,minmax(0,1fr))} }
+#schoolList .gamecard{flex-direction:column-reverse; justify-content:center; align-items:stretch; gap:2px; padding:2px 2px 4px; --a:clamp(24px, min(30cqw, 50cqh), 104px)}
+#schoolList .gamecard:last-child:nth-child(odd){grid-column:1 / -1}
+@media (orientation:landscape){ #schoolList .gamecard:last-child:nth-child(odd){grid-column:auto} }
+#schoolList .gtext{width:auto; align-items:center}
+#schoolList .gname{font-size:clamp(14px, min(4.6vw, 3.4vh), 20px)}
+#schoolList .gnote{display:none}
+#schoolList .gart{flex:1; min-height:0; align-items:center}
 .gamecard .gnote{padding:0 6px; font-size:15px; color:#5A4A3E; white-space:nowrap}
 .sc-back,.lp-back{position:absolute; left:8px; top:8px; z-index:5; width:64px; height:64px; display:grid; place-items:center; background:var(--d-paper) center/100% 100% no-repeat}
 .sc-back .px,.lp-back .px{width:30px; height:30px; margin-top:-4px}
@@ -630,6 +638,45 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img{image-rendering:auto}
 .ns-feed{--disc:var(--d-paper); width:clamp(76px, 11vh, 96px); height:clamp(76px, 11vh, 96px)} .ns-feed[hidden]{display:none} .ns-feed .px{width:62%; height:62%; margin-top:-6%}
 .ns-feed.wig{animation:wig .4s}
 .ns-frame .nz-cell.aim{animation:st-hint 1.1s ease-in-out infinite}   /* after two tries: the boxes it wants glow */
+
+/* ---------- School: Animal Delivery. A garden (4:3, ground at 75%) with a tree, a box and a table; glowing spots where things can go ---------- */
+.g-deliv{background:#D8F2FF} .g-picnic{background:#FFE9C4}
+#delivery{display:grid; grid-template-rows:minmax(0,1fr) auto; padding:0; gap:0}
+@media (orientation:landscape){ #delivery{grid-template-rows:none; grid-template-columns:minmax(0,1fr) auto} }
+.ad-stage{position:relative; min-height:0; min-width:0; display:grid; place-items:end center; padding:76px 0 0; container-type:size; overflow:hidden}
+@media (orientation:landscape){ .ad-stage{padding:8px 0 0 80px} }
+.ad-ground{position:absolute; left:-100vw; right:-100vw; top:75%; bottom:0; z-index:0}   /* the grass, on past the garden's edges */
+.ad-world{position:relative; width:min(100cqw, 100cqh * 4 / 3); aspect-ratio:4 / 3; touch-action:none}
+.ad-place{position:absolute; z-index:1; aspect-ratio:1; pointer-events:none} .ad-place .px{width:100%; height:100%}
+.ad-place[data-place="box"]{z-index:2}   /* (in front of whatever is in it) */
+.ad-spot{position:absolute; width:14%; aspect-ratio:1; translate:-50% -50%; z-index:3; padding:0; border-radius:50%; border:3px dashed rgba(59,43,32,.55); background:rgba(255,255,255,.55); animation:ad-glow 1.6s ease-in-out infinite}
+.ad-spot.hint{border-color:#B8860B; background:rgba(255,226,92,.8); animation:st-hint 1.1s ease-in-out infinite}
+@keyframes ad-glow{50%{opacity:.55; transform:scale(.88)}}
+.ad-item{position:absolute; width:11%; aspect-ratio:1; translate:-50% -50%; pointer-events:none; z-index:4} .ad-item .px{width:100%; height:100%}
+.ad-item.in{z-index:1}   /* in the box: behind its front */
+.ad-item.yes{animation:hop .45s cubic-bezier(.3,1.6,.5,1)}
+.ad-tray{display:flex; align-items:center; justify-content:center; gap:16px; padding:8px 14px 14px}
+@media (orientation:landscape){ .ad-tray{flex-direction:column; padding:10px 14px 10px 6px} }
+.ad-animal{font-size:clamp(70px, 12vh, 110px); touch-action:none} .ad-animal.hop{animation:hop .45s cubic-bezier(.3,1.6,.5,1)} .ad-animal.nope{animation:wig .4s}
+#dinopicnic .st-want .glyph{width:auto; height:1.15em; display:block; max-width:none}
+.ad-parcel{width:clamp(96px, 15vh, 128px); height:clamp(96px, 15vh, 128px); display:grid; place-items:center; padding:0; touch-action:none;
+  border-style:solid; border-color:transparent; border-width:9px 9px 15px; border-image:var(--f-cream) 9 9 15 fill / 9px 9px 15px stretch}
+.ad-parcel .px{width:70%; height:70%} .ad-parcel.empty .px{visibility:hidden}
+.ad-float{position:absolute; left:0; top:0; z-index:20; pointer-events:none; width:72px; height:72px} .ad-float .px{width:100%; height:100%}
+
+/* ---------- School: Dino Picnic. Snacks scattered on the blanket; tap them onto the dino's plate (a jumble, no boxes) ---------- */
+.dp-plate{flex:none; align-self:center; position:relative; width:min(86%, 330px); height:clamp(70px, 12vh, 100px); margin:0 0 8px;
+  border-style:solid; border-color:transparent; border-width:9px 9px 15px; border-image:var(--f-cream) 9 9 15 fill / 9px 9px 15px stretch; touch-action:none}
+@media (orientation:landscape){ .dp-plate{height:clamp(56px, 17vh, 80px); width:min(70%, 300px)} }
+.dp-plate .dp-snack,.dp-plate .dp-ring{position:absolute; width:auto; height:62%; aspect-ratio:1; translate:-50% -50%; pointer-events:none}
+.dp-ring{border:3px dashed rgba(122,74,30,.55); border-radius:50%}
+.dp-ring.aim{animation:st-hint 1.1s ease-in-out infinite}
+.dp-snack .px{width:100%; height:100%}
+.dp-tray{gap:10px}
+.dp-spread{position:relative; flex:1; align-self:stretch; min-width:0; min-height:calc(var(--fs) * .9)}
+@media (orientation:landscape){ .dp-spread{flex:1; width:100%; min-height:0} }
+.dp-spread .dp-snack{position:absolute; width:clamp(48px, 8vh, 64px); height:clamp(48px, 8vh, 64px); translate:-50% -50%; padding:0; display:grid; place-items:center; animation:st-deal .45s cubic-bezier(.3,1.6,.5,1) backwards}
+.dp-spread .dp-snack.gone{visibility:hidden}
 .ns .st-want .glyph{width:auto; height:1.15em; display:block; max-width:none}
 
 /* ---------- School: Letter Path. A snake of stepping stones (four across standing up, seven lying down); a lesson slides over it ---------- */
@@ -972,6 +1019,29 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img{image-rendering:auto}
         </div>
         <div class="st-foods ns-tray"><div class="nz-frame ns-frame" id="nsFrame"></div>
           <div class="ns-row"><button class="ns-basket" id="nsBasket" aria-label="Snacks"></button><button class="round ns-feed" id="nsFeed" aria-label="Feed" hidden></button></div></div>
+      </section>
+
+      <!-- SCHOOL: Animal Delivery (put each thing where the voice says: in, on, under, next to) -->
+      <section class="app" id="delivery" hidden aria-label="Animal Delivery">
+        <div class="ad-stage" id="adStage">
+          <button class="sc-back" aria-label="School"></button>
+          <div class="ad-world" id="adWorld"></div>
+        </div>
+        <div class="ad-tray"><div class="ad-animal art" id="adAnimal" role="button" aria-label="Say it again"></div><button class="ad-parcel" id="adParcel" aria-label="The thing to deliver"></button></div>
+      </section>
+
+      <!-- SCHOOL: Dino Picnic (give the dino the number of snacks it wants: tap them onto its plate, then the check) -->
+      <section class="app st" id="dinopicnic" hidden aria-label="Dino Picnic">
+        <div class="st-scene" id="dpScene">
+          <button class="sc-back" aria-label="School"></button>
+          <div class="wt-stickers st-fed" id="dpFed" aria-label="Dinos fed"></div>
+          <div class="st-stand"><div class="st-spot">
+            <div class="st-think" id="dpThink" role="button" aria-label="How many"><span class="st-want" id="dpWant"></span></div>
+            <div class="st-animal" id="dpDino" role="button"></div>
+          </div></div>
+          <div class="dp-plate" id="dpPlate" role="button" aria-label="The dino's plate"></div>
+        </div>
+        <div class="st-foods dp-tray"><div class="dp-spread" id="dpSpread"></div><button class="round ns-feed" id="dpFeed" aria-label="Feed"></button></div>
       </section>
 
       <!-- SCHOOL: Letter Path (one letter at a time, A to Z: meet it, trace it, hear it, find it) -->
@@ -4427,7 +4497,7 @@ const BGS = [
   ['.db-a', BG.dbSide('#A6E39A', '#6CC46A', '#3E9447')], ['.db-b', BG.dbSide('#A9DDF7', '#5BB8E8', '#2F86C4')], ['.db-mid', BG.sand],
   ['#stScene', BG.snack], ['#asScene', BG.snack], ['.st-foods', BG.picnic],
   ['#school', BG.stripey(['#FFF0B8', '#FFE28A', '#FFD466', '#FFC746'], '#FFF6D2')], ['.g-abc', BG.grad(['#FFF6D2', '#FFE8A3', '#FFDB7A'])], ['.g-abcsnack', BG.grad(['#E4F6FF', '#C9ECFF', '#ADE0FF'])],
-  ['#abczoo', BG.grad(['#FFF8DC', '#FFF0BE', '#FFE7A0', '#FFDE85'])], ['#letterpath', BG.grad(['#EAF9DD', '#D8F2C4', '#C6EAAE', '#B4E09A'])], ['#numzoo', BG.grad(['#E4FBF3', '#CDF3E6', '#B6EAD8', '#A0E0CB'])], ['#breakTime', BG.grad(['#33427F', '#2A386F', '#212D5E', '#18224C'])], ['#nsScene', BG.snack], ['.g-num', BG.grad(['#E4FBF3', '#C9F2E4', '#A8E6D2'])], ['.g-numsnack', BG.grad(['#FFF1E4', '#FFE1C9', '#FFD0AA'])], ['.lp-lesson', BG.grad(['#FFF8DC', '#FFF0BE', '#FFE7A0', '#FFDE85'])], ['.g-path', BG.grad(['#EAF9DD', '#D2F0BE', '#B4E09A'])],
+  ['#abczoo', BG.grad(['#FFF8DC', '#FFF0BE', '#FFE7A0', '#FFDE85'])], ['#letterpath', BG.grad(['#EAF9DD', '#D8F2C4', '#C6EAAE', '#B4E09A'])], ['#numzoo', BG.grad(['#E4FBF3', '#CDF3E6', '#B6EAD8', '#A0E0CB'])], ['.ad-ground', BG.grad(['#8FD16A', '#83C962', '#79C25A'])], ['#adStage', BG.grad(['#A9DDFF', '#B9E4FF', '#C9EBFF', '#D9F2FF', '#E6F7FF'])], ['.ad-tray', BG.grad(['#79C25A', '#6FB851', '#66AE49'])], ['#dpScene', BG.snack], ['.g-deliv', BG.grad(['#EAF7FF', '#D8F2FF', '#C2E8FF'])], ['.g-picnic', BG.grad(['#FFF4E0', '#FFE9C4', '#FFDCA4'])], ['#breakTime', BG.grad(['#33427F', '#2A386F', '#212D5E', '#18224C'])], ['#nsScene', BG.snack], ['.g-num', BG.grad(['#E4FBF3', '#C9F2E4', '#A8E6D2'])], ['.g-numsnack', BG.grad(['#FFF1E4', '#FFE1C9', '#FFD0AA'])], ['.lp-lesson', BG.grad(['#FFF8DC', '#FFF0BE', '#FFE7A0', '#FFDE85'])], ['.g-path', BG.grad(['#EAF9DD', '#D2F0BE', '#B4E09A'])],
   ['.pp-a', BG.ppSide('#FFE4CC', '#FFC99E', ['#FF9F43', '#E8506E', '#FFC83D'], 3)], ['.pp-b', BG.ppSide('#E6DFFC', '#C9BCF5', ['#8A6FD1', '#3D8FE0', '#5CC9B5'], 9)], ['.pp-mid', BG.wood],
   ['#dinobuddies .who', BG.split], ['#paintpals .who', BG.paint]
 ];
@@ -4565,7 +4635,7 @@ const saveSettings = () => store.set('settings', settings);
 /* Access policy is separate from sound/game settings and applies to all navigation and device entry points. */
 const ACCESS_APPS = ['school','games','camera','photos','music','phone'];
 const ACCESS_GROUP = {wildtap:'games', dinobuddies:'games', snacktime:'games', paintpals:'games',
-  letterpath:'school', abczoo:'school', abcsnack:'school', numzoo:'school', numsnack:'school'};
+  letterpath:'school', abczoo:'school', abcsnack:'school', numzoo:'school', numsnack:'school', delivery:'school', dinopicnic:'school'};
 const savedAccess = store.get('access', {}) || {};
 let access = {v:1, mode:['full','school','custom'].includes(savedAccess.mode) ? savedAccess.mode : 'full',
   apps:Object.fromEntries(ACCESS_APPS.map(k => [k, savedAccess.apps?.[k] !== false])),
@@ -5155,7 +5225,7 @@ function updateClock(){ const d = new Date(); $('#clockTxt').textContent = ((d.g
 updateClock(); setInterval(updateClock, 10000);
 
 /* ---------- Navigation ---------- */
-const APPS = ['home','phone','camera','photos','music','games','wildtap','dinobuddies','snacktime','paintpals','school','letterpath','abczoo','abcsnack','numzoo','numsnack'];
+const APPS = ['home','phone','camera','photos','music','games','wildtap','dinobuddies','snacktime','paintpals','school','letterpath','abczoo','abcsnack','numzoo','numsnack','delivery','dinopicnic'];
 let current = 'home';
 const APP_SAY = {phone:'Phone! Who do you want to call?', camera:'Camera! Slide to look around. Then press the big button!', music:'Music! Let\'s play!', games:'Games! Pick a game!'};
 function go(name, fromEl){
@@ -5189,6 +5259,8 @@ function enterApp(name){
   if (name === 'letterpath') LetterPath.enter();
   if (name === 'numzoo') NumZoo.enter();
   if (name === 'numsnack') NumSnack.enter();
+  if (name === 'delivery') Delivery.enter();
+  if (name === 'dinopicnic') DinoPicnic.enter();
 }
 function leaveApp(name){
   if (name === 'camera') stopCamera();
@@ -5203,6 +5275,8 @@ function leaveApp(name){
   if (name === 'letterpath') LetterPath.leave();
   if (name === 'numzoo') NumZoo.leave();
   if (name === 'numsnack') NumSnack.leave();
+  if (name === 'delivery') Delivery.leave();
+  if (name === 'dinopicnic') DinoPicnic.leave();
 }
 $('#homeBtn').innerHTML = ICON.home;
 tap($('#homeBtn'), () => {
@@ -6742,7 +6816,15 @@ const SCHOOL_PIX = {
     {a:'#3F9447', b:'#5DB35A', v:'#2E7A33', o:'#173A16'}],
   box:[P => { P.poly([[3,12],[16,16],[16,30],[3,26]], 'b').poly([[16,16],[29,12],[29,26],[16,30]], 'B'); P.poly([[3,12],[16,8],[29,12],[16,16]], 'd');
     P.poly([[3,12],[0,7],[13,4],[16,8]], 'l').poly([[29,12],[32,7],[19,4],[16,8]], 'l'); P.line(16, 16, 16, 30, 'D'); P.line(8, 19, 12, 20, 'D'); P.outline('o'); },
-    {b:'#D8A866', B:'#B07A3E', d:'#7A4A1E', l:'#E8C080', D:'#7A4A1E', o:'#3B2314'}]
+    {b:'#D8A866', B:'#B07A3E', d:'#7A4A1E', l:'#E8C080', D:'#7A4A1E', o:'#3B2314'}],
+  /* (for Animal Delivery: a place under, a table to put things on or under, and a ball to deliver) */
+  tree:[P => { P.rect(13, 17, 6, 15, 'b'); P.ell(16, 11, 13, 9, 'g').ell(7.5, 14, 6, 5, 'g').ell(24.5, 14, 6, 5, 'g').ell(16, 5, 8.5, 5, 'g');
+    P.shade('g', 'G', 'l', 2); P.rect(17, 18, 2, 14, 'B'); P.set(9, 9, 'a').set(10, 9, 'a').set(21, 7, 'a').set(22, 7, 'a').set(18, 14, 'a').set(19, 14, 'a').set(6, 15, 'a'); P.outline('o'); },
+    {g:'#5CB85C', G:'#3E8E41', l:'#8EDB7E', a:'#F0524F', b:'#9A6332', B:'#6E4320', o:'#1F3A16'}],
+  table:[P => { P.rect(1, 12, 30, 4, 't'); P.rect(1, 12, 30, 1, 'T'); P.rect(1, 15, 30, 1, 'd'); P.rect(3, 16, 3, 16, 'l').rect(26, 16, 3, 16, 'l'); P.rect(5, 16, 1, 16, 'd').rect(28, 16, 1, 16, 'd'); P.outline('o'); },
+    {t:'#C8873E', T:'#E3A75C', d:'#7A4A1E', l:'#A0652A', o:'#3B2314'}],
+  ball:[P => { P.ell(16, 17, 12, 12, 'r'); P.ell(16, 17, 4.5, 12, 'w'); P.shade('r', 'R', 'l', 2); P.set(10, 11, 'W').set(11, 10, 'W').set(10, 12, 'W'); P.outline('o'); },
+    {r:'#3D8FE0', R:'#2A63A8', l:'#7FB8F0', w:'#FFD84A', W:'#FFFFFF', o:'#1A2A4A'}]
 };
 const schoolPic = name => SCHOOL_PIX[name] ? once('sp' + name, () => { const P = new Pix(32, 32), [draw, pal] = SCHOOL_PIX[name]; draw(P); return `<img class="px" src="${pxURL(P.canvas(pal), 4).slice(5, -2)}" alt="" draggable="false">`; }) : ART[name];
 /* a word for each letter, the picture and the sound it makes (fx: a toy sound; note is a little tune). Every word starts with
@@ -6767,7 +6849,9 @@ const SCHOOL = [
   {id:'letterpath', n:'Letter Path', note:'One letter at a time', cls:'g-path', art:() => `<span class="art">${glyphImg('a')}</span><span class="art big">${ART.owl}</span><span class="art">${glyphImg('b')}</span>`},
   {id:'abcsnack', n:'ABC Snack', note:'Feed the letter', cls:'g-abcsnack', art:() => `<span class="art big">${ART.monkey}</span><span class="art">${glyphImg('a')}</span>`},
   {id:'numzoo', n:'123 Zoo', note:'Count to ten', cls:'g-num', art:() => `<span class="art">${glyphImg('1')}</span><span class="art big">${glyphImg('2')}</span><span class="art">${glyphImg('3')}</span>`},
-  {id:'numsnack', n:'123 Snack', note:'Count the snacks', cls:'g-numsnack', art:() => `<span class="art big">${ART.dog}</span><span class="art">${glyphImg('3')}</span>`}
+  {id:'numsnack', n:'123 Snack', note:'Count the snacks', cls:'g-numsnack', art:() => `<span class="art big">${ART.dog}</span><span class="art">${glyphImg('3')}</span>`},
+  {id:'dinopicnic', n:'Dino Picnic', note:'Give the snacks', cls:'g-picnic', art:() => `<span class="art big">${ART.trex}</span><span class="art">${schoolPic('meat')}</span>`},
+  {id:'delivery', n:'Animal Delivery', note:'In, on, under', cls:'g-deliv', art:() => `<span class="art big">${ART.kangaroo}</span><span class="art">${schoolPic('box')}</span>`}
 ];
 SCHOOL.forEach(g => {
   const b = document.createElement('button'); b.className = 'gamecard ' + g.cls; b.setAttribute('aria-label', g.n);
@@ -7454,6 +7538,239 @@ const NumSnack = (() => {
     lines: () => ["123 Snack! Let's count snacks!", 'Yum!', 'Hooray! Five full tummies!', HOW, ...NUMW.slice(1).map((_, i) => countWord(i + 1)),
       ...NUMW.slice(1, 10).map((_, i) => FEW(i + 1)), ...NUMW.slice(2).map((_, i) => MANY(i + 2)),
       ...EATERS.flatMap(s => Array.from({length:10}, (_, i) => [WANT(s, i + 1), GOT(s, i + 1)]).flat())]
+  };
+})();
+
+/* ----- Animal Delivery (P3-06): following directions. An animal brings something; the voice says where it goes: "Put the
+   apple under the tree!" Drag it there, or tap a glowing spot. Starts with in and on (the box), adds on/under the table
+   after three right, then under the tree and next to the box after six (each time the game opens; nothing is kept). A
+   wrong spot is named ("That's on the table.") and the thing comes back; after two tries the right spot glows. ----- */
+const Delivery = (() => {
+  const root = $('#delivery'), world = $('#adWorld'), animalEl = $('#adAnimal'), parcel = $('#adParcel');
+  /* the garden, in percent of its width (left, width) with the ground at 75% of its height; each spot's center (x, y) */
+  const PLACES = {tree:[0, 32], box:[35, 18], table:[66, 32]};
+  const SPOTS = {inBox:[44, 54, 'box'], onBox:[44, 37], nextBox:[59.5, 66], onTable:[82, 38], underTable:[82, 66], underTree:[8, 66]};
+  const REL = {inBox:'in the box', onBox:'on the box', nextBox:'next to the box', onTable:'on the table', underTable:'under the table', underTree:'under the tree'};
+  const LEVELS = [['inBox', 'onBox'], ['inBox', 'onBox', 'onTable', 'underTable'], ['inBox', 'onBox', 'onTable', 'underTable', 'underTree', 'nextBox']];
+  const ITEMS = [{k:'apple', n:'apple'}, {k:'banana', n:'banana'}, {k:'gift', n:'present'}, {k:'star', n:'star'}, {k:'egg', n:'egg'},
+    {k:'duck', n:'duck'}, {k:'chick', n:'chick'}, {k:'cat', n:'kitty'}, {k:'frog', n:'frog'}, {k:'ball', n:'ball'}];
+  const CARRIERS = ['kangaroo', 'elephant', 'monkey', 'penguin', 'giraffe', 'panda'];
+  const ENTER = 'Animal Delivery! Put each thing where it goes!';
+  const PUT = (it, s) => `Put the ${it.n} ${REL[s]}!`, YES = s => `Yes! ${cap(REL[s])}!`, THAT = s => `That's ${REL[s]}.`;
+  const pic = k => schoolPic(k);
+  let cur = null, target = null, last = null, rights = 0, misses = 0, busy = true, carrier = 0, quietUntil = 0, drag = null;
+  const level = () => rights >= 6 ? 2 : rights >= 3 ? 1 : 0;
+  const uhuh = () => { tone(392, 370, .15, 'triangle', .13); tone(330, 300, .22, 'triangle', .13, .19); };
+  const chime = () => { tone(660, 990, .12, 'triangle', .12); tone(880, 1320, .16, 'triangle', .11, .1); };
+  world.innerHTML = '<div class="ad-ground"></div>';
+  Object.entries(PLACES).forEach(([k, [l, w]]) => {
+    const d = document.createElement('div'); d.className = 'ad-place art'; d.dataset.place = k;   // (after the grass, below)
+    d.style.left = l + '%'; d.style.width = w + '%'; d.style.top = `calc(75% - ${w * 4 / 3}%)`;   // (square pictures standing on the ground)
+    d.innerHTML = pic(k); world.appendChild(d);
+  });
+  function spots(){
+    const on = LEVELS[level()];
+    $$('.ad-spot', world).forEach(b => { if (!on.includes(b.dataset.spot)) b.remove(); });
+    on.forEach(k => {
+      if ($(`.ad-spot[data-spot="${k}"]`, world)) return;
+      const b = document.createElement('button'); b.className = 'ad-spot'; b.dataset.spot = k; b.setAttribute('aria-label', REL[k]);
+      b.style.left = SPOTS[k][0] + '%'; b.style.top = SPOTS[k][1] + '%';
+      tap(b, () => place(k), {bump:false});
+      world.appendChild(b);
+    });
+  }
+  const ask = () => { if (cur) { hush(); say(PUT(cur, target), 0, 'school'); } };
+  function next(first){
+    $$('.ad-item', world).forEach(x => x.remove());
+    const prevLevel = $$('.ad-spot', world).length;
+    spots();
+    const on = LEVELS[level()], fresh = on.filter(k => !$(`.ad-spot[data-spot="${k}"]`, world).dataset.seen);
+    cur = rnd(ITEMS.filter(it => it !== cur));
+    target = rnd((on.length > prevLevel && fresh.length ? fresh : on).filter(k => k !== last)); last = target;
+    $(`.ad-spot[data-spot="${target}"]`, world).dataset.seen = '1';
+    misses = 0; $$('.ad-spot', world).forEach(b => b.classList.remove('hint'));
+    carrier = (carrier + 1) % CARRIERS.length; put(animalEl, ART[CARRIERS[carrier]]); retrigger(animalEl, 'hop');
+    parcel.innerHTML = pic(cur.k); parcel.classList.remove('empty'); parcel.setAttribute('aria-label', cur.n); retrigger(parcel, 'bump');
+    busy = false;
+    later(() => say(first ? ENTER + ' ' + PUT(cur, target) : PUT(cur, target), 0, 'school'), first ? 300 : 150);
+  }
+  /* something flies from a point (or the parcel) to a spot in the garden */
+  function fly(fromRect, k, done){
+    const a = root.getBoundingClientRect(), w = world.getBoundingClientRect(), size = w.width * .11;
+    const x0 = fromRect.left - a.left + fromRect.width/2 - size/2, y0 = fromRect.top - a.top + fromRect.height/2 - size/2;
+    const x1 = w.left - a.left + w.width * SPOTS[k][0]/100 - size/2, y1 = w.top - a.top + w.height * SPOTS[k][1]/100 - size/2;
+    const f = document.createElement('div'); f.className = 'ad-float'; f.style.width = f.style.height = size + 'px'; f.innerHTML = pic(cur.k); root.appendChild(f);
+    f.animate([{transform:`translate(${x0}px,${y0}px)`}, {transform:`translate(${(x0 + x1)/2}px,${Math.min(y0, y1) - 40}px)`, offset:.5}, {transform:`translate(${x1}px,${y1}px)`}],
+      {duration:420, easing:'ease-in-out', fill:'forwards'}).onfinish = () => { f.remove(); done(); };
+  }
+  function drop(k){
+    const it = document.createElement('div'); it.className = 'ad-item' + (SPOTS[k][2] === 'box' ? ' in' : ''); it.innerHTML = pic(cur.k);
+    it.style.left = SPOTS[k][0] + '%'; it.style.top = SPOTS[k][1] + '%'; world.appendChild(it); return it;
+  }
+  function place(k, from){
+    if (busy || !cur) return;
+    busy = true; parcel.classList.add('empty'); FX.swoosh();
+    fly(from || parcel.getBoundingClientRect(), k, () => {
+      const it = drop(k);
+      if (k === target){
+        rights++; retrigger(it, 'yes'); chime(); FX.pop(); retrigger(animalEl, 'hop');
+        const [x, y] = rel(it); confetti(x, y, 18);
+        hush(); say(YES(k), 0, 'school');
+        later(() => next(false), 2100);
+        return;
+      }
+      misses++; uhuh(); retrigger(animalEl, 'nope');
+      hush(); say(THAT(k) + ' ' + PUT(cur, target), 0, 'school');
+      if (misses >= 2) $(`.ad-spot[data-spot="${target}"]`, world)?.classList.add('hint');
+      later(() => { it.remove(); parcel.classList.remove('empty'); retrigger(parcel, 'bump'); busy = false; }, 1300);
+    });
+  }
+  /* drag from the parcel: let go over a spot to put it there; a quick tap says the direction again */
+  parcel.addEventListener('pointerdown', e => {
+    e.preventDefault(); keepAwake(); if (busy || !cur || drag) return;
+    try{ parcel.setPointerCapture(e.pointerId); }catch(x){}
+    const a = root.getBoundingClientRect(), size = 72, f = document.createElement('div'); f.className = 'ad-float'; f.innerHTML = pic(cur.k);
+    drag = {id:e.pointerId, x:e.clientX, y:e.clientY, moved:false, f, a, size};
+  });
+  parcel.addEventListener('pointermove', e => {
+    if (!drag || e.pointerId !== drag.id) return;
+    if (!drag.moved && Math.hypot(e.clientX - drag.x, e.clientY - drag.y) < 10) return;
+    if (!drag.moved){ drag.moved = true; root.appendChild(drag.f); parcel.classList.add('empty'); }
+    drag.f.style.transform = `translate(${e.clientX - drag.a.left - drag.size/2}px,${e.clientY - drag.a.top - drag.size/2}px) scale(1.15)`;
+  });
+  const endDrag = e => {
+    if (!drag || e.pointerId !== drag.id) return;
+    const d = drag; drag = null; d.f.remove();
+    if (!d.moved){ retrigger(parcel, 'bump'); ask(); return; }
+    const hit = $$('.ad-spot', world).map(b => { const r = b.getBoundingClientRect(); return [b.dataset.spot, Math.hypot(e.clientX - (r.left + r.width/2), e.clientY - (r.top + r.height/2)), r.width]; })
+      .filter(([, dist, w]) => dist < w * .9).sort((p, q) => p[1] - q[1])[0];
+    if (hit) place(hit[0], {left:e.clientX - 36, top:e.clientY - 36, width:72, height:72});
+    else { parcel.classList.remove('empty'); retrigger(parcel, 'bump'); }
+  };
+  parcel.addEventListener('pointerup', endDrag); parcel.addEventListener('pointercancel', endDrag);
+  tap(animalEl, () => { const now = performance.now(); if (now < quietUntil || !cur) return; quietUntil = now + 1500; retrigger(animalEl, 'hop'); ask(); }, {bump:false});
+  return {
+    enter(){ rights = 0; last = null; cur = null; carrier = Math.floor(Math.random()*CARRIERS.length); $$('.ad-spot', world).forEach(b => b.remove()); next(true); },
+    leave(){ busy = true; $$('.ad-float', root).forEach(f => f.remove()); drag = null; },
+    state: () => ({item: cur && cur.n, target, level: level(), spots: $$('.ad-spot', world).map(b => b.dataset.spot), rights, misses, busy, placed: $$('.ad-item', world).length,
+      hint: $$('.ad-spot.hint', world).map(b => b.dataset.spot)}),
+    lines: () => [ENTER, ...ITEMS.flatMap(it => Object.keys(REL).map(k => PUT(it, k))), ...Object.keys(REL).flatMap(k => [YES(k), THAT(k)])]
+  };
+})();
+
+/* ----- Dino Picnic (P3-04): give the dino the number of snacks it wants. Snacks lie scattered on the picnic blanket; tap
+   them onto the dino's plate, where they land in a jumble (no boxes to read the number from), so the child counts the
+   snacks themselves; tap the plate to take one back, and the green check to feed. One to three for the first three
+   dinos, then up to five. Too few or too many is said gently, and after two tries rings show how many. With the parent
+   setting Help count (the toddler), the rings are there from the start and the dino eats as soon as they're filled. ----- */
+const DinoPicnic = (() => {
+  const DINOS = [
+    {a:'trex', n:'T rex', f:'meat', one:'drumstick', many:'drumsticks', x:'bigroar', m:[.15,.33]},
+    {a:'longneck', n:'long neck', f:'leaf', one:'leaf', many:'leaves', x:'bellow', m:[.07,.2]},
+    {a:'trike', n:'triceratops', f:'fern', one:'fern', many:'ferns', x:'huff', m:[.08,.55]},
+    {a:'stego', n:'stegosaurus', f:'strawberry', one:'strawberry', many:'strawberries', x:'stego', m:[.06,.73]},
+    {a:'ptero', n:'pterodactyl', f:'fish', one:'fish', many:'fish', x:'screech', m:[.42,.3]}];
+  const noun = (d, n) => n === 1 ? d.one : d.many;
+  const WANT = (d, n) => `${cap(d.n)} wants ${NUMW[n]} ${noun(d, n)}!`, GOT = (d, n) => `${cap(NUMW[n])} ${noun(d, n)}!`;
+  const FEW = k => `${cap(NUMW[k])} is not enough!`, MANY = k => `${cap(NUMW[k])} is too many!`;
+  const ENTER = 'Dino Picnic! Give each dino its snacks!', HOW = 'Tap the snacks to give them, then tap the check!';
+  /* where snacks land on the plate (percent): two jittered rows, shuffled each time so the jumble changes */
+  const SLOTS = [[12, 32], [34, 70], [56, 30], [78, 68], [90, 30], [23, 72], [45, 34], [67, 72], [88, 74]];
+  const pic = f => schoolPic(f);
+  const root = $('#dinopicnic'), scene = $('#dpScene'), dinoEl = $('#dpDino'), think = $('#dpThink'), wantEl = $('#dpWant'), plate = $('#dpPlate'), spread = $('#dpSpread'), feedBtn = $('#dpFeed'), fedEl = $('#dpFed');
+  let cur = null, n = 1, fed = 0, queue = [], eating = true, last = 0, misses = 0, slots = [], onPlate = [], quietUntil = 0;
+  const self = () => settings.count !== 'help';
+  const most = () => fed < 3 ? 3 : 5;
+  const steps = () => [0,.16,.32,.48,.64].forEach(d => tone(170, 130, .08, 'sine', .15, d));
+  const uhuh = () => { tone(392, 370, .15, 'triangle', .13); tone(330, 300, .22, 'triangle', .13, .19); };
+  const call = (d, at = 0) => FX[d.x] ? FX[d.x](at) : 0;
+  function act(cls){ dinoEl.classList.remove('in', 'out', 'hop', 'nope', 'chomp'); void dinoEl.offsetWidth; dinoEl.classList.add(cls); }
+  const say2 = (t, tries = 0) => { if (speaking() && tries < 15){ later(() => say2(t, tries + 1), 300); return; } say(t, 0, 'school'); };
+  feedBtn.innerHTML = ART.check;
+  function rings(k, aim){ $$('.dp-ring', plate).forEach(r => r.remove()); slots.slice(0, k).forEach(([x, y]) => { const r = document.createElement('span'); r.className = 'dp-ring' + (aim ? ' aim' : ''); r.style.left = x + '%'; r.style.top = y + '%'; plate.prepend(r); }); }
+  function arrive(){
+    const prev = cur;
+    if (!queue.length) queue = shuffle(DINOS).filter(d => d !== prev);
+    cur = queue.shift(); eating = true; misses = 0; onPlate = [];
+    do { n = 1 + Math.floor(Math.random()*most()); } while (n === last && most() > 1); last = n;
+    slots = shuffle(SLOTS);
+    put(dinoEl, ART[cur.a]); dinoEl.setAttribute('aria-label', cur.n);
+    think.classList.remove('on'); wantEl.innerHTML = numImg(n);
+    plate.innerHTML = ''; if (!self()) rings(n);
+    feedBtn.hidden = !self();
+    /* the blanket: a few more snacks than it wants, each in its own jittered cell */
+    const count = Math.min(9, Math.max(n + 3, 6)), cols = count > 6 ? 5 : 3, rows = Math.ceil(count / cols), cells = shuffle(Array.from({length:cols*rows}, (_, i) => i)).slice(0, count);
+    spread.innerHTML = '';
+    cells.forEach((c, i) => {
+      const b = document.createElement('button'); b.className = 'dp-snack art'; b.setAttribute('aria-label', cur.one); b.innerHTML = pic(cur.f);
+      const x = ((c % cols) + .5) / cols * 100 + (Math.random() - .5) * 40/cols, y = (Math.floor(c / cols) + .5) / rows * 100 + (Math.random() - .5) * 30/rows;
+      b.style.left = x + '%'; b.style.top = y + '%'; b.style.animationDelay = i*.05 + 's';
+      tap(b, () => give(b), {bump:false});
+      spread.appendChild(b);
+    });
+    act('in'); steps();
+    later(() => { think.classList.add('on'); FX.pop(); eating = false; say2(WANT(cur, n) + (self() && !fed ? ' ' + HOW : '')); }, 950);
+  }
+  function flyTo(fromEl, toRect, done){
+    const a = root.getBoundingClientRect(), r = fromEl.getBoundingClientRect(), s = 56;
+    const t = document.createElement('div'); t.className = 'st-bite art'; t.innerHTML = pic(cur.f); root.appendChild(t);
+    const x0 = r.left - a.left + r.width/2 - s/2, y0 = r.top - a.top + r.height/2 - s/2, x1 = toRect.left - a.left + toRect.width/2 - s/2, y1 = toRect.top - a.top + toRect.height/2 - s/2;
+    t.animate([{transform:`translate(${x0}px,${y0}px) scale(.9)`}, {transform:`translate(${(x0 + x1)/2}px,${Math.min(y0, y1) - 40}px)`, offset:.5}, {transform:`translate(${x1}px,${y1}px) scale(.8)`}],
+      {duration:400, easing:'ease-in-out', fill:'forwards'}).onfinish = () => { t.remove(); done && done(); };
+  }
+  function slotRect(i){ const r = plate.getBoundingClientRect(), [x, y] = slots[i]; return {left:r.left + r.width*x/100 - 20, top:r.top + r.height*y/100 - 20, width:40, height:40}; }
+  /* a snack from the blanket onto the plate, counted */
+  function give(b){
+    if (eating || !cur || b.classList.contains('gone') || onPlate.length >= slots.length) return;
+    const i = onPlate.length, sn = document.createElement('span'); sn.className = 'dp-snack art'; sn.style.left = slots[i][0] + '%'; sn.style.top = slots[i][1] + '%'; sn.style.visibility = 'hidden'; sn.innerHTML = pic(cur.f);
+    onPlate.push({from:b, el:sn}); b.classList.add('gone'); plate.appendChild(sn);
+    flyTo(b, slotRect(i), () => { sn.style.visibility = ''; retrigger(sn, 'in'); });
+    FX.pop(); hush(); say(countWord(onPlate.length), 0, 'school');
+    if (!self() && onPlate.length === n){ eating = true; later(eat, 1000); }
+  }
+  /* tap the plate: the last snack goes back to its place on the blanket */
+  function takeBack(){
+    if (eating || !cur || !self() || !onPlate.length) return;
+    const {from, el} = onPlate.pop();
+    flyTo(el, from.getBoundingClientRect(), () => from.classList.remove('gone')); el.remove();
+    FX.swoosh(); hush(); if (onPlate.length) say(countWord(onPlate.length), 0, 'school');
+  }
+  function feed(){
+    if (eating || !cur) return;
+    retrigger(feedBtn, 'bump');
+    if (onPlate.length === n){ FX.pop(); eating = true; later(eat, 400); return; }
+    misses++; uhuh(); act('nope'); retrigger(feedBtn, 'wig'); retrigger(think, 'wig'); hush();
+    const k = onPlate.length; say((k ? (k < n ? FEW(k) : MANY(k)) + ' ' : '') + WANT(cur, n), 0, 'school');
+    if (misses >= 2) rings(n, true);
+  }
+  function eat(){
+    if (!cur || current !== 'dinopicnic') return;
+    const d = cur, ar = dinoEl.getBoundingClientRect(), mouth = {left:ar.left + ar.width*d.m[0] - 10, top:ar.top + ar.height*d.m[1] - 10, width:20, height:20};
+    think.classList.remove('on'); FX.swoosh();
+    onPlate.forEach(({el}, i) => later(() => { flyTo(el, mouth); el.remove(); }, i*70));
+    later(() => {
+      act('chomp'); const end = FX.crunch(0) + .05; const roar = call(d, end);
+      fed++; if (fedEl.children.length >= 10) fedEl.innerHTML = ''; const sp = document.createElement('span'); sp.className = 's art'; sp.innerHTML = ART[d.a]; fedEl.appendChild(sp);
+      later(() => { act('hop'); const [x, y] = rel(dinoEl), r = dinoEl.getBoundingClientRect(); for (let k=0;k<5;k++) later(() => flyNote(x + (Math.random() - .5)*r.width*.7, y - r.height*.3, rnd([ART.heart, ART.heartYellow, ART.heartGreen])), k*110); }, 700);
+      say('Yum! ' + GOT(d, n), 0, 'school');
+      const stay = Math.max(end, roar || 0)*1000 + 1300;
+      if (fed % 5 === 0) later(() => { FX.cheer(); const [x, y] = rel(scene); confetti(x, y, 44); say('Hooray! Five full tummies!', 0, 'school'); }, stay - 900);
+      later(() => { act('out'); steps(); }, stay + (fed % 5 === 0 ? 1500 : 0));
+      later(arrive, stay + 850 + (fed % 5 === 0 ? 1500 : 0));
+    }, 600 + onPlate.length*70);
+  }
+  tap(plate, takeBack, {bump:false, throttle:180});
+  tap(feedBtn, feed, {bump:false});
+  tap(dinoEl, () => { const now = performance.now(); if (!cur || now < quietUntil) return; act('hop'); quietUntil = now + (call(cur) || .8)*1000; }, {bump:false});
+  tap(think, () => { if (eating || !cur) return; FX.pop(); retrigger(think, 'wig'); hush(); say(WANT(cur, n), 0, 'school'); }, {bump:false});
+  return {
+    enter(){ say(ENTER, 0, 'school'); cur = null; fed = 0; last = 0; queue = []; arrive(); },
+    leave(){ $$('.st-bite', root).forEach(t => t.remove()); eating = true; },
+    state: () => ({want: cur && !eating ? n : null, got: onPlate.length, dino: cur && cur.a, fed, spread: $$('.dp-snack:not(.gone)', spread).length, mode: self() ? 'self' : 'help',
+      feed: !feedBtn.hidden, rings: $$('.dp-ring', plate).length, aim: $$('.dp-ring.aim', plate).length}),
+    lines: () => [ENTER, HOW, 'Yum!', 'Hooray! Five full tummies!', ...NUMW.slice(1, 6).map((_, i) => countWord(i + 1)),
+      ...NUMW.slice(1, 5).map((_, i) => FEW(i + 1)), ...NUMW.slice(2, 10).map((_, i) => MANY(i + 2)),
+      ...DINOS.flatMap(d => Array.from({length:5}, (_, i) => [WANT(d, i + 1), GOT(d, i + 1)]).flat())]
   };
 })();
 
@@ -8511,7 +8828,7 @@ function voiceLines(){
     ...Object.values(CAM_SAY), ...Object.values(MODE_SAY), 'Move the phone to look all around!', ...COSTUMES.map(c => `You're ${article(COSTUME_NAME[c])}!`), ...LOOK_ORDER.slice(1).map(k => LOOKS[k].say),
     ...Object.values(MUSIC_SAY), ...SONGS.map(x => x.n + '!'), 'Yay! Great dancing!', 'Stop!', 'Hello! This is how loud I am.',
     ...WildTap.lines(), ...DinoBuddies.lines(), ...SnackTime.lines(), ...PaintPals.lines(),
-    SCHOOL_SAY.school, ...LetterPath.lines(), ...AbcZoo.lines(), ...AbcSnack.lines(), ...NumZoo.lines(), ...NumSnack.lines(), ...PLAY.lines()
+    SCHOOL_SAY.school, ...LetterPath.lines(), ...AbcZoo.lines(), ...AbcSnack.lines(), ...NumZoo.lines(), ...NumSnack.lines(), ...Delivery.lines(), ...DinoPicnic.lines(), ...PLAY.lines()
   ];
   /* the narrator records whole lines and their sentences (for lines put together at play time); animals record whole lines */
   const out = new Map(), put1 = (who, x) => out.set(who + '|' + x, {who, s:x});
@@ -8545,6 +8862,7 @@ window.__toyPhone = { go, renderFx, speakable, voiceLines, lineMs,
   school: () => ({zoo:AbcZoo.state(), snack:AbcSnack.state(), progress:AbcSnack.progress()}),
   schoolPics: names => names.map(n => schoolPic(n) || ART[n] || ''),   // (pictures by name, for checking them by eye)
   numbers: () => ({zoo:NumZoo.state(), snack:NumSnack.state()}),
+  delivery: () => Delivery.state(), dinos: () => DinoPicnic.state(),
   session: () => PLAY.state(), playTime: ms => PLAY.add(ms), fxLevel: () => fxLv,
   path: () => LetterPath.state(), pathPts: () => LetterPath.strokePts(), pathProgress: () => LetterPath.progress(),
   glyphSheet: () => { const k = 3, cw = 34, ch = 46, c = document.createElement('canvas'); c.width = 26*cw*k; c.height = 2*ch*k; const g = c.getContext('2d'); g.fillStyle = '#FFFDF6'; g.fillRect(0, 0, c.width, c.height); g.imageSmoothingEnabled = false;
