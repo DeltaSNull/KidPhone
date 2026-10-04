@@ -82,7 +82,7 @@ def voices_npz(path):
 
 
 def clip_name(who, text, spk):
-    key = f"{VERSION}|{who}|{text}|{spk['voice']}|{spk['speed']}|{spk['semis']}" + ('|letters2' if LONE_LETTER.search(text) else '') + (f'|sounds{SOUNDS_VERSION}' if SOUND_TOKEN.search(text) else '')   # (a new name for re-recorded letter lines and changed sounds, so no phone keeps an old copy)
+    key = f"{VERSION}|{who}|{text}|{spk['voice']}|{spk['speed']}|{spk['semis']}" + ('|letters2' if LONE_LETTER.search(text) else '') + (f'|sounds{SOUNDS_VERSION}' if SOUND_TOKEN.search(text) else '') + ('|lone1' if LONE.match(text) else '')   # (a new name for re-recorded letter lines and changed sounds, so no phone keeps an old copy)
     return hashlib.sha1(key.encode()).hexdigest()[:12] + '.mp3'
 
 
@@ -131,17 +131,25 @@ def trim(a, floor_db=-40.0, head=.02, tail=.08):
 
 # Letter sounds for phonics ("sss", the a in apple), written /s/ in a line. The model can't say a sound on its own, so each
 # is cut from a word that starts with it: the narrator says the word, pocketsphinx lines its phones up with the audio,
-# and the first sound is cut out. Voiced sounds you can hold (m, n, l, r, v, z) are said held (the phoneme written four
-# times) and brought to half a second; short vowels go to 0.3 s. The voiceless ones (s, f, t, p, c, k, h, and the ks of
-# x) keep only the frames with little energy below 1 kHz, from the closure before a burst, so no vowel follows them;
-# s and f are stretched to half a second, h to a quarter. b, d, g, j, w, y and q keep a breath of the vowel, or they
-# can't be heard. x is the end of "box" (ks), q the start of "queen" (kw). Raise SOUNDS_VERSION when a sound changes.
-SOUNDS_VERSION = 1
-SOUND_SRC = {'s':('sun','S','fric'), 'a':('apple','AE','vowel'), 't':('top','T','stop'), 'i':('itch','IH','vowel'), 'p':('pop','P','stop'),
-             'n':('nut','N','hold'), 'c':('cat','K','stop'), 'k':('kit','K','stop'), 'e':('egg','EH','vowel'), 'h':('hat','HH','breath'),
-             'r':('red','R','hold'), 'm':('mop','M','hold'), 'd':('dog','D','vstop'), 'g':('gum','G','vstop'), 'o':('octopus','AA','vowel'),
-             'u':('up','AH','vowel'), 'l':('log','L','hold'), 'f':('fan','F','fric'), 'b':('bat','B','vstop'), 'j':('jam','JH','vstop'),
+# and the sound is cut out. Short vowels are the steady middle of an h-word (hat, head, hit, hot, hut: nothing before
+# the vowel to color it), stretched to a third of a second. l, n and m are the steady part of the sound in a word,
+# stretched to half a second; r, v and z come out best said held (the phoneme written four times). The voiceless ones
+# (s, f, t, p, c, k, h, and the ks of x) keep only the frames with little energy below 1 kHz, from the closure before a
+# burst, so no vowel follows them; s and f are stretched to half a second, h to a quarter. b, d, g, j, w, y and q keep a
+# breath of the vowel after them ("buh", from but), or they can't be heard. x is the end of "box" (ks), q the start of
+# "queen" (kw). Each sound is then brought to a set loudness against the narrator's speech: a quiet puff of p or k would
+# be lost on a phone speaker. These choices were made by a blend test (tools/voices/README.md): the sound spliced onto
+# the rest of a word (/s/ + "et") must be heard as that word. Raise SOUNDS_VERSION when a sound changes.
+SOUNDS_VERSION = 2
+SOUND_SRC = {'s':('sun','S','fric'), 'a':('hat','AE','steady'), 't':('top','T','stop'), 'i':('hit','IH','steady'), 'p':('pop','P','stop'),
+             'n':('nap','N','steady'), 'c':('cat','K','stop'), 'k':('kit','K','stop'), 'e':('head','EH','steady'), 'h':('hat','HH','breath'),
+             'r':('red','R','hold'), 'm':('hum','M','steady'), 'd':('duck','D','vstop'), 'g':('gum','G','vstop'), 'o':('hot','AA','steady'),
+             'u':('hut','AH','steady'), 'l':('lap','L','steady'), 'f':('fan','F','fric'), 'b':('but','B','vstop'), 'j':('jam','JH','vstop'),
              'z':('zip','Z','hold'), 'w':('wet','W','glide'), 'v':('van','V','hold'), 'y':('yes','Y','glide'), 'x':('box','K S','end'), 'q':('queen','K W','glide')}
+VOWELS = 'aeiou'
+# loudest 30 ms of each sound against the loudest moments of the narrator's speech, in dB (the voiceless ones a little
+# softer than the voice, as they are in speech, but clearly there)
+SOUND_LEVEL = {'fric': -4, 'stop': -3, 'breath': -5, 'end': -4, 'steady': -1.5, 'hold': -1.5, 'vstop': -1.5, 'glide': -1.5}
 SOUND_TOKEN = re.compile(r'/([a-z])/')
 _sounds, _aligner = {}, []
 
@@ -167,6 +175,15 @@ def letter_sound(k, key):
     from pedalboard import time_stretch
     word, phones, kind = SOUND_SRC[key]
     unvoiced, slow = kind in ('fric', 'stop', 'breath'), kind in ('hold', 'vowel')
+    if kind == 'steady':
+        a, sr = k.create(k.tokenizer.phonemize(word, 'en-us'), voice='af_heart', speed=1, is_phonemes=True); a = a.astype(np.float32)
+        al = align(a, word); hit = [p for p in al if p[0] == phones]
+        if not hit:
+            sys.exit(f'letter sound {key}: no {phones} in "{word}", the aligner heard {al}')
+        _, t0, t1 = hit[0]; d = t1 - t0
+        s = a[int((t0 + d*.2)*SR):int((t1 - d*.2)*SR)].copy()   # the steady middle, without the glides in and out
+        s = time_stretch(s[None, :], SR, stretch_factor=len(s) / (SR * (.35 if key in VOWELS else .5)))[0].astype(np.float32)
+        return _level(k, key, kind, s)
     ph = k.tokenizer.phonemize(word + ('.' if slow else ''), 'en-us')
     if kind in ('hold', 'vowel'):   # say the sound held: its phoneme written again (four times for a consonant, twice for a vowel)
         i = next(j for j, ch in enumerate(ph) if ch not in 'ˈˌ')
@@ -205,10 +222,29 @@ def letter_sound(k, key):
     target = {'hold': .5, 'fric': .5, 'breath': .25, 'vowel': .3}.get(kind)
     if target and len(s) > SR * .03:
         s = time_stretch(s[None, :], SR, stretch_factor=len(s) / (SR * target))[0].astype(np.float32)
+    return _level(k, key, kind, s)
+
+
+def _peak30(a):
+    n = int(SR * .03)
+    return max(float(np.sqrt((a[i:i + n] ** 2).mean())) for i in range(0, max(1, len(a) - n), n // 2)) + 1e-9
+
+
+_speech_ref = []
+def _level(k, key, kind, s):
+    """fades, then the sound brought to its loudness against the narrator's voice"""
     n = len(s); fi, fo = min(n, int(SR * (.003 if kind in ('stop', 'end') else .008))), min(n, int(SR * (.02 if kind == 'stop' else .04)))
     s[:fi] *= np.linspace(0, 1, fi); s[n - fo:] *= np.linspace(1, 0, fo)
-    _sounds[key] = s
-    return s
+    if not _speech_ref:   # the loudest moments of the narrator saying a phrase
+        a, _ = k.create(k.tokenizer.phonemize('It says this, like that.', 'en-us'), voice='af_heart', speed=.93, is_phonemes=True); a = a.astype(np.float32)
+        w = int(SR * .03); wins = sorted(float(np.sqrt((a[i:i + w] ** 2).mean())) for i in range(0, len(a) - w, w // 2))
+        _speech_ref.append(float(np.median(wins[-10:])))
+    s = s * (_speech_ref[0] * 10 ** (SOUND_LEVEL[kind] / 20) / _peak30(s))
+    _sounds[key] = s.astype(np.float32)
+    return _sounds[key]
+
+
+LONE = re.compile(r'^[A-Za-z][!.?]$')   # a letter said on its own ("T!"): slowed down, T's puff turned into a hiss like C's
 
 
 def speak(k, text, spk):
@@ -222,7 +258,7 @@ def speak(k, text, spk):
         if kind == 's':
             out += [gap, letter_sound(k, v), gap]
         elif re.search(r'[A-Za-z0-9]', v):
-            a, sr = k.create(phonemes(k, tts_text(v.lstrip(' ,.!?').strip())), voice=spk['voice'], speed=spk['speed'], is_phonemes=True, sentence_pause=.28, clause_pause=.12)
+            a, sr = k.create(phonemes(k, tts_text(v.lstrip(' ,.!?').strip())), voice=spk['voice'], speed=max(spk['speed'], 1) if LONE.match(text) else spk['speed'], is_phonemes=True, sentence_pause=.28, clause_pause=.12)
             assert sr == SR
             out.append(a.astype(np.float32))
     return np.concatenate(out) if out else np.zeros(1, dtype=np.float32)

@@ -103,7 +103,8 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   await page.addInitScript(instrument);
   // like an iPhone: motion needs permission, and Safari asks only during a finished tap (touchend or click), otherwise a silent no
   await page.addInitScript(() => { window.__motionAsks = []; DeviceOrientationEvent.requestPermission = () => { const t = (window.event && window.event.type) || 'none'; window.__motionAsks.push(t);
-    return ['touchend', 'click'].includes(t) ? Promise.resolve('granted') : Promise.reject(new DOMException('Requesting device orientation access requires a user gesture', 'NotAllowedError')); }; });
+    if (sessionStorage.getItem('motionOK') || ['touchend', 'click'].includes(t)) { sessionStorage.setItem('motionOK', '1'); return Promise.resolve('granted'); }   // (a yes is remembered, as Safari does)
+    return Promise.reject(new DOMException('Requesting device orientation access requires a user gesture', 'NotAllowedError')); }; });
   // random incoming calls (every 1-3 min) would interrupt the scripted taps; "Ring now" still tests them
   await page.addInitScript(() => { if (!localStorage.getItem('toyphone.settings')) localStorage.setItem('toyphone.settings', JSON.stringify({ incoming: false, vol: 2 })); });
   const css = fontCss();
@@ -147,6 +148,17 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
     check(!r.off.length, `${where}: every button on screen ${r.off.join(', ')}`);
     if (r.small.length) warnings.push(`${name} ${where}: under 76px: ${r.small.join(', ')}`);
   };
+
+  // --- getting ready: when the toy opens, Safari's questions (motion, camera) are asked with one grown-up tap
+  check(await visible('#ready') && /Motion/.test(await page.locator('#readyWhat').textContent()) && /Camera/.test(await page.locator('#readyWhat').textContent()),
+    'when the toy opens, a Getting ready card asks a grown-up for one tap (motion and the camera still need Safari\'s OK)');
+  check((await page.evaluate(() => window.__motionAsks)).every(t => t === 'none'), 'nothing is asked before that tap (Safari would only say no)');
+  await shot('0-ready');
+  await tap('#readyGo'); await sleep(1500);
+  const asks0 = await page.evaluate(() => window.__motionAsks);
+  check(!(await visible('#ready')) && asks0.includes('touchend') && asks0.every(t => ['none', 'touchend', 'click'].includes(t)) && (await page.evaluate(() => window.__toyPhone.look())).perm === 'granted',
+    `Start asks Safari about motion as the finger lifts, then the camera, and the card goes (${asks0.join(', ')})`);
+  check((await page.evaluate(() => window.__toyPhone.cam())).tracks === 0, 'the camera question leaves the camera off afterwards');
 
   // --- first touch unlocks sound and speech
   await tapXY(viewport.width * 0.6, 22);   // a tap on the status bar (not a button)
@@ -274,7 +286,7 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   await tap('[data-voice="numbers"]'); await tap('[data-voice="numbers"]');      // on and off again
   const savedVoice = await page.evaluate(() => JSON.parse(localStorage.getItem('toyphone.settings')).voice);
   check(savedVoice.menus && savedVoice.names && savedVoice.camera && !savedVoice.numbers && !savedVoice.music && savedVoice.calls, `voice choices are saved ${JSON.stringify(savedVoice)}`);
-  await page.evaluate(() => { document.querySelector('.sheet').scrollTop = 0; }); await sleep(100);
+  await page.evaluate(() => { document.querySelector('#settings .sheet').scrollTop = 0; }); await sleep(100);
   await tapAll('[data-vol]');
   await tap('[data-incoming="1"]'); await tap('[data-incoming="0"]');
   check(await page.evaluate(() => JSON.parse(localStorage.getItem('toyphone.settings')).incoming) === false, 'incoming calls setting is saved');
@@ -329,14 +341,6 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   const hold = async (yaw, pitch, ms = 500) => { const t0 = Date.now(); while (Date.now() - t0 < ms) { await orient(-yaw, 90 + pitch, 0); await sleep(30); } };   // portrait, upright, turned and tipped by degrees
   const turned = (a, b) => ((a - b + 4800) % 3200) - 1600;
   check(!(await look()).ar, 'until the phone sends its motion, the pretend camera drags as before');
-  await home(); await holdClock();
-  check(/tap Move the phone/.test(await page.locator('#lookNote').textContent()), 'before motion is allowed, settings say to tap Move the phone');
-  await tapSetting('[data-look="move"]'); await sleep(300);
-  const asks = await page.evaluate(() => window.__motionAsks);
-  check(asks.includes('touchend') && asks.every(t => ['none', 'touchend', 'click'].includes(t)) && (await look()).perm === 'granted',
-    `tapping Move the phone asks for motion when the finger lifts (the only time Safari asks), and the toy never asks by itself (${asks.join(', ')})`);
-  await tap('#doneBtn'); await sleep(300);
-  await tap('[data-app="camera"]'); await sleep(700);
   await hold(0, 0, 800);
   let lk = await look();
   check(lk.ar && lk.following, 'once the phone sends its motion, the pretend camera follows it');
@@ -611,7 +615,7 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   check(await osc() > before + 2, 'Snack Time: eating makes munching and animal sounds');
   await shot('24-snacktime-fed');
   await sleep(4800);
-  check((await said()).some(s => /^Yum! The \w+ loves/.test(s)), 'Snack Time says yum (after the munching)');
+  check((await said()).some(s => /^Yum! The [\w ]+ loves/.test(s)), 'Snack Time says yum (after the munching)');
   snack = await page.evaluate(() => window.__toyPhone.snack());
   check(!!snack.want, `Snack Time: the next animal walks in (${snack.animal})`);
   await home();

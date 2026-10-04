@@ -79,6 +79,8 @@ async function run(browser, origin, name) {
   await page.waitForLoadState('load'); await sleep(600);
   check(page.url() === origin + BASE, `${BASE.slice(0, -1)} redirects to ${BASE}`);
   check(await shown('#home'), 'index.html opens on the home screen');
+  if (await shown('#ready')) { await tap('#readySkip'); await sleep(300); }   // (the Getting ready card: Not now)
+  check(!(await shown('#ready')), 'the Getting ready card can be put off with Not now');
 
   /* Add to Home Screen pieces resolve inside the subpath */
   const pwa = await page.evaluate(async () => {

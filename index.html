@@ -717,6 +717,10 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img{image-rendering:auto}
 
 /* ---------- Parent settings ---------- */
 #settings{position:absolute; inset:0; z-index:50; display:grid; place-items:center; padding:12px; background:rgba(59,43,32,.5)}
+#ready{position:absolute; inset:0; z-index:55; display:grid; place-items:center; padding:12px; background:rgba(59,43,32,.5)}
+#ready[hidden]{display:none}
+.ready-card{width:min(100%,420px)} .ready-card p{margin:10px 0; line-height:1.35} .ready-card ul{margin:6px 0 12px; padding-left:22px; line-height:1.4}
+.ready-card .seg .sbtn{min-height:64px; font-size:20px; padding:0 22px}
 .sheet{width:min(100%,470px); max-height:100%; overflow-y:auto; touch-action:pan-y; overscroll-behavior:contain; -webkit-overflow-scrolling:touch;
   padding:8px 10px; font-weight:500; font-size:17px; -webkit-user-select:none; user-select:none}
 .shead{position:sticky; top:-8px; z-index:1; display:flex; align-items:center; justify-content:space-between; gap:12px; margin:-8px -10px 0; padding:8px 10px 8px; background:#FFFDF6}
@@ -979,6 +983,17 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img{image-rendering:auto}
         <button class="round stop" id="declineBtn" aria-label="Decline"></button>
         <button class="round go" id="answerBtn" aria-label="Answer"></button>
         <button class="round stop" id="hangupBtn" aria-label="Hang up"></button>
+      </div>
+    </section>
+
+    <!-- GETTING READY: Safari's questions (motion, camera), all at the start, for a grown-up -->
+    <section id="ready" hidden aria-label="Getting ready">
+      <div class="sheet ready-card">
+        <h2>Getting ready</h2>
+        <p>Before you hand it over: tap <b>Start</b>, then <b>Allow</b> each time Safari asks.</p>
+        <ul id="readyWhat"></ul>
+        <div class="seg"><button class="sbtn done" id="readyGo">Start</button><button class="sbtn" id="readySkip">Not now</button></div>
+        <p class="note">Change these any time in parent settings (hold the clock for 3 seconds).</p>
       </div>
     </section>
 
@@ -6130,7 +6145,7 @@ function openStream(facing){
   const my = ++real.seq; real.state = 'starting'; real.pendingFacing = facing;
   const p = Promise.resolve().then(() => navigator.mediaDevices.getUserMedia({audio:false, video:{facingMode:{ideal:facing}, width:{ideal:1280}, height:{ideal:720}}})).then(async s => {
     if (my !== real.seq){ s.getTracks().forEach(t => t.stop()); return false; }   // the kids moved on while it was starting
-    real.stream = s; real.facing = facing; real.state = 'live'; real.ok = true; real.pending = null;
+    real.stream = s; real.facing = facing; real.state = 'live'; real.ok = true; real.pending = null; try{ sessionStorage.setItem('toyphone.camOK', '1'); }catch(e){}
     camVideo.srcObject = s;
     try{ await camVideo.play(); }catch(e){}
     const tr = s.getVideoTracks()[0]; let caps = {};
@@ -6489,6 +6504,48 @@ const SCHOOL_PIX = {
   jam:[P => { P.rect(7, 11, 18, 18, 'j'); P.ell(16, 28, 9, 2.5, 'j'); P.rect(6, 6, 20, 5, 'c'); P.rect(8, 4, 16, 2, 'c'); P.shade('j', 'J', null, 2);
     P.rect(9, 15, 14, 9, 'w'); P.ell(16, 19.5, 4, 3.5, 'r').rect(15, 15, 2, 2, 'g'); P.set(10, 13, 'l').set(10, 14, 'l').set(10, 25, 'l'); P.shade('c', 'C', null, 1); P.outline('o'); },
     {j:'#C2213A', J:'#8A1426', l:'#FF8A9A', c:'#F4B64A', C:'#D9862F', w:'#FFFDF6', r:'#F0524F', g:'#5CB85C', o:'#4A0E18'}],
+  /* foods for Snack Time's newer animals */
+  meat:[P => { P.tube(12, 19, 9, 23, 6, 26, 2, 1.7, 'w'); P.ell(7.3, 28, 2.3, 2.3, 'w').ell(4, 24.7, 2.3, 2.3, 'w');
+    P.shape(19, 12.5, -.75, 13, (u, v) => (u/10.5)**2 + (v/8)**2 <= 1, 'm'); P.shade('m', 'M', 'l', 2).shade('w', 'W', null, 1);
+    P.set(17, 8, 'L').set(18, 8, 'L').set(16, 9, 'L').set(22, 13, 'M').set(14, 15, 'M'); P.outline('o'); },
+    {m:'#C8763A', M:'#8E4A20', l:'#E8A060', L:'#F6C890', w:'#FFF6E0', W:'#D9CBB0', o:'#4A2410'}],
+  peanut:[P => { const lobe = (u, v) => Math.min(Math.hypot(u + 5.5, v/1.05) - 6.6, Math.hypot(u - 5.5, v/1.05) - 6.2, Math.abs(u) < 3 ? Math.abs(v) - 4.6 : 9);
+    P.shape(16, 16, -.75, 15, (u, v) => lobe(u, v) <= 0, 'p'); P.shade('p', 'P', 'l', 2);
+    P.each(0, 0, 31, 31, (x, y) => { if (P.get(x, y) === code('p') && (x + y) % 4 === 0 && (x - y + 64) % 4 === 0) P.set(x, y, 'P'); });   // the shell's little dimples
+    P.outline('o'); },
+    {p:'#E2B878', P:'#B8884A', l:'#F4D6A0', o:'#6A4A22'}],
+  grass:[P => { for (let i=0;i<11;i++){ const bx = 6 + i*2 + sr(i)*1.2, h = 14 + sr(i*3.3)*12, lean = (i - 5)*1.1 + (sr(i*7)-.5)*3;
+      P.poly([[bx - 1.6, 29], [bx + 1.6, 29], [bx + lean, 29 - h]], 'abc'[i % 3]); }
+    P.ell(16, 29, 11, 2.4, 'd'); P.outline('o'); },
+    {a:'#5CB85C', b:'#7CC96B', c:'#3E9447', d:'#8A6A3A', o:'#1E4A20'}],
+  shrimp:[P => { for (let k=0;k<=24;k++){ const t = k/24, a = (-.45 + t*1.55)*Math.PI, r = 4.6 - t*2.4; P.ell(16 + Math.cos(a)*8.5, 15 + Math.sin(a)*8.5, r, r, k % 4 < 2 ? 's' : 'S'); }
+    P.poly([[7.5, 19], [3, 16], [3.5, 22]], 's').poly([[7.5, 19], [5, 24], [9.5, 23.5]], 's');   // the tail fan
+    P.shade('s', 'D', 'l', 1).shade('S', 'D', null, 1); P.set(22, 9, 'k').set(23, 9, 'k').line(24, 8, 30, 3, 'a').line(23, 7, 27, 2, 'a');
+    for (let k=0;k<4;k++) P.line(17 + k*2, 22, 16 + k*2, 26, 'a'); P.outline('o', 'a'); },
+    {s:'#FF8A7A', S:'#FF9C8C', D:'#D8584A', l:'#FFC0B0', k:'#2B1A12', a:'#D8584A', o:'#7A2A20'}],
+  orange:[P => { P.ell(16, 18, 11.5, 11.5, 'r'); P.shade('r', 'R', 'l', 2); P.speck('r', 'R', 30, 3).speck('r', 'l', 14, 5);
+    P.rect(15, 5, 2, 3, 'b'); P.shape(21, 6, -.4, 7, (u, v) => (u/5)**2 + (v/2.4)**2 <= 1, 'g'); P.set(10, 12, 'w').set(11, 11, 'w').set(10, 13, 'w'); P.outline('o'); },
+    {r:'#FF9F2E', R:'#D8741A', l:'#FFC46A', b:'#7A4A1E', g:'#5CB85C', w:'#FFE6B0', o:'#7A3A0A'}],
+  milk:[P => { P.rect(9, 13, 14, 16, 'w'); P.ell(16, 13.5, 7, 4.5, 'w'); P.rect(12.5, 5, 7, 7, 'g'); P.ell(16, 29, 7, 1.5, 'w');
+    P.rect(12, 2, 8, 3, 'c'); P.rect(9, 18, 14, 6, 'c'); P.shade('w', 'W', null, 2); P.shade('c', 'C', null, 1);
+    P.ell(16, 21, 2, 2.2, 'w').set(16, 18, 'w'); P.rect(13, 6, 1, 5, 'h'); P.set(10, 14, 'h').set(10, 15, 'h'); P.outline('o'); },
+    {w:'#FFFFFF', W:'#D8E2EE', g:'#E8F2FA', h:'#FFFFFF', c:'#3D8FE0', C:'#2A6BB8', o:'#2A3A5A'}],
+  peas:[P => { P.shape(16, 17, -.55, 16, (u, v) => (u/14.5)**2 + (v/6.8)**2 <= 1, 'g'); P.shade('g', 'G', null, 1);
+    P.shape(16, 17, -.55, 16, (u, v) => (u/12.5)**2 + (v/4.6)**2 <= 1, 'd');
+    [-7.6, -2.6, 2.4, 7.4].forEach(u => { const x = 16 + u*Math.cos(.55), y = 17 - u*Math.sin(.55); P.ell(x, y, 3.1, 3.1, 'q').ell(x, y, 2.4, 2.4, 'p').set(x - 1, y - 1, 'l'); });   // each pea round, with a rim
+    P.line(27, 9, 30, 5, 'G').line(30, 5, 29, 2, 'G'); P.outline('o'); },
+    {g:'#6CC46A', G:'#3E9447', d:'#2E7A33', p:'#9BE08E', q:'#4FA84C', l:'#E0FFD8', o:'#1E4A20'}],
+  carrot:[P => { P.shape(15, 18, -.85, 16, (u, v) => u > -12 && u < 10 && Math.abs(v) < (u + 12)*.23 + .4, 'r'); P.ell(15 + 9*Math.cos(.85), 18 - 9*Math.sin(.85), 4.8, 4.8, 'r');
+    P.shade('r', 'R', 'l', 2); [[-5, 3], [0, -4], [4, 3]].forEach(([u, w]) => { const x = 15 + u*Math.cos(.85), y = 18 - u*Math.sin(.85); P.line(x - w*.5, y - w*.6, x + w*.5, y + w*.6, 'R'); });
+    [[-1.3, 0, 'a'], [-.7, 2, 'b'], [-1.9, -2, 'c']].forEach(([r, d, c]) => P.shape(23 + d, 6 - Math.abs(d)*.3, r, 8, (u, v) => (u/6)**2 + (v/1.9)**2 <= 1 && u > -1, c)); P.outline('o'); },
+    {r:'#FF8A2E', R:'#D2601A', l:'#FFB066', a:'#5CB85C', b:'#7CC96B', c:'#3E9447', o:'#5A2A0A'}],
+  fern:[P => { const cx = 16, by = 29;   // five fronds from one root, like the ferns in dino valley
+    for (let i=0;i<5;i++){ const a = -1.1 + i*.55, ux = Math.sin(a), uy = -Math.cos(a);
+      for (let k=1;k<8;k++){ const t = k/8, x = cx + ux*24*t, y = by + uy*24*t, L = 4.4*(1 - t*.7);
+        [1, -1].forEach(sd => P.shape(x + uy*sd*L*.55, y - ux*sd*L*.55, a + sd*1.2, L + 1, (u, v) => (u/(L*.5))**2 + (v/(L*.9))**2 <= 1, i % 2 ? 'a' : 'b')); }
+      P.line(cx, by, cx + ux*25, by + uy*25, 'v'); }
+    P.outline('o'); },
+    {a:'#3F9447', b:'#5DB35A', v:'#2E7A33', o:'#173A16'}],
   box:[P => { P.poly([[3,12],[16,16],[16,30],[3,26]], 'b').poly([[16,16],[29,12],[29,26],[16,30]], 'B'); P.poly([[3,12],[16,8],[29,12],[16,16]], 'd');
     P.poly([[3,12],[0,7],[13,4],[16,8]], 'l').poly([[29,12],[32,7],[19,4],[16,8]], 'l'); P.line(16, 16, 16, 30, 'D'); P.line(8, 19, 12, 20, 'D'); P.outline('o'); },
     {b:'#D8A866', B:'#B07A3E', d:'#7A4A1E', l:'#E8C080', D:'#7A4A1E', o:'#3B2314'}]
@@ -7448,9 +7505,30 @@ const SnackTime = (() => {
     {a:'parrot', n:'parrot', food:'blueberry', w:'a blueberry', fp:'blueberries', x:'squawk', m:[.21,.4]},
     {a:'frog', n:'frog', food:'fly', w:'a fly', fp:'flies', x:'ribbit', m:[.5,.6]},
     {a:'hippo', n:'hippo', food:'watermelon', w:'some watermelon', fp:'watermelon', x:'hippo', m:[.1,.65]},
-    {a:'cow', n:'cow', food:'flower', w:'a flower', fp:'flowers', x:'moo', m:[.21,.54]}
+    {a:'cow', n:'cow', food:'grass', w:'some grass', fp:'grass', x:'moo', m:[.21,.54]},
+    {a:'lion', n:'lion', food:'meat', w:'some meat', fp:'meat', x:'roar', m:[.28,.5]},
+    {a:'tiger', n:'tiger', food:'meat', w:'some meat', fp:'meat', x:'growl', m:[.27,.56]},
+    {a:'elephant', n:'elephant', food:'peanut', w:'a peanut', fp:'peanuts', x:'trumpet', m:[.18,.6]},
+    {a:'zebra', n:'zebra', food:'grass', w:'some grass', fp:'grass', x:'neigh', m:[.07,.38]},
+    {a:'rhino', n:'rhino', food:'apple', w:'an apple', fp:'apples', x:'snort', m:[.07,.6]},
+    {a:'flamingo', n:'flamingo', food:'shrimp', w:'a shrimp', fp:'shrimp', x:'honk', m:[.12,.2]},
+    {a:'eagle', n:'eagle', food:'fish', w:'a fish', fp:'fish', x:'screech', m:[.12,.55]},
+    {a:'gorilla', n:'gorilla', food:'orange', w:'an orange', fp:'oranges', x:'thump', m:[.45,.45]},
+    {a:'butterfly', n:'butterfly', food:'flower', w:'a flower', fp:'flowers', x:'flutter', m:[.5,.35]},
+    {a:'cat', n:'kitty', food:'milk', w:'some milk', fp:'milk', x:'meow', m:[.33,.4]},
+    {a:'duck', n:'duck', food:'peas', w:'some peas', fp:'peas', x:'quack', m:[.08,.36]},
+    {a:'kangaroo', n:'kangaroo', food:'carrot', w:'a carrot', fp:'carrots', x:'boing', m:[.12,.36]},
+    {a:'octopus', n:'octopus', food:'shrimp', w:'a shrimp', fp:'shrimp', x:'splash', m:[.5,.5]},
+    {a:'lizard', n:'lizard', food:'fly', w:'a fly', fp:'flies', x:'flick', m:[.06,.58]},
+    {a:'crocodile', n:'crocodile', food:'fish', w:'a fish', fp:'fish', x:'snap', m:[.06,.78]},
+    {a:'trex', n:'T rex', food:'meat', w:'some meat', fp:'meat', x:'bigroar', m:[.15,.33]},
+    {a:'longneck', n:'long neck', food:'leaf', w:'a leaf', fp:'leaves', x:'bellow', m:[.07,.2]},
+    {a:'trike', n:'triceratops', food:'fern', w:'a fern', fp:'ferns', x:'huff', m:[.08,.55]},
+    {a:'stego', n:'stegosaurus', food:'fern', w:'a fern', fp:'ferns', x:'stego', m:[.06,.73]},
+    {a:'ptero', n:'pterodactyl', food:'fish', w:'a fish', fp:'fish', x:'screech', m:[.42,.3]}
   ];
-  const FOOD = Object.fromEntries(SNACKS.map(s => [s.food, s.w.replace(/^(a|some) /, '')]));
+  const FOOD = Object.fromEntries(SNACKS.map(s => [s.food, s.w.replace(/^(an?|some) /, '')]));
+  const pic = f => ART[f] || schoolPic(f);   // (the newer foods are little pictures drawn with the School ones)
   const WANTS = s => `The ${s.n} wants ${s.w}!`, YUM = s => `Yum! The ${s.n} loves ${s.fp}!`;
   const root = $('#snacktime'), scene = $('#stScene'), animalEl = $('#stAnimal'), think = $('#stThink'), wantEl = $('#stWant'), foodsEl = $('#stFoods'), fedEl = $('#stFed');
   let cur = null, queue = [], fed = 0, misses = 0, eating = true, quietUntil = 0;
@@ -7466,7 +7544,7 @@ const SnackTime = (() => {
     if (!queue.length) queue = shuffle(SNACKS).filter(s => s !== prev);
     cur = queue.shift(); misses = 0; eating = true;
     put(animalEl, ART[cur.a]); animalEl.setAttribute('aria-label', cur.n);
-    think.classList.remove('on'); put(wantEl, ART[cur.food]);
+    think.classList.remove('on'); put(wantEl, pic(cur.food));
     foodsEl.innerHTML = '';
     act('in'); steps();
     later(() => { think.classList.add('on'); FX.pop(); deal(); eating = false; wants(); }, 950);
@@ -7474,11 +7552,11 @@ const SnackTime = (() => {
   /* two foods to choose from at first, three once a few animals are fed */
   function deal(){
     const n = fed < 3 ? 2 : 3;
-    const picks = shuffle([cur.food, ...shuffle(SNACKS.map(s => s.food).filter(f => f !== cur.food)).slice(0, n - 1)]);
+    const picks = shuffle([cur.food, ...shuffle([...new Set(SNACKS.map(s => s.food))].filter(f => f !== cur.food)).slice(0, n - 1)]);
     foodsEl.innerHTML = ''; foodsEl.classList.toggle('n2', n === 2);
     picks.forEach((f, i) => {
       const b = document.createElement('button'); b.className = 'st-food'; b.dataset.food = f; b.setAttribute('aria-label', FOOD[f]);
-      b.style.animationDelay = i*.07 + 's'; b.innerHTML = `<span class="art">${ART[f]}</span>`;
+      b.style.animationDelay = i*.07 + 's'; b.innerHTML = `<span class="art">${pic(f)}</span>`;
       tap(b, () => pick(b, f), {bump:false});
       foodsEl.appendChild(b);
     });
@@ -7495,7 +7573,7 @@ const SnackTime = (() => {
     const s = cur, a = root.getBoundingClientRect(), fr = b.getBoundingClientRect(), ar = animalEl.getBoundingClientRect();
     const x0 = fr.left - a.left + fr.width/2, y0 = fr.top - a.top + fr.height/2, x1 = ar.left - a.left + ar.width*s.m[0], y1 = ar.top - a.top + ar.height*s.m[1];
     const mx = (x0 + x1)/2, my = Math.min(y0, y1) - 60;
-    const t = document.createElement('div'); t.className = 'st-bite art'; t.innerHTML = ART[s.food];
+    const t = document.createElement('div'); t.className = 'st-bite art'; t.innerHTML = pic(s.food);
     root.appendChild(t); FX.swoosh();
     t.animate([
       {transform:`translate(${x0-32}px,${y0-32}px) scale(1)`},
@@ -7818,6 +7896,33 @@ tap($('#testSound'), () => { FX.cheer(); say('Hello! This is how loud I am.'); }
 tap($('#testRing'), () => { closeSettings(); if (call) return; if (current !== 'home') go('home'); setTimeout(() => maybeRing(true), 600); });
 tap($('#doneBtn'), () => { closeSettings(); FX.pop(); });
 
+/* ---------- Getting ready: Safari's questions, all at the start ----------
+   Moving the phone (the pretend camera) and the real camera each need Safari's OK, and Safari only asks about motion
+   during a finished tap. When the toy opens and either still needs it, a card asks a grown-up for one tap: Start runs
+   the questions in turn. Nothing to ask (allowed before, or turned off in settings): no card. */
+const READY = {motion:false, camera:false};
+async function readyCheck(){
+  READY.motion = settings.look === 'move' && typeof window.DeviceOrientationEvent?.requestPermission === 'function' && (await askMotion()) !== 'granted' && AR.perm !== 'denied';
+  if (settings.look === 'move' && !READY.motion) askMotion().then(renderLookNote);   // (no question here: Safari only reuses an earlier yes)
+  READY.camera = false;
+  let camOK = false; try{ camOK = !!sessionStorage.getItem('toyphone.camOK'); }catch(e){}   // (already worked since Safari opened the toy)
+  if (!camOK && settings.camera !== 'pretend' && canCamera() && navigator.mediaDevices && navigator.permissions){
+    try{ READY.camera = (await navigator.permissions.query({name:'camera'})).state === 'prompt'; }catch(e){}
+  }
+  if (!READY.motion && !READY.camera) return;
+  $('#readyWhat').innerHTML = (READY.motion ? '<li><b>Motion</b>: the pretend camera looks around as the phone moves</li>' : '') + (READY.camera ? '<li><b>Camera</b>: real photos and selfies (pictures only, never the microphone)</li>' : '');
+  $('#ready').hidden = false;
+}
+function readyDone(){ $('#ready').hidden = true; renderLookNote(); renderCamNote(); }
+/* Start: motion first (it must be asked inside the tap, as the finger lifts), then the camera */
+onLift($('#readyGo'), () => {
+  if ($('#ready').hidden) return;
+  const m = READY.motion ? askMotion() : Promise.resolve();
+  m.then(() => READY.camera ? probeCamera() : null).catch(() => {}).then(() => { FX.cheer(); readyDone(); });
+});
+tap($('#readyGo'), () => {}, {bump:true});
+tap($('#readySkip'), () => { FX.pop(); readyDone(); });
+
 /* ---------- Toddler-proofing ---------- */
 ['gesturestart','gesturechange','gestureend','contextmenu','selectstart','dragstart'].forEach(t => document.addEventListener(t, e => e.preventDefault()));
 const inScroll = e => e.target && e.target.closest && e.target.closest('.pgrid, .sheet');
@@ -7841,7 +7946,7 @@ buildContacts();
 loadFamily();
 loadSounds();
 loadVoiceBank();
-if (settings.look === 'move') askMotion().then(renderLookNote);   // (no prompt here: Safari only reuses an earlier yes)
+readyCheck();
 seedPhotos();
 window.claude?.hot?.snapshot?.(() => ({ app: current, scene: cam.scene }));
 const start = (data) => { if (data && data.scene && SCENES[data.scene]) cam.scene = data.scene; if (data && data.app && data.app !== 'home') go(data.app); };
@@ -7890,7 +7995,7 @@ window.__toyPhone = { go, renderFx, speakable, voiceLines, lineMs,
     return c.toDataURL(); },
   camLook: i => setLook(i), camLens: i => setLens(i),
   school: () => ({zoo:AbcZoo.state(), snack:AbcSnack.state(), progress:AbcSnack.progress()}),
-  schoolPics: names => names.map(n => schoolPic(n) || ''),   // (pictures by name, for checking them by eye)
+  schoolPics: names => names.map(n => schoolPic(n) || ART[n] || ''),   // (pictures by name, for checking them by eye)
   path: () => LetterPath.state(), pathPts: () => LetterPath.strokePts(), pathProgress: () => LetterPath.progress(),
   glyphSheet: () => { const k = 3, cw = 34, ch = 46, c = document.createElement('canvas'); c.width = 26*cw*k; c.height = 2*ch*k; const g = c.getContext('2d'); g.fillStyle = '#FFFDF6'; g.fillRect(0, 0, c.width, c.height); g.imageSmoothingEnabled = false;
     LETTERS.forEach((L, i) => { g.drawImage(glyphCanvas(L), i*cw*k, 0, cw*k, ch*k); g.drawImage(glyphCanvas(L.toLowerCase()), i*cw*k, ch*k, cw*k, ch*k); });

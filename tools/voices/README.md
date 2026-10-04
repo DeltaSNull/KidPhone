@@ -46,21 +46,35 @@ its name, spliced into the rest of the line, because respelling it ("Ay") made A
 for" came out as "uh".
 
 **Sounds**: a line can hold a letter's sound, written `/s/` ("It says /s/, like star!"). Each sound is the narrator
-saying a word, cut down to its first sound (`SOUND_SRC`: sun, apple, top, itch, pop, ...; x is the end of box), with
+saying a word, cut down to one sound (`SOUND_SRC`: sun, hat, top, hit, pop, ...; x is the end of box), with
 pocketsphinx's phoneme aligner finding where the sound starts and stops:
 
-- Sounds you can hold (m, n, l, r, v, z) are said held (the phoneme written four times), cut and stretched to half
-  a second; short vowels to 0.3 s.
+- Short vowels are the steady middle of an h-word (hat, head, hit, hot, hut), where nothing before the vowel colors
+  it, stretched to a third of a second. (Cut from apple, itch, octopus and up, the u came out as a different vowel.)
+- l, n and m are the steady part of the sound in a word (lap, nap, hum), stretched to half a second; r, v and z come out
+  best said held (the phoneme written four times).
 - Hisses and puffs (s, f, p, t, c, k, h, x) keep only the voiceless part: the frames with little energy below 1 kHz,
   from the closure before a burst, so there's no "suh" or "puh" after them. s and f are stretched to half a second,
   h to a quarter.
-- b, d, g, j, w, y and q end just after the voice starts, which is how teachers say them, with the "uh" as short as it goes.
+- b, d, g, j, w, y and q end just after the voice starts, which is how teachers say them, with the "uh" as short as it
+  goes (b and d from but and duck, so it's "buh", not "ba").
+- Each sound is brought to a set loudness against the narrator's speech (the voiceless ones 3 to 5 dB softer than the
+  voice): cut from words, a p or k was 14 dB down and would be lost on a phone speaker.
+- A letter name said on its own ("T!") is spoken at normal speed: slowed down, T's puff stretched into a hiss that
+  sounded like C.
 - Those words are said at normal speed: slowed down, the model starts every word with a murmur, an "uh" before the
   consonant. The held sounds and vowels are slowed down, since they're stretched anyway.
 
-The aligner must hear the expected phonemes at the start of each word, or the tool stops. Cutting the sounds is
-checked by measuring each one (a hiss should be mostly above 3 kHz, a held m mostly below 1 kHz) and by looking at a
-spectrogram of all 26, but listen to them once: settings, Letter Path, tap a letter, *Hear the sound*. A changed
+The aligner must hear the expected phonemes at the start of each word, or the tool stops.
+
+**How they were checked** (no one can listen from a build machine): Whisper (base.en, run as ONNX) used as a judge that
+must choose. For letter names, the line is scored against the same line with each of the other 25 letters ("Find the
+T!" against "Find the A!" and so on): every letter wins, in every kind of line. For sounds, a blend test: the sound is
+spliced onto the rest of a word cut from the narrator (/s/ + "et") and Whisper picks the word from a set that differs
+only in that sound (set, bet, get, jet, let, ...); vowels go between a p and a t (pat, pet, pit, pot, putt). The same
+test with each word's own first sound gives the ceiling. With the old cuts 30 of 43 blends were heard right (four of
+the five vowels wrong); with these, 39, and the four misses fail with the natural sound too. Listen to them once anyway:
+settings, Letter Path, tap a letter, *Hear the sound*. A changed
 sound needs `SOUNDS_VERSION` raised, so the lines that use it get new clip names and no phone keeps an old copy.
 
 ## Checking without listening
