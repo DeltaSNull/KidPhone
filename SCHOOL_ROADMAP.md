@@ -2,7 +2,7 @@
 
 Created: 2026-10-04  
 Review baseline: `413fbb1c45b559d260f58ec98fa59a0279c4e26f`  
-Status: Phase 1 in progress — parent access controls implemented on `codex/school-parent-controls`; profiles, session limits, and audio controls remain open.
+Status: Phase 1 in progress — parent access controls merged and deployed ([PR #2](https://github.com/DeltaSNull/KidPhone/pull/2)); profiles, session limits, and audio controls remain open.
 
 **Continuing with either model? Read [HANDOFF.md](HANDOFF.md) and [AGENTS.md](AGENTS.md) before editing.**
 
@@ -16,7 +16,7 @@ This file is the source of truth for the suggestions from the School review. Che
 
 | Phase | Status | Completion evidence |
 | --- | --- | --- |
-| 1. Parent controls and child profiles | In progress | Parent access controls implemented; see [handoff](HANDOFF.md) for validation and integration status. |
+| 1. Parent controls and child profiles | In progress | Parent access controls (P1-01 to P1-07, P1-13) merged and deployed: [PR #2](https://github.com/DeltaSNull/KidPhone/pull/2). Profiles, Together play, migration, session limits and audio controls remain. |
 | 2. Learning foundation and existing activity improvements | Not started | — |
 | 3. First guided learning journey | Not started | — |
 | 4. Broader curriculum and parent summaries | Not started | — |
@@ -25,19 +25,19 @@ Recommended order: Phase 1 → Phase 2 → Phase 3 → Phase 4. Dino Picnic and 
 
 ## Phase 1 — Parent controls and child profiles
 
-- [ ] **P1-01 — Parent PIN:** Keep the clock hold as an entry point and require a parent PIN before changing protected settings. Define setup, change, and recovery behavior. **Implemented — Chromium checks passed; cross-browser CI/integration pending. See [handoff](HANDOFF.md).**
-- [ ] **P1-02 — Access modes:** Add School only, Custom, and Full phone. Custom independently enables School, Games, Camera, Photos, Music, and Phone. **Implemented — Chromium checks passed; cross-browser CI/integration pending. See [handoff](HANDOFF.md).**
-- [ ] **P1-03 — School home:** Open directly into School in School-only mode; the Home button also returns to School. **Implemented — Chromium checks passed; cross-browser CI/integration pending. See [handoff](HANDOFF.md).**
-- [ ] **P1-04 — Navigation enforcement:** Centralize access checks for every entry point, including nested games, shortcuts, restored screens, and app transitions. Hide unavailable icons as well as blocking routes. **Implemented — Chromium checks passed; cross-browser CI/integration pending. See [handoff](HANDOFF.md).**
-- [ ] **P1-05 — Camera and call shutdown:** End an active camera or call when disabled; suppress incoming calls in School-only mode. Separate Camera app availability from Pretend/Real/Both settings. **Implemented — Chromium checks passed; cross-browser CI/integration pending. See [handoff](HANDOFF.md).**
-- [ ] **P1-06 — Permission handling:** Skip camera and motion permission requests when those features are unavailable, including startup, settings completion, and resume. **Implemented — Chromium checks passed; cross-browser CI/integration pending. See [handoff](HANDOFF.md).**
-- [ ] **P1-07 — Persistent restrictions:** Preserve access policy across reloads, closing/reopening, updates, and offline launches. **Implemented — Chromium checks passed; cross-browser CI/integration pending. See [handoff](HANDOFF.md).**
+- [x] **P1-01 — Parent PIN:** Keep the clock hold as an entry point and require a parent PIN before changing protected settings. Define setup, change, and recovery behavior. **Done — [PR #2](https://github.com/DeltaSNull/KidPhone/pull/2), merged as `49191c6`; Chromium and WebKit checks passed in CI ([run 37212605934](https://github.com/DeltaSNull/KidPhone/actions/runs/37212605934)) and on main before deploying. Real-iPhone check pending (T-09).**
+- [x] **P1-02 — Access modes:** Add School only, Custom, and Full phone. Custom independently enables School, Games, Camera, Photos, Music, and Phone. **Done — [PR #2](https://github.com/DeltaSNull/KidPhone/pull/2), merged as `49191c6`; Chromium and WebKit checks passed in CI ([run 37212605934](https://github.com/DeltaSNull/KidPhone/actions/runs/37212605934)) and on main before deploying. Real-iPhone check pending (T-09).**
+- [x] **P1-03 — School home:** Open directly into School in School-only mode; the Home button also returns to School. **Done — [PR #2](https://github.com/DeltaSNull/KidPhone/pull/2), merged as `49191c6`; Chromium and WebKit checks passed in CI ([run 37212605934](https://github.com/DeltaSNull/KidPhone/actions/runs/37212605934)) and on main before deploying. Real-iPhone check pending (T-09).**
+- [x] **P1-04 — Navigation enforcement:** Centralize access checks for every entry point, including nested games, shortcuts, restored screens, and app transitions. Hide unavailable icons as well as blocking routes. **Done — [PR #2](https://github.com/DeltaSNull/KidPhone/pull/2), merged as `49191c6`; Chromium and WebKit checks passed in CI ([run 37212605934](https://github.com/DeltaSNull/KidPhone/actions/runs/37212605934)) and on main before deploying. Real-iPhone check pending (T-09).**
+- [x] **P1-05 — Camera and call shutdown:** End an active camera or call when disabled; suppress incoming calls in School-only mode. Separate Camera app availability from Pretend/Real/Both settings. **Done — [PR #2](https://github.com/DeltaSNull/KidPhone/pull/2), merged as `49191c6`; Chromium and WebKit checks passed in CI ([run 37212605934](https://github.com/DeltaSNull/KidPhone/actions/runs/37212605934)) and on main before deploying. Real-iPhone check pending (T-09).**
+- [x] **P1-06 — Permission handling:** Skip camera and motion permission requests when those features are unavailable, including startup, settings completion, and resume. **Done — [PR #2](https://github.com/DeltaSNull/KidPhone/pull/2), merged as `49191c6`; Chromium and WebKit checks passed in CI ([run 37212605934](https://github.com/DeltaSNull/KidPhone/actions/runs/37212605934)) and on main before deploying. Real-iPhone check pending (T-09).**
+- [x] **P1-07 — Persistent restrictions:** Preserve access policy across reloads, closing/reopening, updates, and offline launches. **Done — [PR #2](https://github.com/DeltaSNull/KidPhone/pull/2), merged as `49191c6`; Chromium and WebKit checks passed in CI ([run 37212605934](https://github.com/DeltaSNull/KidPhone/actions/runs/37212605934)) and on main before deploying. Real-iPhone check pending (T-09).**
 - [ ] **P1-08 — Session ending:** Add a parent-controlled session limit with a gentle end after the current activity; require parent authorization to extend it.
 - [ ] **P1-09 — Audio controls:** Separate essential lesson narration from optional animal sounds and celebrations. Avoid allowing a listening lesson to silently become unanswerable.
 - [ ] **P1-10 — Separate profiles:** Add independent preschool and toddler profiles with their own progress and adjustable starting levels. Keep profile data on the device.
 - [ ] **P1-11 — Together play:** Provide an untracked shared mode; do not attribute joint answers to an individual child.
 - [ ] **P1-12 — Existing progress migration:** Preserve shared ABC/Letter Path records as legacy history. Do not assign them to either child as demonstrated knowledge.
-- [ ] **P1-13 — Parent guidance:** Explain that the PIN protects in-app settings and Guided Access keeps the child inside the app. **Implemented — Chromium checks passed; cross-browser CI/integration pending. See [handoff](HANDOFF.md).**
+- [x] **P1-13 — Parent guidance:** Explain that the PIN protects in-app settings and Guided Access keeps the child inside the app. **Done — [PR #2](https://github.com/DeltaSNull/KidPhone/pull/2), merged as `49191c6`; Chromium and WebKit checks passed in CI ([run 37212605934](https://github.com/DeltaSNull/KidPhone/actions/runs/37212605934)) and on main before deploying. Real-iPhone check pending (T-09).**
 
 Acceptance: unavailable sections cannot be reached through Home, nested navigation, restored state, or reload; no disallowed camera/motion prompts appear; disabling a camera stops its stream; profiles and Together play never mix individual progress.
 
@@ -95,7 +95,7 @@ Acceptance: activities revisit prior skills, progress summaries distinguish evid
 - [ ] **T-02 — Data durability:** Version saved progress and verify migrations, reloads, and updates preserve records without mixing profiles.
 - [ ] **T-03 — Audio assets:** Generate recordings for new or changed lesson lines, verify clip coverage and offline availability, and retain iPhone audio behavior.
 - [ ] **T-04 — Human phonics review:** Listen to letter names, the 26 sounds, and lesson prompts on an actual phone; check that sounds are clear and appropriate. Automated recognition alone does not complete this task.
-- [ ] **T-05 — Access-control tests:** Cover mode switching, nested routes, Home, restored state, reload/offline, camera shutdown, permission suppression, and incoming calls.
+- [x] **T-05 — Access-control tests:** Cover mode switching, nested routes, Home, restored state, reload/offline, camera shutdown, permission suppression, and incoming calls. **Done — `tests/parent-controls.cjs`, run in Chromium and WebKit by CI on every PR and push to main ([PR #2](https://github.com/DeltaSNull/KidPhone/pull/2)). WebKit checks the cached offline shell instead of a forced-offline reload, which crashes Playwright WebKit on Linux; Chromium does the full offline launch.**
 - [ ] **T-06 — Learning-record tests:** Cover profile isolation, Together mode, legacy migration, first responses, hints, retries, tracing skips, and later-session evidence.
 - [ ] **T-07 — Lesson tests:** Verify counting requires an intentional quantity choice and repeated tapping cannot manufacture independent evidence; verify fresh-example review and session endings.
 - [ ] **T-08 — Browser regression checks:** Use the existing Chromium/WebKit and Pages checks for affected behavior, including the /KidPhone/ subfolder and offline assets.
@@ -113,5 +113,6 @@ Use these as curriculum/design references, not as claims that app scores diagnos
 
 | Date | Change | Evidence |
 | --- | --- | --- |
+| 2026-10-04 | Parent access controls merged and deployed (P1-01 to P1-07, P1-13, T-05). Claude fixed the WebKit offline step of the parent-controls test, the last failing CI job. Real-iPhone checks (T-09) pending. | [PR #2](https://github.com/DeltaSNull/KidPhone/pull/2), [run 37212605934](https://github.com/DeltaSNull/KidPhone/actions/runs/37212605934), main run [#26](https://github.com/DeltaSNull/KidPhone/actions/runs/37218633269) |
 | 2026-10-04 | Implemented parent access controls and shared Codex/Claude continuation workflow; integration and CI checks pending. | [Handoff](HANDOFF.md) |
 | 2026-10-04 | Recorded the reviewed School roadmap and progress checklist. All implementation tasks remain open. | Baseline: `413fbb1`; this documentation commit |
