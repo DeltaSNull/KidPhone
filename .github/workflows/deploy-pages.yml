@@ -83,6 +83,9 @@ jobs:
       - name: Motion games
         run: node tests/motion-games.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
 
+      - name: Interaction refinement
+        run: node tests/refinement.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
+
       - name: Animal Delivery
         run: node tests/delivery.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
 

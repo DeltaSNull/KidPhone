@@ -2,9 +2,18 @@
 
 Created: 2026-10-04  
 Review baseline: `413fbb1c45b559d260f58ec98fa59a0279c4e26f`  
-Status: Parent access controls, play-time limits, School sound controls and motion games deployed. Counting improvements and Dino Picnic are implemented; Animal Delivery is partly implemented. Profiles and learning-progress tracking are deferred. Latest verified main: `ead5c96` ([passing CI and deployment](https://github.com/DeltaSNull/KidPhone/actions/runs/37329072126)). Optional PIN / Delivery follow-up underway.
+Status: Parent access controls, play-time limits, School sound controls and motion games deployed. Counting improvements and Dino Picnic are implemented; Animal Delivery is partly implemented. Profiles and learning-progress tracking are deferred. Latest verified main: `f0b0658` ([passing CI and deployment](https://github.com/DeltaSNull/KidPhone/actions/runs/37341705042)). Optional PIN and the expanded Delivery route are released in [PR #5](https://github.com/DeltaSNull/KidPhone/pull/5). Overall interaction refinement is underway on `codex/app-refinement`.
 
 **Continuing with either model? Read [HANDOFF.md](HANDOFF.md) and [AGENTS.md](AGENTS.md) before editing.**
+
+## Current owner-directed refinement: overall app polish
+
+This batch follows the owner's request to use best judgment on overall refinement. It preserves the existing games and the holds on profiles, learning tracking and lesson phonics. Check the branch PR for CI and publication status before continuing.
+
+- [x] **R-01 — Scroll-safe settings:** changes occur on a stationary finger lift; movement, cancellation or sheet scrolling cancels the change, including dynamic letter and voice controls. Normal child game taps retain their immediate response.
+- [x] **R-02 — Settings navigation and keyboard:** Access/Sound/School/Tools shortcuts; reopening starts at the PIN row; keyboard and assistive activation through the shared helpers; selected settings announce their state; Settings focus, Tab wrapping and Escape; keyboard clock hold preserves the three-second threshold.
+- [x] **R-03 — Visible controls and background cleanup:** round controls have a paper-button fallback; Delivery replay and restart have explicit colored buttons; background/pagehide cancels unfinished clock holds and narration; delayed prompts cannot restart narration while hidden.
+- [ ] **R-04 — Physical usability check:** verify Settings scrolling/shortcuts, assistive input, app switching and Delivery controls on the family's iPhone. Browser verification is recorded in HANDOFF.md and the branch PR. This batch supports P2-15 but does not complete its full accessibility review.
 
 ## Current owner-directed detour: regular motion games
 
@@ -49,7 +58,7 @@ Recommended order: Phase 1 → Phase 2 → Phase 3 → Phase 4. Dino Picnic and 
 - [ ] **P1-11 — Together play:** Provide an untracked shared mode; do not attribute joint answers to an individual child. **Deferred — owner's decision, 2026-10-04: no progress tracking while the toy is still being tested.**
 - [ ] **P1-12 — Existing progress migration:** Preserve shared ABC/Letter Path records as legacy history. Do not assign them to either child as demonstrated knowledge. **Deferred — owner's decision, 2026-10-04: no progress tracking while the toy is still being tested.**
 - [x] **P1-13 — Parent guidance:** Explain that the PIN protects in-app settings and Guided Access keeps the child inside the app. **Done — [PR #2](https://github.com/DeltaSNull/KidPhone/pull/2), merged as `49191c6`; Chromium and WebKit checks passed in CI ([run 37212605934](https://github.com/DeltaSNull/KidPhone/actions/runs/37212605934)) and on main before deploying. Real-iPhone check pending (T-09).**
-- [x] **P1-14 — Optional PIN (owner follow-up, 2026-10-05):** Put a default-off PIN switch first in Settings; permit all access modes without a PIN; preserve explicit protection and local restrictions across on/off, reload and updates. **Implemented — `codex/parent-delivery`; focused Chromium parent checks passed, including persistence, setup cancellation, failed saves and migration. CI/release tracked in this branch's PR; real-phone checks pending. Supersedes P1-01's original mandatory setup for restricted modes.**
+- [x] **P1-14 — Optional PIN (owner follow-up, 2026-10-05):** Put a default-off PIN switch first in Settings; permit all access modes without a PIN; preserve explicit protection and local restrictions across on/off, reload and updates. **Released — [PR #5](https://github.com/DeltaSNull/KidPhone/pull/5), main `f0b0658`; Chromium/WebKit and deployment passed in [run 37341705042](https://github.com/DeltaSNull/KidPhone/actions/runs/37341705042); real-phone checks pending. Supersedes P1-01's original mandatory setup for restricted modes.**
 
 Acceptance: unavailable sections cannot be reached through Home, nested navigation, restored state, or reload; no disallowed camera/motion prompts appear; disabling a camera stops its stream; profiles and Together play never mix individual progress.
 
@@ -125,6 +134,8 @@ Use these as curriculum/design references, not as claims that app scores diagnos
 
 | Date | Change | Evidence |
 | --- | --- | --- |
+| 2026-10-05 | Overall refinement R-01 to R-03: scroll-safe settings, quick navigation/keyboard access, visible round controls and background narration cleanup. Physical usability R-04 remains open. | `codex/app-refinement`; [handoff](HANDOFF.md); branch PR is authoritative for checks/release |
+| 2026-10-05 | Optional PIN and expanded Animal Delivery released. | [PR #5](https://github.com/DeltaSNull/KidPhone/pull/5), main `f0b0658`, [passing deployment](https://github.com/DeltaSNull/KidPhone/actions/runs/37341705042) |
 | 2026-10-04 | Codex progress review: 16/56 tasks complete, Animal Delivery partial, tracking/profile work deferred. Reconciled stale handoff/header text; next priority is untracked guided adventures and adult follow-through. No app code changed. | Main `962721c`; [passing test and deployment run](https://github.com/DeltaSNull/KidPhone/actions/runs/37251734648); [handoff](HANDOFF.md) |
 | 2026-10-05 | Owner's feedback: the Letter Path uses letter names only until the sounds are right (T-04); Animal Delivery drops "on the box" (an open box made on and in look the same). | [Handoff](HANDOFF.md) |
 | 2026-10-04 | Claude: Dino Picnic (P3-04) and Animal Delivery (P3-06); the School menu became a picture grid for seven games. | Smoke tests in three layouts; CI on main before deploying |
