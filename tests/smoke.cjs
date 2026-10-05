@@ -872,6 +872,7 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   await until(async () => { const x = await dv(); return !x.busy && x.placed === 0; }, 15);
   d = await dv();
   check(d.level === 1 && d.spots.join() === 'inBox,onTable,underTable' && d.target === 'underTable', `after three right, under the table joins (on and under at the same table), and it asks about it first ${JSON.stringify(d)}`);
+  await tap(`.ad-parcel[data-item="${d.itemKey}"]`);
   await shot('36-delivery-table');
   await tap(`.ad-spot[data-spot="${d.spots.find(k => k !== d.target)}"]`); await sleep(500);
   await until(async () => !(await dv()).busy, 10);

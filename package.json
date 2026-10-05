@@ -10,11 +10,13 @@
     "test:pages": "node tests/pages.cjs",
     "test:webkit": "node tests/webkit.cjs",
     "test:pages:webkit": "node tests/pages.cjs --webkit",
-    "test:ci": "npm test && npm run test:pages && npm run test:webkit && npm run test:pages:webkit && npm run test:parents && npm run test:parents:webkit && npm run test:motion && npm run test:motion:webkit",
+    "test:ci": "npm test && npm run test:pages && npm run test:webkit && npm run test:pages:webkit && npm run test:parents && npm run test:parents:webkit && npm run test:motion && npm run test:motion:webkit && npm run test:delivery && npm run test:delivery:webkit",
     "test:parents": "node tests/parent-controls.cjs",
     "test:parents:webkit": "node tests/parent-controls.cjs --webkit",
     "test:motion": "node tests/motion-games.cjs",
-    "test:motion:webkit": "node tests/motion-games.cjs --webkit"
+    "test:motion:webkit": "node tests/motion-games.cjs --webkit",
+    "test:delivery": "node tests/delivery.cjs",
+    "test:delivery:webkit": "node tests/delivery.cjs --webkit"
   },
   "devDependencies": {
     "@fontsource/pixelify-sans": "5.3.0",

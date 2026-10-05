@@ -59,17 +59,29 @@ const check = (condition, message) => { assert.ok(condition, message); console.l
     await page.goto(url); await page.waitForFunction(() => window.__toyPhone);
     check(await visible('#home'), 'legacy/default launch preserves full phone');
     await hold(); await waitVisible('#settings');
+    check(await page.locator('#parentPinToggle').getAttribute('aria-checked') === 'false', 'PIN is off by default and appears before app access');
+    check(await page.locator('#settings .srow').first().locator('#parentPinToggle').count() === 1, 'PIN toggle is at the top of settings');
     await tap('[data-vol="3"]');
     check(await page.evaluate(() => JSON.parse(localStorage.getItem('toyphone.settings')).vol) === 3, 'volume still saves from the expanded settings sheet');
-    await tap('[data-access="school"]'); await waitVisible('#parentGate');
-    check(!(await visible('#settings')), 'enabling restrictions requires PIN setup first');
+    await tap('[data-access="school"]');
+    check(!(await visible('#parentGate')), 'School only works without forcing PIN setup');
+    await tap('#doneBtn'); await go('games');
+    check(await visible('#school'), 'PIN-off School-only mode still blocks games');
+    await reload(); await page.waitForFunction(() => window.__toyPhone); await hold();
+    check(await visible('#settings') && !(await visible('#parentGate')), 'PIN-off policy persists and clock hold opens settings directly');
+    await tap('[data-access="custom"]'); await tap('[data-allow="games"]');
+    check(await page.evaluate(() => JSON.parse(localStorage.getItem('toyphone.access')).apps.games === false), 'Custom app toggles work with PIN off');
+    await tap('[data-allow="games"]');
+    await tap('[data-access="school"]'); await tap('#parentPinToggle'); await tap('#pinCancel');
+    check(await visible('#settings') && await page.locator('#parentPinToggle').getAttribute('aria-checked') === 'false', 'canceling PIN setup returns to settings with PIN off');
+    await tap('#parentPinToggle'); await waitVisible('#parentGate');
     check(await page.locator('[data-pin="5"]').evaluate(el => /Press Start 2P/.test(getComputedStyle(el).fontFamily)) && await page.locator('[data-pin="Clear"]').evaluate(el => !/Press Start 2P/.test(getComputedStyle(el).fontFamily)), 'PIN digits use the 8-bit number font (5 never reads as S); Back and Clear stay in words');
     await pin('2580'); await pin('2581');
     check(/did not match/.test(await page.locator('#pinMessage').textContent()), 'mismatched confirmation does not set PIN');
     check(await page.evaluate(() => !JSON.parse(localStorage.getItem('toyphone.access') || '{}').pin), 'mismatch leaves stored PIN unset');
     await pin('2580'); await pin('2580'); await waitVisible('#settings');
     const policy = await page.evaluate(() => JSON.parse(localStorage.getItem('toyphone.access')));
-    check(policy.mode === 'school' && policy.pin.hash.length === 64 && !JSON.stringify(policy).includes('2580'), 'school mode and salted PIN digest saved without plaintext PIN');
+    check(policy.mode === 'school' && policy.pinEnabled && /^[0-9a-f]{64}$/.test(policy.pin.hash) && /^[0-9a-f]{32}$/.test(policy.pin.salt) && Object.keys(policy.pin).sort().join() === 'hash,salt', 'school mode and enabled salted PIN digest saved without plaintext PIN');
     await tap('#doneBtn'); check(await visible('#school'), 'School-only activation enters School');
     for (const route of ['home','camera','photos','games','wildtap','dinobuddies','snacktime','paintpals','balltrail','starflight','phone','music','unknown']){
       await go(route); check(await visible('#school'), `${route} cannot escape School-only mode`);
@@ -95,6 +107,17 @@ const check = (condition, message) => { assert.ok(condition, message); console.l
     await tap('#doneBtn'); await hold(); await pin('2580');
     check(!(await visible('#settings')), 'old PIN rejected after changing PIN');
     await pin('3690'); await waitVisible('#settings');
+    await tap('#parentPinToggle');
+    check(await page.locator('#parentPinToggle').getAttribute('aria-checked') === 'false', 'unlocked settings can turn PIN off');
+    await tap('#doneBtn'); await reload(); await page.waitForFunction(() => window.__toyPhone); await hold();
+    check(await visible('#settings') && !(await visible('#parentGate')) && await visible('#school'), 'disabled PIN stays off after reload without removing School restrictions');
+    await tap('#parentPinToggle');
+    check(await page.locator('#parentPinToggle').getAttribute('aria-checked') === 'true' && !(await visible('#parentGate')), 'PIN can be re-enabled using the retained digest');
+    await tap('#doneBtn'); await unlock('3690');
+    await page.evaluate(() => { window.originalStorageWrite = Storage.prototype.setItem; Storage.prototype.setItem = function(k,v){ if(k==='toyphone.access') throw new Error('Test storage full'); return originalStorageWrite.call(this,k,v); }; });
+    await tap('#parentPinToggle');
+    check(await page.locator('#parentPinToggle').getAttribute('aria-checked') === 'true', 'failed storage write does not silently turn off PIN protection');
+    await page.evaluate(() => { Storage.prototype.setItem = window.originalStorageWrite; });
     await tap('[data-access="custom"]');
     for (const app of ['games','camera','photos','phone','school']) await tap(`[data-allow="${app}"]`);
     await tap('[data-allow="music"]');
@@ -149,6 +172,10 @@ const check = (condition, message) => { assert.ok(condition, message); console.l
       await page.waitForTimeout(800); await context.setOffline(true); await reload(); await page.waitForFunction(() => window.__toyPhone);
       check(await visible('#school'), 'cached offline launch preserves School-only policy');
     }
+    await context.setOffline(false);
+    await page.evaluate(() => { const p=JSON.parse(localStorage.getItem('toyphone.access')); p.v=1; delete p.pinEnabled; p.attempts=0; p.until=0; localStorage.setItem('toyphone.access',JSON.stringify(p)); });
+    await reload(); await page.waitForFunction(() => window.__toyPhone); await hold();
+    check(await visible('#parentGate') && !(await visible('#settings')), 'legacy configured PIN stays enabled when migrating to optional PIN');
     check(errors.length === 0, 'no JavaScript errors: ' + errors.join('; '));
     await context.close();
   } finally { await browser.close(); }

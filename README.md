@@ -128,13 +128,13 @@ Guided Access. It's one self-contained `index.html` (vanilla JS, no build step),
     tries rings on the plate show how many. One to three for the first three dinos, then up to five. T rex and
     drumsticks, long neck and leaves, triceratops and ferns, stegosaurus and strawberries, pterodactyl and fish. With
     *Help count* the rings are there from the start and the dino eats as soon as they're filled.
-  - *Animal Delivery*: following directions. An animal brings something and the voice says where it goes: "Put the
-    apple under the tree!" Drag it there (or tap a glowing spot). It starts with in the box or on the table, adds under
-    the table after three right (on and under at the same table), then under the tree and next to the box after six;
-    each time the game opens it starts over. In the box, the thing sits down inside, peeking over the rim (there's no
-    "on the box": the box is open on top). A wrong spot is named ("That's on the table.") and the thing comes back; after two tries the right spot
-    glows. Ten things to deliver: an apple, a banana, a present, a star, an egg, a duck, a chick, a kitty, a frog and a
-    ball.
+  - *Animal Delivery*: a nine-stop route for vocabulary and following directions. The voice says "Put the apple
+    under the tree!" A single object starts the route; after three deliveries the child chooses the requested object
+    from three parcels, then drags it or taps its destination. In the box/on the table come first, then under the table,
+    then under the tree/next to the box in a mirrored garden. The speaker replays the instruction. Wrong objects and
+    destinations get gentle feedback and hints after two tries. Nine stars show route progress, followed by a present
+    and a play button for another route. No carrier animal sits beside the pickup. Objects: apple, banana, present,
+    star, egg and ball. Nothing is saved as learning evidence; quantities and attributes remain future work.
   - Parents get a page in settings: every Letter Path letter with its stars (tap one to hear its sound and lesson
     line, see its words and how to say the sound), In order or All open, and starting the path over; and ABC Snack's
     stage and the letters it has seen the child know, with a way to fix it at big letters, little letters or sounds.
@@ -341,14 +341,15 @@ top of the screen, which would leave a status-bar-high strip empty at the bottom
 
 ## Parent settings
 
-Hold the clock in the top-left corner for **3 seconds**. If you have set a parent PIN, enter it to open settings. A quick tap only wiggles the clock.
+Hold the clock in the top-left corner for **3 seconds**. If **Parent PIN** is On, enter it to open settings. A quick tap only wiggles the clock.
 
 ### App access and parent PIN
 
 - **School only:** launches directly into School; Home returns there. Phone, incoming calls, Games (including nested games), Camera, Photos, and Music are unavailable.
 - **Custom:** choose which of the six apps are available. At least one must remain available. Disabled sections are hidden and blocked at navigation entry points.
 - **Full phone:** all six apps are available, preserving the original experience.
-- Choosing School only or Custom first asks you to create and confirm a **four-digit PIN**. You can also choose **Set PIN** while using Full phone. Later, **Change PIN** is available inside unlocked parent settings.
+- **Parent PIN** is the first settings row and defaults to **Off**. School only and Custom work with just the hidden clock hold. Turn the switch **On** to create and confirm a four-digit PIN; **Change PIN** appears while protection is on. Canceling setup leaves it off.
+- Turn PIN protection **Off** inside unlocked settings to stop being asked. App restrictions remain in place. Its salted digest is kept locally so turning it back on can reuse the same PIN; turning it off clears failed-attempt delays. Existing configured PINs stay enabled when upgrading, until a parent switches them off.
 - Camera permissions are not requested while Camera is disabled, and motion only for what's allowed: the pretend camera (Camera allowed, *Move the phone*) or the tilt games (Games allowed, *Tilt and touch*). Neither is asked for in School only. Disabling Camera stops its stream; disabling Phone ends an active call.
 - Access choices and the PIN digest are saved locally. Closing/reopening and offline use preserve them. Safari and the home-screen app can have separate storage, so configure each copy you use.
 - Five incorrect PIN attempts cause a 30-second delay that survives reloading. Leaving settings, pressing Home, or backgrounding the app closes the parent session.
@@ -475,6 +476,7 @@ npm test           # iPhone portrait 390×844, landscape 844×390, and 390×664 
 npm run test:motion # Ball Trail and Star Flight: finger and tilt steering, hedges, star slots, rounds, motion permission, Touch only, three layouts
 npm run test:motion:webkit # the same motion checks in WebKit
 npm run test:parents # parent PIN, restrictions, camera/call shutdown, and offline persistence
+npm run test:delivery # object/location choices, nine-stop route, mirrored garden, and cleanup
 npm run test:parents:webkit # the same policy checks in WebKit (live camera tested in Chromium)
 npm run test:pages # the published site, served from a /KidPhone/ subfolder like GitHub Pages
 npm run sprites    # draws every sprite on screenshots/sprites.png
