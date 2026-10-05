@@ -57,8 +57,12 @@ const server=http.createServer((req,res)=>{
   const spreadFits=async()=>check(await page.locator('.dp-spread').evaluate(el=>{const r=el.getBoundingClientRect(),bs=[...el.querySelectorAll('button')].filter(b=>!b.classList.contains('gone')).map(b=>b.getBoundingClientRect());return bs.every(b=>b.width>=44&&b.top>=r.top&&b.left>=r.left&&b.right<=r.right&&b.bottom<=r.bottom)&&bs.every((b,i)=>bs.slice(i+1).every(c=>b.right<=c.left||c.right<=b.left||b.bottom<=c.top||c.bottom<=b.top));}),'Dino snacks fit without overlapping touch targets');
   await spreadFits();
   for(let round=0;round<3;round++){
-   const d=await state('dp');for(let i=0;i<d.want;i++)await tap('.dp-spread .dp-snack:not(.gone)');await tap('#dpFeed');await ready('dp');
+   const d=await state('dp');for(let i=0;i<d.want;i++)await tap('.dp-spread .dp-snack:not(.gone)');
+   if(round===2)await page.evaluate(()=>{window.savedRandom=Math.random;Math.random=()=>.999;});
+   await tap('#dpFeed');await ready('dp');
+   if(round===2)await page.evaluate(()=>{Math.random=window.savedRandom;delete window.savedRandom;});
   }
+  check((await state('dp')).want===5&&(await state('dp')).spread===8,'later round supports the largest quantity and eight separate choices');
   await spreadFits();await fits('dp');await page.screenshot({path:path.join(root,'tests/screenshots/play-dinos-later-'+label+'.png')});
   await hold();await tap('[data-settings-jump="settingsSchool"]');await tap('[data-count="help"]');await tap('#doneBtn');await ready('dp');check(await page.locator('#dpUndo').isHidden()&&await page.locator('#dpFeed').isHidden(),'changing counting mode restarts current lesson with appropriate controls');
   for(const [id,type] of [['numsnack','ns'],['dinopicnic','dp']]){await go(id);await ready(type);check(await page.locator('#'+type+'Undo').isHidden()&&await page.locator('#'+type+'Feed').isHidden(),'Help count keeps automatic feeding without manual take-back controls');await replay(type);}

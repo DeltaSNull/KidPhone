@@ -7854,7 +7854,7 @@ const DinoPicnic = (() => {
     spread.innerHTML = '';spread.style.setProperty('--rows',rows);
     cells.forEach((c, i) => {
       const b = document.createElement('button'); b.className = 'dp-snack art'; b.setAttribute('aria-label', cur.one); b.innerHTML = pic(cur.f);
-      const x = ((c % cols) + .5) / cols * 100 + (Math.random() - .5) * 20/cols, y = (Math.floor(c / cols) + .5) / rows * 100 + (Math.random() - .5) * 12/rows;
+      const x = ((c % cols) + .5) / cols * 100 + (Math.random() - .5) * 20/cols, y = (Math.floor(c / cols) + .5) / rows * 100 + (Math.random() - .5) * 10/rows;
       b.style.left = x + '%'; b.style.top = y + '%'; b.style.animationDelay = i*.05 + 's';
       tap(b, () => give(b), {bump:false});
       spread.appendChild(b);
