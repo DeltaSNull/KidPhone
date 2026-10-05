@@ -6,6 +6,15 @@ Read SCHOOL_ROADMAP.md first, then AGENTS.md. This is the agreed plan going forw
 
 - None claimed. Next untracked candidates: Today's Adventure (P3-01, P3-07, P3-08), Toddler Play Together (P3-03), Sorting Station, Pattern Train, Story Time, Feelings Friends (P4-01 to P4-04). Sound Safari (P3-05) waits on the letter sounds (T-04).
 
+## Current progress review — Codex, 2026-10-04 (America/Chicago)
+
+- Reviewed main `962721c`: 16 of 56 roadmap tasks checked complete (P1: 10, P2: 4, P3: 1, P4: 0, T: 1). Animal Delivery is partly complete; attributes and quantity remain open.
+- Latest main [CI run 37251734648](https://github.com/DeltaSNull/KidPhone/actions/runs/37251734648) passed all six test jobs and Deploy. No open PRs at review time. This review checked code and CI evidence; it did not repeat full suites or perform real-iPhone/family testing.
+- The `claude/wip-phase3` branch is an older WIP snapshot with divergent history. Main already contains the tested Dino Picnic/Delivery work and subsequent owner-feedback fixes. Do not merge that WIP snapshot blindly or restore its old sounds/on-the-box behavior.
+- Next priority: P2-14 + P3-01/P3-07/P3-08 — a short Today's Adventure with a teaching objective, guided practice, fresh example, clear ending, and a real-world action with an adult. Keep it untracked while tracking is deferred. Then P3-03, the dedicated toddler Play Together experience; Help count alone is not that experience.
+- Continue honoring the recorded hold on profiles/tracking and on lesson phonics until the owner approves the sounds. Do not implement profiles merely because an older handoff suggested them.
+- Documentation contradictions about play-time limits, School sounds, and Letter Path phonics were reconciled in this review. No app code changed.
+
 ## Owner's feedback, 2026-10-05
 
 - Letter Path uses letter names only until the sounds are right (T-04): "This is a. A is for apple!", "Which one starts with A?", "Which one is a?", "Yes! That's a!". `P_SAY.sound` and the 26 sound clips stay only for the parent page's *Hear the sound*. Don't bring sounds back into lessons until the owner says they're right.
@@ -21,7 +30,7 @@ Read SCHOOL_ROADMAP.md first, then AGENTS.md. This is the agreed plan going forw
 
 ## Owner's request, 2026-10-04: ABC Snack asks by letter name only
 
-- The letter sounds still don't sound right to the owner, so ABC Snack no longer asks for a sound ("Monkey wants /s/!"): the sound stage, the Sounds setting and those 234 voice clips are gone; a saved `lv: 2` or `abc: 'sound'` becomes little letters. Letter sounds remain only in the Letter Path lessons (and its parent page). Bring sounds back to ABC Snack only when the owner says the phonics audio is right (T-04).
+- The letter sounds still don't sound right to the owner, so ABC Snack no longer asks for a sound ("Monkey wants /s/!"): the sound stage, the Sounds setting and those 234 voice clips are gone; a saved `lv: 2` or `abc: 'sound'` becomes little letters. At that point sounds remained in Letter Path; the later owner feedback above removed them from its lessons too. They now remain only in the parent page for review. Bring sounds back to ABC Snack only when the owner says the phonics audio is right (T-04).
 
 ## Last batch: play time, School sounds, Phase 2 without tracking (done)
 
@@ -59,16 +68,18 @@ Read SCHOOL_ROADMAP.md first, then AGENTS.md. This is the agreed plan going forw
 - Final: every CI job passed on `b128461` ([run 37212605934](https://github.com/DeltaSNull/KidPhone/actions/runs/37212605934)): Chromium smoke in portrait, landscape and the short Safari view; Pages/offline and parent controls in Chromium and WebKit; WebKit iPhone smoke. Claude also ran the full Chromium smoke and Pages/offline suites locally on that commit: all passed. The same commit passed again on main in run #26 before deploying.
 - Still pending: T-09 real-iPhone checks of the PIN gate, School only and Custom (Safari and home-screen), and family usability.
 
-## Next batch (deferred: progress tracking, see above)
+## Deferred tracking work
 
-Start P1-10, P1-11, and P1-12: separate learner profiles, untracked Together mode, and preservation of legacy shared progress. ABC Snack currently captures its progress object inside its closure and Letter Path does the same; both need deliberate profile switching/reset/loading. Do not simply rename storage keys and accidentally retain the other child's in-memory records. Keep private child details and observations off GitHub.
+P1-10 to P1-12 (profiles, Together progress attribution, legacy migration), the skill model/learning records, and the parent dashboard remain on hold per the owner's decision while testing. Resume only when the owner changes that decision.
 
-Then finish P1-08 (session ending) and P1-09 (lesson/effect audio controls), followed by Phase 2. Leave the roadmap as the source of truth for all 56 items.
+If tracking resumes, ABC Snack and Letter Path each capture their progress object inside a closure. Profile switching must reload/reset in-memory state deliberately; changing storage keys alone can mix children's records. Keep private child observations off GitHub.
+
+P1-08 (play-time limits) and P1-09 (School effects/narration controls) are already implemented. Follow the Current progress review and roadmap for the next active work.
 
 ## Explicitly unfinished / limitations
 
-- No individual profiles, Together learning mode, migration, session limits, or separate lesson/effect audio controls yet.
-- Learning scores, tracing skip, lesson progression, and activities are unchanged by this batch. No new lesson narration needs recording.
+- No individual profiles, dedicated toddler Play Together learning journey, or legacy-progress migration yet. Play-time limits and separate School effect/narration controls are implemented.
+- Shared letter statistics, stars, and completion-based progression still exist; they should not be treated as proof of independent learning. New counting/Delivery activities are implemented, but guided lesson structure and offline follow-through remain open. Audio assets must be regenerated and checked when lesson wording changes.
 - Parent policy is still inside the single-file app; gradual module extraction (T-01) remains future work.
 - PIN is a toddler-facing settings gate, not device security or a server account. Clearing website storage resets it and may erase progress/photos; README explains targeted vs full recovery.
 - Policy is stored per browser/home-screen storage. Configure the copy handed to the child; there is no cloud sync.

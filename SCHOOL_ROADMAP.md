@@ -2,7 +2,7 @@
 
 Created: 2026-10-04  
 Review baseline: `413fbb1c45b559d260f58ec98fa59a0279c4e26f`  
-Status: Phase 1 in progress — parent access controls merged and deployed ([PR #2](https://github.com/DeltaSNull/KidPhone/pull/2)); profiles, session limits, and audio controls remain open.
+Status: Parent access controls, play-time limits, and School sound controls deployed. Counting improvements and Dino Picnic are implemented; Animal Delivery is partly implemented. Profiles and learning-progress tracking are deferred. Latest verified main: `962721c` ([passing CI and deployment](https://github.com/DeltaSNull/KidPhone/actions/runs/37251734648)).
 
 **Continuing with either model? Read [HANDOFF.md](HANDOFF.md) and [AGENTS.md](AGENTS.md) before editing.**
 
@@ -68,7 +68,7 @@ Acceptance: hints, retries, skipped tracing, demonstrations, and joint play cann
 - [ ] **P3-03 — Toddler Play Together:** Offer adult-guided naming, pointing, sound imitation, familiar-object matching, one/more, in/out, open/closed, clapping, waving, and turn-taking. Do not present this as a smaller preschool test.
 - [x] **P3-04 — Dino Picnic:** Reuse animal/food art for “give three snacks”; allow adding/removing snacks and choosing Feed. Vary quantities and arrangements; provide a simpler adult-guided toddler version. **Done — Claude: Dino Picnic. Snacks scattered on the blanket, tapped onto the plate in a jumble (no boxes), take-back, a check to feed; quantities 1–3 then 1–5 with shuffled arrangements; Help count shows rings and feeds when full (the adult-guided toddler version). Smoke tests (portrait, landscape, Safari bars) pass locally and in CI before deploying; family trial pending (P3-09).**
 - [ ] **P3-05 — Sound Safari:** Extend the listening-based ABC Snack approach to picture and letter choices with separate sound and letter-name objectives.
-- [ ] **P3-06 — Animal Delivery:** Teach directions and vocabulary, starting with “put the apple under the tree,” then combining attributes and quantity when ready. Include simple toddler in/out activities. **Partly done — Claude: Animal Delivery. "Put the apple under the tree": in and on first (the box, a simple toddler start), then on/under the table, then under the tree and next to the box; drag or tap a spot; wrong spots named, the right one glows after two tries. Combining attributes and quantity is still to come. Smoke tests (portrait, landscape, Safari bars) pass locally and in CI before deploying; family trial pending (P3-09).**
+- [ ] **P3-06 — Animal Delivery:** Teach directions and vocabulary, starting with “put the apple under the tree,” then combining attributes and quantity when ready. Include simple toddler in/out activities. **Partly done — Claude: Animal Delivery. "Put the apple under the tree": in the box and on the table first (a simple toddler start), then under the table, then under the tree and next to the box; drag or tap a spot; wrong spots named, the right one glows after two tries. Combining attributes and quantity is still to come. Smoke tests (portrait, landscape, Safari bars) pass locally and in CI before deploying; family trial pending (P3-09).**
 - [ ] **P3-07 — Session structure:** Give each adventure a clear beginning and ending, with a manageable mix of review and new material rather than endless auto-advancement.
 - [ ] **P3-08 — Offline follow-through:** End with a related action such as bringing three toy animals, finding an object, or following a spoken direction with a parent.
 - [ ] **P3-09 — First family trial:** Observe each learner using the appropriate experience. Record usability and teaching changes needed without publishing private child observations in the repository.
@@ -113,6 +113,7 @@ Use these as curriculum/design references, not as claims that app scores diagnos
 
 | Date | Change | Evidence |
 | --- | --- | --- |
+| 2026-10-04 | Codex progress review: 16/56 tasks complete, Animal Delivery partial, tracking/profile work deferred. Reconciled stale handoff/header text; next priority is untracked guided adventures and adult follow-through. No app code changed. | Main `962721c`; [passing test and deployment run](https://github.com/DeltaSNull/KidPhone/actions/runs/37251734648); [handoff](HANDOFF.md) |
 | 2026-10-05 | Owner's feedback: the Letter Path uses letter names only until the sounds are right (T-04); Animal Delivery drops "on the box" (an open box made on and in look the same). | [Handoff](HANDOFF.md) |
 | 2026-10-04 | Claude: Dino Picnic (P3-04) and Animal Delivery (P3-06); the School menu became a picture grid for seven games. | Smoke tests in three layouts; CI on main before deploying |
 | 2026-10-04 | Owner's request: ABC Snack asks by letter name only until the letter sounds are right (T-04); the sounds stage and Sounds setting are removed. | [Handoff](HANDOFF.md) |
