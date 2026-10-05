@@ -36,7 +36,7 @@ const server=http.createServer((req,res)=>{const file=path.join(ROOT,new URL(req
    const rect=await board.boundingBox();assert.ok(rect.width>120&&rect.height>120);
    assert.ok(rect.y+rect.height<=viewport.height,'board fits');
    await advance(700);await click('#balltrail [data-motion-tilt]');await sensor(35,0);await sensor(35,18);await advance(350);
-   assert.ok((await state()).x>18,'tilt moves ball right');
+   assert.ok((await state()).x>18,'tilt moves ball right: '+JSON.stringify(await page.evaluate(()=>({state:window.__toyPhone.motionGames(),permissionCount:window.permissionCount,note:document.querySelector('#balltrail .motion-note').textContent,hidden:document.hidden,settings:document.querySelector('#settings').hidden,time:performance.now()}))));
    for(let i=0;i<5;i++){await sensor(35,18);await advance(300);}
    assert.ok((await state()).x<27,'hedge blocks ball');
    await page.locator('#balltrail [data-motion-center]').dispatchEvent('pointerdown');
