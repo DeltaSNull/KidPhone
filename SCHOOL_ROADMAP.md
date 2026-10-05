@@ -14,6 +14,8 @@ The owner requested two regular games on 2026-10-05. This is separate from the S
 - [x] **G-02 — Star Flight:** fly the parrot to drifting stars by finger or tilt; five stars is a cheer, misses come round again. Chromium checks verified (WebKit in CI).
 - [x] **G-03 — Shared controls:** no buttons for the kids; motion only after a grown-up allows it (getting-ready card or the *Tilt games* setting), never asked from a game; re-centers on lift; turns with the screen; Touch only setting; cleanup on leaving.
 - [ ] **G-04 — Validation:** browser checks pass (motion suite in Chromium and WebKit, three layouts). Real-iPhone and family playtest still pending; tilt speed may need tuning.
+- [x] **G-05 — Ball Trail smooth rolling:** continuous steering, shaded pixel sphere rolling on both travel axes, stable wall collisions and no rotation while stopped. **Implemented on `codex/motion-polish`; Chromium playthrough verified in three layouts. CI/release tracked in the branch PR; real-phone tuning stays under G-04.**
+- [x] **G-06 — Star Flight animal-food progression:** six flying/ground animal stages, three difficulty tiers, longer matching-food goals, simple wing/walking animation, gentle wrong-food feedback, visual goal and next-animal cue. **Implemented; all six stages completed in Chromium in three layouts. Existing recordings and parent permission policy retained. CI/release tracked in the branch PR.**
 
 ## Goal
 
