@@ -13,7 +13,7 @@ The owner requested two regular games on 2026-10-05. This is separate from the S
 - [x] **G-01 — Ball Trail:** tilt/touch maze, forgiving collisions, clear ending. Implemented on `codex/motion-games`; Chromium playthrough verified.
 - [x] **G-02 — Star Flight:** tilt/touch star-catching game, five-star ending, no failure penalty. Implemented; Chromium playthrough verified.
 - [x] **G-03 — Shared controls:** permission only on an explicit tap; calibration, rotation, stale-sensor fallback, navigation cleanup, Games access policy. Implemented; Chromium checks verified.
-- [ ] **G-04 — Validation:** browser checks and real-iPhone/family playtest. Chromium motion checks pass in three layouts; CI WebKit and real-device/family testing remain pending.
+- [ ] **G-04 — Validation:** browser checks and real-iPhone/family playtest. Chromium and WebKit motion checks pass in three layouts ([run 37255019328](https://github.com/DeltaSNull/KidPhone/actions/runs/37255019328)). Publication awaits the WebKit parent-test reload-race fix; real-device/family testing remains pending.
 
 ## Goal
 
