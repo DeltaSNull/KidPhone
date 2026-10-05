@@ -25,13 +25,12 @@ const check = (condition, message) => { assert.ok(condition, message); console.l
     await context.route('https://fonts.gstatic.com/**', r => r.abort());
     await context.route('**/assets/family/family.json', r => r.fulfill({json:{contacts:[]}}));
     const page = await context.newPage(); page.on('pageerror', e => errors.push(e.message));
-    // Reloading while voice clips are still downloading makes WebKit report each cut-off download as a misleading
-    // "access control checks" error (see tests/pages.cjs). Let them finish before every reload instead of ignoring errors.
-    let voiceLoads = 0;
-    const isVoice = r => r.url().includes('/assets/voice/');
-    page.on('request', r => { if (isVoice(r)) voiceLoads++; });
-    ['requestfinished', 'requestfailed'].forEach(ev => page.on(ev, r => { if (isVoice(r)) voiceLoads = Math.max(0, voiceLoads - 1); }));
-    const reload = async () => { for (let i = 0; i < 80 && voiceLoads > 0; i++) await page.waitForTimeout(100); await page.reload(); };
+    // These checks don't use the recorded voice, so it stays off: after the first touch the toy fetches its clips in the
+    // background, and WebKit reports every download a reload cuts off as an "access control checks" page error (see
+    // tests/pages.cjs). Waiting for the downloads to finish took long enough to outlast the 30-second PIN cooldown.
+    // Without voice.json the toy speaks as it does from a file:// page, and nothing is downloading when a test reloads.
+    await context.route('**/assets/voice/voice.json', r => r.fulfill({status:404, body:''}));
+    const reload = () => page.reload();
     await page.addInitScript(() => {
       // Only seed once; reload assertions must exercise persisted application writes.
       if (!localStorage.getItem('toyphone.settings')) localStorage.setItem('toyphone.settings', JSON.stringify({incoming:false, camera:'pretend', look:'drag', silent:false}));
