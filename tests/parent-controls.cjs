@@ -48,8 +48,11 @@ const check = (condition, message) => { assert.ok(condition, message); console.l
     const waitVisible = id => page.locator(id).waitFor({state:'visible'});
     const pin = async digits => { for (const digit of digits) await tap(`[data-pin="${digit}"]`); };
     const hold = async () => {
+      // Keep holding until the PIN gate or settings opens, like a parent would: the page's 3-second timer can fire
+      // late on a busy runner, and letting go at a fixed 3.1 s then cancels the hold.
       await page.locator('#clock').dispatchEvent('pointerdown', {pointerId:1});
-      await page.waitForTimeout(3100);
+      await page.waitForTimeout(2900);
+      await page.waitForFunction(() => !document.getElementById('parentGate').hidden || !document.getElementById('settings').hidden, null, {timeout:10000});
       await page.locator('#clock').dispatchEvent('pointerup', {pointerId:1});
     };
     const unlock = async digits => { await hold(); await waitVisible('#parentGate'); await pin(digits); try { await waitVisible('#settings'); } catch(e) { console.log('PIN gate state:', await page.locator('#pinMessage').textContent(), await page.locator('#pinDots').textContent()); throw e; } };
