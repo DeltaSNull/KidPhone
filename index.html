@@ -112,7 +112,7 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img{image-rendering:auto}
 .tab.on{--fr:var(--f-sun)}
 .tab .px{width:auto; height:min(46px, 70%); aspect-ratio:1; margin-top:-4px}   /* centered on the face (the frame's lip and shadow sit below it) */
 .pane{flex:1; min-height:0; min-width:0; position:relative}
-.round{width:96px; height:96px; display:grid; place-items:center; flex:none}
+.round{width:96px; height:96px; display:grid; place-items:center; flex:none; --disc:var(--d-paper)}
 .round .px{width:50%; height:50%; margin-top:-6%}
 .word{
   position:absolute; left:50%; top:4%; translate:-50% 0; color:var(--ink); font-size:clamp(18px,4.6vw,26px);
@@ -708,7 +708,8 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img{image-rendering:auto}
 @media (orientation:landscape){ .ad-tray{flex-direction:column; padding:10px 14px 10px 6px} }
 .ad-route{position:absolute; top:20px; left:84px; right:80px; display:flex; gap:4px; justify-content:center; pointer-events:none; z-index:5}
 .ad-route .px{width:18px; height:18px; opacity:.22} .ad-route .done .px{opacity:1}
-.ad-replay{position:absolute; top:8px; right:8px; width:64px; height:64px; z-index:5}
+.ad-replay{position:absolute; top:8px; right:8px; width:64px; height:64px; z-index:5; --disc:var(--d-berry)}
+#adAgain{--disc:var(--d-go)}
 .ad-parcel.selected{border-image-source:var(--f-lit)} .ad-parcel.hint{animation:st-hint 1.1s ease-in-out infinite}
 .ad-finish{position:absolute; inset:0; z-index:6; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:24px; background:rgba(234,249,221,.94)}
 .ad-finish .art{width:150px; height:150px} .ad-finish .art .px{width:100%; height:100%} .ad-finish .round{width:80px; height:80px}
@@ -889,6 +890,11 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img{image-rendering:auto}
   padding:8px 10px; font-weight:500; font-size:17px; -webkit-user-select:none; user-select:none}
 .shead{position:sticky; top:-8px; z-index:1; display:flex; align-items:center; justify-content:space-between; gap:12px; margin:-8px -10px 0; padding:8px 10px 8px; background:#FFFDF6}
 .sheet h2{margin:0; font-size:24px; font-weight:700}
+#settings .shead{display:grid; grid-template-columns:minmax(0,1fr) auto}
+#settings h2{font-size:clamp(19px,5.2vw,24px)}
+.snav{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:4px; width:100%; grid-column:1/-1}
+.snav .sbtn{min-width:0; min-height:44px; font-size:15px; padding:0 2px}
+#clock:focus-visible{outline:3px solid var(--ink); outline-offset:-3px}
 .srow{display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px 12px; padding:10px 0; border-top:2px dashed rgba(59,43,32,.14)}
 .srow > span{font-weight:700}
 .seg{display:flex; gap:6px; flex-wrap:wrap}
@@ -1244,10 +1250,11 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img{image-rendering:auto}
     </section>
 
     <!-- PARENT SETTINGS (hold the clock for 3 seconds, then enter the configured PIN) -->
-    <section id="settings" hidden aria-label="Parent settings">
+    <section id="settings" hidden role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
       <div class="sheet">
-        <div class="shead"><h2>Parent settings</h2><button class="sbtn done" id="doneBtn">Done</button></div>
-        <div class="srow"><span>Parent PIN</span><button class="sbtn" id="parentPinToggle" role="switch" aria-checked="false">Off</button><button class="sbtn" id="parentPinBtn" hidden>Change PIN</button>
+        <div class="shead"><h2 id="settingsTitle">Parent settings</h2><button class="sbtn done" id="doneBtn">Done</button>
+          <nav class="snav" aria-label="Jump to settings"><button class="sbtn" data-settings-jump="settingsAccess">Access</button><button class="sbtn" data-settings-jump="settingsSound">Sound</button><button class="sbtn" data-settings-jump="settingsSchool">School</button><button class="sbtn" data-settings-jump="settingsTools">Tools</button></nav></div>
+        <div class="srow" id="settingsAccess"><span>Parent PIN</span><button class="sbtn" id="parentPinToggle" role="switch" aria-label="Parent PIN protection" aria-checked="false">Off</button><button class="sbtn" id="parentPinBtn" hidden>Change PIN</button>
           <span class="vhint" id="parentPinNote">Off by default. Hold the clock to open settings. Turn on to also require a four-digit PIN. App restrictions work either way.</span></div>
         <div class="srow"><span>App access</span>
           <div class="seg"><button class="sbtn" data-access="school">School only</button><button class="sbtn" data-access="custom">Custom</button><button class="sbtn" data-access="full">Full phone</button></div>
@@ -1262,7 +1269,7 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img{image-rendering:auto}
           <button class="sbtn" id="playReset">Start a new session</button></div>
         <div class="srow"><span>Incoming calls</span>
           <div class="seg"><button class="sbtn" data-incoming="1">On</button><button class="sbtn" data-incoming="0">Off</button></div></div>
-        <div class="srow"><span>Volume</span><div class="seg" id="volSeg"></div></div>
+        <div class="srow" id="settingsSound"><span>Volume</span><div class="seg" id="volSeg"></div></div>
         <div class="srow"><span>Sound when the phone is on silent</span>
           <div class="seg"><button class="sbtn" data-silent="1">On</button><button class="sbtn" data-silent="0">Off</button></div>
           <span class="vhint">On: the toy plays even with the ring/silent switch set to silent. Off: it follows the switch.</span></div>
@@ -1278,7 +1285,7 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img{image-rendering:auto}
           <div class="seg"><button class="sbtn" data-tilt="on">Tilt and touch</button><button class="sbtn" data-tilt="off">Touch only</button></div>
           <span class="vhint">Ball Trail and Star Flight: tip the phone to steer, or hold a finger where to go. Safari asks once to allow motion: tap Tilt and touch here to answer it (or Start on the getting-ready card), so the question never pops up during play.</span>
           <span class="vhint" id="tiltNote"></span></div>
-        <div class="srow"><span>ABC Snack</span>
+        <div class="srow" id="settingsSchool"><span>ABC Snack</span>
           <div class="seg"><button class="sbtn" data-abc="auto">Grows</button><button class="sbtn" data-abc="big">Big letters</button><button class="sbtn" data-abc="little">Little letters</button></div>
           <span class="vhint">The animal asks for a letter out loud and the child finds it (the letter is never shown first). Grows: big letters by name until the child gets eight in a row, then mostly little letters. The animals always ask by the letter's name ("Puppy wants an S!", "Frog wants a little b!"), never its sound. Letters come a few at a time, A to Z like the Letter Path.</span>
           <span class="vhint" id="abcNote"></span></div>
@@ -1302,7 +1309,7 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img{image-rendering:auto}
           <span class="vhint">Animal sounds, crunches and cheers in the School games. The lesson voice always speaks, so a question the child has to listen to never goes silent.</span></div>
         <div class="srow"><span>Voice</span><span class="vhint">Where the talking voice speaks. Animal sounds and music always play (in School, as set above).</span></div>
         <div class="vlist" id="voiceList"></div>
-        <div class="srow"><span id="photoCount">Photos</span><button class="sbtn danger" id="clearBtn">Clear photos</button></div>
+        <div class="srow" id="settingsTools"><span id="photoCount">Photos</span><button class="sbtn danger" id="clearBtn">Clear photos</button></div>
         <div class="confirm" id="confirmClear" hidden>
           <span>Delete every photo?</span>
           <button class="sbtn danger" id="yesClear">Yes, delete</button>
@@ -5193,6 +5200,7 @@ function playLine(clips, who, text){
 }
 const pitchOf = who => typeof who === 'number' && who ? who : who && who.p ? who.p : 1.15;
 function speakLine(text, who){
+  if(document.visibilityState!=='visible')return;
   stopVoice(); try{ speechSynthesis.cancel(); }catch(e){}
   VB.log.push(normLine(text)); if (VB.log.length > 300) VB.log.shift();
   const clips = lineClips(text, who);
@@ -5235,25 +5243,41 @@ let wake = null;
 async function keepAwake(){ try{ if (!wake && navigator.wakeLock){ wake = await navigator.wakeLock.request('screen'); wake.addEventListener('release', () => wake = null); } }catch(e){} }
 
 /* ---------- Tap helpers ---------- */
+/* Native buttons already produce a detail=0 click for keyboard/assistive activation. Pointer taps are handled
+   separately, so their click must not trigger a second answer. Non-native replay controls get a keyboard path too. */
+function keyboardTap(el, fn){
+  el.addEventListener('click', e => { if(e.detail===0 && !e.pointerType && !el.disabled){ e.preventDefault(); fn(e); } });
+  if(el.tagName!=='BUTTON' && el.getAttribute('role')==='button'){
+    el.tabIndex=0;
+    el.addEventListener('keydown', e => { if(!e.repeat && (e.key==='Enter'||e.key===' ')){e.preventDefault();fn(e);} });
+  }
+}
 /* pointerdown answers right away; a palm-mash on one target counts as one tap per ~110ms */
 function tap(el, fn, {throttle=110, bump=true} = {}){
-  let last = 0;
-  el.addEventListener('pointerdown', e => {
+  if(el.closest('.sheet')) return tapInScroll(el,fn,{throttle,bump});
+  let last = -Infinity;
+  const fire = e => {
+    if(el.disabled)return;
     e.preventDefault(); keepAwake();
     const now = performance.now();
     if (now - last < throttle) return;
     last = now;
     if (bump) retrigger(el, 'bump');
     fn(e);
-  });
+  };
+  el.addEventListener('pointerdown',fire);
+  keyboardTap(el,fire);
 }
 /* For things inside a scroll list: feedback on down, action on lift (so a scroll is not a tap). */
-function tapInScroll(el, fn){
-  let down = null;
-  el.addEventListener('pointerdown', e => { keepAwake(); down = {id:e.pointerId, x:e.clientX, y:e.clientY}; retrigger(el, 'bump'); FX.pop(); });
+function tapInScroll(el, fn, {throttle=110,bump=true} = {}){
+  let down = null, last=-Infinity;
+  const fire=e=>{if(el.disabled || performance.now()-last<throttle)return; last=performance.now();keepAwake();fn(e);};
+  el.addEventListener('pointerdown', e => { if(el.disabled)return; keepAwake(); down = {id:e.pointerId, x:e.clientX, y:e.clientY}; if(bump)retrigger(el, 'bump'); });
   el.addEventListener('pointermove', e => { if (down && e.pointerId === down.id && Math.hypot(e.clientX-down.x, e.clientY-down.y) > 14) down = null; });
-  el.addEventListener('pointerup', e => { if (down && e.pointerId === down.id){ down = null; fn(e); } });
+  el.addEventListener('pointerup', e => { if(down && e.pointerId===down.id){ const d=down;down=null;if(Math.hypot(e.clientX-d.x,e.clientY-d.y)<=14)fire(e); } });
   el.addEventListener('pointercancel', () => down = null);
+  el.closest('.sheet, .pgrid')?.addEventListener('scroll',()=>down=null,{passive:true});
+  keyboardTap(el,fire);
 }
 /* Instruments: tap a bar or key, or slide a finger across them (works with many fingers at once). */
 function playField(box, sel, hit){
@@ -7443,8 +7467,8 @@ function renderPathNote(){
   const p = LetterPath.progress();
   if (!g.children.length) PATH.forEach(l => {
     const b = document.createElement('button'); b.className = 'sbtn lp-chip'; b.dataset.pl = l; b.setAttribute('aria-label', l);
-    tap(b, () => { pathSel = pathSel === l ? null : l; FX.pop(); renderPathNote(); if (pathSel) say(P_SAY.meet(l)); });
     g.appendChild(b);
+    tapInScroll(b, () => { pathSel = pathSel === l ? null : l; FX.pop(); renderPathNote(); if (pathSel) say(P_SAY.meet(l)); });
   });
   [...g.children].forEach(b => { const l = b.dataset.pl, st = p.stars[l] || 0; b.innerHTML = glyphImg(l) + starRow(st, 'lp-cs'); b.classList.toggle('on', l === pathSel); });
   $('#pathNote').textContent = `Learned: ${p.learned.length} of 26.` + (p.next ? ` Next up: ${p.next}.` : ' Every letter done!');
@@ -8832,11 +8856,16 @@ const PaintPals = (() => {
 const clock = $('#clock');
 let holdT = 0, holdShow = 0;
 function clearHold(){ clearTimeout(holdT); clearTimeout(holdShow); clock.classList.remove('holding'); }
-clock.addEventListener('pointerdown', e => {
+function startClockHold(e){
   e.preventDefault(); clearHold(); retrigger(clock, 'wig'); FX.tick();
   holdShow = setTimeout(() => clock.classList.add('holding'), 600);
   holdT = setTimeout(() => { clearHold(); requestSettings(); }, 3000);
-});
+}
+clock.addEventListener('pointerdown',startClockHold);
+clock.setAttribute('role','button');clock.setAttribute('aria-label','Time; hold to open parent settings');clock.tabIndex=0;
+clock.addEventListener('keydown',e=>{if(!e.repeat && (e.key==='Enter'||e.key===' '))startClockHold(e);});
+clock.addEventListener('keyup',e=>{if(e.key==='Enter'||e.key===' ')clearHold();});
+clock.addEventListener('blur',clearHold);
 ['pointerup','pointercancel','pointerleave'].forEach(t => clock.addEventListener(t, clearHold));
 let gateMode = 'unlock', gateDigits = '', gateFirst = '', gateBusy = false, gateEpoch = 0, gateAfter = null;
 async function pinHash(pin, salt){
@@ -9016,8 +9045,8 @@ VOICE.forEach(v => {
   b.innerHTML = `<span class="vbox">${ART.check}</span><span class="vtxt"><b></b><small></small></span>`;
   b.querySelector('b').textContent = v.t; b.querySelector('small').textContent = v.d;
   if (v.need){ b.disabled = true; b.setAttribute('aria-disabled', 'true'); }
-  tapInScroll(b, () => { if (v.need) return; settings.voice[v.k] = !settings.voice[v.k]; saveSettings(); renderSettings(); });
   $('#voiceList').appendChild(b);
+  tapInScroll(b, () => { if (v.need) return; settings.voice[v.k] = !settings.voice[v.k]; saveSettings(); renderSettings(); });
 });
 function renderSettings(){
   $$('[data-voice]').forEach(b => { const on = voiceOn(b.dataset.voice); b.classList.toggle('on', on); b.setAttribute('aria-checked', String(on)); });
@@ -9030,8 +9059,9 @@ function renderSettings(){
   renderCamNote(); renderLookNote(); renderTiltNote(); renderAbcNote(); renderPathNote();
   const n = Photos.list.length; $('#photoCount').textContent = n + (n === 1 ? ' photo' : ' photos');
   $('#clearBtn').disabled = !n;
+  $$('[data-schoolfx],[data-count],[data-incoming],[data-silent],[data-vol],[data-camera],[data-look],[data-tilt],[data-abc],[data-path],[data-play]').forEach(b=>b.setAttribute('aria-pressed',String(b.classList.contains('on'))));
 }
-function openSettings(){ renderAccess(); hush(); $('#confirmClear').hidden = true; $('#confirmPath').hidden = true; renderSettings(); pickVoice(); showSound(); $('#settings').hidden = false; FX.cheer(); }
+function openSettings(){ renderAccess(); hush(); $('#confirmClear').hidden = true; $('#confirmPath').hidden = true; renderSettings(); pickVoice(); showSound(); $('#settings').hidden = false; $('#settings .sheet').scrollTop=0; $('#doneBtn').focus({preventScroll:true}); FX.cheer(); }
 /* is the sound engine running? (the animals, drums and ringtones all come from it; the voice doesn't) */
 function showSound(){
   const n = $('#soundNote'); if (!n) return;
@@ -9041,7 +9071,18 @@ function showSound(){
       : ' It follows the ring/silent switch: if it\'s quiet, flip the switch to ring.')
     + (rebuilds ? ` (Restarted ${rebuilds} time${rebuilds > 1 ? 's' : ''}.)` : '');
 }
-function closeSettings(){ cancelGate(); $('#settings').hidden = true; if (current === 'letterpath') LetterPath.refresh(); }
+function closeSettings(){ const opened=!$('#settings').hidden||!$('#parentGate').hidden;cancelGate(); $('#settings').hidden = true; if (current === 'letterpath') LetterPath.refresh(); if(opened && document.visibilityState==='visible')clock.focus({preventScroll:true}); }
+$$('[data-settings-jump]').forEach(b=>tapInScroll(b,()=>{
+  const sheet=$('#settings .sheet'), target=$('#'+b.dataset.settingsJump), header=$('#settings .shead');
+  sheet.scrollTop += target.getBoundingClientRect().top-header.getBoundingClientRect().bottom-8;
+}));
+$('#settings').addEventListener('keydown',e=>{
+  if(e.key==='Escape'){e.preventDefault();closeSettings();return;}
+  if(e.key!=='Tab')return;
+  const bs=$$('button', $('#settings')).filter(b=>!b.disabled&&b.getClientRects().length),i=bs.indexOf(document.activeElement);
+  if(e.shiftKey && i<=0){e.preventDefault();bs.at(-1)?.focus();}
+  else if(!e.shiftKey && i===bs.length-1){e.preventDefault();bs[0]?.focus();}
+});
 $$('[data-incoming]').forEach(b => tap(b, () => { settings.incoming = b.dataset.incoming === '1'; saveSettings(); renderSettings(); scheduleIncoming(); }));
 $$('[data-abc]').forEach(b => tap(b, () => { settings.abc = b.dataset.abc; saveSettings(); renderSettings(); FX.cheer(); }));
 $$('[data-count]').forEach(b => tap(b, () => { settings.count = b.dataset.count; saveSettings(); renderSettings(); FX.pop(); }));
@@ -9111,11 +9152,11 @@ let lastTouch = 0;
 document.addEventListener('touchend', e => { const now = Date.now(); if (now - lastTouch < 350 && !inScroll(e)) e.preventDefault(); lastTouch = now; }, {passive:false});
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible'){ keepAwake(); updateClock(); if (current === 'camera' && cam.mode !== 'safari') startReal(); if ((camMotion() && !AR.listening) || (tiltMotion() && AR.perm !== 'granted')) askMotion().then(() => { renderLookNote(); renderTiltNote(); }); }
-  else { closeSettings(); stopSong(); if (call){ stopCallSounds(); closeCall(); } closeStream(); stopFx(); }   // the camera never runs off screen
+  else { clearHold(); closeSettings(); hush(); stopSong(); if (call){ stopCallSounds(); closeCall(); } closeStream(); stopFx(); }   // the camera and narrator never run off screen
 });
 let resizeT = 0;
 window.addEventListener('resize', () => { clearTimeout(resizeT); resizeT = setTimeout(() => { fillScreen(); fitContacts(); if (current === 'camera'){ sizeCamera(); if (cam.mode !== 'safari'){ updateLookUI(); placeLenses(); } } if (!bgWatch) paintBackgrounds(); }, 120); });
-window.addEventListener('pagehide', () => closeStream());
+window.addEventListener('pagehide', () => {clearHold();hush();closeStream();});
 paintBackgrounds(); if (bgWatch) bgFor.forEach((fn, el) => bgWatch.observe(el));
 
 /* Offline after the first visit when self-hosted over HTTPS (artifacts and file:// skip this). */
