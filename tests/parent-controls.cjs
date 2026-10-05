@@ -25,25 +25,12 @@ const check = (condition, message) => { assert.ok(condition, message); console.l
     await context.route('https://fonts.gstatic.com/**', r => r.abort());
     await context.route('**/assets/family/family.json', r => r.fulfill({json:{contacts:[]}}));
     const page = await context.newPage(); page.on('pageerror', e => errors.push(e.message));
-    // Voice warming fetches in three lanes, with a 40 ms gap before each next clip.
-    // An instantaneous zero count can fall inside that gap. Reloading then interrupts the
-    // next batch and WebKit reports aborted clips as "access control checks" page errors.
-    // Require sustained voice-network quiet, and fail on timeout rather than reload anyway.
-    const voiceLoads = new Set();
-    let voiceActivity = Date.now();
-    const isVoice = r => r.url().includes('/assets/voice/');
-    page.on('request', r => { if (isVoice(r)){ voiceLoads.add(r); voiceActivity = Date.now(); } });
-    ['requestfinished', 'requestfailed'].forEach(ev => page.on(ev, r => {
-      if (isVoice(r)){ voiceLoads.delete(r); voiceActivity = Date.now(); }
-    }));
-    const voiceIdle = async () => {
-      const deadline = Date.now() + 60000;
-      while (voiceLoads.size || Date.now() - voiceActivity < 500){
-        assert.ok(Date.now() < deadline, 'voice downloads must settle before reloading');
-        await page.waitForTimeout(100);
-      }
-    };
-    const reload = async () => { await voiceIdle(); await page.reload(); };
+    // These checks don't use the recorded voice, so it stays off: after the first touch the toy fetches its clips in the
+    // background, and WebKit reports every download a reload cuts off as an "access control checks" page error (see
+    // tests/pages.cjs). Waiting for the downloads to finish took long enough to outlast the 30-second PIN cooldown.
+    // Without voice.json the toy speaks as it does from a file:// page, and nothing is downloading when a test reloads.
+    await context.route('**/assets/voice/voice.json', r => r.fulfill({status:404, body:''}));
+    const reload = () => page.reload();
     await page.addInitScript(() => {
       // Only seed once; reload assertions must exercise persisted application writes.
       if (!localStorage.getItem('toyphone.settings')) localStorage.setItem('toyphone.settings', JSON.stringify({incoming:false, camera:'pretend', look:'drag', silent:false}));
@@ -158,7 +145,7 @@ const check = (condition, message) => { assert.ok(condition, message); console.l
       const cached = await page.evaluate(async () => ({index:!!(await caches.match('index.html')), manifest:!!(await caches.match('manifest.webmanifest'))}));
       check(cached.index && cached.manifest, 'WebKit service worker cached the offline shell ' + JSON.stringify(cached));
     } else {
-      await voiceIdle(); await context.setOffline(true); await reload(); await page.waitForFunction(() => window.__toyPhone);
+      await page.waitForTimeout(800); await context.setOffline(true); await reload(); await page.waitForFunction(() => window.__toyPhone);
       check(await visible('#school'), 'cached offline launch preserves School-only policy');
     }
     check(errors.length === 0, 'no JavaScript errors: ' + errors.join('; '));
