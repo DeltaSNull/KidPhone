@@ -10,7 +10,7 @@
     "test:pages": "node tests/pages.cjs",
     "test:webkit": "node tests/webkit.cjs",
     "test:pages:webkit": "node tests/pages.cjs --webkit",
-    "test:ci": "npm test && npm run test:pages && npm run test:webkit && npm run test:pages:webkit && npm run test:parents && npm run test:parents:webkit && npm run test:motion && npm run test:motion:webkit && npm run test:delivery && npm run test:delivery:webkit && npm run test:refinement && npm run test:refinement:webkit",
+    "test:ci": "npm test && npm run test:pages && npm run test:webkit && npm run test:pages:webkit && npm run test:parents && npm run test:parents:webkit && npm run test:motion && npm run test:motion:webkit && npm run test:delivery && npm run test:delivery:webkit && npm run test:refinement && npm run test:refinement:webkit && npm run test:play-refinement && npm run test:play-refinement:webkit",
     "test:parents": "node tests/parent-controls.cjs",
     "test:parents:webkit": "node tests/parent-controls.cjs --webkit",
     "test:motion": "node tests/motion-games.cjs",
@@ -18,7 +18,9 @@
     "test:delivery": "node tests/delivery.cjs",
     "test:delivery:webkit": "node tests/delivery.cjs --webkit",
     "test:refinement": "node tests/refinement.cjs",
-    "test:refinement:webkit": "node tests/refinement.cjs --webkit"
+    "test:refinement:webkit": "node tests/refinement.cjs --webkit",
+    "test:play-refinement": "node tests/play-refinement.cjs",
+    "test:play-refinement:webkit": "node tests/play-refinement.cjs --webkit"
   },
   "devDependencies": {
     "@fontsource/pixelify-sans": "5.3.0",

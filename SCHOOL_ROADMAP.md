@@ -2,7 +2,7 @@
 
 Created: 2026-10-04  
 Review baseline: `413fbb1c45b559d260f58ec98fa59a0279c4e26f`  
-Status: Parent access controls, play-time limits, School sound controls and motion games deployed. Counting improvements and Dino Picnic are implemented; Animal Delivery is partly implemented. Profiles and learning-progress tracking are deferred. Latest verified main: `f0b0658` ([passing CI and deployment](https://github.com/DeltaSNull/KidPhone/actions/runs/37341705042)). Optional PIN and the expanded Delivery route are released in [PR #5](https://github.com/DeltaSNull/KidPhone/pull/5). Overall interaction refinement is underway on `codex/app-refinement`.
+Status: Parent access controls, play-time limits, School sound controls and motion games deployed. Counting improvements and Dino Picnic are implemented; Animal Delivery is partly implemented. Profiles and learning-progress tracking are deferred. Latest verified main: `6264166` ([passing CI and deployment](https://github.com/DeltaSNull/KidPhone/actions/runs/37385286207)). Optional PIN and the expanded Delivery route are released in [PR #5](https://github.com/DeltaSNull/KidPhone/pull/5). R-01 to R-03 are released in [PR #6](https://github.com/DeltaSNull/KidPhone/pull/6). Learning controls and photo navigation refinement is underway on `codex/play-refinement`.
 
 **Continuing with either model? Read [HANDOFF.md](HANDOFF.md) and [AGENTS.md](AGENTS.md) before editing.**
 
@@ -13,7 +13,11 @@ This batch follows the owner's request to use best judgment on overall refinemen
 - [x] **R-01 — Scroll-safe settings:** changes occur on a stationary finger lift; movement, cancellation or sheet scrolling cancels the change, including dynamic letter and voice controls. Normal child game taps retain their immediate response.
 - [x] **R-02 — Settings navigation and keyboard:** Access/Sound/School/Tools shortcuts; reopening starts at the PIN row; keyboard and assistive activation through the shared helpers; selected settings announce their state; Settings focus, Tab wrapping and Escape; keyboard clock hold preserves the three-second threshold.
 - [x] **R-03 — Visible controls and background cleanup:** round controls have a paper-button fallback; Delivery replay and restart have explicit colored buttons; background/pagehide cancels unfinished clock holds and narration; delayed prompts cannot restart narration while hidden.
-- [ ] **R-04 — Physical usability check:** verify Settings scrolling/shortcuts, assistive input, app switching and Delivery controls on the family's iPhone. Browser verification is recorded in HANDOFF.md and the branch PR. This batch supports P2-15 but does not complete its full accessibility review.
+- [ ] **R-04 — Physical usability check:** verify Settings scrolling/shortcuts, assistive input, app switching, question replay, quantity correction, photo browsing and Delivery controls on the family's iPhone. Browser verification is recorded in HANDOFF.md and the branch PR. This batch supports P2-15 but does not complete its full accessibility review.
+
+- [x] **R-05 — Clear question replay:** visible, consistent speakers in ABC Snack, 123 Snack and Dino Picnic; replay the current prompt without changing the answer/progress; disabled during busy phases. **Implemented — `codex/play-refinement`; focused Chromium checks passed in three layouts. CI/release tracked in branch PR; existing recordings only.**
+- [x] **R-06 — Clear quantity correction:** explicit take-one-back for independent counting; empty/busy state; Help count stays automatic; changed counting modes start an appropriate lesson; Dino snacks stay separated in later rounds. **Implemented — same branch; focused Chromium checks passed in three layouts. Old plate/box gestures retained; CI/release tracked in branch PR.**
+- [x] **R-07 — Photo browsing:** position counter, descriptive labels, keyboard browsing/Escape/focus, covered gallery inert, scroll cancellation for inserted thumbnails. **Implemented — same branch; focused Chromium checks passed in three layouts. Existing touch/swipe and storage preserved; CI/release tracked in branch PR.**
 
 ## Current owner-directed detour: regular motion games
 
@@ -134,6 +138,8 @@ Use these as curriculum/design references, not as claims that app scores diagnos
 
 | Date | Change | Evidence |
 | --- | --- | --- |
+| 2026-10-05 | Learning controls and photo browsing refinement R-05 to R-07 underway. | `codex/play-refinement`; [handoff](HANDOFF.md) |
+| 2026-10-05 | R-01 to R-03 released; all browser checks and deployment passed. | [PR #6](https://github.com/DeltaSNull/KidPhone/pull/6), main `6264166`, [run 37385286207](https://github.com/DeltaSNull/KidPhone/actions/runs/37385286207) |
 | 2026-10-05 | Overall refinement R-01 to R-03: scroll-safe settings, quick navigation/keyboard access, visible round controls and background narration cleanup. Physical usability R-04 remains open. | `codex/app-refinement`; [handoff](HANDOFF.md); branch PR is authoritative for checks/release |
 | 2026-10-05 | Optional PIN and expanded Animal Delivery released. | [PR #5](https://github.com/DeltaSNull/KidPhone/pull/5), main `f0b0658`, [passing deployment](https://github.com/DeltaSNull/KidPhone/actions/runs/37341705042) |
 | 2026-10-04 | Codex progress review: 16/56 tasks complete, Animal Delivery partial, tracking/profile work deferred. Reconciled stale handoff/header text; next priority is untracked guided adventures and adult follow-through. No app code changed. | Main `962721c`; [passing test and deployment run](https://github.com/DeltaSNull/KidPhone/actions/runs/37251734648); [handoff](HANDOFF.md) |
