@@ -24,7 +24,9 @@ const server=http.createServer((req,res)=>{const file=path.join(ROOT,new URL(req
    const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
    await page.goto(`http://127.0.0.1:${server.address().port}/`);await page.waitForFunction(()=>window.__toyPhone);
    await page.clock.install();
-   await page.evaluate(()=>Object.defineProperty(screen.orientation,'angle',{configurable:true,value:0}));
+   // Replace the orientation object: WebKit's native angle can ignore an own-property shadow.
+   await page.evaluate(()=>{window.motionOrientation={angle:0};Object.defineProperty(screen,'orientation',{configurable:true,get:()=>window.motionOrientation});});
+   assert.equal(await page.evaluate(()=>screen.orientation.angle),0);
    const go=async id=>{await page.evaluate(id=>window.__toyPhone.go(id),id);await page.clock.runFor(500);};
    const state=()=>page.evaluate(()=>window.__toyPhone.motionGames());
    const advance=ms=>page.clock.runFor(ms);
@@ -57,7 +59,7 @@ const server=http.createServer((req,res)=>{const file=path.join(ROOT,new URL(req
    assert.equal((await state()).score,5,'flight ends after five catches');assert.ok((await state()).done);
    await go('balltrail');await page.evaluate(()=>window.permissionResult='denied');await advance(700);await click('#balltrail [data-motion-tilt]');assert.equal((await state()).mode,'touch');
    await page.evaluate(()=>window.permissionResult='granted');await advance(700);await click('#balltrail [data-motion-tilt]');
-   await page.evaluate(()=>Object.defineProperty(screen.orientation,'angle',{configurable:true,value:90}));await sensor(35,0);await sensor(53,0);await advance(300);assert.ok((await state()).x>18,'landscape rotates tilt axes');
+   await page.evaluate(()=>window.motionOrientation.angle=90);assert.equal(await page.evaluate(()=>screen.orientation.angle),90);await sensor(35,0);await sensor(53,0);await advance(300);assert.ok((await state()).x>18,'landscape rotates tilt axes');
    await go('home');assert.equal((await state()).id,null);await sensor(20,40);assert.equal((await state()).listening,false);
    await go('balltrail');await page.evaluate(()=>window.permissionResult='pending');await advance(700);await click('#balltrail [data-motion-tilt]');await go('home');await page.evaluate(()=>window.resolveMotion('granted'));assert.equal((await state()).listening,false,'late permission cannot restart departed game');
    await go('games');await page.screenshot({animations:'disabled',path:`tests/screenshots/motion-menu-${viewport.width}.png`});
