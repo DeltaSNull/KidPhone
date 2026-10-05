@@ -4,7 +4,7 @@ Read SCHOOL_ROADMAP.md first, then AGENTS.md. This is the agreed plan going forw
 
 ## Active batch
 
-- Codex: owner requested a temporary return to regular Games. Branch `codex/motion-games`, [PR #3](https://github.com/DeltaSNull/KidPhone/pull/3): Ball Trail and Star Flight, motion/touch controls implemented; owner authorized merge and publication after checks pass. Codex is fixing the remaining WebKit parent-test reload race. Check this branch/PR before touching index.html. School work resumes after this batch.
+- Claude, 2026-10-05, on `codex/motion-games` ([PR #3](https://github.com/DeltaSNull/KidPhone/pull/3)): took over from Codex (usage limit) and is polishing Ball Trail and Star Flight before the owner-approved merge: no grown-up buttons on the kids' screen (touch always steers; tilt only after a grown-up allows motion, at the getting-ready card or the new *Tilt games* setting, so Safari never asks during play), spoken prompts, pixel frames and painted fields, bigger pieces, five star slots instead of a score, rounds that roll on by themselves. Don't touch index.html until this lands.
 - Next untracked School candidates: Today's Adventure (P3-01, P3-07, P3-08), Toddler Play Together (P3-03), Sorting Station, Pattern Train, Story Time, Feelings Friends (P4-01 to P4-04). Sound Safari (P3-05) waits on the letter sounds (T-04).
 
 ## Motion games batch — Codex, 2026-10-05
