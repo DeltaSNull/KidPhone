@@ -61,6 +61,7 @@ const check = (condition, message) => { assert.ok(condition, message); console.l
     check(await page.evaluate(() => JSON.parse(localStorage.getItem('toyphone.settings')).vol) === 3, 'volume still saves from the expanded settings sheet');
     await tap('[data-access="school"]'); await waitVisible('#parentGate');
     check(!(await visible('#settings')), 'enabling restrictions requires PIN setup first');
+    check(await page.locator('[data-pin="5"]').evaluate(el => /Press Start 2P/.test(getComputedStyle(el).fontFamily)) && await page.locator('[data-pin="Clear"]').evaluate(el => !/Press Start 2P/.test(getComputedStyle(el).fontFamily)), 'PIN digits use the 8-bit number font (5 never reads as S); Back and Clear stay in words');
     await pin('2580'); await pin('2581');
     check(/did not match/.test(await page.locator('#pinMessage').textContent()), 'mismatched confirmation does not set PIN');
     check(await page.evaluate(() => !JSON.parse(localStorage.getItem('toyphone.access') || '{}').pin), 'mismatch leaves stored PIN unset');
@@ -118,6 +119,7 @@ const check = (condition, message) => { assert.ok(condition, message); console.l
     }
     await page.setViewportSize({width:844,height:390}); await hold();
     check(await page.locator('[data-pin="0"]').evaluate(el => { const r=el.getBoundingClientRect(), s=el.closest('.sheet').getBoundingClientRect(); return r.top >= s.top && r.bottom <= s.bottom; }), 'entire PIN keypad fits in landscape without scrolling');
+    check(await page.locator('#pinKeys .sbtn').evaluateAll(keys => keys.every(k => k.scrollWidth <= k.clientWidth)), 'every PIN key label fits inside its key in landscape');
     fs.mkdirSync(path.join(ROOT, 'tests/screenshots'), {recursive:true});
     await page.screenshot({path:path.join(ROOT, `tests/screenshots/parent-pin-${useWebkit?'webkit':'chromium'}.png`)});
     await pin('3690'); await waitVisible('#settings');

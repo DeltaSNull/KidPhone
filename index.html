@@ -392,7 +392,7 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img{image-rendering:auto}
 .gplay .px{width:24px; height:32px}
 .gplay > span{margin-left:4px}
 .gplay .both{display:flex; flex-direction:column; line-height:1.1}   /* "1 or 2" over "players", so it fits beside two kids */
-.gplay b,.who-lbl b{font-family:var(--digits); font-weight:400; font-size:.78em}   /* the 8-bit digits: Pixelify's 2 reads like an 8 */
+.gplay b,.who-lbl b,b.n{font-family:var(--digits); font-weight:400; font-size:.78em}   /* the 8-bit digits: Pixelify's 2 reads like an 8 and its 5 like an S */
 .gamecard .gart{flex:1; min-width:0; display:flex; justify-content:center; align-items:flex-end; gap:4px; pointer-events:none}
 .gamecard .art{font-size:calc(var(--a) * .7)} .gamecard .art.big{font-size:var(--a)} .gamecard .art.mid{font-size:calc(var(--a) * .85)} .gamecard .art.sm{font-size:calc(var(--a) * .55)}
 .gamecard .flip{transform:scaleX(-1)}
@@ -801,8 +801,9 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img{image-rendering:auto}
 /* ---------- Parent settings ---------- */
 #parentGate{position:absolute; inset:0; z-index:58; display:grid; place-items:center; padding:12px; background:rgba(59,43,32,.65)}
 .pin-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin:8px 0}
-.pin-grid .sbtn{min-height:48px; font-size:24px}
-#pinDots{font-size:26px; text-align:center; letter-spacing:12px; min-height:32px; margin:8px 0}
+.pin-grid .sbtn{min-height:48px; padding:0 2px; font-size:19px}   /* Back and Clear; the digits use the 8-bit font, where 5 never reads as S */
+.pin-grid .pin-num{font-family:var(--digits); font-weight:400; font-size:20px}
+#pinDots{font-family:var(--digits); font-weight:400; font-size:22px; text-align:center; letter-spacing:12px; min-height:32px; margin:8px 0}
 #pinMessage{min-height:36px}
 #parentGate .sheet{max-width:340px}
 #parentGate .shead{position:static}
@@ -1188,7 +1189,7 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img{image-rendering:auto}
         <div class="srow"><span>Parent PIN</span><button class="sbtn" id="parentPinBtn">Set PIN</button>
           <span class="vhint">A four-digit PIN protects settings on this device. Use iPhone Guided Access to keep the child inside ToyPhone. Your PIN and app choices stay on this device.</span></div>
         <div class="srow"><span>Play time</span>
-          <div class="seg"><button class="sbtn" data-play="0">Off</button><button class="sbtn" data-play="15">15 min</button><button class="sbtn" data-play="30">30 min</button><button class="sbtn" data-play="60">1 hour</button></div>
+          <div class="seg"><button class="sbtn" data-play="0">Off</button><button class="sbtn" data-play="15"><b class="n">15</b> min</button><button class="sbtn" data-play="30"><b class="n">30</b> min</button><button class="sbtn" data-play="60">1 hour</button></div>
           <span class="vhint">When the time is up, the voice says it's almost time for a break and the child can finish what they're doing (up to two minutes); then a sleepy owl covers the toy. Only a grown-up starts more play: hold the clock (and enter the PIN, if set). Only time with the toy on screen counts, and each day starts fresh.</span>
           <span class="vhint" id="playNote" aria-live="polite"></span>
           <button class="sbtn" id="playReset">Start a new session</button></div>
@@ -8563,7 +8564,7 @@ function openGate(mode, after){
 function requestSettings(){ if (access.pin) openGate('unlock'); else openSettings(); }
 async function enterPinDigit(d){
   if ($('#parentGate').hidden || gateBusy) return;
-  if (Date.now() < access.until){ $('#pinMessage').textContent = 'Please wait ' + Math.ceil((access.until - Date.now())/1000) + ' seconds before trying again.'; return; }
+  if (Date.now() < access.until){ $('#pinMessage').innerHTML = `Please wait <b class="n">${Math.ceil((access.until - Date.now())/1000)}</b> seconds before trying again.`; return; }
   gateDigits += d; paintPin(); if (gateDigits.length < 4) return;
   if (gateMode === 'create'){
     gateFirst = gateDigits; gateDigits = ''; gateMode = 'confirm'; paintPin();
@@ -8577,7 +8578,7 @@ async function enterPinDigit(d){
         const attempts = access.attempts + 1, until = attempts >= 5 ? Date.now() + 30000 : 0;
         // Keep the current session's cooldown even if browser storage is full.
         const next = {...access, attempts:until ? 0 : attempts, until}; store.set('access', next); access = next;
-        $('#pinMessage').textContent = until ? 'Please wait 30 seconds before trying again.' : 'That PIN did not match. Try again.'; return;
+        $('#pinMessage').innerHTML = until ? 'Please wait <b class="n">30</b> seconds before trying again.' : 'That PIN did not match. Try again.'; return;
       }
       const next = {...access, attempts:0, until:0}; store.set('access', next); access = next;
       cancelGate(); openSettings();
@@ -8592,7 +8593,7 @@ async function enterPinDigit(d){
   finally{ if (epoch === gateEpoch){ gateBusy = false; paintPin(); } }
 }
 ['1','2','3','4','5','6','7','8','9','Back','0','Clear'].forEach(key => {
-  const b = document.createElement('button'); b.className = 'sbtn'; b.dataset.pin = key; b.textContent = key;
+  const b = document.createElement('button'); b.className = /\d/.test(key) ? 'sbtn pin-num' : 'sbtn'; b.dataset.pin = key; b.textContent = key;
   const press = () => { if (gateBusy) return; if (key === 'Back') gateDigits = gateDigits.slice(0,-1); else if (key === 'Clear') gateDigits = ''; else { enterPinDigit(key); return; } paintPin(); };
   tap(b, press, {bump:false});
   b.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); press(); } });
@@ -8688,8 +8689,8 @@ const PLAY = (() => {
   function render(){
     $$('[data-play]').forEach(b => b.classList.toggle('on', +b.dataset.play === settings.play));
     const m = Math.floor(st.used / 60000);
-    $('#playNote').textContent = !settings.play ? 'No limit.' : st.ended ? 'Break time: the toy is resting until you start a new session.'
-      : `Played ${m} of ${settings.play} minute${settings.play === 1 ? '' : 's'} today.`;
+    $('#playNote').innerHTML = !settings.play ? 'No limit.' : st.ended ? 'Break time: the toy is resting until you start a new session.'
+      : `Played <b class="n">${m}</b> of <b class="n">${settings.play}</b> minute${settings.play === 1 ? '' : 's'} today.`;
     $('#playReset').disabled = !settings.play;
   }
   $$('[data-play]').forEach(b => tapInScroll(b, () => { settings.play = +b.dataset.play; saveSettings(); update(); FX.pop(); }));

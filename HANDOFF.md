@@ -10,6 +10,7 @@ Read SCHOOL_ROADMAP.md first, then AGENTS.md. This is the agreed plan going forw
 
 - Letter Path uses letter names only until the sounds are right (T-04): "This is a. A is for apple!", "Which one starts with A?", "Which one is a?", "Yes! That's a!". `P_SAY.sound` and the 26 sound clips stay only for the parent page's *Hear the sound*. Don't bring sounds back into lessons until the owner says they're right.
 - Animal Delivery has no "on the box" (the box is open: on and in both looked like on top). Spots: in the box (tap the box; the thing sits behind its front, peeking out), on/under the table, under the tree, next to the box. Levels: in the box / on the table, + under the table, + under the tree and next to the box.
+- Numbers a grown-up reads in the display font (Pixelify Sans) can be misread: its 5 looks like S and its 2 like 8. The PIN keypad digits and dots, the play-time buttons (15 min, 30 min) and the numbers in the play-time and PIN-wait notes now use `var(--digits)` (Press Start 2P): `.pin-num` on keypad digits, `b.n` around numbers in text. Use `b.n` for any new number shown in the display font.
 
 ## Last batch: Dino Picnic and Animal Delivery (done)
 
