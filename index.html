@@ -890,6 +890,7 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img{image-rendering:auto}
   padding:8px 10px; font-weight:500; font-size:17px; -webkit-user-select:none; user-select:none}
 .shead{position:sticky; top:-8px; z-index:1; display:flex; align-items:center; justify-content:space-between; gap:12px; margin:-8px -10px 0; padding:8px 10px 8px; background:#FFFDF6}
 .sheet h2{margin:0; font-size:24px; font-weight:700}
+#settings .sheet{scroll-padding-top:120px; scroll-padding-bottom:8px}
 #settings .shead{display:grid; grid-template-columns:minmax(0,1fr) auto}
 #settings h2{font-size:clamp(19px,5.2vw,24px)}
 .snav{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:4px; width:100%; grid-column:1/-1}
@@ -9061,7 +9062,8 @@ function renderSettings(){
   $('#clearBtn').disabled = !n;
   $$('[data-schoolfx],[data-count],[data-incoming],[data-silent],[data-vol],[data-camera],[data-look],[data-tilt],[data-abc],[data-path],[data-play]').forEach(b=>b.setAttribute('aria-pressed',String(b.classList.contains('on'))));
 }
-function openSettings(){ renderAccess(); hush(); $('#confirmClear').hidden = true; $('#confirmPath').hidden = true; renderSettings(); pickVoice(); showSound(); $('#settings').hidden = false; $('#settings .sheet').scrollTop=0; $('#doneBtn').focus({preventScroll:true}); FX.cheer(); }
+function sizeSettings(){ $('#settings .sheet').style.scrollPaddingTop=($('#settings .shead').offsetHeight+8)+'px'; }
+function openSettings(){ renderAccess(); hush(); $('#confirmClear').hidden = true; $('#confirmPath').hidden = true; renderSettings(); pickVoice(); showSound(); $('#settings').hidden = false; sizeSettings(); $('#settings .sheet').scrollTop=0; $('#doneBtn').focus({preventScroll:true}); FX.cheer(); }
 /* is the sound engine running? (the animals, drums and ringtones all come from it; the voice doesn't) */
 function showSound(){
   const n = $('#soundNote'); if (!n) return;
@@ -9155,7 +9157,7 @@ document.addEventListener('visibilitychange', () => {
   else { clearHold(); closeSettings(); hush(); stopSong(); if (call){ stopCallSounds(); closeCall(); } closeStream(); stopFx(); }   // the camera and narrator never run off screen
 });
 let resizeT = 0;
-window.addEventListener('resize', () => { clearTimeout(resizeT); resizeT = setTimeout(() => { fillScreen(); fitContacts(); if (current === 'camera'){ sizeCamera(); if (cam.mode !== 'safari'){ updateLookUI(); placeLenses(); } } if (!bgWatch) paintBackgrounds(); }, 120); });
+window.addEventListener('resize', () => { clearTimeout(resizeT); resizeT = setTimeout(() => { fillScreen(); fitContacts(); if(!$('#settings').hidden)sizeSettings(); if (current === 'camera'){ sizeCamera(); if (cam.mode !== 'safari'){ updateLookUI(); placeLenses(); } } if (!bgWatch) paintBackgrounds(); }, 120); });
 window.addEventListener('pagehide', () => {clearHold();hush();closeStream();});
 paintBackgrounds(); if (bgWatch) bgFor.forEach((fn, el) => bgWatch.observe(el));
 

@@ -22,7 +22,8 @@ const server=http.createServer((req,res)=>{
   const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
   const check=(v,msg)=>{assert.ok(v,label+': '+msg);console.log('ok '+label+': '+msg);};
   const tap=async s=>{await page.locator(s).first().tap();await page.waitForTimeout(160);};
-  const hold=async()=>{await page.locator('#clock').focus();await page.keyboard.down('Enter');await page.locator('#settings').waitFor({state:'visible',timeout:10000});await page.keyboard.up('Enter');};
+  let holds=0;
+  const hold=async()=>{const key=holds++%2?'Space':'Enter';await page.locator('#clock').focus();await page.keyboard.down(key);await page.locator('#settings').waitFor({state:'visible',timeout:10000});await page.keyboard.up(key);};
   await page.goto(`http://127.0.0.1:${server.address().port}/KidPhone/`);await page.waitForFunction(()=>window.__toyPhone);
   await page.locator('.appicon[data-app="school"]').focus();await page.keyboard.press('Enter');
   check(await page.locator('#school').isVisible(),'keyboard opens a home app');
@@ -48,6 +49,13 @@ const server=http.createServer((req,res)=>{
   await tap('[data-settings-jump="settingsTools"]');await page.keyboard.press('Escape');check(await page.locator('#clock').evaluate(el=>el===document.activeElement),'Escape closes settings and restores clock focus');
   await hold();check(await page.locator('#settings .sheet').evaluate(el=>el.scrollTop)===0,'reopening resets settings to the top');
   await page.locator('#doneBtn').focus();await page.keyboard.press('Shift+Tab');check(await page.locator('#settings').evaluate(el=>el.contains(document.activeElement)&&document.activeElement.id!=='doneBtn'),'Shift+Tab wraps within settings');await page.keyboard.press('Tab');check(await page.locator('#doneBtn').evaluate(el=>el===document.activeElement),'Tab wraps to Done');
+  // The sticky header must not cover scrollIntoView/focus targets (regression found by short-screen smoke).
+  for(const selector of ['[data-vol="3"]','[data-incoming="1"]','[data-incoming="0"]','[data-silent="0"]','[data-silent="1"]']){
+   const button=page.locator(selector).first();await button.evaluate(el=>el.scrollIntoView({block:'nearest'}));
+   check(await button.evaluate(el=>{const b=el.getBoundingClientRect(),h=document.querySelector('#settings .shead').getBoundingClientRect();return b.top>=h.bottom;}),'scrollIntoView clears header: '+selector);
+   await button.tap();await page.waitForTimeout(160);
+   check(await page.locator('#settings').isVisible(),'setting tap keeps dialog open');
+  }
   await tap('[data-settings-jump="settingsAccess"]');
   fs.mkdirSync(path.join(root,'tests/screenshots'),{recursive:true});await page.screenshot({path:path.join(root,`tests/screenshots/refinement-${label}.png`)});
   await tap('#doneBtn');await page.evaluate(()=>window.__toyPhone.go('delivery'));await page.waitForTimeout(700);

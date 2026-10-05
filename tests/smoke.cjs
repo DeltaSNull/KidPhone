@@ -962,7 +962,9 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   const pc = await page.$$eval('.pp-cv', cs => cs.map(c => { const r = c.getBoundingClientRect(); return [r.x, r.y, r.width, r.height]; }));
   check(pc.every(b => b[2] >= 120 && b[2] % 32 === 0), `Paint Pals: each picture is big and pixel-sharp (${pc.map(b => b[2]).join(', ')}px)`);
   const corners = await page.$$eval('.pp-side', ss => ss.map(s => { const r = s.getBoundingClientRect(); return [r.x + 6, r.y + 6]; }));
-  await touch('touchStart', corners); await sleep(30); await touch('touchEnd', []); await sleep(700);
+  await touch('touchStart', corners); await sleep(30); await touch('touchEnd', []);
+  // Observe the actual paint landing; a fixed sleep can end before Web Animations finish on a busy runner.
+  await page.waitForFunction(() => window.__toyPhone.paint().painted.every(v => v > 0), null, {timeout:5000}).catch(() => {});
   let pp = await page.evaluate(() => window.__toyPhone.paint());
   check(pp.painted.every(v => v > 0), `Paint Pals: a tap beside the picture flings paint onto it ${JSON.stringify(pp.painted)}`);
   const sweep = async (r, rows) => {
