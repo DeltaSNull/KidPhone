@@ -662,9 +662,9 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   let ls = await lp();
   check(ls.lesson && ls.letter === 'a' && ls.step === 'meet', 'the bouncing stone starts the a lesson with Meet');
   await until(async () => (await lp()).next);
-  check((await said()).includes('This is a. It says /a/, like apple!') && (await lp()).next, 'Meet: "This is a. It says /a/, like apple!", then the next arrow');
+  check((await said()).includes('This is a. A is for apple!') && !(await said()).some(t => / says \//.test(t)) && (await lp()).next, 'Meet: "This is a. A is for apple!" (the letter\'s name, no sound), then the next arrow');
   before = await osc(); await tap('.lp-letters'); await sleep(900);
-  check((await said()).includes('/a/!') && await osc() > before, 'tapping the letters plays the a sound');
+  check((await said()).includes('A!') && !(await said()).includes('/a/!'), 'tapping the letters says its name');
   await shot('28c-meet'); await fits('meet');
   await tap('#lpNext'); await sleep(900);
   check((await lp()).step === 'trace' && (await lp()).strokes === 2, 'Trace: a is two strokes');
@@ -679,23 +679,23 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   check((await lp()).traced === true, 'following the star along each stroke traces a');
   await shot('28d-trace');
   ls = await until(async () => { const x = await lp(); return x.step === 'hear' && x; });
-  check(ls && ls.choices.length === 3 && ls.choices.includes('apple'), `Hear: three pictures, one of them starts with /a/ ${JSON.stringify(ls && ls.choices)}`);
-  await until(async () => (await said()).includes('Which one starts with /a/?'));
-  check((await said()).includes('Which one starts with /a/?'), 'Hear asks "Which one starts with /a/?"');
+  check(ls && ls.choices.length === 3 && ls.choices.includes('apple'), `Hear: three pictures, one of them starts with A ${JSON.stringify(ls && ls.choices)}`);
+  await until(async () => (await said()).includes('Which one starts with A?'));
+  check((await said()).includes('Which one starts with A?'), 'Hear asks by name: "Which one starts with A?"');
   await shot('28e-hear'); await fits('hear');
   const wrongW = ls.choices.find(c => c !== ls.want);
   await tap(`.lp-card[data-k="${wrongW}"]`); await sleep(600);
-  check((await said()).some(t => t.toLowerCase().startsWith(wrongW + ' ') && /(starts|ends) with \/\w\//.test(t)) && (await lp()).misses === 1, `a wrong picture: the voice says what ${wrongW} starts with, and asks again`);
+  check((await said()).some(t => t.toLowerCase().startsWith(wrongW + ' ') && /(starts|ends) with [A-Z]!/.test(t)) && (await lp()).misses === 1, `a wrong picture: the voice says what ${wrongW} starts with, and asks again`);
   // each round deals its cards in, growing from nothing: wait for them to land before tapping
   for (let r = 0; r < 4 && (await lp()).step === 'hear'; r++) { await sleep(500); const s1 = await lp(); await tap(`.lp-card[data-k="${s1.want}"]`); await until(async () => { const x = await lp(); return x.step !== 'hear' || x.round !== s1.round; }); }
   ls = await lp();
-  check(ls.step === 'find' && ls.choices.length === 3 && ls.choices.includes('a') && ls.want === 'a', `Find: three letters, which says /a/? ${JSON.stringify(ls.choices)}`);
-  await until(async () => (await said()).includes('Which letter says /a/?'));
-  check((await said()).includes('Which letter says /a/?'), 'Find asks "Which letter says /a/?"');
+  check(ls.step === 'find' && ls.choices.length === 3 && ls.choices.includes('a') && ls.want === 'a', `Find: three letters, which one is a? ${JSON.stringify(ls.choices)}`);
+  await until(async () => (await said()).includes('Which one is a?'));
+  check((await said()).includes('Which one is a?'), 'Find asks by name: "Which one is a?"');
   await shot('28f-find'); await fits('find');
   const plains = [];
   for (let r = 0; r < 5 && (await lp()).step === 'find'; r++) { await sleep(500); const s1 = await lp(); plains[s1.round] = await page.getAttribute('.lp-cards', 'data-plain'); await tap(`.lp-card[data-k="${s1.want}"]`); await until(async () => { const x = await lp(); return x.step !== 'find' || x.round !== s1.round; }); }
-  check((await said()).some(t => t.endsWith('a says /a/!')), 'a right letter: "Yes! a says /a/!"');
+  check((await said()).some(t => t === "Yes! That's a!") && !(await said()).some(t => / says \//.test(t)), 'a right letter: "Yes! That\'s a!" (and no letter sounds anywhere in the lesson)');
   check(plains.length === 3 && plains[2] === '1' && !plains[0], `Find: the last round draws the letters in plain ink, so a is found by its shape ${JSON.stringify(plains)}`);
   ls = await lp();
   check(ls.lesson && ls.step === null && ls.stars.a === 2, `the lesson ends with stars: two, for one wrong tap ${JSON.stringify(ls.stars)}`);
@@ -773,8 +773,8 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   await tapSetting('.lp-chip[data-pl="m"]'); await sleep(400);
   check(/lips together/.test(await page.locator('#pathInfo').textContent()) && /Learned: 1 of 26/.test(await page.locator('#pathNote').textContent()),
     'the parent page: letters learned so far, and a letter shows how to say its sound');
-  await until(async () => (await said()).includes('This is m. It says /m/, like monkey!'), 10);
-  check((await said()).includes('This is m. It says /m/, like monkey!'), 'and plays its lesson line, so a parent can check the sound');
+  await until(async () => (await said()).includes('This is m. M is for monkey!'), 10);
+  check((await said()).includes('This is m. M is for monkey!'), 'and plays its lesson line');
   await tapSetting('[data-path="open"]'); await tap('#doneBtn'); await sleep(300);
   await tap('[data-app="school"]'); await sleep(500); await tap('.gamecard[aria-label="Letter Path"]'); await sleep(800);
   check((await lp()).open.length === 26 && await page.locator('.lp-stone.locked').count() === 0, 'the "All open" setting opens every letter');
@@ -851,8 +851,8 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   const dv = () => page.evaluate(() => window.__toyPhone.delivery());
   await tap('[data-app="school"]'); await sleep(500); await tap('.gamecard[aria-label="Animal Delivery"]'); await sleep(900);
   let d = await dv();
-  check(d.spots.join() === 'inBox,onBox' && ['inBox', 'onBox'].includes(d.target) && !!d.item, `Animal Delivery starts with in and on: two spots, at the box ${JSON.stringify(d)}`);
-  const PLACE = { inBox: 'in the box', onBox: 'on the box', nextBox: 'next to the box', onTable: 'on the table', underTable: 'under the table', underTree: 'under the tree' };
+  check(d.spots.join() === 'inBox,onTable' && ['inBox', 'onTable'].includes(d.target) && !!d.item, `Animal Delivery starts with two spots: in the box or on the table (no "on the box": the box is open) ${JSON.stringify(d)}`);
+  const PLACE = { inBox: 'in the box', nextBox: 'next to the box', onTable: 'on the table', underTable: 'under the table', underTree: 'under the tree' };
   await until(async () => (await said()).some(t => t.endsWith(`Put the ${d.item} ${PLACE[d.target]}!`)), 15);
   check((await said()).some(t => t.includes('Animal Delivery! Put each thing where it goes!') && t.endsWith(`Put the ${d.item} ${PLACE[d.target]}!`)), `and says where: "Put the ${d.item} ${PLACE[d.target]}!"`);
   await shot('35-delivery'); await fits('animal delivery');
@@ -867,11 +867,11 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   c0 = (await said()).length;
   await drag(from, to, 12); await sleep(900);
   d = await dv();
-  check(d.rights === 1 && d.placed === 1 && (await said()).slice(c0).some(t => /^Yes! (In|On) the box!$/.test(t)), `dragging it to the right spot: it stays there, "Yes! In the box!" ${JSON.stringify(d)}`);
+  check(d.rights === 1 && d.placed === 1 && (await said()).slice(c0).some(t => /^Yes! (In the box|On the table)!$/.test(t)), `dragging it to the right spot: it stays there, "Yes! In the box!" ${JSON.stringify(d)}`);
   for (let k = 0; k < 2; k++) { await until(async () => { const x = await dv(); return !x.busy && x.placed === 0; }, 15); const x = await dv(); await tap(`.ad-spot[data-spot="${x.target}"]`); await sleep(400); }
   await until(async () => { const x = await dv(); return !x.busy && x.placed === 0; }, 15);
   d = await dv();
-  check(d.level === 1 && d.spots.join() === 'inBox,onBox,onTable,underTable' && ['onTable', 'underTable'].includes(d.target), `after three right, the table joins: on and under (and it asks about one of them) ${JSON.stringify(d)}`);
+  check(d.level === 1 && d.spots.join() === 'inBox,onTable,underTable' && d.target === 'underTable', `after three right, under the table joins (on and under at the same table), and it asks about it first ${JSON.stringify(d)}`);
   await shot('36-delivery-table');
   await tap(`.ad-spot[data-spot="${d.spots.find(k => k !== d.target)}"]`); await sleep(500);
   await until(async () => !(await dv()).busy, 10);

@@ -1215,7 +1215,7 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img{image-rendering:auto}
           <span class="vhint">Count myself: the animal asks for a number; the child adds snacks (tap a box to take one back) and taps the green check when it's right. Too few or too many is said gently, and after two tries the boxes it wants glow. Help count: the boxes show how many, and the animal eats as soon as they're full.</span></div>
         <div class="srow"><span>Letter Path</span>
           <div class="seg"><button class="sbtn" data-path="order">In order</button><button class="sbtn" data-path="open">All open</button></div>
-          <span class="vhint">One letter at a time, A to Z: meet it, trace it, hear words that start with its sound, then find it. In order: each letter opens when the one before it is done. All open: any letter, any time. Tap a letter below to hear it and see how to say its sound.</span>
+          <span class="vhint">One letter at a time, A to Z: meet it, trace it, find the picture that starts with it, then find the letter. The lessons use letter names for now (the sounds are on each letter's page, to check). In order: each letter opens when the one before it is done. All open: any letter, any time. Tap a letter below to hear it and see how to say its sound.</span>
           <span class="vhint" id="pathNote"></span>
           <div class="lp-grid" id="pathGrid"></div>
           <div class="lp-info" id="pathInfo" hidden></div>
@@ -6866,10 +6866,11 @@ const isFor = e => e.L === 'X' ? `X is in ${e.w}!` : `${e.L} is for ${e.w}!`;
 
 /* ----- Letter Path: one letter at a time, A to Z. A trail of stepping stones, little letters first, each earning up to
    three stars. A lesson is four short steps:
-   Meet (the letter, big and little, its sound and a word), Trace (follow the star along each stroke, in writing order),
-   Hear (which picture starts with the sound?) and Find (which letter makes the sound?, with letters learned before mixed
+   Meet (the letter, big and little, its name and a word), Trace (follow the star along each stroke, in writing order),
+   Hear (which picture starts with the letter?) and Find (which one is the letter?, with letters learned before mixed
    in). Nothing is ever failed: a wrong tap names what was tapped, after two tries the right one glows, and every lesson
-   ends with at least one star. Sounds are written /s/ in the lines: the voice tool records each one cut from a word. ----- */
+   ends with at least one star. The lessons use letter names for now; the letter sounds (written /s/, each cut from a word
+   by the voice tool) are only on the parent page until they're right. ----- */
 const PATH = 'abcdefghijklmnopqrstuvwxyz'.split('');
 /* a second word for each letter that has one, so Hear also asks about a word the lesson hasn't shown */
 const WORD2 = {s:'sun', a:['alligator','crocodile'], t:'turtle', i:'igloo', p:'panda', n:'nest', c:'cow', k:'kite', e:'egg', h:'hand', r:'rocket', m:'moon',
@@ -6890,13 +6891,15 @@ const PATH_TIP = {s:'a long hiss, teeth together: sss', a:'short a, as in apple,
   o:'short o, as in octopus, mouth round and open', u:'short u, as in up', l:'tongue up behind the top teeth: lll', f:'top teeth on the lower lip, blow: fff',
   b:'lips pop with the voice on, keep the "uh" tiny', j:'j, as in jam', z:'a buzzing bee: zzz', w:'lips round, as in wet', v:'top teeth on the lower lip, voice on: vvv',
   y:'y, as in yes', x:'two sounds together, k and s: ks, at the end of fox and box', q:'q almost always comes with u and says kw, as in queen'};
+/* The lessons use letter NAMES for now ("Which one starts with A?"): the letter sounds aren't right yet (the owner, T-04).
+   The sounds (sound) stay only on the parent page, to check them. */
 const P_SAY = {
   path:'Letter Path! Tap the bouncing letter!', notyet:'Not yet! Tap the bouncing letter!', all:'You learned every letter!', yes:'Yes!',
-  meet: l => `This is ${l}. It says /${l}/, like ${abcOf(l).w}!`, sound: l => `/${l}/!`,
+  meet: l => `This is ${l}. ${isFor(abcOf(l))}`, name: l => `${l.toUpperCase()}!`, sound: l => `/${l}/!`,
   trace: l => `Trace ${l}! Follow the star.`, made: l => `You made ${l}!`,
-  hear: l => l === 'x' ? 'Which one ends with /x/?' : `Which one starts with /${l}/?`,
-  word: o => o.l === 'x' ? `${cap(o.w)} ends with /x/!` : `${cap(o.w)} starts with /${o.l}/!`,
-  find: l => `Which letter says /${l}/?`, says: l => `${l} says /${l}/!`, thats: l => `That's ${l}!`,
+  hear: l => l === 'x' ? 'Which one ends with X?' : `Which one starts with ${l.toUpperCase()}?`,
+  word: o => o.l === 'x' ? `${cap(o.w)} ends with X!` : `${cap(o.w)} starts with ${o.l.toUpperCase()}!`,
+  find: l => `Which one is ${l}?`, thats: l => `That's ${l}!`,
   learned: l => `You learned ${l}!`, next: l => `Next is ${l}!`
 };
 /* up to three stars, the ones not earned yet greyed out */
@@ -7165,7 +7168,7 @@ const LetterPath = (() => {
     const e = abcOf(L);
     stage.innerHTML = bigLetters() + `<div class="lp-pic" role="button" aria-label="${e.w}"><span class="art">${schoolPic(e.pic)}</span><span class="lp-word" style="--lc:${letterCol(L)}">${pathWord(e.w, L)}</span></div>`;
     const lettersEl = $('.lp-letters', stage), picEl = $('.lp-pic', stage);
-    tap(lettersEl, () => { FX.pop(); retrigger(lettersEl, 'hop'); talk(P_SAY.sound(L)); }, {bump:false});
+    tap(lettersEl, () => { FX.pop(); retrigger(lettersEl, 'hop'); talk(P_SAY.name(L)); }, {bump:false});
     tap(picEl, () => { const now = performance.now(); retrigger(picEl, 'hop'); if (now < quietUntil) return; hush(); quietUntil = now + abcSound(e)*1000; say(cap(e.w) + '!', 0, 'school'); }, {bump:false});
     later(showNext, talk(P_SAY.meet(L)) + 500);
   }
@@ -7250,7 +7253,7 @@ const LetterPath = (() => {
   }
   function stopTrace(){ if (tr){ cancelAnimationFrame(tr.raf); tr = null; } }
 
-  /* Hear: three pictures; which one starts with the sound? The lesson's word first, then its second word */
+  /* Hear: three pictures; which one starts with the letter? The lesson's word first, then its second word */
   function hear(){
     const e = abcOf(L), w2 = word2(L);
     rounds = [{w:e.w, pic:e.pic, l:L}, ...(w2 ? [w2] : [])];
@@ -7272,7 +7275,7 @@ const LetterPath = (() => {
     const t = rounds[round], ok = l => l !== t && !twins(l, t);
     const met = shuffle(PATH.filter(l => ok(l) && (done(l) || l === L))), rest = shuffle(PATH.filter(l => ok(l) && !done(l) && l !== L));
     const plain = round === rounds.length - 1;
-    choices(shuffle([t, ...[...met, ...rest].slice(0, 2)]), l => glyphImg(l, plain ? INK : undefined), l => l, l => l === t, P_SAY.find(t), (l, right) => right ? P_SAY.yes + ' ' + P_SAY.says(l) : P_SAY.thats(l));
+    choices(shuffle([t, ...[...met, ...rest].slice(0, 2)]), l => glyphImg(l, plain ? INK : undefined), l => l, l => l === t, P_SAY.find(t), (l, right) => right ? P_SAY.yes + ' ' + P_SAY.thats(l) : P_SAY.thats(l));
     $('.lp-cards', stage).dataset.plain = plain ? '1' : '';
   }
   /* the shared part of Hear and Find: ask out loud (the ear asks again), answer every tap by name, glow after two misses */
@@ -7335,7 +7338,7 @@ const LetterPath = (() => {
       stroke:tr && !tr.finished ? tr.i : null, strokes:tr ? tr.strokes.length : 0, traced:tr ? tr.finished : null, open:PATH.filter(isOpen), stars:{...prog.stars}}),
     strokePts: () => { if (!tr || tr.finished) return null; const r = tr.cv.getBoundingClientRect(); return tr.strokes[tr.i].pts.map(([x, y]) => [r.left + (PAD + x*K)/CW*r.width, r.top + (PAD + y*K)/CH*r.height]); },
     lines: () => [P_SAY.path, P_SAY.notyet, P_SAY.all, P_SAY.yes, 'Follow the star.',
-      ...PATH.flatMap(l => [P_SAY.meet(l), P_SAY.sound(l), P_SAY.trace(l), P_SAY.made(l), P_SAY.hear(l), P_SAY.find(l), P_SAY.says(l), P_SAY.thats(l), P_SAY.learned(l), P_SAY.next(l)]),
+      ...PATH.flatMap(l => [P_SAY.meet(l), P_SAY.name(l), P_SAY.sound(l), P_SAY.trace(l), P_SAY.made(l), P_SAY.hear(l), P_SAY.find(l), P_SAY.thats(l), P_SAY.learned(l), P_SAY.next(l)]),
       ...PATH_WORDS.map(P_SAY.word)]
   };
 })();
@@ -7357,7 +7360,8 @@ function renderPathNote(){
   box.innerHTML = `<div class="lp-ihead">${glyphImg(l)}${glyphImg(l.toUpperCase())}<span class="art">${schoolPic(e.pic)}</span>${w2 ? `<span class="art">${schoolPic(w2.pic)}</span>` : ''}</div>
     <p><b>${l} ${l.toUpperCase()}</b>, ${l === 'x' ? 'at the end of' : 'as in'} <b>${e.w}</b>${w2 ? ` and <b>${w2.w}</b>` : ''}. Say it: ${PATH_TIP[l]}.</p>
     <p>${st ? `Best so far: ${st} of 3 stars (three is a lesson with no wrong taps).` : 'Not done yet.'} Lesson ${PATH.indexOf(l) + 1} of 26.</p>
-    <div class="seg"><button class="sbtn" data-hear="sound">Hear the sound</button><button class="sbtn" data-hear="words">Hear the words</button></div>`;
+    <p>The lessons use the letter's name for now; the sound is here so you can check it.</p>
+    <div class="seg"><button class="sbtn" data-hear="sound">Hear the sound</button><button class="sbtn" data-hear="words">Hear the lesson</button></div>`;
   tap($('[data-hear="sound"]', box), () => say(P_SAY.sound(l)));
   tap($('[data-hear="words"]', box), () => say([P_SAY.meet(l), P_SAY.word({w:e.w, l}), ...(w2 ? [P_SAY.word(w2)] : [])].join(' ')));
 }
@@ -7542,16 +7546,20 @@ const NumSnack = (() => {
 })();
 
 /* ----- Animal Delivery (P3-06): following directions. An animal brings something; the voice says where it goes: "Put the
-   apple under the tree!" Drag it there, or tap a glowing spot. Starts with in and on (the box), adds on/under the table
-   after three right, then under the tree and next to the box after six (each time the game opens; nothing is kept). A
-   wrong spot is named ("That's on the table.") and the thing comes back; after two tries the right spot glows. ----- */
+   apple under the tree!" Drag it there, or tap a glowing spot. Starts with in the box or on the table, adds under the
+   table after three right (on and under at the same table), then under the tree and next to the box after six (each
+   time the game opens; nothing is kept). There's no "on the box": the box is open, so on and in both looked like on top.
+   In the box, the thing sits down inside it, peeking over the rim. A wrong spot is named ("That's on the table.") and
+   the thing comes back; after two tries the right spot glows. ----- */
 const Delivery = (() => {
   const root = $('#delivery'), world = $('#adWorld'), animalEl = $('#adAnimal'), parcel = $('#adParcel');
-  /* the garden, in percent of its width (left, width) with the ground at 75% of its height; each spot's center (x, y) */
+  /* the garden, in percent of its width (left, width) with the ground at 75% of its height; each spot's center (x, y),
+     and where the thing then sits if that's somewhere else (in the box: behind its front, peeking over the rim) */
   const PLACES = {tree:[0, 32], box:[35, 18], table:[66, 32]};
-  const SPOTS = {inBox:[44, 54, 'box'], onBox:[44, 37], nextBox:[59.5, 66], onTable:[82, 38], underTable:[82, 66], underTree:[8, 66]};
-  const REL = {inBox:'in the box', onBox:'on the box', nextBox:'next to the box', onTable:'on the table', underTable:'under the table', underTree:'under the tree'};
-  const LEVELS = [['inBox', 'onBox'], ['inBox', 'onBox', 'onTable', 'underTable'], ['inBox', 'onBox', 'onTable', 'underTable', 'underTree', 'nextBox']];
+  const SPOTS = {inBox:[44, 64, 'box', 44, 51.5], nextBox:[59.5, 66], onTable:[82, 38], underTable:[82, 66], underTree:[8, 66]};
+  const REL = {inBox:'in the box', nextBox:'next to the box', onTable:'on the table', underTable:'under the table', underTree:'under the tree'};
+  const LEVELS = [['inBox', 'onTable'], ['inBox', 'onTable', 'underTable'], ['inBox', 'onTable', 'underTable', 'underTree', 'nextBox']];
+  const at = k => SPOTS[k].length > 3 ? [SPOTS[k][3], SPOTS[k][4]] : SPOTS[k];   // (where the thing sits)
   const ITEMS = [{k:'apple', n:'apple'}, {k:'banana', n:'banana'}, {k:'gift', n:'present'}, {k:'star', n:'star'}, {k:'egg', n:'egg'},
     {k:'duck', n:'duck'}, {k:'chick', n:'chick'}, {k:'cat', n:'kitty'}, {k:'frog', n:'frog'}, {k:'ball', n:'ball'}];
   const CARRIERS = ['kangaroo', 'elephant', 'monkey', 'penguin', 'giraffe', 'panda'];
@@ -7598,14 +7606,14 @@ const Delivery = (() => {
   function fly(fromRect, k, done){
     const a = root.getBoundingClientRect(), w = world.getBoundingClientRect(), size = w.width * .11;
     const x0 = fromRect.left - a.left + fromRect.width/2 - size/2, y0 = fromRect.top - a.top + fromRect.height/2 - size/2;
-    const x1 = w.left - a.left + w.width * SPOTS[k][0]/100 - size/2, y1 = w.top - a.top + w.height * SPOTS[k][1]/100 - size/2;
+    const x1 = w.left - a.left + w.width * at(k)[0]/100 - size/2, y1 = w.top - a.top + w.height * at(k)[1]/100 - size/2;
     const f = document.createElement('div'); f.className = 'ad-float'; f.style.width = f.style.height = size + 'px'; f.innerHTML = pic(cur.k); root.appendChild(f);
     f.animate([{transform:`translate(${x0}px,${y0}px)`}, {transform:`translate(${(x0 + x1)/2}px,${Math.min(y0, y1) - 40}px)`, offset:.5}, {transform:`translate(${x1}px,${y1}px)`}],
       {duration:420, easing:'ease-in-out', fill:'forwards'}).onfinish = () => { f.remove(); done(); };
   }
   function drop(k){
     const it = document.createElement('div'); it.className = 'ad-item' + (SPOTS[k][2] === 'box' ? ' in' : ''); it.innerHTML = pic(cur.k);
-    it.style.left = SPOTS[k][0] + '%'; it.style.top = SPOTS[k][1] + '%'; world.appendChild(it); return it;
+    it.style.left = at(k)[0] + '%'; it.style.top = at(k)[1] + '%'; world.appendChild(it); return it;
   }
   function place(k, from){
     if (busy || !cur) return;

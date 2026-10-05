@@ -113,6 +113,7 @@ Use these as curriculum/design references, not as claims that app scores diagnos
 
 | Date | Change | Evidence |
 | --- | --- | --- |
+| 2026-10-05 | Owner's feedback: the Letter Path uses letter names only until the sounds are right (T-04); Animal Delivery drops "on the box" (an open box made on and in look the same). | [Handoff](HANDOFF.md) |
 | 2026-10-04 | Claude: Dino Picnic (P3-04) and Animal Delivery (P3-06); the School menu became a picture grid for seven games. | Smoke tests in three layouts; CI on main before deploying |
 | 2026-10-04 | Owner's request: ABC Snack asks by letter name only until the letter sounds are right (T-04); the sounds stage and Sounds setting are removed. | [Handoff](HANDOFF.md) |
 | 2026-10-04 | Claude: Play time (P1-08), School sounds and always-on lesson voice (P1-09), ABC Snack A to Z (P2-10), plain-ink letter checks (P2-11), Count myself 123 Snack with Help count kept (P2-13); P2-12 holds by design. | Smoke tests in three layouts and parent-controls tests pass locally; CI on main before deploying |

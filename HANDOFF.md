@@ -6,6 +6,11 @@ Read SCHOOL_ROADMAP.md first, then AGENTS.md. This is the agreed plan going forw
 
 - None claimed. Next untracked candidates: Today's Adventure (P3-01, P3-07, P3-08), Toddler Play Together (P3-03), Sorting Station, Pattern Train, Story Time, Feelings Friends (P4-01 to P4-04). Sound Safari (P3-05) waits on the letter sounds (T-04).
 
+## Owner's feedback, 2026-10-05
+
+- Letter Path uses letter names only until the sounds are right (T-04): "This is a. A is for apple!", "Which one starts with A?", "Which one is a?", "Yes! That's a!". `P_SAY.sound` and the 26 sound clips stay only for the parent page's *Hear the sound*. Don't bring sounds back into lessons until the owner says they're right.
+- Animal Delivery has no "on the box" (the box is open: on and in both looked like on top). Spots: in the box (tap the box; the thing sits behind its front, peeking out), on/under the table, under the tree, next to the box. Levels: in the box / on the table, + under the table, + under the tree and next to the box.
+
 ## Last batch: Dino Picnic and Animal Delivery (done)
 
 - Claude, 2026-10-04, on `main`. Both are School games (`ACCESS_GROUP` school), with School-menu cards; the School menu became a two-column picture grid (four across in landscape) to fit seven cards.

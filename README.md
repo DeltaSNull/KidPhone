@@ -61,23 +61,24 @@ Guided Access. It's one self-contained `index.html` (vanilla JS, no build step),
   - *Letter Path*: the letters one at a time, a to z. A trail of 26 stepping stones, little letters first; the next one
     bounces with an owl beside it, and each one opens when the one before is done. A lesson is four short steps, shown
     as four dots at the top:
-    1. *Meet*: the little letter big, its capital beside it, and its word: "This is a. It says /a/, like apple!" Tap
-       the letters for the sound, the picture for the word.
+    1. *Meet*: the little letter big, its capital beside it, and its word: "This is a. A is for apple!" Tap the
+       letters for its name, the picture for the word.
     2. *Trace*: the letter on writing lines. Follow the star along each stroke, in the order and direction children are
        taught to write it (round letters start at the top right and go counter-clockwise; b and p go down the stick, then
        back up and around). The ink only moves forward along the stroke, so a scribble can't skip ahead; left alone for a
        moment, a ghost star shows the way.
-    3. *Hear*: "Which one starts with /a/?" Three pictures: the lesson's word, then a second word where there is one
+    3. *Hear*: "Which one starts with A?" Three pictures: the lesson's word, then a second word where there is one
        (alligator, bus, cow, duck, egg, fish, gift, hand, igloo, jam, kite, leaf, moon, nest, panda, rocket, sun,
-       turtle, van, watermelon). Sounds too alike for a first lesson (p and b, m and n, the short vowels) are never
-       asked against each other. For x it's "Which one ends with /x/?" (fox, box).
-    4. *Find*: "Which letter says /a/?" Three letters, with ones learned before mixed in; c, k and q (one sound) and
-       mirror letters (b and d, p and q) are never side by side.
-    A wrong tap is answered by name ("Van starts with /v/!", "That's t!") and asked again; after two tries the right
+       turtle, van, watermelon). Look-alike starts (p and b, m and n, the vowels; c, k and q) are never asked against
+       each other. For x it's "Which one ends with X?" (fox, box).
+    4. *Find*: "Which one is a?" Three letters, with ones learned before mixed in; c, k and q and mirror letters (b and
+       d, p and q) are never side by side.
+    A wrong tap is answered by name ("Van starts with V!", "That's t!") and asked again; after two tries the right
     one glows. A lesson ends with one to three stars (three for no wrong taps); the best is kept, and any lesson done
     can be done again.
-    The sounds are the pure sounds a phonics teacher makes (/s/ is a hiss, not "suh"), each cut by the voice tool from
-    the narrator saying a word (see [`tools/voices/`](tools/voices/README.md)).
+    For now the lessons use letter names only: the letter sounds (each cut by the voice tool from the narrator saying a
+    word, see [`tools/voices/`](tools/voices/README.md)) aren't right yet, so they're only on each letter's parent
+    page, to check them.
   - *ABC Snack*: Snack Time with letter cookies. After the first "feed the animals" line, each animal just asks:
     "Puppy wants an S!" Its thought bubble shows an ear, never the letter, so the child has to know it (tap the bubble
     to hear it again). It grows with the child: big letters, then (after eight right on the first try in a row) mostly
@@ -112,9 +113,10 @@ Guided Access. It's one self-contained `index.html` (vanilla JS, no build step),
     drumsticks, long neck and leaves, triceratops and ferns, stegosaurus and strawberries, pterodactyl and fish. With
     *Help count* the rings are there from the start and the dino eats as soon as they're filled.
   - *Animal Delivery*: following directions. An animal brings something and the voice says where it goes: "Put the
-    apple under the tree!" Drag it there (or tap a glowing spot). It starts with in and on (the box), adds on and under
-    the table after three right, then under the tree and next to the box after six; each time the game opens it starts
-    over. A wrong spot is named ("That's on the table.") and the thing comes back; after two tries the right spot
+    apple under the tree!" Drag it there (or tap a glowing spot). It starts with in the box or on the table, adds under
+    the table after three right (on and under at the same table), then under the tree and next to the box after six;
+    each time the game opens it starts over. In the box, the thing sits down inside, peeking over the rim (there's no
+    "on the box": the box is open on top). A wrong spot is named ("That's on the table.") and the thing comes back; after two tries the right spot
     glows. Ten things to deliver: an apple, a banana, a present, a star, an egg, a duck, a chick, a kitty, a frog and a
     ball.
   - Parents get a page in settings: every Letter Path letter with its stars (tap one to hear its sound and lesson
