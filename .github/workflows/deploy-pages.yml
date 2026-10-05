@@ -80,6 +80,9 @@ jobs:
       - name: Run Pages/offline checks
         run: ${{ matrix.command }}
 
+      - name: Motion games
+        run: node tests/motion-games.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
+
       - name: Parent controls (Chromium)
         if: matrix.engine == 'chromium'
         run: npm run test:parents

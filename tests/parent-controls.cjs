@@ -71,7 +71,7 @@ const check = (condition, message) => { assert.ok(condition, message); console.l
     const policy = await page.evaluate(() => JSON.parse(localStorage.getItem('toyphone.access')));
     check(policy.mode === 'school' && policy.pin.hash.length === 64 && !JSON.stringify(policy).includes('2580'), 'school mode and salted PIN digest saved without plaintext PIN');
     await tap('#doneBtn'); check(await visible('#school'), 'School-only activation enters School');
-    for (const route of ['home','camera','photos','games','wildtap','dinobuddies','snacktime','paintpals','phone','music','unknown']){
+    for (const route of ['home','camera','photos','games','wildtap','dinobuddies','snacktime','paintpals','balltrail','starflight','phone','music','unknown']){
       await go(route); check(await visible('#school'), `${route} cannot escape School-only mode`);
     }
     await go('abczoo'); check(await visible('#abczoo'), 'school lessons remain available');
@@ -88,6 +88,7 @@ const check = (condition, message) => { assert.ok(condition, message); console.l
     check(await page.evaluate(() => permissionCalls.motion + permissionCalls.camera) === 0, 'disabled camera requests neither motion nor media permission');
     await unlock('2580');
     check(await page.locator('[data-camera="both"]').isDisabled(), 'camera controls disabled while camera unavailable');
+    check(await page.locator('[data-tilt="on"]').isDisabled(), 'Tilt games controls disabled while Games is unavailable');
     await tap('#doneBtn');
     check(await page.evaluate(() => permissionCalls.motion + permissionCalls.camera) === 0, 'Done does not trigger disabled motion permission');
     await unlock('2580'); await tap('#parentPinBtn'); await pin('3690'); await pin('3690'); await waitVisible('#settings');

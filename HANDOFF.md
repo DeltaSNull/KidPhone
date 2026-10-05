@@ -4,7 +4,17 @@ Read SCHOOL_ROADMAP.md first, then AGENTS.md. This is the agreed plan going forw
 
 ## Active batch
 
-- None claimed. Next untracked candidates: Today's Adventure (P3-01, P3-07, P3-08), Toddler Play Together (P3-03), Sorting Station, Pattern Train, Story Time, Feelings Friends (P4-01 to P4-04). Sound Safari (P3-05) waits on the letter sounds (T-04).
+- None claimed. The motion games (Ball Trail, Star Flight, PR #3) are done and merged; only their real-iPhone and family check (G-04) is open. School work resumes with Today's Adventure.
+- Next untracked School candidates: Today's Adventure (P3-01, P3-07, P3-08), Toddler Play Together (P3-03), Sorting Station, Pattern Train, Story Time, Feelings Friends (P4-01 to P4-04). Sound Safari (P3-05) waits on the letter sounds (T-04).
+
+## Motion games batch — Codex, then Claude, 2026-10-05
+
+- Owner-directed detour from School: **G-01 Ball Trail**, **G-02 Star Flight**, **G-03 shared motion controls**. Codex built them on `codex/motion-games` (PR #3) and hit a usage limit while fixing the parent-test reload race; Claude fixed that on main (the parent-controls test answers voice.json with 404, so no clips are downloading when it reloads; waiting for quiet outlasted the 30-second PIN cooldown) and then, at the owner's go-ahead, reworked the games for the kids before the merge.
+- `MotionGames` (one module, both games, routes `balltrail`/`starflight` in `ACCESS_GROUP` games, blocked in School only). No buttons or words on the kids' screen: a finger held on the field steers (the piece heads for it), and tilt steers once motion is allowed. Tilt counts from the first reading of a round and re-centers whenever a finger lets go; it turns with `screen.orientation.angle`; readings older than 1.5 s are ignored. Five star slots (`.mg-got`, the sticker frame) fill as stars come; rounds start over by themselves (`later`, so leaving cancels them). Ball Trail: `MAZES` (one hedge first, then two two-hedge mazes in turn), hedges in the leaf frame, the star garden in the sun frame, a boop per bump. Star Flight: two stars drift down; five is a cheer. Painted fields `BG.lawn`/`BG.sky`. Hook: `motionGames()`.
+- Motion permission: `askMotion` now serves the pretend camera (`camMotion`: Camera allowed, Move the phone) and the tilt games (`tiltMotion`: Games allowed, new setting `settings.tilt` 'on'/'off', row *Tilt games*). The getting-ready card and Done ask for either; the games themselves never call `requestPermission` (they listen only when `AR.perm` is granted, or there's no permission API), so Safari never asks in front of the kids.
+- Voice (narrator, 'menus' area like "Tap the egg!"): "Roll the ball to the star!", "Fly the parrot to the stars!", "You found the star!", "Five stars! Nice flying!" (6 clips). Game cards: the two new ones come after the four the kids know.
+- Tests: `tests/motion-games.cjs` (Chromium and WebKit in CI, three layouts): no question when a game opens, tilt steering, the hedge, re-centering on lift, the turned screen, finishing both mazes by finger, star slots, rounds starting over, leaving stops listening, Star Flight's five, motion denied (touch still steers), Touch only. Parent controls: Tilt games is disabled when Games is blocked.
+- **G-04 remains open** for the real iPhone (permission, grip, both landscapes, Guided Access Motion) and a family playtest; speed (40% of the field a second) and the 20° full tilt may need tuning from that. Don't claim these were done.
 
 ## Current progress review — Codex, 2026-10-04 (America/Chicago)
 
