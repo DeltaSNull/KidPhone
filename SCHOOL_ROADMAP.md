@@ -10,10 +10,10 @@ Status: Parent access controls, play-time limits, and School sound controls depl
 
 The owner requested two regular games on 2026-10-05. This is separate from the School task totals and does not undo the holds on profiles, tracking or phonics. Claude and Codex: read HANDOFF.md before continuing.
 
-- [x] **G-01 — Ball Trail:** tilt/touch maze, forgiving collisions, clear ending. Implemented on `codex/motion-games`; Chromium playthrough verified.
-- [x] **G-02 — Star Flight:** tilt/touch star-catching game, five-star ending, no failure penalty. Implemented; Chromium playthrough verified.
-- [x] **G-03 — Shared controls:** permission only on an explicit tap; calibration, rotation, stale-sensor fallback, navigation cleanup, Games access policy. Implemented; Chromium checks verified.
-- [ ] **G-04 — Validation:** browser checks and real-iPhone/family playtest. Chromium and WebKit motion checks pass in three layouts ([run 37255019328](https://github.com/DeltaSNull/KidPhone/actions/runs/37255019328)). Publication awaits the WebKit parent-test reload-race fix; real-device/family testing remains pending.
+- [x] **G-01 — Ball Trail:** roll the ball around the hedges to the star by finger or tilt; one-hedge maze first, then two-hedge mazes; star slots, rounds roll on. Chromium checks verified (WebKit in CI).
+- [x] **G-02 — Star Flight:** fly the parrot to drifting stars by finger or tilt; five stars is a cheer, misses come round again. Chromium checks verified (WebKit in CI).
+- [x] **G-03 — Shared controls:** no buttons for the kids; motion only after a grown-up allows it (getting-ready card or the *Tilt games* setting), never asked from a game; re-centers on lift; turns with the screen; Touch only setting; cleanup on leaving.
+- [ ] **G-04 — Validation:** browser checks pass (motion suite in Chromium and WebKit, three layouts). Real-iPhone and family playtest still pending; tilt speed may need tuning.
 
 ## Goal
 

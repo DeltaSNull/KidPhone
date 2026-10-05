@@ -88,6 +88,7 @@ const check = (condition, message) => { assert.ok(condition, message); console.l
     check(await page.evaluate(() => permissionCalls.motion + permissionCalls.camera) === 0, 'disabled camera requests neither motion nor media permission');
     await unlock('2580');
     check(await page.locator('[data-camera="both"]').isDisabled(), 'camera controls disabled while camera unavailable');
+    check(await page.locator('[data-tilt="on"]').isDisabled(), 'Tilt games controls disabled while Games is unavailable');
     await tap('#doneBtn');
     check(await page.evaluate(() => permissionCalls.motion + permissionCalls.camera) === 0, 'Done does not trigger disabled motion permission');
     await unlock('2580'); await tap('#parentPinBtn'); await pin('3690'); await pin('3690'); await waitVisible('#settings');

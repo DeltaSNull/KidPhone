@@ -58,12 +58,12 @@ img[src^="data:image/png"]{image-rendering:-webkit-optimize-contrast; image-rend
 .art{line-height:1}
 .art > .px{width:1.15em; height:1.15em}
 /* frames: notched pixel corners, a light rim, a darker lip and a drop shadow, stretched to fit (border-image) */
-.tab,.contact,.dial,.key,.callbtn,.thumb,.pic,.song,.wt-tile,.wt-back,.wt-pad,.wt-choice,.wt-stickers,.wt-newegg,.st-food,.pp-easel,.who-btn,.sheet,.sbtn,.vopt,.confirm,.bar,.pad,.pkey,.vstage img,.pkey.blk::after,.lp-card,.lp-paper{
+.tab,.contact,.dial,.key,.callbtn,.thumb,.pic,.song,.wt-tile,.wt-back,.wt-pad,.wt-choice,.wt-stickers,.wt-newegg,.st-food,.pp-easel,.who-btn,.sheet,.sbtn,.vopt,.confirm,.bar,.pad,.pkey,.vstage img,.pkey.blk::after,.lp-card,.lp-paper,.mg-hedge,.mg-goal{
   border-style:solid; border-color:transparent; border-width:9px 9px 15px; border-image:var(--fr, var(--f-paper)) 9 9 15 fill / 9px 9px 15px stretch;
   border-radius:0!important; box-shadow:none!important; background:none!important}
 .word,.wt-word,.nm,.gname,.gplay,.calltime,#zoomTxt,.lp-word{border-style:solid; border-color:transparent; border-width:6px 6px 9px; border-image:var(--tg, var(--t-paper)) 6 6 9 fill / 6px 6px 9px stretch; border-radius:0!important; box-shadow:none!important; background:none!important}
 /* cards with their own painted picture get an edge with a see-through middle */
-.vf,.stage,.gamecard{border-style:solid; border-color:transparent; border-width:9px 9px 15px; border-image:var(--b-paper) 9 9 15 / 9px 9px 15px stretch; border-radius:0!important; box-shadow:none!important; background-clip:padding-box!important}
+.vf,.stage,.gamecard,.mg-board{border-style:solid; border-color:transparent; border-width:9px 9px 15px; border-image:var(--b-paper) 9 9 15 / 9px 9px 15px stretch; border-radius:0!important; box-shadow:none!important; background-clip:padding-box!important}
 /* round buttons */
 .round,#homeBtn,.shutter,.scenebtn,.zoombtn,.vbtn,.wt-ear,.face{background:var(--disc) center/100% 100% no-repeat!important; border-radius:0!important; box-shadow:none!important}
 .round.go{--disc:var(--d-go)} .round.stop{--disc:var(--d-stop)} .vbtn{--disc:var(--d-paper)} .wt-ear{--disc:var(--d-berry)}
@@ -403,30 +403,37 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img{image-rendering:auto}
 .g-dino .gart,.g-paint .gart{align-items:center}
 .gamecard.go{animation:hop .45s cubic-bezier(.3,1.6,.5,1)}
 
-/* Tilt games share a square playfield so steering feels the same in either orientation. */
+/* six game cards: a little tighter so they all fit */
 #gameList{gap:7px}
 #gameList .gtext{width:150px}
 #gameList .gname{font-size:19px}
-.g-roll{background:#C8EDAD}.g-fly{background:#BDE9FF}
-.motion-game{background:#DDF1CA;align-items:center;gap:6px!important;padding:8px!important}
-#starflight{background:#BDE9FF}
-.motion-head{display:flex;gap:8px;align-items:center;justify-content:space-between;width:100%;font-size:20px}
-.motion-head button,.motion-controls button,.motion-end button{background:#FFF8DD;border:3px solid #635342;padding:8px;min-height:44px;font:inherit;color:#392F36}
-.motion-field{position:relative;flex:1;min-height:0;width:100%;display:flex;justify-content:center;align-items:center}
-.motion-board{position:relative;width:min(100%,58vh);aspect-ratio:1;max-height:100%;background:#F6EBC5;border:5px solid #685D43;overflow:hidden;touch-action:none}
-#starflight .motion-board{background:repeating-linear-gradient(0deg,#BDE9FF 0 44px,#CFF1FF 44px 48px);border-color:#477696}
-.motion-piece{position:absolute;width:9%;height:9%;transform:translate(-50%,-50%);pointer-events:none;display:flex;align-items:center;justify-content:center}
-#starflight [data-motion-player]{width:16%;height:16%}
-#starflight [data-motion-world] .motion-piece{width:12%;height:12%}
-.motion-piece .px{width:100%;height:100%;object-fit:contain}
-.motion-wall{position:absolute;background:#78AB63;border:3px solid #487A43}
-.motion-goal{position:absolute;width:15%;height:15%;left:78%;top:78%;background:#FFD56E;border:4px dashed #9A703C;display:flex;align-items:center;justify-content:center}
-.motion-goal .px{width:75%;height:75%}
-.motion-controls{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;font-size:16px}
-.motion-note{margin:0;text-align:center;font-size:16px;min-height:20px}
-.motion-end{position:absolute;inset:12%;background:#FFF8E5;border:5px solid #866333;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;font-size:24px;z-index:2}
-.motion-end[hidden]{display:none}
-@media(orientation:landscape){.motion-game{display:grid!important;grid-template-columns:1fr 180px;grid-template-rows:auto 1fr auto}.motion-game[hidden]{display:none!important}.motion-head{grid-column:1 / -1}.motion-field{grid-row:2 / 4;height:100%}.motion-board{width:min(100%,62vh)}.motion-controls{align-content:center}.motion-note{max-width:180px}}
+.g-roll{background:#C8EDAD} .g-fly{background:#BDE9FF}
+
+/* ---------- Games: Ball Trail and Star Flight (one player, tilt or touch) ----------
+   The field is square and as big as fits, so steering feels the same either way up; everything on it is placed and
+   sized in percent of it. Five star slots above it (beside it in landscape) fill up as the stars come. */
+.app.mg{display:grid; grid-template-rows:auto minmax(0,1fr); gap:8px; padding:8px 10px 10px; overflow:hidden}
+@media (orientation:landscape){ .app.mg{grid-template-rows:none; grid-template-columns:auto minmax(0,1fr)} .mg-got{flex-direction:column; width:64px} }
+.mg-got{font-size:clamp(30px, 5.5vh, 46px)}
+@media (orientation:landscape){ .mg-got{font-size:30px} }
+.mg-got .px{width:1.15em; height:1.15em}
+.mg-got span{display:grid; place-items:center; opacity:.28; filter:grayscale(1)}
+.mg-got span.on{opacity:1; filter:none; animation:wt-bounce .6s}
+.mg-field{position:relative; min-width:0; min-height:0; container-type:size; display:grid; place-items:center}
+/* (the bezel is 9px at the sides and 15px below: 6px more height keeps the inside square) */
+.mg-board{--s:min(100cqw, 100cqh - 6px); position:relative; width:var(--s); height:calc(var(--s) + 6px); overflow:hidden; touch-action:none}
+.mg-piece{position:absolute; transform:translate(-50%,-50%); pointer-events:none; line-height:0}
+.mg-piece .px{width:100%; height:100%; display:block}
+.mg-me{width:12%; height:12%; z-index:2}
+.mg-me .px{transform:scaleX(var(--fx, 1)) rotate(var(--spin, 0deg))}   /* the ball rolls; the parrot faces the way it flies */
+#starflight .mg-me{width:19%; height:19%}
+.mg-me.hop{animation:hop .5s 2}
+.mg-hedge{position:absolute; --fr:var(--f-leaf)}
+.mg-goal{position:absolute; width:17%; height:17%; display:grid; place-items:center; --fr:var(--f-sun)}
+.mg-goal .px{width:100%; height:100%}
+.mg-goal.hop .px{animation:hop .5s 3}
+.mg-star{width:13%; height:13%}
+.mg-star.got{transition:transform .35s ease-in, opacity .35s; transform:translate(-50%,-50%) scale(1.8); opacity:0}
 
 /* ---------- Game: Wild Tap Safari (the first game, moved in whole) ---------- */
 .app.wt, .app.db, .app.st, .app.pp{padding:0; gap:0}
@@ -986,14 +993,15 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img{image-rendering:auto}
         <div class="gamelist" id="gameList"></div>
       </section>
 
-<section class="app motion-game" id="balltrail" hidden aria-label="Ball Trail">
-<div class="motion-head"><button data-motion-back aria-label="Back to Games">Games</button><span>Ball Trail</span><span data-motion-score></span></div>
-<div class="motion-field"><div class="motion-board" aria-label="Touch and hold to steer" role="application"><div data-motion-world></div><div class="motion-piece" data-motion-player></div><div class="motion-end" hidden><span data-motion-result></span><button data-motion-again>Play again</button><button data-motion-back>Games</button></div></div></div>
-<div class="motion-controls"><button data-motion-tilt>Use tilt</button><button data-motion-center>Center tilt</button><button data-motion-touch>Use touch</button></div><p class="motion-note" aria-live="polite">Touch and hold to steer.</p></section>
-<section class="app motion-game" id="starflight" hidden aria-label="Star Flight">
-<div class="motion-head"><button data-motion-back aria-label="Back to Games">Games</button><span>Star Flight</span><span data-motion-score></span></div>
-<div class="motion-field"><div class="motion-board" aria-label="Touch and hold to steer" role="application"><div data-motion-world></div><div class="motion-piece" data-motion-player></div><div class="motion-end" hidden><span data-motion-result></span><button data-motion-again>Play again</button><button data-motion-back>Games</button></div></div></div>
-<div class="motion-controls"><button data-motion-tilt>Use tilt</button><button data-motion-center>Center tilt</button><button data-motion-touch>Use touch</button></div><p class="motion-note" aria-live="polite">Touch and hold to steer.</p></section>
+      <!-- GAMES: Ball Trail and Star Flight (one player: hold a finger where to go, or tip the phone) -->
+      <section class="app mg" id="balltrail" hidden aria-label="Ball Trail">
+        <div class="wt-stickers mg-got" aria-label="Stars found"></div>
+        <div class="mg-field"><div class="mg-board" role="application" aria-label="Hold a finger where the ball should go"><div class="mg-world"></div><span class="mg-piece mg-me"></span></div></div>
+      </section>
+      <section class="app mg" id="starflight" hidden aria-label="Star Flight">
+        <div class="wt-stickers mg-got" aria-label="Stars caught"></div>
+        <div class="mg-field"><div class="mg-board" role="application" aria-label="Hold a finger where the parrot should fly"><div class="mg-world"></div><span class="mg-piece mg-me"></span></div></div>
+      </section>
       <!-- SCHOOL: learning games (letters now; words next) -->
       <section class="app" id="school" hidden aria-label="School">
         <div class="gamelist" id="schoolList"></div>
@@ -1240,6 +1248,10 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img{image-rendering:auto}
           <div class="seg"><button class="sbtn" data-look="move">Move the phone</button><button class="sbtn" data-look="drag">Drag only</button></div>
           <span class="vhint">Move the phone: the pretend scenes go all the way round. Turn around to see the rest, tip the phone up for the sky and down for the ground; dragging still works too. Laid flat, the phone goes back to dragging. Safari asks once to allow motion: tap Move the phone here to answer it. Drag only: the scenes move only when dragged.</span>
           <span class="vhint" id="lookNote"></span></div>
+        <div class="srow"><span>Tilt games</span>
+          <div class="seg"><button class="sbtn" data-tilt="on">Tilt and touch</button><button class="sbtn" data-tilt="off">Touch only</button></div>
+          <span class="vhint">Ball Trail and Star Flight: tip the phone to steer, or hold a finger where to go. Safari asks once to allow motion: tap Tilt and touch here to answer it (or Start on the getting-ready card), so the question never pops up during play.</span>
+          <span class="vhint" id="tiltNote"></span></div>
         <div class="srow"><span>ABC Snack</span>
           <div class="seg"><button class="sbtn" data-abc="auto">Grows</button><button class="sbtn" data-abc="big">Big letters</button><button class="sbtn" data-abc="little">Little letters</button></div>
           <span class="vhint">The animal asks for a letter out loud and the child finds it (the letter is never shown first). Grows: big letters by name until the child gets eight in a row, then mostly little letters. The animals always ask by the letter's name ("Puppy wants an S!", "Frog wants a little b!"), never its sound. Letters come a few at a time, A to Z like the Letter Path.</span>
@@ -4519,6 +4531,8 @@ const BG = {
     return p.put(s, w - s.width - 4, Math.max(18, h*.12)).put(cloudArt(.5), w*.04, Math.max(20, h*.18)); },
   picnic(w, h){ return new Paper(w, h).ramp(['#FFF6EC']).dots((x, y) => y < 2 ? (y ? '#E0574A' : '#B8382D') : gingham(x + 2, y - 2)); },
   ppSide(top, bottom, cols, seed){ return (w, h) => new Paper(w, h).ramp([top, bottom]).dots(splats(w, h, cols, seed, 7, .11)); },
+  lawn(w, h){ return new Paper(w, h).ramp(['#A6DE8C', '#98D47C', '#8BCB6C']).dots((x, y) => (x >> 4) % 2 ? null : bay(x, y) < .22 ? '#B2E59A' : null).dots((x, y) => sr(x*3.7 + y*9.1) < .012 ? '#FFF3A0' : sr(x*8.3 + y*1.9) < .008 ? '#FFFFFF' : null); },
+  sky(w, h){ return new Paper(w, h).ramp(['#9FDCF7', '#BDE8FA', '#D6F2FF']).put(cloudArt(.45), w*.06, h*.1).put(cloudArt(.35), w*.58, h*.42).put(cloudArt(.3), w*.16, h*.74); },
   wood(w, h){ return new Paper(w, h).ramp(['#C98A4E', '#B5773E', '#A56A34']).dots((x, y) => { const v = (y + Math.round(2*Math.sin(x*.09 + y*.7)) + 64) % 7; return v === 0 ? '#8E5A2A' : v === 3 && bay(x, y) < .25 ? '#D49A60' : null; }); }
 };
 /* which element gets which background */
@@ -4533,7 +4547,9 @@ const BGS = [
   ['#school', BG.stripey(['#FFF0B8', '#FFE28A', '#FFD466', '#FFC746'], '#FFF6D2')], ['.g-abc', BG.grad(['#FFF6D2', '#FFE8A3', '#FFDB7A'])], ['.g-abcsnack', BG.grad(['#E4F6FF', '#C9ECFF', '#ADE0FF'])],
   ['#abczoo', BG.grad(['#FFF8DC', '#FFF0BE', '#FFE7A0', '#FFDE85'])], ['#letterpath', BG.grad(['#EAF9DD', '#D8F2C4', '#C6EAAE', '#B4E09A'])], ['#numzoo', BG.grad(['#E4FBF3', '#CDF3E6', '#B6EAD8', '#A0E0CB'])], ['.ad-ground', BG.grad(['#8FD16A', '#83C962', '#79C25A'])], ['#adStage', BG.grad(['#A9DDFF', '#B9E4FF', '#C9EBFF', '#D9F2FF', '#E6F7FF'])], ['.ad-tray', BG.grad(['#79C25A', '#6FB851', '#66AE49'])], ['#dpScene', BG.snack], ['.g-deliv', BG.grad(['#EAF7FF', '#D8F2FF', '#C2E8FF'])], ['.g-picnic', BG.grad(['#FFF4E0', '#FFE9C4', '#FFDCA4'])], ['#breakTime', BG.grad(['#33427F', '#2A386F', '#212D5E', '#18224C'])], ['#nsScene', BG.snack], ['.g-num', BG.grad(['#E4FBF3', '#C9F2E4', '#A8E6D2'])], ['.g-numsnack', BG.grad(['#FFF1E4', '#FFE1C9', '#FFD0AA'])], ['.lp-lesson', BG.grad(['#FFF8DC', '#FFF0BE', '#FFE7A0', '#FFDE85'])], ['.g-path', BG.grad(['#EAF9DD', '#D2F0BE', '#B4E09A'])],
   ['.pp-a', BG.ppSide('#FFE4CC', '#FFC99E', ['#FF9F43', '#E8506E', '#FFC83D'], 3)], ['.pp-b', BG.ppSide('#E6DFFC', '#C9BCF5', ['#8A6FD1', '#3D8FE0', '#5CC9B5'], 9)], ['.pp-mid', BG.wood],
-  ['#dinobuddies .who', BG.split], ['#paintpals .who', BG.paint]
+  ['#dinobuddies .who', BG.split], ['#paintpals .who', BG.paint],
+  ['.g-roll', BG.lawn], ['.g-fly', BG.sky], ['#balltrail', BG.grad(['#E9F8DA', '#D8F2C4', '#C6EAAE'])], ['#starflight', BG.grad(['#E4F6FF', '#C9ECFF', '#ADE0FF'])],
+  ['#balltrail .mg-board', BG.lawn], ['#starflight .mg-board', BG.sky]
 ];
 const bgKey = new WeakMap();
 function paintBG(el, fn, force){
@@ -4650,12 +4666,13 @@ const VOICE = [
   {k:'numbers', on:false, t:'Keypad numbers', d:'Says each number you press.'},
   {k:'music', on:false, t:'Music', d:'Names the instruments and songs.'}
 ];
-const settings = Object.assign({incoming:true, vol:2, silent:true, camera:'both', abc:'auto', path:'order', look:'move', schoolFx:'on', play:0, count:'self'}, store.get('settings', {}));
+const settings = Object.assign({incoming:true, vol:2, silent:true, camera:'both', abc:'auto', path:'order', look:'move', tilt:'on', schoolFx:'on', play:0, count:'self'}, store.get('settings', {}));
 if (settings.abc === 'sound') settings.abc = 'little';   // (letter sounds left ABC Snack: it asks by name only)
 if (!['auto','big','little'].includes(settings.abc)) settings.abc = settings.abc === 'case' ? 'little' : settings.abc === 'listen' ? 'big' : 'auto';
 if (!['pretend','real','both'].includes(settings.camera)) settings.camera = 'both';
 if (!['order','open'].includes(settings.path)) settings.path = 'order';
 if (!['move','drag'].includes(settings.look)) settings.look = 'move';
+if (!['on','off'].includes(settings.tilt)) settings.tilt = 'on';
 if (!['on','quiet','off'].includes(settings.schoolFx)) settings.schoolFx = 'on';
 if (![0, 15, 30, 60].includes(settings.play)) settings.play = 0;
 if (!['self','help'].includes(settings.count)) settings.count = 'self';
@@ -5987,8 +6004,11 @@ function onOrient(e){
   }
 }
 function listenMotion(){ if (appAllowed('camera') && settings.look === 'move' && !AR.listening){ AR.listening = true; window.addEventListener('deviceorientation', onOrient); } }
+/* motion is wanted by the pretend camera (Move the phone) and by the tilt games (Tilt and touch); either may ask */
+const camMotion = () => appAllowed('camera') && settings.look === 'move';
+const tiltMotion = () => appAllowed('games') && settings.tilt === 'on';
 function askMotion(){
-  if (!appAllowed('camera') || settings.look !== 'move') return Promise.resolve('disabled');
+  if (!camMotion() && !tiltMotion()) return Promise.resolve('disabled');
   const D = window.DeviceOrientationEvent;
   if (!D){ AR.perm = 'none'; return Promise.resolve('none'); }
   if (typeof D.requestPermission !== 'function'){ AR.perm = 'granted'; listenMotion(); return Promise.resolve('granted'); }
@@ -6683,6 +6703,15 @@ function renderLookNote(){
     : AR.perm === 'none' ? "This browser doesn't share the phone's motion, so the scenes drag."
     : AR.perm === 'granted' ? 'Motion allowed. It starts when the phone moves.'
     : "Motion isn't on right now (Safari may forget when it's closed): tap Move the phone to allow it. Until then the scenes drag.";
+}
+function renderTiltNote(){
+  $$('[data-tilt]').forEach(b => b.classList.toggle('on', b.dataset.tilt === settings.tilt));
+  const n = $('#tiltNote'); if (!n) return;
+  n.textContent = !tiltMotion() ? ''
+    : AR.perm === 'granted' ? 'Motion allowed: tip the phone to steer. (In Guided Access, keep Motion on in its Options.)'
+    : AR.perm === 'denied' ? "Safari was told not to allow motion, so the tilt games use touch for now. Close the toy's tab (or swipe the Home Screen app away), open it again, and tap Tilt and touch to be asked again."
+    : AR.perm === 'none' ? "This browser doesn't share the phone's motion, so the tilt games use touch."
+    : "Motion isn't on right now (Safari may forget when it's closed): tap Tilt and touch to allow it. Until then the games use touch.";
 }
 function renderCamNote(){
   $$('[data-camera]').forEach(b => b.classList.toggle('on', b.dataset.camera === settings.camera));
@@ -7927,103 +7956,135 @@ tap($('#songStop'), () => { FX.boop(); if (song){ stopSong(); say('Stop!', 0, 'm
 tap(dancer, () => { const s = songPick; FX[s.fx] && FX[s.fx](); retrigger(dancer, 'bow'); });
 
 /* ======================= GAMES ======================= */
-/* Motion belongs to the active game only; camera permissions/settings are independent.
-   No sensor permission is requested until a released tap on Use tilt (required by iOS). */
+/* ---------- Games: Ball Trail and Star Flight (one player) ----------
+   Ball Trail rolls a ball around the hedges to the star; Star Flight flies the parrot to catch falling stars. A finger
+   held on the field steers (the ball or parrot heads for it), and once a grown-up has allowed motion (the getting-ready
+   card, or Tilt games in settings) tipping the phone steers too. The games never ask Safari themselves, so no question
+   pops up in front of the kids. Tilt counts from how the phone was held when the round began, or when a finger last let
+   go, turned to match the screen. Each star lights one of five slots; after five, a cheer and the slots start over.
+   Nothing to lose, no timer, nothing to read. */
 const MotionGames = (() => {
-  const WALLS = [[30,0,7,62],[63,38,7,62]];
-  let id=null, root, board, player, world, raf=0, last=0, token=0;
-  let x=13,y=15,score=0,done=false,mode='touch',target=null,raw=null,zero=null,live=0,angle=0,stars=[];
-  const orientation = () => Number(screen.orientation?.angle ?? window.orientation ?? 0);
-  const note = s => { if(root) root.querySelector('.motion-note').textContent=s; };
+  const SAY = {balltrail:'Roll the ball to the star!', starflight:'Fly the parrot to the stars!', found:'You found the star!', five:'Five stars! Nice flying!'};
+  // hedges [left, top, width, height] in percent of the field; the ball starts at s; the star garden's corner is g
+  const MAZES = [
+    {walls:[[42, 0, 14, 60]], s:[15, 15], g:[73, 73]},
+    {walls:[[28, 0, 12, 62], [60, 38, 12, 62]], s:[13, 14], g:[77, 77]},
+    {walls:[[60, 0, 12, 62], [28, 38, 12, 62]], s:[87, 14], g:[6, 77]}
+  ];
+  const R = 6, SPEED = 40, CATCH = 12;   // the ball's half-size, percent of the field per second at full steer, how near a star counts
+  let id = null, el = null, board = null, me = null, world = null, raf = 0, last = 0;
+  let x = 50, y = 50, spin = 0, round = 0, got = 0, done = false, finger = null, bumping = false, stars = [];
+  let raw = null, zero = null, angle = 0, live = 0, listening = false;   // tilt: the latest reading, the grip it counts from
+
+  const tiltOK = () => tiltMotion() && !!window.DeviceOrientationEvent && (typeof DeviceOrientationEvent.requestPermission !== 'function' || AR.perm === 'granted');
+  const screenAngle = () => Number(screen.orientation?.angle ?? window.orientation ?? 0);
+  const maze = () => MAZES[round ? 1 + (round - 1) % 2 : 0];
   function sensor(e){
-    if(!id || mode!=='tilt' || !Number.isFinite(e.beta) || !Number.isFinite(e.gamma)) return;
-    raw=[e.gamma,e.beta]; live=performance.now();
-    if(!zero || angle!==orientation()){zero=raw.slice();angle=orientation();note('Tilt gently. Hold still and tap Center tilt to reset.');}
+    if (e.beta == null || e.gamma == null) return;
+    raw = [e.gamma, e.beta]; live = performance.now();
+    if (!zero || angle !== screenAngle()){ zero = raw.slice(); angle = screenAngle(); }
   }
-  function stopSensor(){window.removeEventListener('deviceorientation',sensor);raw=zero=null;live=0;}
-  function touch(){mode='touch';stopSensor();target=null;note('Touch and hold where you want to go.');}
-  async function tilt(){
-    if(!id || done || !appAllowed(id))return;
-    const request=++token;
-    try{
-      const D=window.DeviceOrientationEvent;
-      if(!D){touch();note('Tilt is unavailable. Touch and hold to steer.');return;}
-      const result=typeof D.requestPermission==='function' ? await D.requestPermission() : 'granted';
-      if(request!==token || !id || !appAllowed(id))return;
-      if(result!=='granted'){touch();note('Tilt was not enabled. Touch and hold to steer.');return;}
-      stopSensor();mode='tilt';target=null;live=performance.now();
-      window.addEventListener('deviceorientation',sensor);note('Hold comfortably. Waiting for tilt…');
-    }catch(e){if(request===token && id){touch();note('Tilt is unavailable. Touch and hold to steer.');}}
+  function listen(on){
+    if (on === listening) return;
+    listening = on; raw = zero = null;
+    window[on ? 'addEventListener' : 'removeEventListener']('deviceorientation', sensor);
   }
-  function draw(){
-    player.style.left=x+'%';player.style.top=y+'%';
-    root.querySelector('[data-motion-score]').innerHTML=id==='starflight'?`<b class="n">${score}/5</b>`:'';
-    if(id==='starflight')world.innerHTML=stars.map(s=>`<span class="motion-piece" style="left:${s.x}%;top:${s.y}%">${ART.star}</span>`).join('');
+  /* which way to go, each from -1 to 1: toward a held finger, or the way the phone is tipped */
+  function steer(t){
+    if (finger) return [clamp((finger.x - x)/8, -1, 1), clamp((finger.y - y)/8, -1, 1)];
+    if (!raw || !zero || t - live > 1500) return [0, 0];
+    const a = angle*Math.PI/180, dx = raw[0] - zero[0], dy = raw[1] - zero[1];
+    const lean = n => Math.abs(n) < 3 ? 0 : clamp(n/20, -1, 1);   // a little wobble does nothing; 20° is full speed
+    return [lean(dx*Math.cos(a) + dy*Math.sin(a)), lean(dy*Math.cos(a) - dx*Math.sin(a))];
   }
-  function finish(){done=true;target=null;stopSensor();FX.cheer();root.querySelector('[data-motion-result]').textContent=id==='balltrail'?'You found the star!':'Five stars! Nice flying!';root.querySelector('.motion-end').hidden=false;}
-  function reset(){
-    x=id==='balltrail'?13:50;y=id==='balltrail'?15:78;score=0;done=false;target=null;
-    stars=[{x:25,y:15},{x:75,y:48}];
-    world.innerHTML=id==='balltrail'?WALLS.map(w=>`<div class="motion-wall" style="left:${w[0]}%;top:${w[1]}%;width:${w[2]}%;height:${w[3]}%"></div>`).join('')+`<div class="motion-goal">${ART.star}</div>`:'';
-    root.querySelector('.motion-end').hidden=true;draw();
-    if(mode==='tilt'){touch();note('Touch to steer, or tap Use tilt for another round.');}
-  }
-  function blocked(nx,ny){return id==='balltrail' && WALLS.some(([a,b,w,h])=>nx+4>a&&nx-4<a+w&&ny+4>b&&ny-4<b+h);}
-  function frame(t){
-    if(!id)return;
-    const dt=Math.min((t-last)/1000,.035);last=t;
-    if(!done && !document.hidden && $('#settings').hidden && $('#parentGate').hidden){
-      let vx=0,vy=0;
-      if(mode==='tilt'){
-        if(t-live>1800){touch();note('Tilt paused. Touch to steer, or tap Use tilt again.');}
-        else if(raw&&zero){
-          const a=angle*Math.PI/180,dx=raw[0]-zero[0],dy=raw[1]-zero[1];
-          const dead=n=>Math.abs(n)<2?0:Math.max(-1,Math.min(1,n/18));
-          vx=dead(dx*Math.cos(a)+dy*Math.sin(a));vy=dead(dy*Math.cos(a)-dx*Math.sin(a));
-        }
-      }
-      if(target){vx=Math.max(-1,Math.min(1,(target.x-x)/8));vy=Math.max(-1,Math.min(1,(target.y-y)/8));}
-      const nx=Math.max(5,Math.min(95,x+vx*35*dt)),ny=Math.max(5,Math.min(95,y+vy*35*dt));
-      if(!blocked(nx,y))x=nx;if(!blocked(x,ny))y=ny;
-      if(id==='balltrail'){if(x>79&&y>79)finish();}
-      else for(const star of stars){
-        star.y+=9*dt;
-        if(Math.hypot(x-star.x,y-star.y)<9){score++;FX.pop();star.y=-8;star.x=15+Math.random()*70;if(score===5){finish();break;}}
-        else if(star.y>108){star.y=-8;star.x=15+Math.random()*70;}
-      }
-      draw();
+  const blocked = (nx, ny) => id === 'balltrail' && maze().walls.some(([a, b, w, h]) => nx + R > a && nx - R < a + w && ny + R > b && ny - R < b + h);
+  function slots(){ el.querySelector('.mg-got').innerHTML = Array.from({length:5}, (_, i) => `<span class="${i < got ? 'on' : ''}">${ART.star}</span>`).join(''); }
+  function place(node, px, py){ node.style.left = px + '%'; node.style.top = py + '%'; }
+  function start(){
+    done = false; finger = null; bumping = false; zero = null;
+    if (got >= 5){ got = 0; slots(); }
+    if (id === 'balltrail'){
+      const m = maze(); [x, y] = m.s;
+      world.innerHTML = m.walls.map(([a, b, w, h]) => `<div class="mg-hedge" style="left:${a}%; top:${b}%; width:${w}%; height:${h}%"></div>`).join('')
+        + `<div class="mg-goal" style="left:${m.g[0]}%; top:${m.g[1]}%">${ART.star}</div>`;
+    } else {
+      x = 50; y = 76;
+      stars = [{x:25, y:12}, {x:72, y:40}];
+      world.innerHTML = stars.map(() => `<span class="mg-piece mg-star">${ART.star}</span>`).join('');
+      stars.forEach((st, i) => st.node = world.children[i]);
     }
-    raf=requestAnimationFrame(frame);
+    place(me, x, y);
   }
-  ['balltrail','starflight'].forEach(name=>{
-    const el=$('#'+name),field=el.querySelector('.motion-board');
-    el.querySelectorAll('[data-motion-back]').forEach(b=>tap(b,()=>go('games')));
-    onLift(el.querySelector('[data-motion-tilt]'),tilt);
-    tap(el.querySelector('[data-motion-touch]'),()=>{token++;touch();});
-    tap(el.querySelector('[data-motion-center]'),()=>{if(mode==='tilt'&&raw){zero=raw.slice();angle=orientation();note('Centered. Tilt gently to steer.');}else note('Tap Use tilt first, or touch the board to steer.');});
-    tap(el.querySelector('[data-motion-again]'),reset);
-    const point=e=>{const r=field.getBoundingClientRect();target={x:(e.clientX-r.left)/r.width*100,y:(e.clientY-r.top)/r.height*100};};
-    field.addEventListener('pointerdown',e=>{if(done||e.target.closest('button'))return;e.preventDefault();token++;touch();field.setPointerCapture(e.pointerId);point(e);});
-    field.addEventListener('pointermove',e=>{if(target)point(e);});
-    ['pointerup','pointercancel','lostpointercapture'].forEach(ev=>field.addEventListener(ev,()=>target=null));
+  function star(){   // one more star: it lights the next slot; the fifth finishes the round
+    got++; slots(); FX.pop();
+    if (got < 5 && id === 'starflight') return;
+    done = true; finger = null;
+    later(() => { FX.cheer(); retrigger(me, 'hop'); }, 250);
+    if (id === 'balltrail'){ retrigger(world.querySelector('.mg-goal'), 'hop'); say(SAY.found, 0, 'menus'); }
+    else say(SAY.five, 0, 'menus');
+    later(() => { round++; start(); }, got >= 5 ? 3200 : 2400);
+  }
+  function frame(t){
+    if (!id) return;
+    const dt = Math.min((t - last)/1000, .035); last = t;
+    listen(tiltOK());
+    if (!done && !document.hidden && $('#settings').hidden && $('#parentGate').hidden){
+      const [vx, vy] = steer(t);
+      const nx = clamp(x + vx*SPEED*dt, R, 100 - R), ny = clamp(y + vy*SPEED*dt, R, 100 - R);
+      const bx = blocked(nx, y), by = blocked(x, ny);
+      const ox = x, oy = y;
+      if (!bx) x = nx; if (!by) y = ny;
+      if (id === 'balltrail'){ spin += (x - ox)*24; me.style.setProperty('--spin', spin.toFixed(1) + 'deg'); }   // (rolling right turns it clockwise)
+      else if (Math.abs(vx) > .15) me.style.setProperty('--fx', vx > 0 ? -1 : 1);   // (the parrot picture faces left)
+      if ((bx || by) && !bumping) FX.boop();   // one bump per touch of a hedge, not a buzz
+      bumping = bx || by;
+      place(me, x, y);
+      if (id === 'balltrail'){ const [gx, gy] = maze().g; if (x > gx && x < gx + 17 && y > gy && y < gy + 17) star(); }
+      else for (const st of stars){
+        st.y += 9*dt;
+        if (Math.hypot(x - st.x, y - st.y) < CATCH){
+          const node = st.node; node.classList.add('got');   // the caught star puffs away and a new one starts at the top
+          const fresh = node.cloneNode(true); fresh.classList.remove('got'); world.appendChild(fresh); st.node = fresh;
+          setTimeout(() => node.remove(), 400);
+          st.y = -8; st.x = 15 + Math.random()*70; star();
+          if (done) break;
+        } else if (st.y > 108){ st.y = -8; st.x = 15 + Math.random()*70; }
+        place(st.node, st.x, st.y);
+      }
+    }
+    raf = requestAnimationFrame(frame);
+  }
+  ['balltrail', 'starflight'].forEach(name => {
+    const field = $('#' + name + ' .mg-board');
+    const point = e => { const r = field.getBoundingClientRect(), b = parseFloat(getComputedStyle(field).borderLeftWidth) || 0;
+      finger = {x:(e.clientX - r.left - b)/(r.width - 2*b)*100, y:(e.clientY - r.top - b)/(r.width - 2*b)*100}; };
+    field.addEventListener('pointerdown', e => { if (done) return; e.preventDefault(); keepAwake(); try{ field.setPointerCapture(e.pointerId); }catch(err){} point(e); });
+    field.addEventListener('pointermove', e => { if (finger) point(e); });
+    ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(ev => field.addEventListener(ev, () => { if (finger){ finger = null; zero = null; } }));   // letting go: tilt counts from the grip now
   });
-  document.addEventListener('visibilitychange',()=>{if(id){target=null;zero=null;raw=null;last=performance.now();live=last;}});
+  document.addEventListener('visibilitychange', () => { finger = null; zero = null; last = performance.now(); });
   return {
-    enter(name){id=name;root=$('#'+id);board=root.querySelector('.motion-board');player=root.querySelector('[data-motion-player]');world=root.querySelector('[data-motion-world]');player.innerHTML=id==='balltrail'?schoolPic('ball'):ART.parrot;touch();reset();last=performance.now();raf=requestAnimationFrame(frame);},
-    leave(){token++;cancelAnimationFrame(raf);stopSensor();target=null;id=null;},
-    state:()=>({id,x,y,score,done,mode,listening:mode==='tilt'&&!!id&&!done,stars:stars.map(s=>({...s}))})
+    enter(name){
+      id = name; el = $('#' + name); board = el.querySelector('.mg-board'); me = el.querySelector('.mg-me'); world = el.querySelector('.mg-world');
+      me.innerHTML = name === 'balltrail' ? schoolPic('ball') : ART.parrot;
+      round = 0; got = 0; slots(); start(); say(SAY[name], 0, 'menus');
+      last = performance.now(); raf = requestAnimationFrame(frame);
+    },
+    leave(){ cancelAnimationFrame(raf); listen(false); finger = null; id = null; },
+    lines: () => Object.values(SAY),
+    state: () => ({id, x, y, round, got, done, tilt:listening, maze:id === 'balltrail' ? MAZES.indexOf(maze()) : null, stars:stars.map(st => ({x:st.x, y:st.y}))})
   };
 })();
 
 /* The picker. To add a game later: add its <section class="app"> above, a card here, and enter/leave hooks in enterApp/leaveApp.
    p: how many players it can be; the card says so, with a little kid for each. A game for 1 or 2 asks when it opens. */
 const GAMES = [
-  {id:'balltrail', n:'Ball Trail', p:[1], cls:'g-roll', art:`<span class="art big">${schoolPic('ball')}</span><span class="art">${ART.star}</span>`},
-  {id:'starflight', n:'Star Flight', p:[1], cls:'g-fly', art:`<span class="art big">${ART.parrot}</span><span class="art">${ART.star}</span>`},
   {id:'wildtap', n:'Wild Tap', p:[1], cls:'g-wild', art:`<span class="art">${ART.elephant}</span><span class="art big">${ART.lion}</span><span class="art">${ART.giraffe}</span>`},
   {id:'snacktime', n:'Snack Time', p:[1], cls:'g-feed', art:`<span class="art">${ART.banana}</span><span class="art big">${ART.monkey}</span><span class="art">${ART.watermelon}</span>`},
   {id:'dinobuddies', n:'Dino Buddies', p:[1,2], cls:'g-dino', art:`<span class="art mid">${ART.trex}</span><span class="art sm">${ART.egg}</span><span class="art mid flip">${ART.trex}</span>`},
-  {id:'paintpals', n:'Paint Pals', p:[1,2], cls:'g-paint', art:`<span class="art mid flip">${ppHalf('giraffe')}</span><span class="art sm">${ART.brush}</span><span class="art mid">${ppHalf('lion')}</span>`}
+  {id:'paintpals', n:'Paint Pals', p:[1,2], cls:'g-paint', art:`<span class="art mid flip">${ppHalf('giraffe')}</span><span class="art sm">${ART.brush}</span><span class="art mid">${ppHalf('lion')}</span>`},
+  {id:'balltrail', n:'Ball Trail', p:[1], cls:'g-roll', art:`<span class="art big">${schoolPic('ball')}</span><span class="art">${ART.star}</span>`},
+  {id:'starflight', n:'Star Flight', p:[1], cls:'g-fly', art:`<span class="art big">${ART.parrot}</span><span class="art">${ART.star}</span>`}
 ];
 GAMES.forEach(g => {
   const b = document.createElement('button'); b.className = 'gamecard ' + g.cls; b.setAttribute('aria-label', g.n);
@@ -8743,6 +8804,7 @@ function renderAccess(){
   $('#parentPinBtn').textContent = access.pin ? 'Change PIN' : 'Set PIN';
   $('#accessNote').textContent = access.mode === 'school' ? 'School only is on. Other apps and incoming calls are blocked.' : access.pin ? 'Settings are protected by your PIN.' : 'No PIN yet. Set one before handing over the phone.';
   $$('[data-camera], [data-look]').forEach(b => b.disabled = !appAllowed('camera'));
+  $$('[data-tilt]').forEach(b => b.disabled = !appAllowed('games'));
   $$('[data-incoming], #testRing').forEach(b => b.disabled = !appAllowed('phone'));
 }
 function applyAccess(){
@@ -8848,7 +8910,7 @@ function renderSettings(){
   $$('[data-incoming]').forEach(b => b.classList.toggle('on', (b.dataset.incoming === '1') === settings.incoming));
   $$('[data-silent]').forEach(b => b.classList.toggle('on', (b.dataset.silent === '1') === settings.silent));
   $$('[data-vol]').forEach(b => b.classList.toggle('on', +b.dataset.vol === settings.vol));
-  renderCamNote(); renderLookNote(); renderAbcNote(); renderPathNote();
+  renderCamNote(); renderLookNote(); renderTiltNote(); renderAbcNote(); renderPathNote();
   const n = Photos.list.length; $('#photoCount').textContent = n + (n === 1 ? ' photo' : ' photos');
   $('#clearBtn').disabled = !n;
 }
@@ -8883,7 +8945,9 @@ $$('[data-look]').forEach(b => tap(b, () => { settings.look = b.dataset.look; sa
    leaving settings with it on asks too, if motion is still off. */
 function onLift(el, fn){ let last = 0; const go = () => { const now = performance.now(); if (now - last > 600){ last = now; fn(); } }; el.addEventListener('touchend', go); el.addEventListener('click', go); }
 onLift($('[data-look="move"]'), () => { if (settings.look === 'move') askMotion().then(renderLookNote); });
-onLift($('#doneBtn'), () => { if (settings.look === 'move' && !AR.ok) askMotion(); });
+$$('[data-tilt]').forEach(b => tap(b, () => { settings.tilt = b.dataset.tilt; saveSettings(); FX.cheer(); renderSettings(); }));
+onLift($('[data-tilt="on"]'), () => { if (tiltMotion()) askMotion().then(renderTiltNote); });
+onLift($('#doneBtn'), () => { if ((camMotion() && !AR.ok) || (tiltMotion() && AR.perm !== 'granted')) askMotion(); });
 $$('[data-silent]').forEach(b => tap(b, () => { settings.silent = b.dataset.silent === '1'; saveSettings(); setSession(); renderSettings(); showSound(); FX.cheer(); }));
 $$('[data-vol]').forEach(b => tap(b, () => { settings.vol = +b.dataset.vol; saveSettings(); if (master) master.gain.value = VOLS[settings.vol]; renderSettings(); FX.cheer(); }));
 tap($('#clearBtn'), () => { if (Photos.list.length) $('#confirmClear').hidden = false; });
@@ -8899,19 +8963,20 @@ tap($('#doneBtn'), () => { closeSettings(); FX.pop(); });
    the questions in turn. Nothing to ask (allowed before, or turned off in settings): no card. */
 const READY = {motion:false, camera:false};
 async function readyCheck(){
-  if (!appAllowed('camera')) return;
-  READY.motion = settings.look === 'move' && typeof window.DeviceOrientationEvent?.requestPermission === 'function' && (await askMotion()) !== 'granted' && AR.perm !== 'denied';
-  if (settings.look === 'move' && !READY.motion) askMotion().then(renderLookNote);   // (no question here: Safari only reuses an earlier yes)
+  const motion = camMotion() || tiltMotion();
+  READY.motion = motion && typeof window.DeviceOrientationEvent?.requestPermission === 'function' && (await askMotion()) !== 'granted' && AR.perm !== 'denied';
+  if (motion && !READY.motion) askMotion().then(() => { renderLookNote(); renderTiltNote(); });   // (no question here: Safari only reuses an earlier yes)
   READY.camera = false;
   let camOK = false; try{ camOK = !!sessionStorage.getItem('toyphone.camOK'); }catch(e){}   // (already worked since Safari opened the toy)
-  if (!camOK && settings.camera !== 'pretend' && canCamera() && navigator.mediaDevices && navigator.permissions){
+  if (appAllowed('camera') && !camOK && settings.camera !== 'pretend' && canCamera() && navigator.mediaDevices && navigator.permissions){
     try{ READY.camera = (await navigator.permissions.query({name:'camera'})).state === 'prompt'; }catch(e){}
   }
-  if (!appAllowed('camera') || (!READY.motion && !READY.camera)) return;
-  $('#readyWhat').innerHTML = (READY.motion ? '<li><b>Motion</b>: the pretend camera looks around as the phone moves</li>' : '') + (READY.camera ? '<li><b>Camera</b>: real photos and selfies (pictures only, never the microphone)</li>' : '');
+  if (!READY.motion && !READY.camera) return;
+  const uses = camMotion() && tiltMotion() ? 'the pretend camera looks around, and the tilt games steer, as the phone moves' : camMotion() ? 'the pretend camera looks around as the phone moves' : 'the tilt games steer as the phone tips';
+  $('#readyWhat').innerHTML = (READY.motion ? `<li><b>Motion</b>: ${uses}</li>` : '') + (READY.camera ? '<li><b>Camera</b>: real photos and selfies (pictures only, never the microphone)</li>' : '');
   $('#ready').hidden = false;
 }
-function readyDone(){ $('#ready').hidden = true; renderLookNote(); renderCamNote(); }
+function readyDone(){ $('#ready').hidden = true; renderLookNote(); renderTiltNote(); renderCamNote(); }
 /* Start: motion first (it must be asked inside the tap, as the finger lifts), then the camera */
 onLift($('#readyGo'), () => {
   if ($('#ready').hidden) return;
@@ -8928,7 +8993,7 @@ document.addEventListener('touchmove', e => { if (!inScroll(e)) e.preventDefault
 let lastTouch = 0;
 document.addEventListener('touchend', e => { const now = Date.now(); if (now - lastTouch < 350 && !inScroll(e)) e.preventDefault(); lastTouch = now; }, {passive:false});
 document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'visible'){ keepAwake(); updateClock(); if (current === 'camera' && cam.mode !== 'safari') startReal(); if (settings.look === 'move' && !AR.listening) askMotion().then(renderLookNote); }
+  if (document.visibilityState === 'visible'){ keepAwake(); updateClock(); if (current === 'camera' && cam.mode !== 'safari') startReal(); if ((camMotion() && !AR.listening) || (tiltMotion() && AR.perm !== 'granted')) askMotion().then(() => { renderLookNote(); renderTiltNote(); }); }
   else { closeSettings(); stopSong(); if (call){ stopCallSounds(); closeCall(); } closeStream(); stopFx(); }   // the camera never runs off screen
 });
 let resizeT = 0;
@@ -8961,7 +9026,7 @@ function voiceLines(){
     'No pictures yet! Tap the camera to take some!', 'All your pictures!',
     ...Object.values(CAM_SAY), ...Object.values(MODE_SAY), 'Move the phone to look all around!', ...COSTUMES.map(c => `You're ${article(COSTUME_NAME[c])}!`), ...LOOK_ORDER.slice(1).map(k => LOOKS[k].say),
     ...Object.values(MUSIC_SAY), ...SONGS.map(x => x.n + '!'), 'Yay! Great dancing!', 'Stop!', 'Hello! This is how loud I am.',
-    ...WildTap.lines(), ...DinoBuddies.lines(), ...SnackTime.lines(), ...PaintPals.lines(),
+    ...WildTap.lines(), ...DinoBuddies.lines(), ...SnackTime.lines(), ...PaintPals.lines(), ...MotionGames.lines(),
     SCHOOL_SAY.school, ...LetterPath.lines(), ...AbcZoo.lines(), ...AbcSnack.lines(), ...NumZoo.lines(), ...NumSnack.lines(), ...Delivery.lines(), ...DinoPicnic.lines(), ...PLAY.lines()
   ];
   /* the narrator records whole lines and their sentences (for lines put together at play time); animals record whole lines */

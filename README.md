@@ -24,12 +24,18 @@ Guided Access. It's one self-contained `index.html` (vanilla JS, no build step),
 - **Games**: a controller icon that opens a game picker. Each card says who it's for: "1 player" with one little kid, or
   "1 or 2 players" with two (numbers are in the 8-bit digit font, so a 2 never reads as an 8). A game for 1 or 2 asks
   first, with two big buttons: one kid, or two kids. The last choice glows.
-  - *Ball Trail* (1 player): steer a ball around two hedges into the star garden. Bumps stop the ball; no lives or timer.
-  - *Star Flight* (1 player): steer a parrot to catch five drifting stars. Missed stars return; no penalty.
-    Both start with touch-and-hold steering. A grown-up can tap **Use tilt**, allow motion on iPhone, and hold the
-    phone comfortably for calibration. **Center tilt** resets that position; **Use touch** switches back.
-    Rotation recalibrates automatically. If sensor updates stop, touch steering remains available. Each game has a
-    clear ending and Play again. Existing pixel art and sound effects are used; there are no new spoken lines.
+  - *Ball Trail* (1 player): roll a ball around the hedges to the star ("Roll the ball to the star!"). The first maze
+    has one hedge, then two-hedge mazes take turns. A hedge just stops the ball (with a boop); each star found lights one
+    of five star slots, and the next maze starts by itself.
+  - *Star Flight* (1 player): fly the parrot to the stars that drift down the sky ("Fly the parrot to the stars!").
+    Each catch lights a slot; five is a cheer ("Five stars! Nice flying!") and the slots start over. Missed stars just
+    come round again.
+    Both steer the same two ways: hold a finger on the field and the ball or parrot heads for it, or tip the phone.
+    Tilt works once a grown-up has allowed motion (the getting-ready card, or *Tilt games* in settings); the games never
+    ask Safari themselves, so no question pops up during play. Tilt counts from how the phone is held when a round
+    starts, and again whenever a finger lets go, so any comfortable grip works, and it turns with the screen. There are
+    no buttons or words on the kids' screen, no timer and nothing to lose. The ball rolls; the parrot faces the way it
+    flies.
   - *Wild Tap Safari* (1 player): Safari, Zoo and Dino sound boards, Find It, egg hatching and bubble popping.
     Its grid button goes back to the Wild Tap menu.
   - *Snack Time* (1 player): a hungry animal walks in, thinking of a food in a thought bubble. Tap that food on the picnic
@@ -244,9 +250,10 @@ tufts) carry on above and below for looking up and down.
   just see the ground. Lifted again, it follows the phone from where the picture is.
 - **Permission**: iPhone asks once before a website can use motion, and only as a finger lifts at the end of a tap
   (asking as it touches down, which is when the toy's buttons answer, gets a silent no). The toy only asks from a
-  parent's tap in settings (choosing *Move the phone*, or *Done* while motion is still off), for the camera. The two tilt games have their own explicit **Use tilt** button, which a grown-up can tap before play.
-  When the toy opens, Safari quietly reuses an earlier yes. The settings note says whether motion is working now; if
-  Safari has forgotten (it may after it's closed), tap *Move the phone* again. In Guided Access, leave **Motion** on
+  parent's tap: Start on the getting-ready card, or in settings *Move the phone* (the camera), *Tilt and touch* (the
+  tilt games), or *Done* while motion is still off. One yes covers both. When the toy opens, Safari quietly reuses an
+  earlier yes. The settings notes say whether motion is working now; if Safari has forgotten (it may after it's
+  closed), tap *Move the phone* or *Tilt and touch* again. In Guided Access, leave **Motion** on
   in its Options. Android phones share motion without asking.
 - Taps on animals, hidden animals and photos all work across the join and while the phone moves.
 
@@ -338,7 +345,7 @@ Hold the clock in the top-left corner for **3 seconds**. If you have set a paren
 - **Custom:** choose which of the six apps are available. At least one must remain available. Disabled sections are hidden and blocked at navigation entry points.
 - **Full phone:** all six apps are available, preserving the original experience.
 - Choosing School only or Custom first asks you to create and confirm a **four-digit PIN**. You can also choose **Set PIN** while using Full phone. Later, **Change PIN** is available inside unlocked parent settings.
-- Camera permissions and camera-look motion permissions are not requested while Camera is disabled. Games can separately request motion only when Games is allowed and **Use tilt** is tapped. Disabling Camera stops its stream; disabling Phone ends an active call.
+- Camera permissions are not requested while Camera is disabled, and motion only for what's allowed: the pretend camera (Camera allowed, *Move the phone*) or the tilt games (Games allowed, *Tilt and touch*). Neither is asked for in School only. Disabling Camera stops its stream; disabling Phone ends an active call.
 - Access choices and the PIN digest are saved locally. Closing/reopening and offline use preserve them. Safari and the home-screen app can have separate storage, so configure each copy you use.
 - Five incorrect PIN attempts cause a 30-second delay that survives reloading. Leaving settings, pressing Home, or backgrounding the app closes the parent session.
 - The PIN is a child-facing settings gate, not device security. Continue using **Guided Access** to keep the child inside ToyPhone.
@@ -355,7 +362,7 @@ Hold the clock in the top-left corner for **3 seconds**. If you have set a paren
 
 
 **Getting ready**: when the toy opens and Safari still needs an OK for something it's set to use (motion for *Move the
-phone*, the camera for Real or Both), a card asks a grown-up for one tap before handing it over: **Start** runs Safari's
+phone* or the tilt games, the camera for Real or Both), a card asks a grown-up for one tap before handing it over: **Start** runs Safari's
 questions one after another (tap Allow on each), **Not now** skips them. Safari only asks about motion during a tap, so
 this is the one moment it can be asked without the kids seeing it. Nothing to ask (allowed before since Safari opened, or
 turned off in settings): no card.
@@ -376,6 +383,8 @@ turned off in settings): no card.
   Pretend (no real camera), with a note on whether the camera is allowed and how to allow it
 - **Pretend camera**: Move the phone (the default: the scenes follow the phone; tapping it is what lets Safari ask
   about motion) or Drag only, with a note on whether motion is working
+- **Tilt games**: Tilt and touch (the default: Ball Trail and Star Flight steer by tipping the phone as well as by a
+  finger; tapping it is what lets Safari ask about motion) or Touch only, with a note on whether motion is working
 - **Voice**: a checkbox for each place the talking voice can speak. Animal sounds and music always play (in School, as
   *School sounds* says). School and Wild Tap's Find It ask their questions out loud, so those two are always on.
 
@@ -413,7 +422,7 @@ The automated test runs in Chromium, so these need a person and the phone:
 - [ ] Guided Access session: nothing leads out of the page
 - [ ] Portrait and landscape
 - [ ] Two kids tapping at once
-- [ ] Ball Trail and Star Flight: allow and deny Use tilt on a real iPhone; center in a comfortable grip, rotate both ways, lock/unlock, and switch to touch. Try with Camera disabled and Games allowed, and with Guided Access Motion enabled. Confirm the children can steer comfortably.
+- [ ] Ball Trail and Star Flight on a real iPhone: steer by tilt after allowing motion on the getting-ready card (and after tapping Tilt and touch in settings), held at a comfortable angle, in both landscapes, after lock/unlock, and with Guided Access Motion on; with motion denied and with Touch only, a finger still steers. Try with Camera disabled and Games allowed. Watch whether the children can steer comfortably and whether the speed suits them.
 - [ ] The real camera (settings: Camera: Both): Safari's question comes when you pick it, Allow sticks, the back and
       front cameras show, the costumes line up with a face at arm's length, photos save and survive a reload, and the
       animal sounds keep playing while the camera is on
@@ -459,7 +468,7 @@ The automated test runs in Chromium, so these need a person and the phone:
 ```sh
 npm install        # Playwright + the two pixel fonts for offline test rendering
 npm test           # iPhone portrait 390×844, landscape 844×390, and 390×664 (Safari with bars)
-npm run test:motion # motion permission, steering, complete rounds and cleanup in three layouts
+npm run test:motion # Ball Trail and Star Flight: finger and tilt steering, hedges, star slots, rounds, motion permission, Touch only, three layouts
 npm run test:motion:webkit # the same motion checks in WebKit
 npm run test:parents # parent PIN, restrictions, camera/call shutdown, and offline persistence
 npm run test:parents:webkit # the same policy checks in WebKit (live camera tested in Chromium)
