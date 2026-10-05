@@ -698,7 +698,7 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img{image-rendering:auto}
 .ad-world{position:relative; width:min(100cqw, 100cqh * 4 / 3); aspect-ratio:4 / 3; touch-action:none}
 .ad-place{position:absolute; z-index:1; aspect-ratio:1; pointer-events:none} .ad-place .px{width:100%; height:100%}
 .ad-place[data-place="box"]{z-index:2}   /* (in front of whatever is in it) */
-.ad-spot{position:absolute; width:14%; aspect-ratio:1; translate:-50% -50%; z-index:3; padding:0; border-radius:50%; border:3px dashed rgba(59,43,32,.55); background:rgba(255,255,255,.55); animation:ad-glow 1.6s ease-in-out infinite}
+.ad-spot{position:absolute; width:max(14%,51px); aspect-ratio:1; translate:-50% -50%; z-index:3; padding:0; border-radius:50%; border:3px dashed rgba(59,43,32,.55); background:rgba(255,255,255,.55); animation:ad-glow 1.6s ease-in-out infinite}
 .ad-spot.hint{border-color:#B8860B; background:rgba(255,226,92,.8); animation:st-hint 1.1s ease-in-out infinite}
 @keyframes ad-glow{50%{opacity:.55; transform:scale(.88)}}
 .ad-item{position:absolute; width:11%; aspect-ratio:1; translate:-50% -50%; pointer-events:none; z-index:4} .ad-item .px{width:100%; height:100%}
@@ -706,9 +706,15 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img{image-rendering:auto}
 .ad-item.yes{animation:hop .45s cubic-bezier(.3,1.6,.5,1)}
 .ad-tray{display:flex; align-items:center; justify-content:center; gap:16px; padding:8px 14px 14px}
 @media (orientation:landscape){ .ad-tray{flex-direction:column; padding:10px 14px 10px 6px} }
-.ad-animal{font-size:clamp(70px, 12vh, 110px); touch-action:none} .ad-animal.hop{animation:hop .45s cubic-bezier(.3,1.6,.5,1)} .ad-animal.nope{animation:wig .4s}
+.ad-route{position:absolute; top:20px; left:84px; right:80px; display:flex; gap:4px; justify-content:center; pointer-events:none; z-index:5}
+.ad-route .px{width:18px; height:18px; opacity:.22} .ad-route .done .px{opacity:1}
+.ad-replay{position:absolute; top:8px; right:8px; width:64px; height:64px; z-index:5}
+.ad-parcel.selected{border-image-source:var(--f-lit)} .ad-parcel.hint{animation:st-hint 1.1s ease-in-out infinite}
+.ad-finish{position:absolute; inset:0; z-index:6; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:24px; background:rgba(234,249,221,.94)}
+.ad-finish .art{width:150px; height:150px} .ad-finish .art .px{width:100%; height:100%} .ad-finish .round{width:80px; height:80px}
+@media (orientation:landscape){.ad-route{left:84px; right:auto; width:28px; flex-wrap:wrap; top:80px} .ad-route .px{width:18px; height:18px} .ad-parcel{width:76px!important; height:76px!important} .ad-tray{gap:8px}}
 #dinopicnic .st-want .glyph{width:auto; height:1.15em; display:block; max-width:none}
-.ad-parcel{width:clamp(96px, 15vh, 128px); height:clamp(96px, 15vh, 128px); display:grid; place-items:center; padding:0; touch-action:none;
+.ad-parcel{width:min(110px, (100vw - 90px) / 3); height:min(110px, (100vw - 90px) / 3); display:grid; place-items:center; padding:0; touch-action:none;
   border-style:solid; border-color:transparent; border-width:9px 9px 15px; border-image:var(--f-cream) 9 9 15 fill / 9px 9px 15px stretch}
 .ad-parcel .px{width:70%; height:70%} .ad-parcel.empty .px{visibility:hidden}
 .ad-float{position:absolute; left:0; top:0; z-index:20; pointer-events:none; width:72px; height:72px} .ad-float .px{width:100%; height:100%}
@@ -1086,7 +1092,10 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img{image-rendering:auto}
           <button class="sc-back" aria-label="School"></button>
           <div class="ad-world" id="adWorld"></div>
         </div>
-        <div class="ad-tray"><div class="ad-animal art" id="adAnimal" role="button" aria-label="Say it again"></div><button class="ad-parcel" id="adParcel" aria-label="The thing to deliver"></button></div>
+        <div class="ad-route" id="adRoute" aria-label="Delivery route progress"></div>
+        <button class="round ad-replay" id="adReplay" aria-label="Say it again"></button>
+        <div class="ad-tray" id="adParcels"></div>
+        <div class="ad-finish" id="adFinish" hidden><div class="art" id="adFinishArt"></div><button class="round" id="adAgain" aria-label="Another delivery route"></button></div>
       </section>
 
       <!-- SCHOOL: Dino Picnic (give the dino the number of snacks it wants: tap them onto its plate, then the check) -->
@@ -1238,14 +1247,14 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img{image-rendering:auto}
     <section id="settings" hidden aria-label="Parent settings">
       <div class="sheet">
         <div class="shead"><h2>Parent settings</h2><button class="sbtn done" id="doneBtn">Done</button></div>
+        <div class="srow"><span>Parent PIN</span><button class="sbtn" id="parentPinToggle" role="switch" aria-checked="false">Off</button><button class="sbtn" id="parentPinBtn" hidden>Change PIN</button>
+          <span class="vhint" id="parentPinNote">Off by default. Hold the clock to open settings. Turn on to also require a four-digit PIN. App restrictions work either way.</span></div>
         <div class="srow"><span>App access</span>
           <div class="seg"><button class="sbtn" data-access="school">School only</button><button class="sbtn" data-access="custom">Custom</button><button class="sbtn" data-access="full">Full phone</button></div>
           <span class="vhint">School only opens straight into School and keeps Home there. Custom lets you choose the available apps. Set a parent PIN to protect restrictions.</span>
           <span class="vhint" id="accessNote" aria-live="polite"></span>
         </div>
         <div class="vlist" id="accessApps" hidden></div>
-        <div class="srow"><span>Parent PIN</span><button class="sbtn" id="parentPinBtn">Set PIN</button>
-          <span class="vhint">A four-digit PIN protects settings on this device. Use iPhone Guided Access to keep the child inside ToyPhone. Your PIN and app choices stay on this device.</span></div>
         <div class="srow"><span>Play time</span>
           <div class="seg"><button class="sbtn" data-play="0">Off</button><button class="sbtn" data-play="15"><b class="n">15</b> min</button><button class="sbtn" data-play="30"><b class="n">30</b> min</button><button class="sbtn" data-play="60">1 hour</button></div>
           <span class="vhint">When the time is up, the voice says it's almost time for a break and the child can finish what they're doing (up to two minutes); then a sleepy owl covers the toy. Only a grown-up starts more play: hold the clock (and enter the PIN, if set). Only time with the toy on screen counts, and each day starts fresh.</span>
@@ -4705,11 +4714,13 @@ const ACCESS_APPS = ['school','games','camera','photos','music','phone'];
 const ACCESS_GROUP = {wildtap:'games', dinobuddies:'games', snacktime:'games', paintpals:'games', balltrail:'games', starflight:'games',
   letterpath:'school', abczoo:'school', abcsnack:'school', numzoo:'school', numsnack:'school', delivery:'school', dinopicnic:'school'};
 const savedAccess = store.get('access', {}) || {};
-let access = {v:1, mode:['full','school','custom'].includes(savedAccess.mode) ? savedAccess.mode : 'full',
+let access = {v:2, mode:['full','school','custom'].includes(savedAccess.mode) ? savedAccess.mode : 'full',
   apps:Object.fromEntries(ACCESS_APPS.map(k => [k, savedAccess.apps?.[k] !== false])),
   pin:savedAccess.pin?.salt && savedAccess.pin?.hash ? savedAccess.pin : null,
+  pinEnabled:savedAccess.pinEnabled === undefined ? !!(savedAccess.pin?.salt && savedAccess.pin?.hash) : !!savedAccess.pinEnabled,
   attempts:Math.max(0, Number(savedAccess.attempts) || 0), until:Math.max(0, Number(savedAccess.until) || 0)};
 if (!ACCESS_APPS.some(k => access.apps[k])) access.apps.school = true;
+if (!access.pin) access.pinEnabled = false;
 const appAllowed = name => name === 'home' || (ACCESS_APPS.includes(ACCESS_GROUP[name] || name) &&
   (access.mode === 'full' || (access.mode === 'school' ? (ACCESS_GROUP[name] || name) === 'school' : access.apps[ACCESS_GROUP[name] || name])));
 const accessHome = () => access.mode === 'school' ? 'school' : 'home';
@@ -7627,124 +7638,122 @@ const NumSnack = (() => {
   };
 })();
 
-/* ----- Animal Delivery (P3-06): following directions. An animal brings something; the voice says where it goes: "Put the
-   apple under the tree!" Drag it there, or tap a glowing spot. Starts with in the box or on the table, adds under the
-   table after three right (on and under at the same table), then under the tree and next to the box after six (each
-   time the game opens; nothing is kept). There's no "on the box": the box is open, so on and in both looked like on top.
-   In the box, the thing sits down inside it, peeking over the rim. A wrong spot is named ("That's on the table.") and
-   the thing comes back; after two tries the right spot glows. ----- */
+/* ----- Animal Delivery (P3-06): nine deliveries, then a clear ending. No carrier animal beside the pickup.
+   Start with one object and two locations; later choose among three objects, learn more spatial relations,
+   and transfer them to a mirrored garden. Existing recordings supply every instruction; no learning data saved. ----- */
 const Delivery = (() => {
-  const root = $('#delivery'), world = $('#adWorld'), animalEl = $('#adAnimal'), parcel = $('#adParcel');
-  /* the garden, in percent of its width (left, width) with the ground at 75% of its height; each spot's center (x, y),
-     and where the thing then sits if that's somewhere else (in the box: behind its front, peeking over the rim) */
-  const PLACES = {tree:[0, 32], box:[35, 18], table:[66, 32]};
-  const SPOTS = {inBox:[44, 64, 'box', 44, 51.5], nextBox:[59.5, 66], onTable:[82, 38], underTable:[82, 66], underTree:[8, 66]};
+  const root = $('#delivery'), world = $('#adWorld'), tray = $('#adParcels');
+  const PLACES = {tree:[0,32], box:[35,18], table:[66,32]};
+  const SPOTS = {inBox:[44,64,'box',44,51.5], nextBox:[59.5,66], onTable:[82,38], underTable:[82,66], underTree:[8,66]};
   const REL = {inBox:'in the box', nextBox:'next to the box', onTable:'on the table', underTable:'under the table', underTree:'under the tree'};
-  const LEVELS = [['inBox', 'onTable'], ['inBox', 'onTable', 'underTable'], ['inBox', 'onTable', 'underTable', 'underTree', 'nextBox']];
-  const at = k => SPOTS[k].length > 3 ? [SPOTS[k][3], SPOTS[k][4]] : SPOTS[k];   // (where the thing sits)
-  const ITEMS = [{k:'apple', n:'apple'}, {k:'banana', n:'banana'}, {k:'gift', n:'present'}, {k:'star', n:'star'}, {k:'egg', n:'egg'},
-    {k:'duck', n:'duck'}, {k:'chick', n:'chick'}, {k:'cat', n:'kitty'}, {k:'frog', n:'frog'}, {k:'ball', n:'ball'}];
-  const CARRIERS = ['kangaroo', 'elephant', 'monkey', 'penguin', 'giraffe', 'panda'];
-  const ENTER = 'Animal Delivery! Put each thing where it goes!';
-  const PUT = (it, s) => `Put the ${it.n} ${REL[s]}!`, YES = s => `Yes! ${cap(REL[s])}!`, THAT = s => `That's ${REL[s]}.`;
-  const pic = k => schoolPic(k);
-  let cur = null, target = null, last = null, rights = 0, misses = 0, busy = true, carrier = 0, quietUntil = 0, drag = null;
-  const level = () => rights >= 6 ? 2 : rights >= 3 ? 1 : 0;
-  const uhuh = () => { tone(392, 370, .15, 'triangle', .13); tone(330, 300, .22, 'triangle', .13, .19); };
-  const chime = () => { tone(660, 990, .12, 'triangle', .12); tone(880, 1320, .16, 'triangle', .11, .1); };
-  world.innerHTML = '<div class="ad-ground"></div>';
-  Object.entries(PLACES).forEach(([k, [l, w]]) => {
-    const d = document.createElement('div'); d.className = 'ad-place art'; d.dataset.place = k;   // (after the grass, below)
-    d.style.left = l + '%'; d.style.width = w + '%'; d.style.top = `calc(75% - ${w * 4 / 3}%)`;   // (square pictures standing on the ground)
-    d.innerHTML = pic(k); world.appendChild(d);
-  });
-  function spots(){
-    const on = LEVELS[level()];
-    $$('.ad-spot', world).forEach(b => { if (!on.includes(b.dataset.spot)) b.remove(); });
-    on.forEach(k => {
-      if ($(`.ad-spot[data-spot="${k}"]`, world)) return;
-      const b = document.createElement('button'); b.className = 'ad-spot'; b.dataset.spot = k; b.setAttribute('aria-label', REL[k]);
-      b.style.left = SPOTS[k][0] + '%'; b.style.top = SPOTS[k][1] + '%';
-      tap(b, () => place(k), {bump:false});
-      world.appendChild(b);
+  const LEVELS = [['inBox','onTable'], ['inBox','onTable','underTable'], ['inBox','onTable','underTable','underTree','nextBox']];
+  const ITEMS = [{k:'apple',n:'apple'}, {k:'banana',n:'banana'}, {k:'gift',n:'present'}, {k:'star',n:'star'}, {k:'egg',n:'egg'}, {k:'ball',n:'ball'}];
+  const ENTER = 'Animal Delivery! Put each thing where it goes!', FINISH = 'You did it!';
+  const PUT = (it,s) => `Put the ${it.n} ${REL[s]}!`, YES = s => `Yes! ${cap(REL[s])}!`, THAT = s => `That's ${REL[s]}.`;
+  const pic = k => schoolPic(k), level = () => rights >= 6 ? 2 : rights >= 3 ? 1 : 0;
+  let cur=null, selected=null, target=null, last=null, rights=0, misses=0, pickMisses=0, busy=true, drag=null, done=false, epoch=0;
+  const seen = new Set();
+  const mirror = () => rights >= 6;
+  const point = k => { const s=SPOTS[k], x=s.length>3?s[3]:s[0], y=s.length>3?s[4]:s[1]; return [mirror()?100-x:x,y]; };
+  const uhuh = () => { tone(392,370,.15,'triangle',.13); tone(330,300,.22,'triangle',.13,.19); };
+  const chime = () => { tone(660,990,.12,'triangle',.12); tone(880,1320,.16,'triangle',.11,.1); };
+  put($('#adReplay'), ART.ear); put($('#adAgain'), ART.play);
+  $('#adFinishArt').innerHTML=pic('gift');
+  const ask = () => { if(cur && !done && !busy){ hush(); say(PUT(cur,target),0,'school'); } };
+  function progress(){
+    $('#adRoute').innerHTML=Array.from({length:9},(_,i)=>`<span class="${i<rights?'done':''}">${pic('star')}</span>`).join('');
+    $('#adRoute').setAttribute('aria-label', `${rights} of 9 deliveries complete`);
+  }
+  function garden(){
+    world.innerHTML='<div class="ad-ground"></div>';
+    Object.entries(PLACES).forEach(([k,[l,w]])=>{
+      const d=document.createElement('div'); d.className='ad-place art'; d.dataset.place=k;
+      d.style.left=(mirror()?100-l-w:l)+'%'; d.style.width=w+'%'; d.style.top=`calc(75% - ${w*4/3}%)`; d.innerHTML=pic(k); world.appendChild(d);
+    });
+    LEVELS[level()].forEach(k=>{
+      const b=document.createElement('button'); b.className='ad-spot'; b.dataset.spot=k; b.setAttribute('aria-label',REL[k]);
+      b.style.left=(mirror()?100-SPOTS[k][0]:SPOTS[k][0])+'%'; b.style.top=SPOTS[k][1]+'%';
+      tap(b,()=>place(k),{bump:false}); world.appendChild(b);
     });
   }
-  const ask = () => { if (cur) { hush(); say(PUT(cur, target), 0, 'school'); } };
+  function choose(k){
+    if(busy || done) return false;
+    if(k!==cur.k){
+      pickMisses++; uhuh(); retrigger(tray.querySelector(`[data-item="${k}"]`),'wig'); ask();
+      if(pickMisses>=2) tray.querySelector(`[data-item="${cur.k}"]`)?.classList.add('hint');
+      return false;
+    }
+    selected=k; $$('.ad-parcel',tray).forEach(b=>{const on=b.dataset.item===k; b.classList.toggle('selected',on); b.setAttribute('aria-pressed',String(on));});
+    return true;
+  }
+  function parcels(){
+    const choices=level()===0?[cur]:shuffle([cur,...shuffle(ITEMS.filter(it=>it!==cur)).slice(0,2)]);
+    selected=level()===0?cur.k:null; tray.innerHTML='';
+    choices.forEach((it,i)=>{
+      const b=document.createElement('button'); b.className='ad-parcel'; b.dataset.item=it.k; if(i===0)b.id='adParcel';
+      b.innerHTML=pic(it.k); b.setAttribute('aria-label',it.n); b.setAttribute('aria-pressed',String(selected===it.k)); b.classList.toggle('selected',selected===it.k);
+      tray.appendChild(b);
+      b.addEventListener('pointerdown',e=>{
+        e.preventDefault(); keepAwake(); if(busy || done || drag)return;
+        try{b.setPointerCapture(e.pointerId);}catch(x){}
+        if(!choose(it.k))return;
+        const f=document.createElement('div'); f.className='ad-float'; f.innerHTML=pic(it.k);
+        drag={id:e.pointerId,x:e.clientX,y:e.clientY,moved:false,f,a:root.getBoundingClientRect(),b};
+      });
+      b.addEventListener('pointermove',e=>{
+        if(!drag || e.pointerId!==drag.id)return;
+        if(!drag.moved && Math.hypot(e.clientX-drag.x,e.clientY-drag.y)<10)return;
+        if(!drag.moved){drag.moved=true; root.appendChild(drag.f); b.classList.add('empty');}
+        drag.f.style.transform=`translate(${e.clientX-drag.a.left-36}px,${e.clientY-drag.a.top-36}px) scale(1.15)`;
+      });
+      const end=e=>{
+        if(!drag || e.pointerId!==drag.id)return;
+        const d=drag; drag=null; d.f.remove(); b.classList.remove('empty');
+        if(e.type==='pointercancel')return;
+        if(!d.moved){retrigger(b,'bump'); ask(); return;}
+        const hit=$$('.ad-spot',world).map(s=>{const r=s.getBoundingClientRect();return [s.dataset.spot,Math.hypot(e.clientX-r.left-r.width/2,e.clientY-r.top-r.height/2),r.width];})
+          .filter(([,dist,w])=>dist<w*.9).sort((a,b)=>a[1]-b[1])[0];
+        if(hit)place(hit[0],{left:e.clientX-36,top:e.clientY-36,width:72,height:72}); else retrigger(b,'bump');
+      };
+      b.addEventListener('pointerup',end); b.addEventListener('pointercancel',end);
+      b.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();if(choose(it.k))ask();}});
+    });
+  }
   function next(first){
-    $$('.ad-item', world).forEach(x => x.remove());
-    const prevLevel = $$('.ad-spot', world).length;
-    spots();
-    const on = LEVELS[level()], fresh = on.filter(k => !$(`.ad-spot[data-spot="${k}"]`, world).dataset.seen);
-    cur = rnd(ITEMS.filter(it => it !== cur));
-    target = rnd((on.length > prevLevel && fresh.length ? fresh : on).filter(k => k !== last)); last = target;
-    $(`.ad-spot[data-spot="${target}"]`, world).dataset.seen = '1';
-    misses = 0; $$('.ad-spot', world).forEach(b => b.classList.remove('hint'));
-    carrier = (carrier + 1) % CARRIERS.length; put(animalEl, ART[CARRIERS[carrier]]); retrigger(animalEl, 'hop');
-    parcel.innerHTML = pic(cur.k); parcel.classList.remove('empty'); parcel.setAttribute('aria-label', cur.n); retrigger(parcel, 'bump');
-    busy = false;
-    later(() => say(first ? ENTER + ' ' + PUT(cur, target) : PUT(cur, target), 0, 'school'), first ? 300 : 150);
+    garden(); const on=LEVELS[level()], fresh=on.filter(k=>!seen.has(k));
+    cur=rnd(ITEMS.filter(it=>it!==cur));
+    target=rnd((fresh.length?fresh:on).filter(k=>k!==last)); last=target; seen.add(target);
+    misses=pickMisses=0; busy=false; parcels(); progress();
+    later(()=>say(first?ENTER+' '+PUT(cur,target):PUT(cur,target),0,'school'),first?300:150);
   }
-  /* something flies from a point (or the parcel) to a spot in the garden */
-  function fly(fromRect, k, done){
-    const a = root.getBoundingClientRect(), w = world.getBoundingClientRect(), size = w.width * .11;
-    const x0 = fromRect.left - a.left + fromRect.width/2 - size/2, y0 = fromRect.top - a.top + fromRect.height/2 - size/2;
-    const x1 = w.left - a.left + w.width * at(k)[0]/100 - size/2, y1 = w.top - a.top + w.height * at(k)[1]/100 - size/2;
-    const f = document.createElement('div'); f.className = 'ad-float'; f.style.width = f.style.height = size + 'px'; f.innerHTML = pic(cur.k); root.appendChild(f);
-    f.animate([{transform:`translate(${x0}px,${y0}px)`}, {transform:`translate(${(x0 + x1)/2}px,${Math.min(y0, y1) - 40}px)`, offset:.5}, {transform:`translate(${x1}px,${y1}px)`}],
-      {duration:420, easing:'ease-in-out', fill:'forwards'}).onfinish = () => { f.remove(); done(); };
-  }
-  function drop(k){
-    const it = document.createElement('div'); it.className = 'ad-item' + (SPOTS[k][2] === 'box' ? ' in' : ''); it.innerHTML = pic(cur.k);
-    it.style.left = at(k)[0] + '%'; it.style.top = at(k)[1] + '%'; world.appendChild(it); return it;
-  }
-  function place(k, from){
-    if (busy || !cur) return;
-    busy = true; parcel.classList.add('empty'); FX.swoosh();
-    fly(from || parcel.getBoundingClientRect(), k, () => {
-      const it = drop(k);
-      if (k === target){
-        rights++; retrigger(it, 'yes'); chime(); FX.pop(); retrigger(animalEl, 'hop');
-        const [x, y] = rel(it); confetti(x, y, 18);
-        hush(); say(YES(k), 0, 'school');
-        later(() => next(false), 2100);
-        return;
+  function place(k,from){
+    if(busy || done || !cur)return;
+    if(selected!==cur.k){retrigger(tray,'wig'); ask(); return;}
+    busy=true; const b=tray.querySelector(`[data-item="${selected}"]`); b.classList.add('empty'); FX.swoosh();
+    const a=root.getBoundingClientRect(),w=world.getBoundingClientRect(),r=from||b.getBoundingClientRect(),size=w.width*.11,[px,py]=point(k);
+    const x0=r.left-a.left+r.width/2-size/2,y0=r.top-a.top+r.height/2-size/2,x1=w.left-a.left+w.width*px/100-size/2,y1=w.top-a.top+w.height*py/100-size/2;
+    const f=document.createElement('div'); f.className='ad-float'; f.style.width=f.style.height=size+'px'; f.innerHTML=pic(cur.k); root.appendChild(f);
+    const turn=epoch;
+    f.animate([{transform:`translate(${x0}px,${y0}px)`},{transform:`translate(${x1}px,${y1}px)`}],{duration:420,easing:'ease-in-out',fill:'forwards'}).onfinish=()=>{
+      f.remove(); if(turn!==epoch || current!=='delivery')return;
+      const it=document.createElement('div'); it.className='ad-item'+(k==='inBox'?' in':''); it.innerHTML=pic(cur.k);
+      it.style.left=px+'%'; it.style.top=py+'%'; world.appendChild(it);
+      if(k===target){
+        rights++; progress(); retrigger(it,'yes'); chime(); FX.pop(); const [x,y]=rel(it); confetti(x,y,18); hush(); say(YES(k),0,'school');
+        later(()=>{if(rights===9){done=true; $('#adFinish').hidden=false; $('#adReplay').hidden=true; hush(); say(FINISH,0,'school');}else next(false);},2100);
+      }else{
+        misses++; uhuh(); hush(); say(THAT(k)+' '+PUT(cur,target),0,'school');
+        if(misses>=2)world.querySelector(`[data-spot="${target}"]`)?.classList.add('hint');
+        later(()=>{it.remove(); b.classList.remove('empty'); retrigger(b,'bump'); busy=false;},1300);
       }
-      misses++; uhuh(); retrigger(animalEl, 'nope');
-      hush(); say(THAT(k) + ' ' + PUT(cur, target), 0, 'school');
-      if (misses >= 2) $(`.ad-spot[data-spot="${target}"]`, world)?.classList.add('hint');
-      later(() => { it.remove(); parcel.classList.remove('empty'); retrigger(parcel, 'bump'); busy = false; }, 1300);
-    });
+    };
   }
-  /* drag from the parcel: let go over a spot to put it there; a quick tap says the direction again */
-  parcel.addEventListener('pointerdown', e => {
-    e.preventDefault(); keepAwake(); if (busy || !cur || drag) return;
-    try{ parcel.setPointerCapture(e.pointerId); }catch(x){}
-    const a = root.getBoundingClientRect(), size = 72, f = document.createElement('div'); f.className = 'ad-float'; f.innerHTML = pic(cur.k);
-    drag = {id:e.pointerId, x:e.clientX, y:e.clientY, moved:false, f, a, size};
-  });
-  parcel.addEventListener('pointermove', e => {
-    if (!drag || e.pointerId !== drag.id) return;
-    if (!drag.moved && Math.hypot(e.clientX - drag.x, e.clientY - drag.y) < 10) return;
-    if (!drag.moved){ drag.moved = true; root.appendChild(drag.f); parcel.classList.add('empty'); }
-    drag.f.style.transform = `translate(${e.clientX - drag.a.left - drag.size/2}px,${e.clientY - drag.a.top - drag.size/2}px) scale(1.15)`;
-  });
-  const endDrag = e => {
-    if (!drag || e.pointerId !== drag.id) return;
-    const d = drag; drag = null; d.f.remove();
-    if (!d.moved){ retrigger(parcel, 'bump'); ask(); return; }
-    const hit = $$('.ad-spot', world).map(b => { const r = b.getBoundingClientRect(); return [b.dataset.spot, Math.hypot(e.clientX - (r.left + r.width/2), e.clientY - (r.top + r.height/2)), r.width]; })
-      .filter(([, dist, w]) => dist < w * .9).sort((p, q) => p[1] - q[1])[0];
-    if (hit) place(hit[0], {left:e.clientX - 36, top:e.clientY - 36, width:72, height:72});
-    else { parcel.classList.remove('empty'); retrigger(parcel, 'bump'); }
-  };
-  parcel.addEventListener('pointerup', endDrag); parcel.addEventListener('pointercancel', endDrag);
-  tap(animalEl, () => { const now = performance.now(); if (now < quietUntil || !cur) return; quietUntil = now + 1500; retrigger(animalEl, 'hop'); ask(); }, {bump:false});
+  function enter(){epoch++; rights=0; last=cur=selected=null; done=false; seen.clear(); drag?.f.remove(); drag=null; $('#adFinish').hidden=true; $('#adReplay').hidden=false; world.innerHTML=''; next(true);}
+  tap($('#adReplay'),ask,{throttle:1500}); tap($('#adAgain'),enter);
   return {
-    enter(){ rights = 0; last = null; cur = null; carrier = Math.floor(Math.random()*CARRIERS.length); $$('.ad-spot', world).forEach(b => b.remove()); next(true); },
-    leave(){ busy = true; $$('.ad-float', root).forEach(f => f.remove()); drag = null; },
-    state: () => ({item: cur && cur.n, target, level: level(), spots: $$('.ad-spot', world).map(b => b.dataset.spot), rights, misses, busy, placed: $$('.ad-item', world).length,
-      hint: $$('.ad-spot.hint', world).map(b => b.dataset.spot)}),
-    lines: () => [ENTER, ...ITEMS.flatMap(it => Object.keys(REL).map(k => PUT(it, k))), ...Object.keys(REL).flatMap(k => [YES(k), THAT(k)])]
+    enter, leave(){epoch++; busy=true; $$('.ad-float',root).forEach(f=>f.remove()); drag=null;},
+    state:()=>({item:cur?.n,itemKey:cur?.k,selected,target,level:level(),spots:$$('.ad-spot',world).map(b=>b.dataset.spot),rights,misses,pickMisses,busy,done,mirrored:mirror(),choices:$$('.ad-parcel',tray).map(b=>b.dataset.item),placed:$$('.ad-item',world).length,hint:$$('.ad-spot.hint',world).map(b=>b.dataset.spot)}),
+    lines:()=>[ENTER,FINISH,...ITEMS.flatMap(it=>Object.keys(REL).map(k=>PUT(it,k))),...Object.keys(REL).flatMap(k=>[YES(k),THAT(k)])]
   };
 })();
 
@@ -8844,7 +8853,7 @@ function openGate(mode, after){
   $('#pinMessage').textContent = mode === 'unlock' ? 'Enter your four-digit PIN.' : 'Choose a four-digit PIN. You will enter it twice.';
   paintPin(); $('#pinCancel').focus();
 }
-function requestSettings(){ if (access.pin) openGate('unlock'); else openSettings(); }
+function requestSettings(){ if (access.pinEnabled && access.pin) openGate('unlock'); else openSettings(); }
 async function enterPinDigit(d){
   if ($('#parentGate').hidden || gateBusy) return;
   if (Date.now() < access.until){ $('#pinMessage').innerHTML = `Please wait <b class="n">${Math.ceil((access.until - Date.now())/1000)}</b> seconds before trying again.`; return; }
@@ -8869,7 +8878,7 @@ async function enterPinDigit(d){
       if (digits !== gateFirst){ gateMode = 'create'; gateFirst = ''; $('#pinMessage').textContent = 'The PINs did not match. Choose your PIN again.'; return; }
       const salt = Array.from(crypto.getRandomValues(new Uint8Array(16)), b => b.toString(16).padStart(2, '0')).join('');
       const hash = await pinHash(digits, salt); if (epoch !== gateEpoch) return;
-      if (!saveAccess({...access, pin:{salt, hash}, attempts:0, until:0})){ $('#pinMessage').textContent = 'Could not save the PIN. Free browser storage, then try again.'; return; }
+      if (!saveAccess({...access, pin:{salt, hash}, pinEnabled:true, attempts:0, until:0})){ $('#pinMessage').textContent = 'Could not save the PIN. Free browser storage, then try again.'; return; }
       const after = gateAfter; cancelGate(); openSettings(); if (after) after();
     }
   } catch(e){ if (epoch === gateEpoch) $('#pinMessage').textContent = 'Could not save or check the PIN. Open ToyPhone over HTTPS and try again.'; }
@@ -8882,10 +8891,11 @@ async function enterPinDigit(d){
   b.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); press(); } });
   $('#pinKeys').appendChild(b);
 });
-tap($('#pinCancel'), cancelGate);
-$('#pinCancel').addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); cancelGate(); } });
+function dismissGate(){ const setup = gateMode !== 'unlock'; cancelGate(); if (setup) openSettings(); }
+tap($('#pinCancel'), dismissGate);
+$('#pinCancel').addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); dismissGate(); } });
 $('#parentGate').addEventListener('keydown', e => {
-  if (e.key === 'Escape'){ cancelGate(); return; }
+  if (e.key === 'Escape'){ dismissGate(); return; }
   if (/^[0-9]$/.test(e.key)){ e.preventDefault(); enterPinDigit(e.key); }
   else if (e.key === 'Backspace' && !gateBusy){ e.preventDefault(); gateDigits = gateDigits.slice(0,-1); paintPin(); }
   else if (e.key === 'Tab'){
@@ -8898,8 +8908,12 @@ function renderAccess(){
   $$('[data-access]').forEach(b => { const on = b.dataset.access === access.mode; b.classList.toggle('on', on); b.setAttribute('aria-pressed', String(on)); });
   $('#accessApps').hidden = access.mode !== 'custom';
   $$('[data-allow]').forEach(b => { const on = access.apps[b.dataset.allow]; b.classList.toggle('on', on); b.setAttribute('aria-checked', String(on)); });
-  $('#parentPinBtn').textContent = access.pin ? 'Change PIN' : 'Set PIN';
-  $('#accessNote').textContent = access.mode === 'school' ? 'School only is on. Other apps and incoming calls are blocked.' : access.pin ? 'Settings are protected by your PIN.' : 'No PIN yet. Set one before handing over the phone.';
+  $('#parentPinToggle').textContent = access.pinEnabled ? 'On' : 'Off';
+  $('#parentPinToggle').classList.toggle('on', access.pinEnabled);
+  $('#parentPinToggle').setAttribute('aria-checked', String(access.pinEnabled));
+  $('#parentPinBtn').hidden = !access.pinEnabled;
+  $('#parentPinNote').textContent = access.pinEnabled ? 'Hold the clock, then enter your PIN to open settings. Turn off here to use just the clock hold. Use Guided Access to keep the child inside ToyPhone.' : 'PIN is off. Hold the clock to open settings. Turn on to also require a four-digit PIN. App restrictions work either way.';
+  $('#accessNote').textContent = access.mode === 'school' ? 'School only is on. Other apps and incoming calls are blocked.' : access.pinEnabled ? 'Settings are protected by your PIN.' : 'Settings open with the hidden clock hold; PIN protection is optional.';
   $$('[data-camera], [data-look]').forEach(b => b.disabled = !appAllowed('camera'));
   $$('[data-tilt]').forEach(b => b.disabled = !appAllowed('games'));
   $$('[data-incoming], #testRing').forEach(b => b.disabled = !appAllowed('phone'));
@@ -8917,14 +8931,14 @@ function applyAccess(){
 }
 function setAccessMode(mode){
   const change = () => { if (saveAccess({...access, mode})){ applyAccess(); FX.pop(); } };
-  if (mode !== 'full' && !access.pin) openGate('create', change); else change();
+  change();
 }
 $$('[data-access]').forEach(b => tapInScroll(b, () => setAccessMode(b.dataset.access)));
 ACCESS_APPS.forEach(k => {
   const b = document.createElement('button'); b.className = 'vopt'; b.dataset.allow = k; b.setAttribute('role', 'checkbox');
   b.innerHTML = '<span class="vbox">' + ART.check + '</span><span class="vtxt"><b>' + k[0].toUpperCase() + k.slice(1) + '</b></span>';
   tapInScroll(b, () => {
-    if (access.mode !== 'custom' || !access.pin) return;
+    if (access.mode !== 'custom') return;
     const apps = {...access.apps, [k]:!access.apps[k]};
     if (!ACCESS_APPS.some(a => apps[a])){ $('#accessNote').textContent = 'Keep at least one app available.'; return; }
     if (saveAccess({...access, apps})) applyAccess();
@@ -8932,6 +8946,12 @@ ACCESS_APPS.forEach(k => {
   $('#accessApps').appendChild(b);
 });
 tapInScroll($('#parentPinBtn'), () => openGate('create'));
+function toggleParentPin(){
+  if (!access.pinEnabled && !access.pin){ openGate('create'); return; }
+  if (saveAccess({...access, pinEnabled:!access.pinEnabled, attempts:0, until:0})) renderAccess();
+}
+tapInScroll($('#parentPinToggle'), toggleParentPin);
+$('#parentPinToggle').addEventListener('keydown', e => { if(e.key==='Enter'||e.key===' '){ e.preventDefault(); toggleParentPin(); } });
 
 /* ----- Play time (P1-08). A parent can limit a session to 15, 30 or 60 minutes. When it's up the voice says "Almost
    time for a break!" and a little moon shows in the status bar; the child finishes what they're doing (the session
