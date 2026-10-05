@@ -546,9 +546,9 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   // --- GAMES: the picker, then every game
   await tap('[data-app="games"]'); await sleep(600);
   check((await said()).some(s => /Pick a game/.test(s)), 'games speaks its prompt');
-  check(await page.locator('#gameList .gamecard').count() === 4, 'games list shows all four games');
+  check(await page.locator('#gameList .gamecard').count() === 6, 'games list shows all six games');
   const notes = await page.$$eval('#gameList .gamecard', cs => cs.map(c => c.getAttribute('aria-label') + ': ' + c.querySelector('.gplay').textContent.trim()));
-  check(JSON.stringify(notes) === JSON.stringify(['Wild Tap: 1 player', 'Snack Time: 1 player', 'Dino Buddies: 1 or 2 players', 'Paint Pals: 1 or 2 players']), `each game card says how many players ${JSON.stringify(notes)}`);
+  check(JSON.stringify(notes) === JSON.stringify(['Ball Trail: 1 player', 'Star Flight: 1 player', 'Wild Tap: 1 player', 'Snack Time: 1 player', 'Dino Buddies: 1 or 2 players', 'Paint Pals: 1 or 2 players']), `each game card says how many players ${JSON.stringify(notes)}`);
   await shot('16-games');
   await fits('games');
   await tap('.gamecard[aria-label="Wild Tap"]'); await sleep(600);

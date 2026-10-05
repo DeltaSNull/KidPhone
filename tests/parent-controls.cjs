@@ -72,7 +72,7 @@ const check = (condition, message) => { assert.ok(condition, message); console.l
     const policy = await page.evaluate(() => JSON.parse(localStorage.getItem('toyphone.access')));
     check(policy.mode === 'school' && policy.pin.hash.length === 64 && !JSON.stringify(policy).includes('2580'), 'school mode and salted PIN digest saved without plaintext PIN');
     await tap('#doneBtn'); check(await visible('#school'), 'School-only activation enters School');
-    for (const route of ['home','camera','photos','games','wildtap','dinobuddies','snacktime','paintpals','phone','music','unknown']){
+    for (const route of ['home','camera','photos','games','wildtap','dinobuddies','snacktime','paintpals','balltrail','starflight','phone','music','unknown']){
       await go(route); check(await visible('#school'), `${route} cannot escape School-only mode`);
     }
     await go('abczoo'); check(await visible('#abczoo'), 'school lessons remain available');

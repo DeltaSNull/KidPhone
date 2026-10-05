@@ -403,6 +403,31 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img{image-rendering:auto}
 .g-dino .gart,.g-paint .gart{align-items:center}
 .gamecard.go{animation:hop .45s cubic-bezier(.3,1.6,.5,1)}
 
+/* Tilt games share a square playfield so steering feels the same in either orientation. */
+#gameList{gap:7px}
+#gameList .gtext{width:150px}
+#gameList .gname{font-size:19px}
+.g-roll{background:#C8EDAD}.g-fly{background:#BDE9FF}
+.motion-game{background:#DDF1CA;align-items:center;gap:6px!important;padding:8px!important}
+#starflight{background:#BDE9FF}
+.motion-head{display:flex;gap:8px;align-items:center;justify-content:space-between;width:100%;font-size:20px}
+.motion-head button,.motion-controls button,.motion-end button{background:#FFF8DD;border:3px solid #635342;padding:8px;min-height:44px;font:inherit;color:#392F36}
+.motion-field{position:relative;flex:1;min-height:0;width:100%;display:flex;justify-content:center;align-items:center}
+.motion-board{position:relative;width:min(100%,58vh);aspect-ratio:1;max-height:100%;background:#F6EBC5;border:5px solid #685D43;overflow:hidden;touch-action:none}
+#starflight .motion-board{background:repeating-linear-gradient(0deg,#BDE9FF 0 44px,#CFF1FF 44px 48px);border-color:#477696}
+.motion-piece{position:absolute;width:9%;height:9%;transform:translate(-50%,-50%);pointer-events:none;display:flex;align-items:center;justify-content:center}
+#starflight [data-motion-player]{width:16%;height:16%}
+#starflight [data-motion-world] .motion-piece{width:12%;height:12%}
+.motion-piece .px{width:100%;height:100%;object-fit:contain}
+.motion-wall{position:absolute;background:#78AB63;border:3px solid #487A43}
+.motion-goal{position:absolute;width:15%;height:15%;left:78%;top:78%;background:#FFD56E;border:4px dashed #9A703C;display:flex;align-items:center;justify-content:center}
+.motion-goal .px{width:75%;height:75%}
+.motion-controls{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;font-size:16px}
+.motion-note{margin:0;text-align:center;font-size:16px;min-height:20px}
+.motion-end{position:absolute;inset:12%;background:#FFF8E5;border:5px solid #866333;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;font-size:24px;z-index:2}
+.motion-end[hidden]{display:none}
+@media(orientation:landscape){.motion-game{display:grid!important;grid-template-columns:1fr 180px;grid-template-rows:auto 1fr auto}.motion-game[hidden]{display:none!important}.motion-head{grid-column:1 / -1}.motion-field{grid-row:2 / 4;height:100%}.motion-board{width:min(100%,62vh)}.motion-controls{align-content:center}.motion-note{max-width:180px}}
+
 /* ---------- Game: Wild Tap Safari (the first game, moved in whole) ---------- */
 .app.wt, .app.db, .app.st, .app.pp{padding:0; gap:0}
 .wt{--savanna:#E8A945; --dusk:#5B4A9E}
@@ -961,6 +986,14 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img{image-rendering:auto}
         <div class="gamelist" id="gameList"></div>
       </section>
 
+<section class="app motion-game" id="balltrail" hidden aria-label="Ball Trail">
+<div class="motion-head"><button data-motion-back aria-label="Back to Games">Games</button><span>Ball Trail</span><span data-motion-score></span></div>
+<div class="motion-field"><div class="motion-board" aria-label="Touch and hold to steer" role="application"><div data-motion-world></div><div class="motion-piece" data-motion-player></div><div class="motion-end" hidden><span data-motion-result></span><button data-motion-again>Play again</button><button data-motion-back>Games</button></div></div></div>
+<div class="motion-controls"><button data-motion-tilt>Use tilt</button><button data-motion-center>Center tilt</button><button data-motion-touch>Use touch</button></div><p class="motion-note" aria-live="polite">Touch and hold to steer.</p></section>
+<section class="app motion-game" id="starflight" hidden aria-label="Star Flight">
+<div class="motion-head"><button data-motion-back aria-label="Back to Games">Games</button><span>Star Flight</span><span data-motion-score></span></div>
+<div class="motion-field"><div class="motion-board" aria-label="Touch and hold to steer" role="application"><div data-motion-world></div><div class="motion-piece" data-motion-player></div><div class="motion-end" hidden><span data-motion-result></span><button data-motion-again>Play again</button><button data-motion-back>Games</button></div></div></div>
+<div class="motion-controls"><button data-motion-tilt>Use tilt</button><button data-motion-center>Center tilt</button><button data-motion-touch>Use touch</button></div><p class="motion-note" aria-live="polite">Touch and hold to steer.</p></section>
       <!-- SCHOOL: learning games (letters now; words next) -->
       <section class="app" id="school" hidden aria-label="School">
         <div class="gamelist" id="schoolList"></div>
@@ -4635,7 +4668,7 @@ const saveSettings = () => store.set('settings', settings);
 
 /* Access policy is separate from sound/game settings and applies to all navigation and device entry points. */
 const ACCESS_APPS = ['school','games','camera','photos','music','phone'];
-const ACCESS_GROUP = {wildtap:'games', dinobuddies:'games', snacktime:'games', paintpals:'games',
+const ACCESS_GROUP = {wildtap:'games', dinobuddies:'games', snacktime:'games', paintpals:'games', balltrail:'games', starflight:'games',
   letterpath:'school', abczoo:'school', abcsnack:'school', numzoo:'school', numsnack:'school', delivery:'school', dinopicnic:'school'};
 const savedAccess = store.get('access', {}) || {};
 let access = {v:1, mode:['full','school','custom'].includes(savedAccess.mode) ? savedAccess.mode : 'full',
@@ -5226,7 +5259,7 @@ function updateClock(){ const d = new Date(); $('#clockTxt').textContent = ((d.g
 updateClock(); setInterval(updateClock, 10000);
 
 /* ---------- Navigation ---------- */
-const APPS = ['home','phone','camera','photos','music','games','wildtap','dinobuddies','snacktime','paintpals','school','letterpath','abczoo','abcsnack','numzoo','numsnack','delivery','dinopicnic'];
+const APPS = ['home','phone','camera','photos','music','games','wildtap','dinobuddies','snacktime','paintpals','balltrail','starflight','school','letterpath','abczoo','abcsnack','numzoo','numsnack','delivery','dinopicnic'];
 let current = 'home';
 const APP_SAY = {phone:'Phone! Who do you want to call?', camera:'Camera! Slide to look around. Then press the big button!', music:'Music! Let\'s play!', games:'Games! Pick a game!'};
 function go(name, fromEl){
@@ -5250,6 +5283,7 @@ function enterApp(name){
   if (name === 'photos'){ openPhotos(); }
   if (name === 'music'){ showMusicTab(musicTab, true); say(APP_SAY.music, 0, 'menus'); }
   if (name === 'games') say(APP_SAY.games, 0, 'menus');
+  if (name === 'balltrail' || name === 'starflight') MotionGames.enter(name);
   if (name === 'wildtap') WildTap.enter();
   if (name === 'dinobuddies') DinoBuddies.enter();
   if (name === 'snacktime') SnackTime.enter();
@@ -5267,6 +5301,7 @@ function leaveApp(name){
   if (name === 'camera') stopCamera();
   if (name === 'music') stopSong();
   if (name === 'photos') closeViewer(true);
+  if (name === 'balltrail' || name === 'starflight') MotionGames.leave();
   if (name === 'wildtap') WildTap.leave();
   if (name === 'dinobuddies') DinoBuddies.leave();
   if (name === 'snacktime') SnackTime.leave();
@@ -7892,9 +7927,99 @@ tap($('#songStop'), () => { FX.boop(); if (song){ stopSong(); say('Stop!', 0, 'm
 tap(dancer, () => { const s = songPick; FX[s.fx] && FX[s.fx](); retrigger(dancer, 'bow'); });
 
 /* ======================= GAMES ======================= */
+/* Motion belongs to the active game only; camera permissions/settings are independent.
+   No sensor permission is requested until a released tap on Use tilt (required by iOS). */
+const MotionGames = (() => {
+  const WALLS = [[30,0,7,62],[63,38,7,62]];
+  let id=null, root, board, player, world, raf=0, last=0, token=0;
+  let x=13,y=15,score=0,done=false,mode='touch',target=null,raw=null,zero=null,live=0,angle=0,stars=[];
+  const orientation = () => Number(screen.orientation?.angle ?? window.orientation ?? 0);
+  const note = s => { if(root) root.querySelector('.motion-note').textContent=s; };
+  function sensor(e){
+    if(!id || mode!=='tilt' || !Number.isFinite(e.beta) || !Number.isFinite(e.gamma)) return;
+    raw=[e.gamma,e.beta]; live=performance.now();
+    if(!zero || angle!==orientation()){zero=raw.slice();angle=orientation();note('Tilt gently. Hold still and tap Center tilt to reset.');}
+  }
+  function stopSensor(){window.removeEventListener('deviceorientation',sensor);raw=zero=null;live=0;}
+  function touch(){mode='touch';stopSensor();target=null;note('Touch and hold where you want to go.');}
+  async function tilt(){
+    if(!id || done || !appAllowed(id))return;
+    const request=++token;
+    try{
+      const D=window.DeviceOrientationEvent;
+      if(!D){touch();note('Tilt is unavailable. Touch and hold to steer.');return;}
+      const result=typeof D.requestPermission==='function' ? await D.requestPermission() : 'granted';
+      if(request!==token || !id || !appAllowed(id))return;
+      if(result!=='granted'){touch();note('Tilt was not enabled. Touch and hold to steer.');return;}
+      stopSensor();mode='tilt';target=null;live=performance.now();
+      window.addEventListener('deviceorientation',sensor);note('Hold comfortably. Waiting for tilt…');
+    }catch(e){if(request===token && id){touch();note('Tilt is unavailable. Touch and hold to steer.');}}
+  }
+  function draw(){
+    player.style.left=x+'%';player.style.top=y+'%';
+    root.querySelector('[data-motion-score]').innerHTML=id==='starflight'?`<b class="n">${score}/5</b>`:'';
+    if(id==='starflight')world.innerHTML=stars.map(s=>`<span class="motion-piece" style="left:${s.x}%;top:${s.y}%">${ART.star}</span>`).join('');
+  }
+  function finish(){done=true;target=null;stopSensor();FX.cheer();root.querySelector('[data-motion-result]').textContent=id==='balltrail'?'You found the star!':'Five stars! Nice flying!';root.querySelector('.motion-end').hidden=false;}
+  function reset(){
+    x=id==='balltrail'?13:50;y=id==='balltrail'?15:78;score=0;done=false;target=null;
+    stars=[{x:25,y:15},{x:75,y:48}];
+    world.innerHTML=id==='balltrail'?WALLS.map(w=>`<div class="motion-wall" style="left:${w[0]}%;top:${w[1]}%;width:${w[2]}%;height:${w[3]}%"></div>`).join('')+`<div class="motion-goal">${ART.star}</div>`:'';
+    root.querySelector('.motion-end').hidden=true;draw();
+    if(mode==='tilt'){touch();note('Touch to steer, or tap Use tilt for another round.');}
+  }
+  function blocked(nx,ny){return id==='balltrail' && WALLS.some(([a,b,w,h])=>nx+4>a&&nx-4<a+w&&ny+4>b&&ny-4<b+h);}
+  function frame(t){
+    if(!id)return;
+    const dt=Math.min((t-last)/1000,.035);last=t;
+    if(!done && !document.hidden && $('#settings').hidden && $('#parentGate').hidden){
+      let vx=0,vy=0;
+      if(mode==='tilt'){
+        if(t-live>1800){touch();note('Tilt paused. Touch to steer, or tap Use tilt again.');}
+        else if(raw&&zero){
+          const a=angle*Math.PI/180,dx=raw[0]-zero[0],dy=raw[1]-zero[1];
+          const dead=n=>Math.abs(n)<2?0:Math.max(-1,Math.min(1,n/18));
+          vx=dead(dx*Math.cos(a)+dy*Math.sin(a));vy=dead(dy*Math.cos(a)-dx*Math.sin(a));
+        }
+      }
+      if(target){vx=Math.max(-1,Math.min(1,(target.x-x)/8));vy=Math.max(-1,Math.min(1,(target.y-y)/8));}
+      const nx=Math.max(5,Math.min(95,x+vx*35*dt)),ny=Math.max(5,Math.min(95,y+vy*35*dt));
+      if(!blocked(nx,y))x=nx;if(!blocked(x,ny))y=ny;
+      if(id==='balltrail'){if(x>79&&y>79)finish();}
+      else for(const star of stars){
+        star.y+=9*dt;
+        if(Math.hypot(x-star.x,y-star.y)<9){score++;FX.pop();star.y=-8;star.x=15+Math.random()*70;if(score===5){finish();break;}}
+        else if(star.y>108){star.y=-8;star.x=15+Math.random()*70;}
+      }
+      draw();
+    }
+    raf=requestAnimationFrame(frame);
+  }
+  ['balltrail','starflight'].forEach(name=>{
+    const el=$('#'+name),field=el.querySelector('.motion-board');
+    el.querySelectorAll('[data-motion-back]').forEach(b=>tap(b,()=>go('games')));
+    onLift(el.querySelector('[data-motion-tilt]'),tilt);
+    tap(el.querySelector('[data-motion-touch]'),()=>{token++;touch();});
+    tap(el.querySelector('[data-motion-center]'),()=>{if(mode==='tilt'&&raw){zero=raw.slice();angle=orientation();note('Centered. Tilt gently to steer.');}else note('Tap Use tilt first, or touch the board to steer.');});
+    tap(el.querySelector('[data-motion-again]'),reset);
+    const point=e=>{const r=field.getBoundingClientRect();target={x:(e.clientX-r.left)/r.width*100,y:(e.clientY-r.top)/r.height*100};};
+    field.addEventListener('pointerdown',e=>{if(done||e.target.closest('button'))return;e.preventDefault();token++;touch();field.setPointerCapture(e.pointerId);point(e);});
+    field.addEventListener('pointermove',e=>{if(target)point(e);});
+    ['pointerup','pointercancel','lostpointercapture'].forEach(ev=>field.addEventListener(ev,()=>target=null));
+  });
+  document.addEventListener('visibilitychange',()=>{if(id){target=null;zero=null;raw=null;last=performance.now();live=last;}});
+  return {
+    enter(name){id=name;root=$('#'+id);board=root.querySelector('.motion-board');player=root.querySelector('[data-motion-player]');world=root.querySelector('[data-motion-world]');player.innerHTML=id==='balltrail'?schoolPic('ball'):ART.parrot;touch();reset();last=performance.now();raf=requestAnimationFrame(frame);},
+    leave(){token++;cancelAnimationFrame(raf);stopSensor();target=null;id=null;},
+    state:()=>({id,x,y,score,done,mode,listening:mode==='tilt'&&!!id&&!done,stars:stars.map(s=>({...s}))})
+  };
+})();
+
 /* The picker. To add a game later: add its <section class="app"> above, a card here, and enter/leave hooks in enterApp/leaveApp.
    p: how many players it can be; the card says so, with a little kid for each. A game for 1 or 2 asks when it opens. */
 const GAMES = [
+  {id:'balltrail', n:'Ball Trail', p:[1], cls:'g-roll', art:`<span class="art big">${schoolPic('ball')}</span><span class="art">${ART.star}</span>`},
+  {id:'starflight', n:'Star Flight', p:[1], cls:'g-fly', art:`<span class="art big">${ART.parrot}</span><span class="art">${ART.star}</span>`},
   {id:'wildtap', n:'Wild Tap', p:[1], cls:'g-wild', art:`<span class="art">${ART.elephant}</span><span class="art big">${ART.lion}</span><span class="art">${ART.giraffe}</span>`},
   {id:'snacktime', n:'Snack Time', p:[1], cls:'g-feed', art:`<span class="art">${ART.banana}</span><span class="art big">${ART.monkey}</span><span class="art">${ART.watermelon}</span>`},
   {id:'dinobuddies', n:'Dino Buddies', p:[1,2], cls:'g-dino', art:`<span class="art mid">${ART.trex}</span><span class="art sm">${ART.egg}</span><span class="art mid flip">${ART.trex}</span>`},
@@ -8854,7 +8979,7 @@ async function renderFx(name, secs=3, synthOnly=false){
   const buf = await off.startRendering();
   return {len, data:Array.from(buf.getChannelData(0))};
 }
-window.__toyPhone = { go, renderFx, speakable, voiceLines, lineMs,
+window.__toyPhone = { motionGames: () => MotionGames.state(), go, renderFx, speakable, voiceLines, lineMs,
   voice: () => ({loaded: !!VB.map, clips: VB.map ? Object.keys(VB.map).length : 0, played: VB.played, fallbacks: VB.fallbacks.slice(), log: VB.log.slice(), last: VB.last}),
   recorded: () => Object.keys(REC), trims: FX_TRIM,
   voiceMissing: () => voiceLines().filter(l => !(VB.map && VB.map[l.who + '|' + l.s])).map(l => l.who + '|' + l.s),

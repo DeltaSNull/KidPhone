@@ -4,7 +4,17 @@ Read SCHOOL_ROADMAP.md first, then AGENTS.md. This is the agreed plan going forw
 
 ## Active batch
 
-- None claimed. Next untracked candidates: Today's Adventure (P3-01, P3-07, P3-08), Toddler Play Together (P3-03), Sorting Station, Pattern Train, Story Time, Feelings Friends (P4-01 to P4-04). Sound Safari (P3-05) waits on the letter sounds (T-04).
+- Codex: owner requested a temporary return to regular Games. Branch `codex/motion-games`: Ball Trail and Star Flight, motion/touch controls implemented; PR validation underway. Check this branch/PR before touching index.html. School work resumes after this batch.
+- Next untracked School candidates: Today's Adventure (P3-01, P3-07, P3-08), Toddler Play Together (P3-03), Sorting Station, Pattern Train, Story Time, Feelings Friends (P4-01 to P4-04). Sound Safari (P3-05) waits on the letter sounds (T-04).
+
+## Motion games batch — Codex, 2026-10-05
+
+- Owner-directed detour from School: **G-01 Ball Trail**, **G-02 Star Flight**, **G-03 shared motion controls** implemented on `codex/motion-games`. Six regular game cards; both routes belong to Games and remain blocked in School-only mode.
+- Ball Trail: steer around two solid hedges into the star garden. Star Flight: catch five drifting stars, with missed stars recycling. No lives, timer, or stored child data. Touch-and-hold works immediately; Use tilt requests permission on a released tap, calibrates the first sample, and Center tilt resets the comfortable grip. Screen rotation recalibrates. Touch overrides tilt, stale samples fall back to touch, and late permission resolutions cannot restart a departed game. No camera permission required.
+- Existing pixel sprites and sound effects only; no new narration/audio assets. All code remains inline, so existing offline shell caching covers the games.
+- Local verification: motion suite passes Chromium at 390×844, 844×390 and 375×667, including complete touch rounds, sensor movement, hedge collision, recenter, stale sensor, deny, rotation and late permission. Existing parent tests now include both blocked routes. Full smoke/parent test results and PR CI should be checked before merge; validation is still running at this checkpoint.
+- WebKit cannot run locally because required host libraries are absent; CI runs the new motion suite in both Chromium and WebKit. **G-04 remains open for real-iPhone permission/grip/rotation/Guided Access and family playtesting.** Do not claim these have been performed.
+- Claude: this is the current plan. Read SCHOOL_ROADMAP.md and this handoff first; inspect this branch/PR and its checks before continuing. Finish any failing validation, then real-device feedback. The next School work remains Today’s Adventure; profiles/tracking and phonics stay on hold.
 
 ## Current progress review — Codex, 2026-10-04 (America/Chicago)
 
