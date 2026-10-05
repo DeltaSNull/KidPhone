@@ -311,6 +311,7 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img{image-rendering:auto}
 .pempty{flex:1; display:grid; place-items:center}
 .bigcam{width:min(52vw,40vh,200px); aspect-ratio:1; display:grid; place-items:center; animation:breathe 1.6s steps(4) infinite}
 .bigcam .px{width:100%; height:100%}
+#vCount{position:absolute; bottom:8px; right:8px; z-index:3; padding:6px 8px; font-family:var(--digits); font-size:14px; color:var(--ink); background:#FFF6D2; pointer-events:none}
 .viewer{position:absolute; inset:0; z-index:4; display:grid; gap:var(--gap); padding:var(--gap);
   grid-template-columns:auto minmax(0,1fr) auto; grid-template-rows:minmax(0,1fr) auto; grid-template-areas:"stage stage stage" "prev grid next";
   background:#FFEDAE}
@@ -319,7 +320,7 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img{image-rendering:auto}
 .vbtn .px{width:44%; height:44%; margin-top:-6px}
 #vGrid{grid-area:grid} #vPrev{grid-area:prev} #vNext{grid-area:next}
 @media (orientation:landscape){ #vGrid{align-self:start} #vPrev{align-self:end} }
-.vstage{grid-area:stage; min-height:0; min-width:0; display:grid; place-items:center; touch-action:none}
+.vstage{position:relative; grid-area:stage; min-height:0; min-width:0; display:grid; place-items:center; touch-action:none}
 .vstage img{max-width:100%; max-height:100%; display:block; pointer-events:none}
 .vstage img.in-l{animation:inL .28s ease-out} .vstage img.in-r{animation:inR .28s ease-out} .vstage img.hop{animation:hop .45s}
 @keyframes inL{from{transform:translateX(-40%); opacity:0}}
@@ -682,7 +683,12 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img{image-rendering:auto}
 @media (orientation:landscape){ .ns-basket{width:calc(var(--fs) * 1.3); height:var(--fs); grid-template-columns:repeat(2, auto)} .ns-basket .art{font-size:calc(var(--fs) * .3)} .ns-basket .art:first-child{grid-column:span 2; justify-self:center} }
 .ns-basket .art{font-size:calc(var(--fs) * .36)}
 .ns-basket.bump{animation:bump .24s ease-out}
-.ns-row{display:flex; align-items:center; justify-content:center; gap:12px}
+.ns-row{display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px}
+.count-actions{display:flex; align-items:center; justify-content:center; gap:10px; flex:none}
+.count-undo{width:64px; height:64px; --disc:var(--d-sun)}
+.lesson-replay{position:absolute; top:8px; right:8px; width:64px; height:64px; z-index:5; --disc:var(--d-berry)}
+.lesson-replay:disabled,.count-undo:disabled{opacity:.4}
+#abcsnack .st-fed,#numsnack .st-fed,#dinopicnic .st-fed{margin-inline:68px}
 @media (orientation:landscape){ .ns-row{flex-direction:column; gap:8px} }
 .ns-feed{--disc:var(--d-paper); width:clamp(76px, 11vh, 96px); height:clamp(76px, 11vh, 96px)} .ns-feed[hidden]{display:none} .ns-feed .px{width:62%; height:62%; margin-top:-6%}
 .ns-feed.wig{animation:wig .4s}
@@ -728,8 +734,9 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img{image-rendering:auto}
 .dp-ring{border:3px dashed rgba(122,74,30,.55); border-radius:50%}
 .dp-ring.aim{animation:st-hint 1.1s ease-in-out infinite}
 .dp-snack .px{width:100%; height:100%}
-.dp-tray{gap:10px}
-.dp-spread{position:relative; flex:1; align-self:stretch; min-width:0; min-height:calc(var(--fs) * .9)}
+.dp-tray{gap:10px; flex-direction:column}
+@media (orientation:landscape){ .dp-tray{width:260px; min-width:240px} }
+.dp-spread{position:relative; flex:1; align-self:stretch; min-width:0; min-height:calc(clamp(48px,8vh,64px) * var(--rows,2) + 24px)}
 @media (orientation:landscape){ .dp-spread{flex:1; width:100%; min-height:0} }
 .dp-spread .dp-snack{position:absolute; width:clamp(48px, 8vh, 64px); height:clamp(48px, 8vh, 64px); translate:-50% -50%; padding:0; display:grid; place-items:center; animation:st-deal .45s cubic-bezier(.3,1.6,.5,1) backwards}
 .dp-spread .dp-snack.gone{visibility:hidden}
@@ -993,7 +1000,7 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img{image-rendering:auto}
         <div class="viewer" id="viewer" hidden>
           <button class="vbtn" id="vGrid" aria-label="All photos"></button>
           <button class="vbtn" id="vPrev" aria-label="Previous photo"></button>
-          <div class="vstage" id="vstage"><img id="vimg" alt=""></div>
+          <div class="vstage" id="vstage"><img id="vimg" alt=""><span id="vCount" role="status" aria-live="polite"></span></div>
           <button class="vbtn" id="vNext" aria-label="Next photo"></button>
         </div>
       </section>
@@ -1056,6 +1063,7 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img{image-rendering:auto}
       <section class="app st as" id="abcsnack" hidden aria-label="ABC Snack">
         <div class="st-scene" id="asScene">
           <button class="sc-back" aria-label="School"></button>
+          <button class="round lesson-replay" id="asReplay" aria-label="Repeat the question" disabled></button>
           <div class="wt-stickers st-fed" id="asFed" aria-label="Animals fed"></div>
           <div class="st-stand"><div class="st-spot">
             <div class="st-think" id="asThink" role="button" aria-label="Which letter"><span class="st-want" id="asWant"></span></div>
@@ -1083,6 +1091,7 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img{image-rendering:auto}
       <section class="app st ns" id="numsnack" hidden aria-label="123 Snack">
         <div class="st-scene" id="nsScene">
           <button class="sc-back" aria-label="School"></button>
+          <button class="round lesson-replay" id="nsReplay" aria-label="Repeat the question" disabled></button>
           <div class="wt-stickers st-fed" id="nsFed" aria-label="Animals fed"></div>
           <div class="st-stand"><div class="st-spot">
             <div class="st-think" id="nsThink" role="button" aria-label="How many"><span class="st-want" id="nsWant"></span></div>
@@ -1090,7 +1099,7 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img{image-rendering:auto}
           </div></div>
         </div>
         <div class="st-foods ns-tray"><div class="nz-frame ns-frame" id="nsFrame"></div>
-          <div class="ns-row"><button class="ns-basket" id="nsBasket" aria-label="Snacks"></button><button class="round ns-feed" id="nsFeed" aria-label="Feed" hidden></button></div></div>
+          <div class="ns-row"><button class="ns-basket" id="nsBasket" aria-label="Snacks"></button><div class="count-actions"><button class="round count-undo" id="nsUndo" aria-label="Take one snack back" disabled></button><button class="round ns-feed" id="nsFeed" aria-label="Feed" hidden></button></div></div></div>
       </section>
 
       <!-- SCHOOL: Animal Delivery (put each thing where the voice says: in, on, under, next to) -->
@@ -1109,6 +1118,7 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img{image-rendering:auto}
       <section class="app st" id="dinopicnic" hidden aria-label="Dino Picnic">
         <div class="st-scene" id="dpScene">
           <button class="sc-back" aria-label="School"></button>
+          <button class="round lesson-replay" id="dpReplay" aria-label="Repeat the question" disabled></button>
           <div class="wt-stickers st-fed" id="dpFed" aria-label="Dinos fed"></div>
           <div class="st-stand"><div class="st-spot">
             <div class="st-think" id="dpThink" role="button" aria-label="How many"><span class="st-want" id="dpWant"></span></div>
@@ -1116,7 +1126,7 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img{image-rendering:auto}
           </div></div>
           <div class="dp-plate" id="dpPlate" role="button" aria-label="The dino's plate"></div>
         </div>
-        <div class="st-foods dp-tray"><div class="dp-spread" id="dpSpread"></div><button class="round ns-feed" id="dpFeed" aria-label="Feed"></button></div>
+        <div class="st-foods dp-tray"><div class="dp-spread" id="dpSpread"></div><div class="count-actions"><button class="round count-undo" id="dpUndo" aria-label="Take one snack back" disabled></button><button class="round ns-feed" id="dpFeed" aria-label="Feed"></button></div></div>
       </section>
 
       <!-- SCHOOL: Letter Path (one letter at a time, A to Z: meet it, trace it, hear it, find it) -->
@@ -6289,27 +6299,34 @@ function renderGrid(){
     const b = document.createElement('button'); b.className = 'pic'; b.setAttribute('aria-label', 'Photo ' + (i + 1));
     b.style.setProperty('--r', ((sr(i + 3) - .5) * 5).toFixed(1) + 'deg');
     const im = new Image(); im.alt = ''; im.decoding = 'async'; im.src = Photos.src(p.id) || ''; b.appendChild(im);
+    b.dataset.photo=i;g.appendChild(b);
     tapInScroll(b, () => openViewer(i));
-    g.appendChild(b);
   });
 }
 $('#goCam').innerHTML = ICON.camera;
 tap($('#goCam'), () => { FX.pop(); go('camera', $('#goCam')); });
 let vIdx = 0;
+$('#viewer').setAttribute('aria-label','Photo viewer');
 const photoSound = p => { const a = p && p.costume && ANIMALS.find(x => x.id === p.costume); if (a) animalSound(a); };   // a selfie in a lion costume roars
 $('#vGrid').innerHTML = ICON.grid; $('#vPrev').innerHTML = ICON.left; $('#vNext').innerHTML = ICON.right;
-function openViewer(i){ if (!Photos.list.length) return; $('#viewer').hidden = false; showPhoto(i, 0); }
-function closeViewer(quiet){ $('#viewer').hidden = true; if (!quiet) say('All your pictures!', 0, 'camera'); }
+function openViewer(i){ if (!Photos.list.length) return; $('#viewer').hidden = false; $('#pgrid').inert=true; showPhoto(i, 0); $('#vGrid').focus({preventScroll:true}); }
+function closeViewer(quiet){ const opened=!$('#viewer').hidden;$('#viewer').hidden = true;$('#pgrid').inert=false;if(!quiet){say('All your pictures!',0,'camera');if(opened)$('[data-photo="'+vIdx+'"]')?.focus({preventScroll:true});} }
 function showPhoto(i, dir){
   const n = Photos.list.length; if (!n) return closeViewer(true);
   vIdx = ((i % n) + n) % n;
   const p = Photos.list[vIdx], im = $('#vimg');
-  im.src = Photos.src(p.id) || '';
+  im.src = Photos.src(p.id) || '';im.alt=photoLine(p.names);$('#vCount').textContent=(vIdx+1)+' / '+n;$('#vCount').setAttribute('aria-label','Photo '+(vIdx+1)+' of '+n);
   im.style.transform = '';
   retrigger(im, dir < 0 ? 'in-l' : dir > 0 ? 'in-r' : 'hop');
   photoSound(p);
   say(photoLine(p.names), 0, 'camera');
 }
+$('#photos').addEventListener('keydown',e=>{
+  if($('#viewer').hidden || !$('#settings').hidden || !$('#parentGate').hidden)return;
+  if(e.key==='Escape'){e.preventDefault();closeViewer();return;}
+  const dest={ArrowLeft:vIdx-1,ArrowRight:vIdx+1,Home:0,End:Photos.list.length-1}[e.key];
+  if(dest!==undefined){e.preventDefault();FX.swoosh();showPhoto(dest,dest<vIdx?-1:1);}
+});
 tap($('#vGrid'), () => { FX.pop(); closeViewer(); });
 tap($('#vPrev'), () => { FX.swoosh(); showPhoto(vIdx - 1, -1); });
 tap($('#vNext'), () => { FX.swoosh(); showPhoto(vIdx + 1, 1); });
@@ -7095,6 +7112,13 @@ const AbcZoo = (() => {
    cookie's letter is drawn in plain ink, so the child goes by the letter's shape, not its color.
    Nothing is ever lost: a wrong cookie gets a head shake and the voice names the letter that was tapped ("That's N!");
    after two tries the right one glows. ----- */
+/* Visible learning controls: replays never answer, and take-back is available only during independent counting. */
+function schoolTools(prefix, {repeat, remove, ready, manual, hasSnacks}){
+  const replay=$('#'+prefix+'Replay'), undo=$('#'+prefix+'Undo');
+  put(replay,ART.ear);tap(replay,repeat,{throttle:1200});
+  if(undo){put(undo,ICON.left);tap(undo,remove,{throttle:180});}
+  return ()=>{replay.disabled=!ready();if(undo){undo.hidden=!manual();undo.disabled=!ready()||!hasSnacks();}};
+}
 const AbcSnack = (() => {
   const EATERS = [{a:'monkey', n:'monkey', x:'ooh', m:[.47,.5]}, {a:'penguin', n:'penguin', x:'bray', m:[.27,.34]}, {a:'dog', n:'puppy', x:'woof', m:[.19,.56]},
     {a:'panda', n:'panda', x:'', m:[.47,.49]}, {a:'giraffe', n:'giraffe', x:'munch', m:[.1,.19]}, {a:'chick', n:'chick', x:'peep', m:[.11,.39]},
@@ -7110,6 +7134,7 @@ const AbcSnack = (() => {
   const save = () => store.set('abc', prog);
   const known = L => (prog.stats[L] || {}).k >= 3;   // picked right by name on the first try three times
   let cur = null, letter = 'S', mode = 'big', misses = 0, eating = true, fed = 0, queue = [], quietUntil = 0, plain = false;
+  const syncTools=schoolTools('as',{ready:()=>!!cur&&!eating,repeat:()=>{FX.pop();retrigger(think,'wig');hush();ask();}});
   const steps = () => [0,.16,.32,.48,.64].forEach(d => tone(190, 150, .07, 'sine', .14, d));
   const uhuh = () => { tone(392, 370, .15, 'triangle', .13); tone(330, 300, .22, 'triangle', .13, .19); };
   const yum = at => { tone(523, 784, .14, 'triangle', .14, at); tone(659, 1047, .2, 'triangle', .13, at + .13); return at + .35; };
@@ -7128,7 +7153,7 @@ const AbcSnack = (() => {
   function arrive(){
     const prev = cur;
     if (!queue.length) queue = shuffle(EATERS).filter(s => s !== prev);
-    cur = queue.shift(); misses = 0; eating = true;
+    cur = queue.shift(); misses = 0; eating = true; syncTools();
     const lv = level(); mode = lv === 0 ? 'big' : Math.random() < .7 ? 'little' : 'big';
     letter = nextLetter(); plain = fed >= 3 && Math.random() < .35;   // (after the first few: sometimes the letters come in plain ink)
     put(animalEl, ART[cur.a]); animalEl.setAttribute('aria-label', cur.n);
@@ -7136,7 +7161,7 @@ const AbcSnack = (() => {
     wantEl.innerHTML = ICON.ear;   // it asks out loud; tap the bubble to hear it again
     foodsEl.innerHTML = '';
     act('in'); steps();
-    later(() => { think.classList.add('on'); FX.pop(); deal(); eating = false; ask(); }, 950);
+    later(() => { think.classList.add('on'); FX.pop(); deal(); eating = false; syncTools(); ask(); }, 950);
   }
   /* two cookies at first, three once a few animals are fed; look-alikes (b and d...) stay apart until most letters are known */
   function deal(){
@@ -7171,7 +7196,7 @@ const AbcSnack = (() => {
       return;
     }
     if (!misses) score(true);
-    eating = true; b.classList.remove('hint'); retrigger(b, 'yes'); FX.pop(); think.classList.remove('on');
+    eating = true; syncTools(); b.classList.remove('hint'); retrigger(b, 'yes'); FX.pop(); think.classList.remove('on');
     $$('.st-food', foodsEl).forEach(o => { if (o !== b) o.classList.add('off'); });
     const s = cur, a = root.getBoundingClientRect(), fr = b.getBoundingClientRect(), ar = animalEl.getBoundingClientRect();
     const x0 = fr.left - a.left + fr.width/2, y0 = fr.top - a.top + fr.height/2, x1 = ar.left - a.left + ar.width*s.m[0], y1 = ar.top - a.top + ar.height*s.m[1];
@@ -7200,7 +7225,7 @@ const AbcSnack = (() => {
   tap(think, () => { if (eating || !cur) return; FX.pop(); retrigger(think, 'wig'); hush(); ask(); }, {bump:false});
   return {
     enter(){ say(SCHOOL_SAY.abcsnack, 0, 'school'); cur = null; fed = 0; arrive(); },
-    leave(){ $$('.st-bite', root).forEach(t => t.remove()); eating = true; },
+    leave(){ $$('.st-bite', root).forEach(t => t.remove()); eating = true; syncTools(); },
     state: () => ({want: cur && !eating ? letter : null, mode, level: level(), choices: [...foodsEl.children].map(b => b.dataset.l), fed, open: prog.open, plain}),
     progress: () => ({lv: prog.lv, open: prog.open, known: ORDER.filter(known)}),
     reset(){ Object.assign(prog, {lv:0, open:6, streak:0, down:0, stats:{}}); save(); },
@@ -7574,6 +7599,7 @@ const NumSnack = (() => {
      "Four is too many!") and after two tries the boxes it wants glow. Help count: the boxes show how many, and the
      animal eats as soon as they're full. */
   const self = () => settings.count !== 'help';
+  const syncTools=schoolTools('ns',{ready:()=>!!cur&&!eating,manual:self,hasSnacks:()=>got>0,remove:takeBack,repeat:()=>{FX.pop();retrigger(think,'wig');hush();say(WANT(cur,n),0,'school');}});
   const uhuh = () => { tone(392, 370, .15, 'triangle', .13); tone(330, 300, .22, 'triangle', .13, .19); };
   const FEW = k => `${cap(NUMW[k])} is not enough!`, MANY = k => `${cap(NUMW[k])} is too many!`, HOW = 'Add snacks, then tap the check!';
   feedBtn.innerHTML = ART.check;
@@ -7586,14 +7612,14 @@ const NumSnack = (() => {
   function arrive(){
     const prev = cur;
     if (!queue.length) queue = shuffle(EATERS).filter(s => s !== prev);
-    cur = queue.shift(); got = 0; eating = true; misses = 0;
+    cur = queue.shift(); got = 0; eating = true; misses = 0; syncTools();
     do { n = 1 + Math.floor(Math.random()*most()); } while (n === last && most() > 1); last = n;
     put(animalEl, ART[cur.a]); animalEl.setAttribute('aria-label', cur.n);
     think.classList.remove('on'); wantEl.innerHTML = numImg(n);
     cells = tenFrame(frame, self() ? (most() <= 5 ? 5 : 10) : n); frame.classList.remove('full'); feedBtn.hidden = !self();
     basket.innerHTML = `<span class="art">${pic(cur.f)}</span><span class="art">${pic(cur.f)}</span><span class="art">${pic(cur.f)}</span>`;
     act('in'); steps();
-    later(() => { think.classList.add('on'); FX.pop(); eating = false; say2(WANT(cur, n) + (self() && !fed ? ' ' + HOW : '')); }, 950);
+    later(() => { think.classList.add('on'); FX.pop(); eating = false; syncTools(); say2(WANT(cur, n) + (self() && !fed ? ' ' + HOW : '')); }, 950);
   }
   /* one snack from the basket into the next box, counted */
   function drop(){
@@ -7606,14 +7632,14 @@ const NumSnack = (() => {
       {duration:420, easing:'ease-in-out', fill:'forwards'}).onfinish = () => {
         t.remove(); if (i < got && cur){ cell.innerHTML = `<span class="art">${pic(cur.f)}</span><span class="nz-badge">${numImg(i + 1)}</span>`; retrigger(cell, 'in'); }   // (unless it was taken back meanwhile)
       };
-    FX.pop(); retrigger(basket, 'bump'); hush(); say(countWord(i + 1), 0, 'school');
-    if (!self() && got === n){ eating = true; frame.classList.add('full'); later(eat, 1100); }
+    syncTools(); FX.pop(); retrigger(basket, 'bump'); hush(); say(countWord(i + 1), 0, 'school');
+    if (!self() && got === n){ eating = true; syncTools(); frame.classList.add('full'); later(eat, 1100); }
   }
   /* count myself: tap the boxes to take the last snack back to the basket */
   function takeBack(){
     if (eating || !cur || !self() || !got) return;
     const i = --got, cell = cells[i], a = root.getBoundingClientRect(), from = cell.getBoundingClientRect(), to = basket.getBoundingClientRect();
-    cell.innerHTML = '';
+    cell.innerHTML = ''; syncTools();
     const t = document.createElement('div'); t.className = 'st-bite art'; t.innerHTML = pic(cur.f); root.appendChild(t);
     t.animate([{transform:`translate(${from.left - a.left + from.width/2 - 32}px,${from.top - a.top + from.height/2 - 32}px) scale(.8)`}, {transform:`translate(${to.left - a.left + to.width/2 - 32}px,${to.top - a.top + to.height/2 - 32}px) scale(.9)`}],
       {duration:380, easing:'ease-in-out', fill:'forwards'}).onfinish = () => t.remove();
@@ -7623,7 +7649,7 @@ const NumSnack = (() => {
   function feed(){
     if (eating || !cur) return;
     retrigger(feedBtn, 'bump');
-    if (got === n){ FX.pop(); eating = true; frame.classList.add('full'); later(eat, 500); return; }
+    if (got === n){ FX.pop(); eating = true; syncTools(); frame.classList.add('full'); later(eat, 500); return; }
     misses++; uhuh(); act('nope'); retrigger(feedBtn, 'wig'); retrigger(think, 'wig'); hush();
     say((got ? (got < n ? FEW(got) : MANY(got)) + ' ' : '') + WANT(cur, n), 0, 'school');
     if (misses >= 2) cells.slice(0, n).forEach(c => c.classList.add('aim'));
@@ -7654,7 +7680,7 @@ const NumSnack = (() => {
   tap(think, () => { if (eating || !cur) return; FX.pop(); retrigger(think, 'wig'); hush(); say(WANT(cur, n), 0, 'school'); }, {bump:false});
   return {
     enter(){ say("123 Snack! Let's count snacks!", 0, 'school'); cur = null; fed = 0; last = 0; arrive(); },
-    leave(){ $$('.st-bite', root).forEach(t => t.remove()); eating = true; },
+    leave(){ $$('.st-bite', root).forEach(t => t.remove()); eating = true; syncTools(); },
     state: () => ({want: cur && !eating ? n : null, got, animal: cur && cur.a, fed, cells: cells.length, filled: cells.filter(c => c.children.length).length,
       mode: self() ? 'self' : 'help', feed: !feedBtn.hidden, aim: cells.filter(c => c.classList.contains('aim')).length}),
     lines: () => ["123 Snack! Let's count snacks!", 'Yum!', 'Hooray! Five full tummies!', HOW, ...NUMW.slice(1).map((_, i) => countWord(i + 1)),
@@ -7804,6 +7830,7 @@ const DinoPicnic = (() => {
   const root = $('#dinopicnic'), scene = $('#dpScene'), dinoEl = $('#dpDino'), think = $('#dpThink'), wantEl = $('#dpWant'), plate = $('#dpPlate'), spread = $('#dpSpread'), feedBtn = $('#dpFeed'), fedEl = $('#dpFed');
   let cur = null, n = 1, fed = 0, queue = [], eating = true, last = 0, misses = 0, slots = [], onPlate = [], quietUntil = 0;
   const self = () => settings.count !== 'help';
+  const syncTools=schoolTools('dp',{ready:()=>!!cur&&!eating,manual:self,hasSnacks:()=>onPlate.length>0,remove:takeBack,repeat:()=>{FX.pop();retrigger(think,'wig');hush();say(WANT(cur,n),0,'school');}});
   const most = () => fed < 3 ? 3 : 5;
   const steps = () => [0,.16,.32,.48,.64].forEach(d => tone(170, 130, .08, 'sine', .15, d));
   const uhuh = () => { tone(392, 370, .15, 'triangle', .13); tone(330, 300, .22, 'triangle', .13, .19); };
@@ -7815,7 +7842,7 @@ const DinoPicnic = (() => {
   function arrive(){
     const prev = cur;
     if (!queue.length) queue = shuffle(DINOS).filter(d => d !== prev);
-    cur = queue.shift(); eating = true; misses = 0; onPlate = [];
+    cur = queue.shift(); eating = true; misses = 0; onPlate = []; syncTools();
     do { n = 1 + Math.floor(Math.random()*most()); } while (n === last && most() > 1); last = n;
     slots = shuffle(SLOTS);
     put(dinoEl, ART[cur.a]); dinoEl.setAttribute('aria-label', cur.n);
@@ -7823,17 +7850,17 @@ const DinoPicnic = (() => {
     plate.innerHTML = ''; if (!self()) rings(n);
     feedBtn.hidden = !self();
     /* the blanket: a few more snacks than it wants, each in its own jittered cell */
-    const count = Math.min(9, Math.max(n + 3, 6)), cols = count > 6 ? 5 : 3, rows = Math.ceil(count / cols), cells = shuffle(Array.from({length:cols*rows}, (_, i) => i)).slice(0, count);
-    spread.innerHTML = '';
+    const count = Math.min(9, Math.max(n + 3, 6)), cols = 3, rows = Math.ceil(count / cols), cells = shuffle(Array.from({length:cols*rows}, (_, i) => i)).slice(0, count);
+    spread.innerHTML = '';spread.style.setProperty('--rows',rows);
     cells.forEach((c, i) => {
       const b = document.createElement('button'); b.className = 'dp-snack art'; b.setAttribute('aria-label', cur.one); b.innerHTML = pic(cur.f);
-      const x = ((c % cols) + .5) / cols * 100 + (Math.random() - .5) * 40/cols, y = (Math.floor(c / cols) + .5) / rows * 100 + (Math.random() - .5) * 30/rows;
+      const x = ((c % cols) + .5) / cols * 100 + (Math.random() - .5) * 20/cols, y = (Math.floor(c / cols) + .5) / rows * 100 + (Math.random() - .5) * 12/rows;
       b.style.left = x + '%'; b.style.top = y + '%'; b.style.animationDelay = i*.05 + 's';
       tap(b, () => give(b), {bump:false});
       spread.appendChild(b);
     });
     act('in'); steps();
-    later(() => { think.classList.add('on'); FX.pop(); eating = false; say2(WANT(cur, n) + (self() && !fed ? ' ' + HOW : '')); }, 950);
+    later(() => { think.classList.add('on'); FX.pop(); eating = false; syncTools(); say2(WANT(cur, n) + (self() && !fed ? ' ' + HOW : '')); }, 950);
   }
   function flyTo(fromEl, toRect, done){
     const a = root.getBoundingClientRect(), r = fromEl.getBoundingClientRect(), s = 56;
@@ -7847,22 +7874,22 @@ const DinoPicnic = (() => {
   function give(b){
     if (eating || !cur || b.classList.contains('gone') || onPlate.length >= slots.length) return;
     const i = onPlate.length, sn = document.createElement('span'); sn.className = 'dp-snack art'; sn.style.left = slots[i][0] + '%'; sn.style.top = slots[i][1] + '%'; sn.style.visibility = 'hidden'; sn.innerHTML = pic(cur.f);
-    onPlate.push({from:b, el:sn}); b.classList.add('gone'); plate.appendChild(sn);
+    onPlate.push({from:b, el:sn}); syncTools(); b.classList.add('gone'); plate.appendChild(sn);
     flyTo(b, slotRect(i), () => { sn.style.visibility = ''; retrigger(sn, 'in'); });
     FX.pop(); hush(); say(countWord(onPlate.length), 0, 'school');
-    if (!self() && onPlate.length === n){ eating = true; later(eat, 1000); }
+    if (!self() && onPlate.length === n){ eating = true; syncTools(); later(eat, 1000); }
   }
   /* tap the plate: the last snack goes back to its place on the blanket */
   function takeBack(){
     if (eating || !cur || !self() || !onPlate.length) return;
-    const {from, el} = onPlate.pop();
+    const {from, el} = onPlate.pop(); syncTools();
     flyTo(el, from.getBoundingClientRect(), () => from.classList.remove('gone')); el.remove();
     FX.swoosh(); hush(); if (onPlate.length) say(countWord(onPlate.length), 0, 'school');
   }
   function feed(){
     if (eating || !cur) return;
     retrigger(feedBtn, 'bump');
-    if (onPlate.length === n){ FX.pop(); eating = true; later(eat, 400); return; }
+    if (onPlate.length === n){ FX.pop(); eating = true; syncTools(); later(eat, 400); return; }
     misses++; uhuh(); act('nope'); retrigger(feedBtn, 'wig'); retrigger(think, 'wig'); hush();
     const k = onPlate.length; say((k ? (k < n ? FEW(k) : MANY(k)) + ' ' : '') + WANT(cur, n), 0, 'school');
     if (misses >= 2) rings(n, true);
@@ -7889,7 +7916,7 @@ const DinoPicnic = (() => {
   tap(think, () => { if (eating || !cur) return; FX.pop(); retrigger(think, 'wig'); hush(); say(WANT(cur, n), 0, 'school'); }, {bump:false});
   return {
     enter(){ say(ENTER, 0, 'school'); cur = null; fed = 0; last = 0; queue = []; arrive(); },
-    leave(){ $$('.st-bite', root).forEach(t => t.remove()); eating = true; },
+    leave(){ $$('.st-bite', root).forEach(t => t.remove()); eating = true; syncTools(); },
     state: () => ({want: cur && !eating ? n : null, got: onPlate.length, dino: cur && cur.a, fed, spread: $$('.dp-snack:not(.gone)', spread).length, mode: self() ? 'self' : 'help',
       feed: !feedBtn.hidden, rings: $$('.dp-ring', plate).length, aim: $$('.dp-ring.aim', plate).length}),
     lines: () => [ENTER, HOW, 'Yum!', 'Hooray! Five full tummies!', ...NUMW.slice(1, 6).map((_, i) => countWord(i + 1)),
@@ -9063,7 +9090,8 @@ function renderSettings(){
   $$('[data-schoolfx],[data-count],[data-incoming],[data-silent],[data-vol],[data-camera],[data-look],[data-tilt],[data-abc],[data-path],[data-play]').forEach(b=>b.setAttribute('aria-pressed',String(b.classList.contains('on'))));
 }
 function sizeSettings(){ $('#settings .sheet').style.scrollPaddingTop=($('#settings .shead').offsetHeight+8)+'px'; }
-function openSettings(){ renderAccess(); hush(); $('#confirmClear').hidden = true; $('#confirmPath').hidden = true; renderSettings(); pickVoice(); showSound(); $('#settings').hidden = false; sizeSettings(); $('#settings .sheet').scrollTop=0; $('#doneBtn').focus({preventScroll:true}); FX.cheer(); }
+let countAtOpen=settings.count;
+function openSettings(){ countAtOpen=settings.count; renderAccess(); hush(); $('#confirmClear').hidden = true; $('#confirmPath').hidden = true; renderSettings(); pickVoice(); showSound(); $('#settings').hidden = false; sizeSettings(); $('#settings .sheet').scrollTop=0; $('#doneBtn').focus({preventScroll:true}); FX.cheer(); }
 /* is the sound engine running? (the animals, drums and ringtones all come from it; the voice doesn't) */
 function showSound(){
   const n = $('#soundNote'); if (!n) return;
@@ -9073,7 +9101,7 @@ function showSound(){
       : ' It follows the ring/silent switch: if it\'s quiet, flip the switch to ring.')
     + (rebuilds ? ` (Restarted ${rebuilds} time${rebuilds > 1 ? 's' : ''}.)` : '');
 }
-function closeSettings(){ const opened=!$('#settings').hidden||!$('#parentGate').hidden;cancelGate(); $('#settings').hidden = true; if (current === 'letterpath') LetterPath.refresh(); if(opened && document.visibilityState==='visible')clock.focus({preventScroll:true}); }
+function closeSettings(){ const refreshCount=!$('#settings').hidden && countAtOpen!==settings.count && ['numsnack','dinopicnic'].includes(current); const opened=!$('#settings').hidden||!$('#parentGate').hidden;cancelGate(); $('#settings').hidden = true; if(refreshCount)go(current); if (current === 'letterpath') LetterPath.refresh(); if(opened && document.visibilityState==='visible')clock.focus({preventScroll:true}); }
 $$('[data-settings-jump]').forEach(b=>tapInScroll(b,()=>{
   const sheet=$('#settings .sheet'), target=$('#'+b.dataset.settingsJump), header=$('#settings .shead');
   sheet.scrollTop += target.getBoundingClientRect().top-header.getBoundingClientRect().bottom-8;

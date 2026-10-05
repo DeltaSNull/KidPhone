@@ -4,10 +4,19 @@ Read SCHOOL_ROADMAP.md first, then AGENTS.md. This is the agreed plan going forw
 
 ## Active batch
 
-- Owner-directed overall refinement R-01 to R-03 on `codex/app-refinement`. Check its PR and CI/release first. This is the plan going forward for Claude and Codex; read these progress notes before anything else.
+- Owner-directed learning and photo refinement R-05 to R-07 on `codex/play-refinement`. Check its PR and CI/release first. This is the plan going forward for Claude and Codex; read these progress notes before anything else.
+- R-01 to R-03 are released in [PR #6](https://github.com/DeltaSNull/KidPhone/pull/6), main `6264166`; all browser checks and [Deploy](https://github.com/DeltaSNull/KidPhone/actions/runs/37385286207) passed. R-04 physical checks remain pending.
 - P1-14 / P3-06 follow-up released in [PR #5](https://github.com/DeltaSNull/KidPhone/pull/5), main `f0b0658`; all six browser test jobs and [Deploy](https://github.com/DeltaSNull/KidPhone/actions/runs/37341705042) passed.
 - G-05/G-06 are released: [PR #4](https://github.com/DeltaSNull/KidPhone/pull/4), main `ead5c96`, all checks and [deployment](https://github.com/DeltaSNull/KidPhone/actions/runs/37329072126) passed. G-04 real-phone/family tuning remains pending.
 - Next untracked School candidates: Today's Adventure (P3-01, P3-07, P3-08), Toddler Play Together (P3-03), Sorting Station, Pattern Train, Story Time, Feelings Friends (P4-01 to P4-04). Sound Safari (P3-05) waits on the letter sounds (T-04).
+
+## Learning controls and photo browsing — Codex, 2026-10-05
+
+- R-05: consistent berry speaker buttons in ABC Snack, 123 Snack and Dino Picnic replay the current question using existing recordings. Replaying never changes the question, choices, quantity, hint state, letter record or completion count. Buttons are disabled during arrivals/eating/celebrations so prompts cannot interrupt a completed answer. Original thought-bubble replay remains.
+- R-06: explicit yellow take-one-back buttons in the independent counting games; disabled when empty or busy, hidden in Help count. Original box/plate take-back remains. Counting mode changes restart an active counting lesson on closing Settings, so its controls and quantity layout match the new mode. Dino Picnic uses a three-column scattered layout with reduced jitter and enough room for nine snacks; choices stay unnumbered and shuffled. No new child tracking or curriculum.
+- R-07: photo position counter, descriptive image alt text, Left/Right/Home/End navigation and Escape back to the selected thumbnail. Opening focuses All photos; covered gallery becomes inert until closing. Thumbnail scroll cancellation binds after insertion into the gallery. Existing touch swiping, wrapping, private storage and Camera access rules remain.
+- Verification: focused Chromium checks passed in all three viewports; final dynamic-row layout check and full portrait smoke are recorded in the branch PR. `tests/play-refinement.cjs` runs in Chromium/WebKit CI across three viewports. It checks spoken question replay without changing state, add/remove and correct feeding, busy/empty/Help-count controls, changed-mode restart, six- and later-stage snack target separation, photo counter/wrapping/keyboard/focus/inert and canceled gallery activation. Screenshots and focused Chromium results are recorded in the branch PR, along with the full portrait smoke result. Full existing regression jobs remain required before publication. Real-iPhone/family testing remains R-04; do not claim it was done.
+- Claude: this is the plan going forward. Read SCHOOL_ROADMAP.md, HANDOFF.md and AGENTS.md before anything else, fetch current main and inspect open PRs. Finish this batch's failing checks or release first; preserve question replay without scoring, independent counting take-back and touch navigation. Then use owner feedback for R-04 or resume the agreed untracked School candidates. Profiles/tracking and lesson phonics remain on hold.
 
 ## Overall refinement — Codex, 2026-10-05
 
