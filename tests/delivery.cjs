@@ -25,13 +25,19 @@ const check=(ok,msg)=>{assert.ok(ok,msg);console.log('ok  '+msg);};
       await context.addInitScript(()=>localStorage.setItem('toyphone.settings',JSON.stringify({incoming:false,camera:'pretend',look:'drag',tilt:'off',silent:false})));
       const page=await context.newPage(), errors=[];page.on('pageerror',e=>errors.push(e.message));
       await page.goto(`http://127.0.0.1:${server.address().port}/`);await page.waitForFunction(()=>window.__toyPhone);
-      await page.clock.install();
-      const run=ms=>page.clock.runFor(ms), state=()=>page.evaluate(()=>window.__toyPhone.delivery());
+      // Real time keeps Web Animations and setTimeout on the same clock in both engines. A fake JS clock does not
+      // advance WebKit's animation completion events consistently. Wait on game state, not a fixed animation delay.
+      const run=ms=>page.waitForTimeout(ms), state=()=>page.evaluate(()=>window.__toyPhone.delivery());
       const tap=async s=>{const r=await page.locator(s).boundingBox();assert.ok(r,s+' is visible');await page.touchscreen.tap(r.x+r.width/2,r.y+r.height/2);await run(100);};
       const go=async id=>{await page.evaluate(id=>window.__toyPhone.go(id),id);await run(500);await page.waitForTimeout(400);};
       const settle=async()=>{await page.waitForTimeout(500);await run(100);};
       const pick=async()=>{const d=await state();await tap(`.ad-parcel[data-item="${d.itemKey}"]`);};
-      const deliver=async()=>{const d=await state();await pick();await tap(`.ad-spot[data-spot="${d.target}"]`);await settle();check((await state()).rights===d.rights+1,`${tag}: delivery ${d.rights+1} accepted once`);await run(2300);};
+      const deliver=async()=>{
+        const d=await state();await pick();await tap(`.ad-spot[data-spot="${d.target}"]`);
+        await page.waitForFunction(n=>window.__toyPhone.delivery().rights===n,d.rights+1,{polling:50,timeout:5000});
+        check((await state()).rights===d.rights+1,`${tag}: delivery ${d.rights+1} accepted once`);
+        await page.waitForFunction(()=>{const d=window.__toyPhone.delivery();return d.done||!d.busy;},null,{polling:50,timeout:7000});
+      };
       const fits=async()=>{
         const boxes=await page.locator('#delivery button:visible').evaluateAll(bs=>bs.map(b=>{const r=b.getBoundingClientRect();return [r.left,r.top,r.right,r.bottom,r.width,r.height];}));
         check(boxes.every(([l,t,r,b,w,h])=>l>=0&&t>=0&&r<=viewport.width+1&&b<=viewport.height+1&&w>=44&&h>=44),`${tag}: controls fit and every touch target is at least 44px ${JSON.stringify(boxes)}`);
