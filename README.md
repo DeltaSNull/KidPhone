@@ -26,16 +26,20 @@ Guided Access. It's one self-contained `index.html` (vanilla JS, no build step),
   first, with two big buttons: one kid, or two kids. The last choice glows.
   - *Ball Trail* (1 player): roll a ball around the hedges to the star ("Roll the ball to the star!"). The first maze
     has one hedge, then two-hedge mazes take turns. A hedge just stops the ball (with a boop); each star found lights one
-    of five star slots, and the next maze starts by itself.
-  - *Star Flight* (1 player): fly the parrot to the stars that drift down the sky ("Fly the parrot to the stars!").
-    Each catch lights a slot; five is a cheer ("Five stars! Nice flying!") and the slots start over. Missed stars just
-    come round again.
+    of five star slots, and the next maze starts by itself. Steering accelerates smoothly; a shaded pixel sphere rolls
+    its surface in both directions, only for actual movement (not while pushing against a hedge).
+  - *Star Flight* (1 player): six animal-food stages, alternating flying and ground animals: parrot/blueberries,
+    puppy/bones, eagle/fish, monkey/bananas, butterfly/flowers and panda/bamboo. Flying animals flap a simple pixel wing;
+    ground animals walk only side to side. Three difficulty tiers require 8, 10 and 12 matching foods, with faster falls,
+    sideways drift and other animals' food appearing later. A large animal/food cue and three difficulty stars show the
+    goal without reading. Incorrect food gets a gentle cue without costing lives or collected food; misses recycle.
+    Each completed stage previews the next animal. After all six, the animals repeat at the capped third tier. No scores
+    or difficulty are saved, so reopening starts gently. Existing Snack Time recordings name what each animal wants.
     Both steer the same two ways: hold a finger on the field and the ball or parrot heads for it, or tip the phone.
     Tilt works once a grown-up has allowed motion (the getting-ready card, or *Tilt games* in settings); the games never
     ask Safari themselves, so no question pops up during play. Tilt counts from how the phone is held when a round
     starts, and again whenever a finger lets go, so any comfortable grip works, and it turns with the screen. There are
-    no buttons or words on the kids' screen, no timer and nothing to lose. The ball rolls; the parrot faces the way it
-    flies.
+    no buttons or words on the kids' screen, no timer and nothing to lose. The animal faces the way it moves.
   - *Wild Tap Safari* (1 player): Safari, Zoo and Dino sound boards, Find It, egg hatching and bubble popping.
     Its grid button goes back to the Wild Tap menu.
   - *Snack Time* (1 player): a hungry animal walks in, thinking of a food in a thought bubble. Tap that food on the picnic

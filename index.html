@@ -425,9 +425,26 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img{image-rendering:auto}
 .mg-piece{position:absolute; transform:translate(-50%,-50%); pointer-events:none; line-height:0}
 .mg-piece .px{width:100%; height:100%; display:block}
 .mg-me{width:12%; height:12%; z-index:2}
-.mg-me .px{transform:scaleX(var(--fx, 1)) rotate(var(--spin, 0deg))}   /* the ball rolls; the parrot faces the way it flies */
+.mg-me canvas{width:100%;height:100%;image-rendering:pixelated;filter:drop-shadow(0 3px 0 #493F3540)}
+.mg-body{position:relative;display:block;width:100%;height:100%;transform:scaleX(var(--fx,1))}
+.mg-wing{position:absolute;left:43%;top:36%;width:44%;height:38%;background:var(--wing,#E8423F);clip-path:polygon(0 0,75% 0,75% 20%,100% 20%,100% 40%,85% 40%,85% 65%,65% 65%,65% 85%,30% 85%,30% 65%,0 65%);transform-origin:0 50%;transform:rotate(var(--flap,0deg));pointer-events:none}
+.mg-body.walk .px{transform:translateY(var(--step,0px))}
+.mg-me.eating .px{animation:mg-chomp .32s steps(2)}
+@keyframes mg-chomp{50%{scale:1.12}}
+#starflight .mg-got{display:grid;grid-template-columns:auto 1fr;gap:6px;align-items:center;font-size:22px}
+.mg-want{display:flex;align-items:center;gap:2px;opacity:1!important;filter:none!important}
+.mg-want .px{width:42px!important;height:42px!important}
+.mg-level{display:flex;justify-content:center;gap:4px;font-size:18px}
+.mg-level span{display:block}
+.mg-foodslots{display:grid;grid-template-columns:repeat(6,1fr);gap:2px;grid-column:2;font-size:20px}
+.mg-foodslots span{min-width:0}
+.mg-floor{position:absolute;left:0;right:0;top:91%;bottom:0;background:repeating-linear-gradient(90deg,#4B984D 0 8px,#69B758 8px 16px);border-top:4px solid #36733D}
+.mg-next{position:absolute;inset:25%;display:flex;align-items:center;justify-content:center;gap:8px;background:#FFF8DCF2;border:4px solid #8A7048;z-index:4;pointer-events:none}
+.mg-next .px{width:40%;height:auto}
+@media(orientation:landscape){#starflight .mg-got{width:106px;grid-template-columns:1fr;align-content:center}.mg-foodslots{grid-column:1;grid-template-columns:repeat(3,1fr)}.mg-want{justify-content:center}.mg-level{font-size:18px}}
 #starflight .mg-me{width:19%; height:19%}
-.mg-me.hop{animation:hop .5s 2}
+.mg-me.hop .mg-body,.mg-me.hop canvas{animation:mg-cheer .5s 2}
+@keyframes mg-cheer{50%{translate:0 -10%;scale:1.08}}
 .mg-hedge{position:absolute; --fr:var(--f-leaf)}
 .mg-goal{position:absolute; width:17%; height:17%; display:grid; place-items:center; --fr:var(--f-sun)}
 .mg-goal .px{width:100%; height:100%}
@@ -999,8 +1016,8 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img{image-rendering:auto}
         <div class="mg-field"><div class="mg-board" role="application" aria-label="Hold a finger where the ball should go"><div class="mg-world"></div><span class="mg-piece mg-me"></span></div></div>
       </section>
       <section class="app mg" id="starflight" hidden aria-label="Star Flight">
-        <div class="wt-stickers mg-got" aria-label="Stars caught"></div>
-        <div class="mg-field"><div class="mg-board" role="application" aria-label="Hold a finger where the parrot should fly"><div class="mg-world"></div><span class="mg-piece mg-me"></span></div></div>
+        <div class="wt-stickers mg-got" aria-label="Animal, food, difficulty and food collected"></div>
+        <div class="mg-field"><div class="mg-board" role="application" aria-label="Steer the animal to its food"><div class="mg-world"></div><span class="mg-piece mg-me"></span></div></div>
       </section>
       <!-- SCHOOL: learning games (letters now; words next) -->
       <section class="app" id="school" hidden aria-label="School">
@@ -4549,7 +4566,7 @@ const BGS = [
   ['.pp-a', BG.ppSide('#FFE4CC', '#FFC99E', ['#FF9F43', '#E8506E', '#FFC83D'], 3)], ['.pp-b', BG.ppSide('#E6DFFC', '#C9BCF5', ['#8A6FD1', '#3D8FE0', '#5CC9B5'], 9)], ['.pp-mid', BG.wood],
   ['#dinobuddies .who', BG.split], ['#paintpals .who', BG.paint],
   ['.g-roll', BG.lawn], ['.g-fly', BG.sky], ['#balltrail', BG.grad(['#E9F8DA', '#D8F2C4', '#C6EAAE'])], ['#starflight', BG.grad(['#E4F6FF', '#C9ECFF', '#ADE0FF'])],
-  ['#balltrail .mg-board', BG.lawn], ['#starflight .mg-board', BG.sky]
+  ['#balltrail .mg-board', BG.lawn], ['#starflight .mg-board', (w,h,el) => el.classList.contains('ground') ? BG.lawn(w,h) : BG.sky(w,h)]
 ];
 const bgKey = new WeakMap();
 function paintBG(el, fn, force){
@@ -7961,10 +7978,20 @@ tap(dancer, () => { const s = songPick; FX[s.fx] && FX[s.fx](); retrigger(dancer
    held on the field steers (the ball or parrot heads for it), and once a grown-up has allowed motion (the getting-ready
    card, or Tilt games in settings) tipping the phone steers too. The games never ask Safari themselves, so no question
    pops up in front of the kids. Tilt counts from how the phone was held when the round began, or when a finger last let
-   go, turned to match the screen. Each star lights one of five slots; after five, a cheer and the slots start over.
-   Nothing to lose, no timer, nothing to read. */
+   go, turned to match the screen. Ball Trail keeps five stars; Star Flight has longer animal-food stages and three
+   difficulty tiers. Nothing to lose, no timer, nothing to read. */
 const MotionGames = (() => {
   const SAY = {balltrail:'Roll the ball to the star!', starflight:'Fly the parrot to the stars!', found:'You found the star!', five:'Five stars! Nice flying!'};
+  // Existing Snack Time pictures and recordings: the cue names the food, not a score.
+  const PETS = [
+    {a:'parrot', food:'blueberry', fly:true, wing:'#E8423F', want:'The parrot wants a blueberry!', yum:'Yum! The parrot loves blueberries!'},
+    {a:'dog', food:'bone', fly:false, want:'The puppy wants a bone!', yum:'Yum! The puppy loves bones!'},
+    {a:'eagle', food:'fish', fly:true, wing:'#8A5632', want:'The eagle wants a fish!', yum:'Yum! The eagle loves fish!'},
+    {a:'monkey', food:'banana', fly:false, want:'The monkey wants a banana!', yum:'Yum! The monkey loves bananas!'},
+    {a:'butterfly', food:'flower', fly:true, wing:'#FF9E8E', want:'The butterfly wants a flower!', yum:'Yum! The butterfly loves flowers!'},
+    {a:'panda', food:'bamboo', fly:false, want:'The panda wants some bamboo!', yum:'Yum! The panda loves bamboo!'}
+  ];
+  const LEVELS = [{target:8, fall:10, count:2, decoy:false, drift:0}, {target:10, fall:14, count:3, decoy:true, drift:2}, {target:12, fall:18, count:3, decoy:true, drift:5}];
   // hedges [left, top, width, height] in percent of the field; the ball starts at s; the star garden's corner is g
   const MAZES = [
     {walls:[[42, 0, 14, 60]], s:[15, 15], g:[73, 73]},
@@ -7973,14 +8000,18 @@ const MotionGames = (() => {
   ];
   const R = 6, SPEED = 40, CATCH = 12;   // the ball's half-size, percent of the field per second at full steer, how near a star counts
   let id = null, el = null, board = null, me = null, world = null, raf = 0, last = 0;
-  let x = 50, y = 50, spin = 0, round = 0, got = 0, done = false, finger = null, bumping = false, stars = [];
+  let x = 50, y = 50, round = 0, got = 0, done = false, finger = null, bumping = false, stars = [];
+  let velocity = [0,0], rotation = [0,0,0,1], ball = null, flap = 0, elapsed = 0, rejected = 0;
+  const pet = () => PETS[round % PETS.length];
+  const levelIndex = () => Math.min(2, Math.floor(round / 2));
+  const level = () => LEVELS[levelIndex()];
   let raw = null, zero = null, angle = 0, live = 0, listening = false;   // tilt: the latest reading, the grip it counts from
 
   const tiltOK = () => tiltMotion() && !!window.DeviceOrientationEvent && (typeof DeviceOrientationEvent.requestPermission !== 'function' || AR.perm === 'granted');
   const screenAngle = () => Number(screen.orientation?.angle ?? window.orientation ?? 0);
   const maze = () => MAZES[round ? 1 + (round - 1) % 2 : 0];
   function sensor(e){
-    if (e.beta == null || e.gamma == null) return;
+    if (!Number.isFinite(e.beta) || !Number.isFinite(e.gamma)) return;
     raw = [e.gamma, e.beta]; live = performance.now();
     if (!zero || angle !== screenAngle()){ zero = raw.slice(); angle = screenAngle(); }
   }
@@ -7994,61 +8025,123 @@ const MotionGames = (() => {
     if (finger) return [clamp((finger.x - x)/8, -1, 1), clamp((finger.y - y)/8, -1, 1)];
     if (!raw || !zero || t - live > 1500) return [0, 0];
     const a = angle*Math.PI/180, dx = raw[0] - zero[0], dy = raw[1] - zero[1];
-    const lean = n => Math.abs(n) < 3 ? 0 : clamp(n/20, -1, 1);   // a little wobble does nothing; 20° is full speed
+    const lean = n => Math.sign(n)*clamp((Math.abs(n)-3)/17, 0, 1);   // continuous dead zone: no abrupt jump at 3°
     return [lean(dx*Math.cos(a) + dy*Math.sin(a)), lean(dy*Math.cos(a) - dx*Math.sin(a))];
   }
   const blocked = (nx, ny) => id === 'balltrail' && maze().walls.some(([a, b, w, h]) => nx + R > a && nx - R < a + w && ny + R > b && ny - R < b + h);
-  function slots(){ el.querySelector('.mg-got').innerHTML = Array.from({length:5}, (_, i) => `<span class="${i < got ? 'on' : ''}">${ART.star}</span>`).join(''); }
+  function slots(){
+    const hud = el.querySelector('.mg-got');
+    if (id === 'balltrail') hud.innerHTML = Array.from({length:5}, (_, i) => `<span class="${i < got ? 'on' : ''}">${ART.star}</span>`).join('');
+    else {
+      hud.setAttribute('aria-label', `${pet().a}: ${got} of ${level().target} ${pet().food}, difficulty ${levelIndex()+1}`);
+      hud.innerHTML = `<div class="mg-want" aria-label="${pet().want}">${ART[pet().a]}${ART[pet().food]}</div><div><div class="mg-level" aria-label="Difficulty ${levelIndex()+1} of 3">${Array.from({length:3},(_,i)=>`<span class="${i<=levelIndex()?'on':''}">${ART.star}</span>`).join('')}</div><div class="mg-foodslots">${Array.from({length:level().target},(_,i)=>`<span class="${i<got?'on':''}">${ART[pet().food]}</span>`).join('')}</div></div>`;
+    }
+  }
+  // Roll a shaded pixel sphere around the axis perpendicular to actual travel. A flat
+  // rotate() can only show sideways rolling; rotating the texture in 3D shows both axes.
+  function rollBall(dx,dy){
+    const distance = Math.hypot(dx,dy); if (!distance) return;
+    const a = distance/R/2, s = Math.sin(a), q = [-dy/distance*s, dx/distance*s, 0, Math.cos(a)], r = rotation;
+    rotation = [q[3]*r[0]+q[0]*r[3]+q[1]*r[2]-q[2]*r[1], q[3]*r[1]-q[0]*r[2]+q[1]*r[3]+q[2]*r[0], q[3]*r[2]+q[0]*r[1]-q[1]*r[0]+q[2]*r[3], q[3]*r[3]-q[0]*r[0]-q[1]*r[1]-q[2]*r[2]];
+    const norm = Math.hypot(...rotation); rotation = rotation.map(v=>v/norm);
+    drawBall();
+  }
+  function drawBall(){
+    if (!ball) return; const g = ball.getContext('2d'); g.clearRect(0,0,32,32);
+    const [qx,qy,qz,qw] = rotation;
+    for(let py=1;py<31;py++) for(let px=1;px<31;px++){
+      const nx=(px-15.5)/14, ny=(py-15.5)/14, d=nx*nx+ny*ny; if(d>1)continue;
+      if(d>.88){g.fillStyle='#3B3E43';g.fillRect(px,py,1,1);continue;}
+      const nz=Math.sqrt(1-d), tx=2*(-qy*nz+qz*ny), ty=2*(-qz*nx+qx*nz), tz=2*(-qx*ny+qy*nx);
+      const lx=nx+qw*tx-qy*tz+qz*ty, ly=ny+qw*ty-qz*tx+qx*tz, lz=nz+qw*tz-qx*ty+qy*tx;
+      const band=Math.floor((Math.atan2(lx,lz)+Math.PI)*3/Math.PI);
+      const color=Math.abs(ly)<.09 || Math.abs(ly)>.85 ? [250,244,219] : band%2 ? [255,200,60] : [63,161,219];
+      const shade=Math.round(clamp(.52+.48*(nx*-.25+ny*-.45+nz*.85),.4,1)*4)/4;
+      g.fillStyle=`rgb(${color.map(c=>Math.round(c*shade)).join(',')})`;g.fillRect(px,py,1,1);
+    }
+  }
+  function recycle(st,i,first=false){
+    st.good = !level().decoy || i !== level().count-1;
+    st.food = st.good ? pet().food : PETS[(round+1)%PETS.length].food;
+    st.y = first ? 10+i*25 : -10-i*8; st.base = first ? 22+i*26 : 12+Math.random()*76; st.x=st.base;
+    st.node.innerHTML=ART[st.food];st.node.classList.remove('got');st.node.setAttribute('aria-label',st.food);
+  }
   function place(node, px, py){ node.style.left = px + '%'; node.style.top = py + '%'; }
   function start(){
-    done = false; finger = null; bumping = false; zero = null;
+    done = false; finger = null; bumping = false; zero = null; velocity = [0,0]; elapsed = 0; rejected = 0;
+    me.classList.remove('hop','eating');
     if (got >= 5){ got = 0; slots(); }
     if (id === 'balltrail'){
       const m = maze(); [x, y] = m.s;
       world.innerHTML = m.walls.map(([a, b, w, h]) => `<div class="mg-hedge" style="left:${a}%; top:${b}%; width:${w}%; height:${h}%"></div>`).join('')
         + `<div class="mg-goal" style="left:${m.g[0]}%; top:${m.g[1]}%">${ART.star}</div>`;
     } else {
-      x = 50; y = 76;
-      stars = [{x:25, y:12}, {x:72, y:40}];
-      world.innerHTML = stars.map(() => `<span class="mg-piece mg-star">${ART.star}</span>`).join('');
-      stars.forEach((st, i) => st.node = world.children[i]);
+      got = 0; x = 50; y = pet().fly ? 72 : 82;
+      board.classList.toggle('ground', !pet().fly); paintBG(board, bgFor.get(board), true);
+      me.style.setProperty('--wing',pet().wing || '#E8423F');
+      me.innerHTML = `<span class="mg-body ${pet().fly?'flies':'walk'}">${ART[pet().a]}${pet().fly?'<span class="mg-wing"></span>':''}</span>`;
+      me.setAttribute('aria-label',pet().a);
+      world.innerHTML = pet().fly ? '' : '<div class="mg-floor"></div>';
+      stars = Array.from({length:level().count},()=>({node:document.createElement('span')}));
+      stars.forEach((st,i)=>{st.node.className='mg-piece mg-star';world.appendChild(st.node);recycle(st,i,true);place(st.node,st.x,st.y);});
+      slots(); say(pet().want,0,'menus');
     }
     place(me, x, y);
   }
   function star(){   // one more star: it lights the next slot; the fifth finishes the round
+    if (done) return;
     got++; slots(); FX.pop();
-    if (got < 5 && id === 'starflight') return;
-    done = true; finger = null;
+    if (id === 'starflight'){retrigger(me,'eating');if(got < level().target)return;}
+    done = true; finger = null; velocity = [0,0];
     later(() => { FX.cheer(); retrigger(me, 'hop'); }, 250);
     if (id === 'balltrail'){ retrigger(world.querySelector('.mg-goal'), 'hop'); say(SAY.found, 0, 'menus'); }
-    else say(SAY.five, 0, 'menus');
-    later(() => { round++; start(); }, got >= 5 ? 3200 : 2400);
+    else {
+      say(pet().yum, 0, 'menus');
+      const next = PETS[(round+1)%PETS.length], cue = document.createElement('div'); cue.className='mg-next';
+      cue.setAttribute('aria-label','Next: '+next.want);cue.innerHTML=ART[next.a]+ART[next.food];world.appendChild(cue);
+    }
+    later(() => { round++; start(); }, id==='starflight' || got >= 5 ? 3200 : 2400);
   }
   function frame(t){
     if (!id) return;
-    const dt = Math.min((t - last)/1000, .035); last = t;
+    const dt = clamp((t - last)/1000, 0, .035); last = t;
     listen(tiltOK());
     if (!done && !document.hidden && $('#settings').hidden && $('#parentGate').hidden){
-      const [vx, vy] = steer(t);
-      const nx = clamp(x + vx*SPEED*dt, R, 100 - R), ny = clamp(y + vy*SPEED*dt, R, 100 - R);
-      const bx = blocked(nx, y), by = blocked(x, ny);
+      elapsed += dt;
+      let [vx, vy] = steer(t);
+      if (id==='starflight' && !pet().fly) vy=0;
+      const smooth = 1-Math.exp(-14*dt);
+      velocity[0] += (vx*SPEED-velocity[0])*smooth; velocity[1] += (vy*SPEED-velocity[1])*smooth;
       const ox = x, oy = y;
-      if (!bx) x = nx; if (!by) y = ny;
-      if (id === 'balltrail'){ spin += (x - ox)*24; me.style.setProperty('--spin', spin.toFixed(1) + 'deg'); }   // (rolling right turns it clockwise)
-      else if (Math.abs(vx) > .15) me.style.setProperty('--fx', vx > 0 ? -1 : 1);   // (the parrot picture faces left)
+      let bx=false, by=false;
+      const steps = Math.max(1,Math.ceil(dt/.012));
+      for(let i=0;i<steps;i++){
+        const nx=clamp(x+velocity[0]*dt/steps,R,100-R);if(blocked(nx,y))bx=true;else x=nx;
+        const ny=clamp(y+velocity[1]*dt/steps,R,100-R);if(blocked(x,ny))by=true;else y=ny;
+      }
+      if (id === 'balltrail') rollBall(x-ox,y-oy);
+      else {
+        if(Math.abs(velocity[0])>2)me.style.setProperty('--fx',velocity[0]>0?-1:1);
+        flap += dt*9;
+        me.style.setProperty('--flap',(Math.sin(flap)*42-10).toFixed(1)+'deg');
+        me.style.setProperty('--step',Math.abs(x-ox)>.01?Math.round(Math.sin(flap)*2)+'px':'0px');
+      }
       if ((bx || by) && !bumping) FX.boop();   // one bump per touch of a hedge, not a buzz
       bumping = bx || by;
       place(me, x, y);
       if (id === 'balltrail'){ const [gx, gy] = maze().g; if (x > gx && x < gx + 17 && y > gy && y < gy + 17) star(); }
-      else for (const st of stars){
-        st.y += 9*dt;
+      else for (const [i,st] of stars.entries()){
+        st.y += level().fall*dt;
+        st.x = clamp(st.base+Math.sin(elapsed*1.1+i)*level().drift,8,92);
         if (Math.hypot(x - st.x, y - st.y) < CATCH){
           const node = st.node; node.classList.add('got');   // the caught star puffs away and a new one starts at the top
           const fresh = node.cloneNode(true); fresh.classList.remove('got'); world.appendChild(fresh); st.node = fresh;
-          setTimeout(() => node.remove(), 400);
-          st.y = -8; st.x = 15 + Math.random()*70; star();
+          later(() => node.remove(), 400);
+          if(st.good) star(); else { rejected++;FX.boop();retrigger(el.querySelector('.mg-want'),'bump'); }
+          recycle(st,i);
+          place(st.node,st.x,st.y);
           if (done) break;
-        } else if (st.y > 108){ st.y = -8; st.x = 15 + Math.random()*70; }
+        } else if (st.y > 108) recycle(st,i);
         place(st.node, st.x, st.y);
       }
     }
@@ -8060,19 +8153,23 @@ const MotionGames = (() => {
       finger = {x:(e.clientX - r.left - b)/(r.width - 2*b)*100, y:(e.clientY - r.top - b)/(r.width - 2*b)*100}; };
     field.addEventListener('pointerdown', e => { if (done) return; e.preventDefault(); keepAwake(); try{ field.setPointerCapture(e.pointerId); }catch(err){} point(e); });
     field.addEventListener('pointermove', e => { if (finger) point(e); });
-    ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(ev => field.addEventListener(ev, () => { if (finger){ finger = null; zero = null; } }));   // letting go: tilt counts from the grip now
+    ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(ev => field.addEventListener(ev, () => { if (finger){ finger = null; zero = null; velocity=[0,0]; } }));   // letting go: tilt counts from the grip now
   });
-  document.addEventListener('visibilitychange', () => { finger = null; zero = null; last = performance.now(); });
+  document.addEventListener('visibilitychange', () => { finger = null; zero = null; velocity=[0,0]; last = performance.now(); });
   return {
     enter(name){
       id = name; el = $('#' + name); board = el.querySelector('.mg-board'); me = el.querySelector('.mg-me'); world = el.querySelector('.mg-world');
-      me.innerHTML = name === 'balltrail' ? schoolPic('ball') : ART.parrot;
-      round = 0; got = 0; slots(); start(); say(SAY[name], 0, 'menus');
+      ball=null;rotation=[0,0,0,1];flap=0;me.style.setProperty('--fx',1);
+      if(name==='balltrail'){ball=document.createElement('canvas');ball.width=ball.height=32;ball.setAttribute('aria-label','Rolling ball');me.replaceChildren(ball);drawBall();}
+      round = 0; got = 0; slots(); start(); if(name==='balltrail')say(SAY.balltrail, 0, 'menus');
       last = performance.now(); raf = requestAnimationFrame(frame);
     },
-    leave(){ cancelAnimationFrame(raf); listen(false); finger = null; id = null; },
-    lines: () => Object.values(SAY),
-    state: () => ({id, x, y, round, got, done, tilt:listening, maze:id === 'balltrail' ? MAZES.indexOf(maze()) : null, stars:stars.map(st => ({x:st.x, y:st.y}))})
+    leave(){ cancelAnimationFrame(raf); listen(false); finger = null; velocity=[0,0];id = null;ball=null; },
+    lines: () => [...Object.values(SAY),...PETS.flatMap(p=>[p.want,p.yum])],
+    state: () => ({id, x, y, round, got, done, tilt:listening, maze:id === 'balltrail' ? MAZES.indexOf(maze()) : null,
+      rotation:rotation.slice(), animal:id==='starflight'?pet().a:null, food:id==='starflight'?pet().food:null, flying:id==='starflight'?pet().fly:null,
+      level:levelIndex()+1, target:id==='starflight'?level().target:5, rejected, elapsed,
+      stars:stars.map(st => ({x:st.x, y:st.y,good:st.good,food:st.food}))})
   };
 })();
 

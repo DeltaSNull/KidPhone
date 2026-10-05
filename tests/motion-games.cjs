@@ -52,7 +52,7 @@ const check = (condition, message) => { assert.ok(condition, message); console.l
       const state = () => page.evaluate(() => window.__toyPhone.motionGames());
       const run = ms => page.clock.runFor(ms);
       const sensor = (beta, gamma) => page.evaluate(([beta, gamma]) => { const e = new Event('deviceorientation'); Object.assign(e, {alpha:0, beta, gamma}); window.dispatchEvent(e); }, [beta, gamma]);
-      const lit = id => page.locator(`#${id} .mg-got span.on`).count();
+      const lit = id => page.locator(`#${id} ${id==='starflight'?'.mg-foodslots':'.mg-got'} span.on`).count();
       // hold a finger at (x, y), in percent of the field, for a while, then let go
       const hold = async (id, x, y, ms = 2200) => {
         const r = await page.locator(`#${id} .mg-board`).boundingBox(), b = 9;   // (inside the bezel: 9px each side and on top)
@@ -77,12 +77,27 @@ const check = (condition, message) => { assert.ok(condition, message); console.l
       check(Math.abs((board.width - 18) - (board.height - 24)) < 1.5, `${tag}: the inside of the field is square`);
       check(await lit('balltrail') === 0 && await page.locator('#balltrail .mg-got span').count() === 5, `${tag}: five empty star slots`);
 
+      // The texture must roll on front/back travel too, and stop when the ball stops.
+      let st;
+      const texture = () => page.locator('#balltrail .mg-me canvas').evaluate(c=>c.toDataURL());
+      const initialTexture = await texture();
+      await hold('balltrail',15,42,1000);
+      st = await state();
+      check(Math.abs(st.rotation[0])>.1 && await texture() !== initialTexture, `${tag}: forward travel rotates the sphere about its horizontal axis`);
+      const stoppedTexture = await texture();await run(300);
+      check(await texture() === stoppedTexture, `${tag}: releasing touch stops motion and texture rolling together`);
+      await hold('balltrail',15,15,1000);
+      check(await texture() !== stoppedTexture, `${tag}: backward travel rolls the texture back, not just slides`);
+      await go('balltrail');
+
       // tilt: the first reading is the grip; tipping right from it rolls the ball right, until the hedge stops it
-      let st = await state(); const x0 = st.x;
+      st = await state(); const x0 = st.x;
       await sensor(35, 0); await sensor(35, 18); await run(400);
       check((await state()).x > x0 + 2, `${tag}: tipping the phone right rolls the ball right`);
       for (let i = 0; i < 8; i++){ await sensor(35, 18); await run(300); }
       check((await state()).x < 42 - 5, `${tag}: the hedge stops the ball`);
+      const hedgeTexture=await texture();await sensor(35,18);await run(300);
+      check(await texture()===hedgeTexture,`${tag}: pushing against a hedge does not spin a stationary ball`);
       // a finger lifted: tilt counts from how the phone is held now, so the same tip no longer rolls it
       st = await state();
       await hold('balltrail', st.x, st.y, 200);
@@ -113,19 +128,35 @@ const check = (condition, message) => { assert.ok(condition, message); console.l
       check(st.id === null && !st.tilt, `${tag}: leaving the game stops listening for tilt`);
       await sensor(20, 40);
 
-      // --- Star Flight: follow the nearest star with a finger until five are caught
+      // --- Star Flight: longer food stages, alternating flying/ground animals.
       await go('starflight');
-      check((await state()).tilt && await lit('starflight') === 0, `${tag}: Star Flight starts with five empty slots`);
-      for (let i = 0; i < 300 && !(await state()).done; i++){
-        st = await state();
-        const near = st.stars.reduce((a, b) => Math.hypot(st.x - a.x, st.y - a.y) < Math.hypot(st.x - b.x, st.y - b.y) ? a : b);
-        await hold('starflight', near.x, Math.max(6, Math.min(94, near.y + 4)), 200);
+      check((await state()).tilt && (await state()).target===8 && await lit('starflight') === 0, `${tag}: the first animal needs eight blueberries, not five quick stars`);
+      const flapBefore=await page.locator('#starflight .mg-me').evaluate(e=>e.style.getPropertyValue('--flap'));await run(250);
+      check(await page.locator('#starflight .mg-wing').count()===1 && await page.locator('#starflight .mg-me').evaluate(e=>e.style.getPropertyValue('--flap'))!==flapBefore, `${tag}: flying animals flap a simple pixel wing`);
+      const campaign=[['parrot','blueberry',true,1,8],['dog','bone',false,1,8],['eagle','fish',true,2,10],['monkey','banana',false,2,10],['butterfly','flower',true,3,12],['panda','bamboo',false,3,12]];
+      for(const [animal,food,flying,difficulty,target] of campaign){
+        st=await state();check(st.animal===animal&&st.food===food&&st.flying===flying&&st.level===difficulty&&st.target===target,`${tag}: stage ${st.round+1} is ${animal}/${food}, level ${difficulty}, goal ${target}`);
+        if(animal==='parrot'||animal==='dog'||animal==='butterfly')await page.screenshot({animations:'disabled',path:path.join(__dirname,'screenshots',`motion-playing-${animal}-${tag}.png`)});
+        if(!flying){
+          const groundY=st.y;await hold('starflight',85,15,600);check(Math.abs((await state()).y-groundY)<.01,`${tag}: ${animal} touch steering stays on the ground`);
+          await sensor(35,0);await sensor(55,0);await run(500);check(Math.abs((await state()).y-groundY)<.01,`${tag}: ${animal} ignores forward/back tilt`);
+          const sideX=(await state()).x;await sensor(35,20);await run(200);check((await state()).x>sideX&&Math.abs((await state()).y-groundY)<.01,`${tag}: sideways tilt moves ${animal} along the ground`);
+          check(await page.locator('#starflight .mg-wing').count()===0,`${tag}: ground animals have no flying wings`);
+        }
+        if(difficulty>1){
+          let hit=false;
+          for(let i=0;i<100&&!hit;i++){st=await state();const bad=st.stars.find(s=>!s.good);await hold('starflight',bad.x,Math.max(6,Math.min(94,bad.y+4)),200);hit=(await state()).rejected>0;}
+          st=await state();check(hit&&st.got<target&&!st.done,`${tag}: another animal's food gives a gentle cue instead of ending the stage`);
+        }
+        for(let i=0;i<550&&!(await state()).done;i++){
+          st=await state();const near=st.stars.filter(s=>s.good).reduce((a,b)=>Math.hypot(st.x-a.x,st.y-a.y)<Math.hypot(st.x-b.x,st.y-b.y)?a:b);
+          await hold('starflight',near.x,Math.max(6,Math.min(94,near.y+4)),200);
+        }
+        st=await state();check(st.done&&st.got===target&&await lit('starflight')===target,`${tag}: ${animal} stage completes only after ${target} matching foods`);
+        if(animal==='parrot'||animal==='dog'||animal==='butterfly')await page.screenshot({animations:'disabled',path:path.join(__dirname,'screenshots',`motion-${animal}-${tag}.png`)});
+        await run(3400);check(!(await state()).done&&(await state()).got===0,`${tag}: the next animal starts with an empty collection`);
       }
-      st = await state();
-      check(st.done && st.got === 5 && await lit('starflight') === 5, `${tag}: five stars caught fill the slots`);
-      await page.screenshot({animations:'disabled', path:path.join(__dirname, 'screenshots', `motion-flight-${tag}.png`)});
-      await run(3400); st = await state();
-      check(!st.done && st.got === 0 && await lit('starflight') === 0, `${tag}: after the cheer the slots start over`);
+      check((await state()).animal==='parrot'&&(await state()).level===3,`${tag}: after all six animals difficulty stays capped at level three`);
       check(errors.length === 0, `${tag}: no JavaScript errors ${errors.join('; ')}`);
 
       // --- motion not allowed: touch still steers, and the game still never asks
