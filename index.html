@@ -76,7 +76,7 @@ img[src^="data:image/png"]{image-rendering:-webkit-optimize-contrast; image-rend
   padding:var(--gap) max(var(--gap),env(safe-area-inset-right,0px)) 0 max(var(--gap),env(safe-area-inset-left,0px));
   background:var(--case); image-rendering:-webkit-optimize-contrast; image-rendering:pixelated;
 }
-img[src^="data:image/jpeg"],img[src^="blob:"],.face img{image-rendering:auto}
+img[src^="data:image/jpeg"],img[src^="blob:"],.face img:not(.px){image-rendering:auto}
 @media (orientation:landscape){
   #device{grid-template-rows:none; grid-template-columns:minmax(0,1fr) auto; padding:var(--gap) 0 var(--gap) max(var(--gap),env(safe-area-inset-left,0px))}
 }
@@ -155,7 +155,7 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img{image-rendering:auto}
   width:var(--face,80px); height:var(--face,80px); display:grid; place-items:center; overflow:hidden; flex:none; line-height:1;
 }
 .face .px{width:74%; height:74%; margin-top:-4%}
-.face img{width:86%; height:86%; object-fit:cover; border-radius:50%; margin-top:-5%}
+.face img:not(.px){width:86%; height:86%; object-fit:cover; border-radius:50%; margin-top:-5%}
 .nm{font-size:14px; line-height:1.2; padding:0 2px; white-space:nowrap; max-width:calc(100% + 14px); margin:0 -7px; overflow:hidden; text-overflow:ellipsis}
 #keypad{display:grid; gap:10px; grid-template-rows:56px minmax(0,1fr) auto; grid-template-areas:"dial" "keys" "call"}
 .dial{grid-area:dial; display:flex; align-items:center; justify-content:center;
