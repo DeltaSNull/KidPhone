@@ -527,6 +527,11 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   before = await osc();
   await tapAll('.pkey');
   check(await osc() >= before + 16, 'every animal piano key plays');
+  if (family) {
+    const duckBefore = await page.evaluate(() => window.__src);
+    await tap('.pkey[data-i="5"]');
+    check(await page.evaluate(() => window.__src) === duckBefore + 1, 'duck piano uses the natural quack recording rather than a buzzy oscillator');
+  }
   await shot('13-piano');
   await fits('piano');
   await tap('[data-mtab="songs"]'); await sleep(200);

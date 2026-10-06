@@ -2,7 +2,7 @@
 
 Created: 2026-10-04  
 Review baseline: `413fbb1c45b559d260f58ec98fa59a0279c4e26f`  
-Status: Parent access controls, play-time limits, School sound controls and motion games deployed. Counting improvements and Dino Picnic are implemented; Animal Delivery is partly implemented. Profiles and learning-progress tracking are deferred. Latest verified main: `6264166` ([passing CI and deployment](https://github.com/DeltaSNull/KidPhone/actions/runs/37385286207)). Optional PIN and the expanded Delivery route are released in [PR #5](https://github.com/DeltaSNull/KidPhone/pull/5). R-01 to R-03 are released in [PR #6](https://github.com/DeltaSNull/KidPhone/pull/6). Learning controls and photo navigation refinement is underway on `codex/play-refinement`.
+Status: Parent access controls, play-time limits, School sound controls and motion games deployed. Counting improvements and Dino Picnic are implemented; Animal Delivery is partly implemented. Profiles and learning-progress tracking are deferred. Latest verified main: `8dd7ed8` ([passing CI and deployment](https://github.com/DeltaSNull/KidPhone/actions/runs/37390768685)). Optional PIN and the expanded Delivery route are released in [PR #5](https://github.com/DeltaSNull/KidPhone/pull/5). R-01 to R-03 are released in [PR #6](https://github.com/DeltaSNull/KidPhone/pull/6). R-05 to R-07 are released in [PR #7](https://github.com/DeltaSNull/KidPhone/pull/7). Duck sound correction R-08 is underway on `codex/duck-quack`.
 
 **Continuing with either model? Read [HANDOFF.md](HANDOFF.md) and [AGENTS.md](AGENTS.md) before editing.**
 
@@ -18,6 +18,8 @@ This batch follows the owner's request to use best judgment on overall refinemen
 - [x] **R-05 — Clear question replay:** visible, consistent speakers in ABC Snack, 123 Snack and Dino Picnic; replay the current prompt without changing the answer/progress; disabled during busy phases. **Implemented — `codex/play-refinement`; focused Chromium checks passed in three layouts. CI/release tracked in branch PR; existing recordings only.**
 - [x] **R-06 — Clear quantity correction:** explicit take-one-back for independent counting; empty/busy state; Help count stays automatic; changed counting modes start an appropriate lesson; Dino snacks stay separated in later rounds. **Implemented — same branch; focused Chromium checks passed in three layouts. Old plate/box gestures retained; CI/release tracked in branch PR.**
 - [x] **R-07 — Photo browsing:** position counter, descriptive labels, keyboard browsing/Escape/focus, covered gallery inert, scroll cancellation for inserted thumbnails. **Implemented — same branch; focused Chromium checks passed in three layouts. Existing touch/swipe and storage preserved; CI/release tracked in branch PR.**
+
+- [x] **R-08 — Duck quack correction:** natural-pitch mallard recording and shared duck piano playback; versioned asset and updated source/license credit. **Implemented on `codex/duck-quack`; audio levels measured, browser/CI/release tracked in branch PR. Owner listening remains R-04.**
 
 ## Current owner-directed detour: regular motion games
 

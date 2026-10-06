@@ -147,11 +147,12 @@
   "note": "a Siamese cat's meow"
  },
  "quack": {
-  "file": "File:Pekin duck & mallard.ogg",
-  "start": 5.05,
-  "end": 5.65,
-  "hp": 200,
-  "note": "a duck quacking"
+  "file": "File:Anas platyrhynchos - Mallard - XC62258.ogg",
+  "start": 1.08,
+  "end": 2.68,
+  "hp": 100,
+  "output": "quack-v2.mp3",
+  "note": "four clear mallard quacks at natural pitch; replaces the ambiguous pond excerpt"
  },
  "screech": {
   "file": "File:Buteo jamaicensis - Red-tailed Hawk XC71575.mp3",
@@ -162,7 +163,7 @@
   "note": "a red-tailed hawk's scream, a little slower and lower (for the eagle and the pterodactyl)"
  },
  "peep": {
-  "file": "File:মুরগির বাচ্চার ডাক.oga",
+  "file": "File:\u09ae\u09c1\u09b0\u0997\u09bf\u09b0 \u09ac\u09be\u099a\u09cd\u099a\u09be\u09b0 \u09a1\u09be\u0995.oga",
   "start": 2.5,
   "end": 3.3,
   "hp": 2000,

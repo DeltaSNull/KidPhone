@@ -26,4 +26,4 @@ Commons limits how fast one address may ask it for things, so the script waits s
 long as Commons asks when it's busy. Answers and downloads are cached in `tools/sounds/.cache/`.
 
 To swap a sound: find a recording on Commons (search with `filetype:audio`), put its `File:` title and the seconds
-you want in `sources.json`, and run the script.
+you want in `sources.json`, and run the script. Use an optional `output` filename (for example `quack-v2.mp3`) when replacing an existing clip, and update `sounds.json` when rebuilding with `--only`; a full build writes the mapping automatically.

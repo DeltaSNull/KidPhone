@@ -7964,7 +7964,7 @@ const PFX = {
   toot(f){ synth({f:f*.8, f1:f, dur:.45, type:'sawtooth', vol:.1, vib:6, lp:2400}); },
   woof(f){ [0,.2].forEach(d => { synth({f:f*.7, f1:f*.45, dur:.13, type:'square', vol:.1, lp:1200, at:d}); noise(.08,'lowpass',900,500,.2,d); }); },
   ribbit(f){ [0,.06,.12].forEach(d => synth({f, f1:f*.85, dur:.05, type:'square', vol:.08, lp:1600, at:d})); },
-  quack(f){ [0,.2].forEach(d => synth({f, f1:f*.8, dur:.15, type:'sawtooth', vol:.11, lp:1800, q:4, at:d})); },
+  quack(){ FX.quack(); },   // the same natural quack as the duck everywhere else; the key's bell carries its pitch
   meow(f){ synth({f:f*.9, f1:f*1.3, dur:.2, type:'triangle', vol:.2}); synth({f:f*1.3, f1:f*.85, dur:.4, type:'triangle', vol:.2, at:.18, vib:6}); },
   tweet(f){ [0,.12,.24].forEach(d => synth({f:f*2, f1:f*2.6, dur:.09, vol:.15, at:d})); }
 };
