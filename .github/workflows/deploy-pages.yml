@@ -98,6 +98,9 @@ jobs:
       - name: Pretend-camera hide and pop out
         run: node tests/camera-peek.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
 
+      - name: Play-time preview
+        run: node tests/break-preview.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
+
       - name: Animal Delivery
         run: node tests/delivery.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
 
