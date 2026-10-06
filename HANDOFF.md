@@ -4,12 +4,21 @@ Read SCHOOL_ROADMAP.md first, then AGENTS.md. This is the agreed plan going forw
 
 ## Active batch
 
-- Owner-reported duck sound fix R-08 on `codex/duck-quack`; check its PR/checks and release first.
+- Owner-reported piano consistency and background audio recovery R-09/R-10 on `codex/audio-return`; check its PR/checks and release first.
+- R-08 released in [PR #8](https://github.com/DeltaSNull/KidPhone/pull/8), main `3774c47`; all six checks and [Deploy](https://github.com/DeltaSNull/KidPhone/actions/runs/37400523026) passed. Owner says the natural quack improved other areas; piano consistency is corrected by R-09.
 - R-05 to R-07 released in [PR #7](https://github.com/DeltaSNull/KidPhone/pull/7), main `8dd7ed8`; all six checks and [Deploy](https://github.com/DeltaSNull/KidPhone/actions/runs/37390768685) passed, live file verified.
 - R-01 to R-03 are released in [PR #6](https://github.com/DeltaSNull/KidPhone/pull/6), main `6264166`; all browser checks and [Deploy](https://github.com/DeltaSNull/KidPhone/actions/runs/37385286207) passed. R-04 physical checks remain pending.
 - P1-14 / P3-06 follow-up released in [PR #5](https://github.com/DeltaSNull/KidPhone/pull/5), main `f0b0658`; all six browser test jobs and [Deploy](https://github.com/DeltaSNull/KidPhone/actions/runs/37341705042) passed.
 - G-05/G-06 are released: [PR #4](https://github.com/DeltaSNull/KidPhone/pull/4), main `ead5c96`, all checks and [deployment](https://github.com/DeltaSNull/KidPhone/actions/runs/37329072126) passed. G-04 real-phone/family tuning remains pending.
 - Next untracked School candidates: Today's Adventure (P3-01, P3-07, P3-08), Toddler Play Together (P3-03), Sorting Station, Pattern Train, Story Time, Feelings Friends (P4-01 to P4-04). Sound Safari (P3-05) waits on the letter sounds (T-04).
+
+## Piano consistency and audio return — Codex, 2026-10-06
+
+- R-09: duck piano uses two brief filtered square-wave quacks tied to its key pitch, plus the existing bell note, matching the other synthesized animal keys. It never uses the longer field recording. The natural mallard recording remains in calls, camera, Wild Tap and games, where the owner found it better. Supersedes R-08's shared-piano behavior.
+- R-10: hidden/pagehide parks the AudioContext, clears held effects and stops narration/music/calls. The next foreground sound or gesture rebuilds the graph even if Safari reports the old engine as running; closed contexts recover too. Reuses decoded recordings; restores the saved parent volume and current School effects level. Hidden sound requests are discarded instead of queued for return; ordinary taps do not rebuild repeatedly. Both visibility return and back/forward restoration are covered. Safari may still require a tap to unlock output.
+- Verification: initial focused Chromium tests passed; final stronger replay assertion and full portrait smoke results plus Chromium/WebKit CI are recorded in this branch's PR. New tests/audio-return.cjs simulates hidden/return, a running-but-frozen render clock, BFCache-style pagehide/pageshow, a closed context, repeated cycles, every piano key, short synthesized duck, clip reuse, School quiet/volume preservation and recorded prompt playback. Both engine CI jobs run it. These simulations do not prove physical iOS audio output; owner checks remain R-04.
+- Technical context: WebKit reports https://bugs.webkit.org/show_bug.cgi?id=276016 and https://bugs.webkit.org/show_bug.cgi?id=263627 describe silent output despite running state. Existing wakeAudio only rebuilt interrupted/stuck states; it did not mark backgrounded contexts for replacement.
+- Claude: this is the plan going forward. Read SCHOOL_ROADMAP.md, HANDOFF.md and AGENTS.md before anything else, fetch current main and check open PRs/latest release. Finish this batch's verification/release first. Preserve the recorded quack outside piano and the toy-style piano quack; use owner iPhone feedback for R-04. Profiles/tracking and lesson phonics remain on hold.
 
 ## Duck quack correction — Codex, 2026-10-06
 

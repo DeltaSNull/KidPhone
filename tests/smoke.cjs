@@ -530,7 +530,7 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   if (family) {
     const duckBefore = await page.evaluate(() => window.__src);
     await tap('.pkey[data-i="5"]');
-    check(await page.evaluate(() => window.__src) === duckBefore + 1, 'duck piano uses the natural quack recording rather than a buzzy oscillator');
+    check(await page.evaluate(() => window.__src) === duckBefore, 'duck piano keeps the simplified synthesized style of the other keys');
   }
   await shot('13-piano');
   await fits('piano');

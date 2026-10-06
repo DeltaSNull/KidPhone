@@ -89,6 +89,9 @@ jobs:
       - name: Learning controls and photo navigation
         run: node tests/play-refinement.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
 
+      - name: Audio return and piano
+        run: node tests/audio-return.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
+
       - name: Animal Delivery
         run: node tests/delivery.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
 

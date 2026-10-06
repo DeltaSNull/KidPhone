@@ -4763,12 +4763,28 @@ const VOLS = [.25, .45, .7, 1];
    mode the phone's speech voice can't be used (a copy without clip files, like the artifact, stays "ambient" and speaks). */
 const playback = () => { try{ return !!(settings.silent && navigator.audioSession && VB.map); }catch(e){ return false; } };   // (VB comes later in the file)
 function setSession(){ try{ if (navigator.audioSession) navigator.audioSession.type = playback() ? 'playback' : 'ambient'; }catch(e){} }
-let ctx = null, master = null, fx = null, OUT = null, held = [], stuck = 0, rebuilds = 0, fxEnd = 0;
+let ctx = null, master = null, fx = null, OUT = null, held = [], stuck = 0, rebuilds = 0, fxEnd = 0, audioNeedsReset = false;
+/* Safari may return a silent context that still claims to be running. Retire that graph on the next
+   foreground sound/gesture; decoded clips are AudioBuffers and can be reused in the new context. */
+function resetAudio(){
+  const old = ctx;
+  ctx = null; master = null; fx = null; OUT = null; noiseBuf = null; stuck = 0; fxEnd = 0;
+  if (old){
+    rebuilds++;
+    try{ old.onstatechange = null; const closing = old.close(); if (closing) closing.catch(() => {}); }catch(e){}
+  }
+}
+function parkAudio(){
+  audioNeedsReset = true; held = []; fxEnd = 0;
+  if (ctx){ try{ const pausing = ctx.suspend(); if (pausing) pausing.catch(() => {}); }catch(e){} }
+}
 function audio(){
+  if (ctx && (ctx.state === 'closed' || (audioNeedsReset && document.visibilityState === 'visible'))) resetAudio();
   if (!ctx){
     try{
       setSession();
       const c = ctx = new (window.AudioContext || window.webkitAudioContext)();
+      audioNeedsReset = document.visibilityState !== 'visible';
       const comp = c.createDynamicsCompressor();  // two kids mashing at once never clips
       comp.threshold.value = -16; comp.knee.value = 10; comp.ratio.value = 4; comp.attack.value = .004; comp.release.value = .25;
       master = c.createGain(); master.gain.value = VOLS[settings.vol];
@@ -4777,11 +4793,12 @@ function audio(){
       c.onstatechange = () => { if (c !== ctx) return; if (c.state === 'running'){ stuck = 0; playHeld(); } showSound(); };
     }catch(e){ ctx = null; return null; }
   }
-  if (ctx.state !== 'running' && ctx.state !== 'closed'){ try{ ctx.resume().catch(()=>{}); }catch(e){} }
+  if (document.visibilityState === 'visible' && ctx.state !== 'running' && ctx.state !== 'closed'){ try{ ctx.resume().catch(()=>{}); }catch(e){} }
   return ctx;
 }
 /* true (and the sound kept for later) when the engine isn't making sound right now */
 function hold(fn){
+  if (document.visibilityState !== 'visible') return true;   // never queue background sounds for a later tap
   const c = audio(); if (!c) return true;
   if (c.state === 'running' || (window.OfflineAudioContext && c instanceof OfflineAudioContext)) return false;
   held.push([performance.now(), fn]); if (held.length > 16) held.shift();
@@ -4790,13 +4807,12 @@ function hold(fn){
 function playHeld(){ const now = performance.now(), list = held.filter(([t]) => now - t < 900); held = []; list.forEach(([, fn]) => { try{ fn(); }catch(e){} }); }
 /* every touch: the engine must be running; if the phone paused it and it won't come back, build a new one */
 function wakeAudio(){
+  if (document.visibilityState !== 'visible') return;
   const c = audio(); if (!c) return;
   if (c.state === 'running'){ playHeld(); return; }
   if (c.state === 'interrupted' || stuck){
-    rebuilds++; held = held.slice(-6);
-    ctx = null; master = null; fx = null; OUT = null;
-    try{ c.onstatechange = null; c.close(); }catch(e){}
-    audio();
+    held = held.slice(-6);
+    resetAudio(); audio();
   } else stuck = 1;   // if this resume doesn't take, the next touch builds a new engine
   const n = ctx; if (!n) return;
   try{ n.resume().then(() => { if (n === ctx && n.state === 'running'){ stuck = 0; playHeld(); } }).catch(() => {}); }catch(e){}
@@ -7964,7 +7980,7 @@ const PFX = {
   toot(f){ synth({f:f*.8, f1:f, dur:.45, type:'sawtooth', vol:.1, vib:6, lp:2400}); },
   woof(f){ [0,.2].forEach(d => { synth({f:f*.7, f1:f*.45, dur:.13, type:'square', vol:.1, lp:1200, at:d}); noise(.08,'lowpass',900,500,.2,d); }); },
   ribbit(f){ [0,.06,.12].forEach(d => synth({f, f1:f*.85, dur:.05, type:'square', vol:.08, lp:1600, at:d})); },
-  quack(){ FX.quack(); },   // the same natural quack as the duck everywhere else; the key's bell carries its pitch
+  quack(f){ [0,.22].forEach(d => synth({f:f*.75, f1:f*.55, dur:.16, type:'square', vol:.095, lp:1600, q:1.5, rel:.07, at:d})); },   // two short, tuned toy quacks, matching the other synthesized piano animals
   meow(f){ synth({f:f*.9, f1:f*1.3, dur:.2, type:'triangle', vol:.2}); synth({f:f*1.3, f1:f*.85, dur:.4, type:'triangle', vol:.2, at:.18, vib:6}); },
   tweet(f){ [0,.12,.24].forEach(d => synth({f:f*2, f1:f*2.6, dur:.09, vol:.15, at:d})); }
 };
@@ -9182,11 +9198,12 @@ let lastTouch = 0;
 document.addEventListener('touchend', e => { const now = Date.now(); if (now - lastTouch < 350 && !inScroll(e)) e.preventDefault(); lastTouch = now; }, {passive:false});
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible'){ keepAwake(); updateClock(); if (current === 'camera' && cam.mode !== 'safari') startReal(); if ((camMotion() && !AR.listening) || (tiltMotion() && AR.perm !== 'granted')) askMotion().then(() => { renderLookNote(); renderTiltNote(); }); }
-  else { clearHold(); closeSettings(); hush(); stopSong(); if (call){ stopCallSounds(); closeCall(); } closeStream(); stopFx(); }   // the camera and narrator never run off screen
+  else { clearHold(); closeSettings(); hush(); stopSong(); if (call){ stopCallSounds(); closeCall(); } closeStream(); stopFx(); parkAudio(); }   // the camera and narrator never run off screen
 });
 let resizeT = 0;
 window.addEventListener('resize', () => { clearTimeout(resizeT); resizeT = setTimeout(() => { fillScreen(); fitContacts(); if(!$('#settings').hidden)sizeSettings(); if (current === 'camera'){ sizeCamera(); if (cam.mode !== 'safari'){ updateLookUI(); placeLenses(); } } if (!bgWatch) paintBackgrounds(); }, 120); });
-window.addEventListener('pagehide', () => {clearHold();hush();closeStream();});
+window.addEventListener('pagehide', () => {clearHold();hush();stopSong();if(call){stopCallSounds();closeCall();}closeStream();stopFx();parkAudio();});
+window.addEventListener('pageshow', () => { setSession(); });   // back/forward-cache restoration keeps recovery armed until the first sound
 paintBackgrounds(); if (bgWatch) bgFor.forEach((fn, el) => bgWatch.observe(el));
 
 /* Offline after the first visit when self-hosted over HTTPS (artifacts and file:// skip this). */
