@@ -168,7 +168,8 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img{image-rendering:auto}
 .key .dots i{width:6px; height:6px; background:var(--c); box-shadow:0 2px 0 rgba(59,43,32,.35)}
 .key.lit{--fr:var(--f-lit)}
 .callbtn{grid-area:call; justify-self:center; width:min(100%,230px); height:var(--bar); display:grid; place-items:center; --fr:var(--f-go)}
-.callbtn .px{height:84%; width:auto}
+/* A fixed icon cannot enlarge the grid's implicit row beyond the framed face. */
+.callbtn .px{height:46px; width:46px; max-height:100%}
 @media (orientation:portrait) and (max-height:760px){   /* Safari with its bars showing: wider keys, taller rows, a slimmer number strip */
   .keys{grid-template-columns:repeat(4,1fr); grid-template-rows:repeat(3,1fr); gap:6px} #keypad{grid-template-rows:48px minmax(0,1fr) auto; gap:6px} .callbtn{height:80px} }
 @media (orientation:landscape){
@@ -556,7 +557,7 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img{image-rendering:auto}
 .db-egg{position:absolute; left:50%; bottom:10%; width:78%; aspect-ratio:4/5; translate:-50% 0; background:center/100% 100% no-repeat; transition:opacity .3s}
 .db-egg.db-wig{animation:db-wig .25s}
 .db-egg.db-gone{opacity:0}
-@keyframes db-wig{0%,100%{translate:0}30%{translate:-6% 0}70%{translate:6% 0}}
+@keyframes db-wig{0%,100%{translate:-50% 0}30%{translate:-56% 0}70%{translate:-44% 0}}
 .db-baby{position:absolute; left:50%; bottom:20%; translate:-50% 0; font-size:clamp(64px,18vmin,120px); line-height:1; transform:scale(0); pointer-events:none; z-index:4}
 .db-baby .px{width:1.15em; height:1.15em; display:block}
 .db-baby.db-show{animation:db-born 2.6s cubic-bezier(.3,1.5,.5,1) forwards}
@@ -8475,7 +8476,7 @@ const DinoBuddies = (() => {
   const root = $('#dinobuddies'), eggEl = $('#dbEgg'), babyEl = $('#dbBaby'), famEl = $('#dbFamily');
   const sides = $$('.db-side', root), dinoEls = sides.map(s => s.querySelector('.db-dino'));
   const saved = store.get('dinobuddies', {}) || {};   // the hatched family is remembered between visits
-  let solo = false, fill = 0, hatching = false, buddy = DINOS[clamp(saved.buddy | 0, 0, DINOS.length - 1)];
+  let solo = false, fill = 0, hatching = false, hatchBaby = null, buddy = DINOS[clamp(saved.buddy | 0, 0, DINOS.length - 1)];
   let family = Array.isArray(saved.family) ? saved.family.filter(i => DINOS[i]).slice(0, 8) : [];
   const lastTap = [0, 0];
   /* each side plays its own instrument on the same pentatonic scale, so two kids mashing at once still sounds like music */
@@ -8533,18 +8534,23 @@ const DinoBuddies = (() => {
   function hatch(){
     hatching = true; crack(); cheer();
     const i = Math.floor(Math.random()*DINOS.length), d = DINOS[i];
+    hatchBaby = i;
     eggEl.classList.add('db-gone');
     put(babyEl, d.a); retrigger(babyEl, 'db-show');
     const [x, y] = rel(eggEl); confetti(x, y, 36);
     sides.forEach(sd => { if (!sd.offsetWidth) return; const [cx, cy] = rel(sd); confetti(cx, cy, 18); });
     dinoEls.forEach(el => retrigger(el, 'db-dance'));
     say(rnd(solo ? CHEER1 : CHEER2) + ' A baby ' + d.n + '!', 0, 'names');
-    setTimeout(() => {
-      family.push(i); if (family.length > 8) family = [i];
-      renderFamily(); setBuddy(d); store.set('dinobuddies', {family, buddy:i});
-      dinoEls.forEach(el => el.classList.remove('db-dance'));
-      newEgg(); hatching = false;
-    }, 2700);
+    later(settleHatch, 2700);
+  }
+  /* A completed hatch survives Home, but its celebration cannot spill into the next visit. */
+  function settleHatch(){
+    if (hatchBaby === null) return;
+    const i = hatchBaby; hatchBaby = null;
+    family.push(i); if (family.length > 8) family = [i];
+    renderFamily(); setBuddy(DINOS[i]); store.set('dinobuddies', {family, buddy:i});
+    dinoEls.forEach(el => el.classList.remove('db-dance'));
+    babyEl.classList.remove('db-show'); newEgg(); hatching = false;
   }
   const who = whoPicker(root, 'Dino Buddies', 'dinobuddies', n => {
     solo = n === 1; root.classList.toggle('solo', solo); drawEgg();
@@ -8553,7 +8559,7 @@ const DinoBuddies = (() => {
   setBuddy(buddy); newEgg(); renderFamily();
   return {
     enter(){ who.show(); say('Dino Buddies! One player, or two?', 0, 'menus'); },
-    leave(){ $$('.db-treat', root).forEach(t => t.remove()); who.hide(); },
+    leave(){ $$('.db-treat', root).forEach(t => { t.getAnimations().forEach(a => { a.onfinish = null; a.cancel(); }); t.remove(); }); settleHatch(); who.hide(); },
     fill: () => fill, family: () => family.length, players: () => solo ? 1 : 2,
     lines: () => ['Dino Buddies! Tap tap tap! Help the egg hatch!', 'Dino Buddies! One player, or two?', ...CHEER1, ...CHEER2, ...DINOS.map(d => 'A baby ' + d.n + '!')]
   };
@@ -8889,7 +8895,7 @@ const PaintPals = (() => {
   newRound(); renderGallery();
   return {
     enter(){ who.show(); say('Paint Pals! One player, or two?', 0, 'menus'); },
-    leave(){ $$('.pp-drop, .pp-spark', root).forEach(d => d.remove()); S.forEach(s => s.ptr.clear()); who.hide(); },
+    leave(){ $$('.pp-drop, .pp-spark', root).forEach(d => { d.getAnimations().forEach(a => { a.onfinish = null; a.cancel(); }); d.remove(); }); S.forEach(s => s.ptr.clear()); who.hide(); },
     lines: () => ['Paint Pals! Rub your picture to paint it!', 'Paint Pals! One player, or two?', 'Beautiful!', ...PAIRS.flat().map(ONE), ...PAIRS.flatMap(([a, b]) => [TWO(a, b), TWO(b, a)])],
     state: () => ({players, painted: active().map(s => +(1 - s.left/s.page.paintable.length).toFixed(3)), done: active().map(s => s.done), names: active().map(s => s.page.name), rounds, gallery: gallery.length})
   };
