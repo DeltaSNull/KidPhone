@@ -5903,15 +5903,15 @@ const SCENES = {
     ],
     animals:[
       {n:'giraffe', sp:'giraffe', k:2, x:1460, y:810, z:5, m:'sway', speed:1.1, fx:'munch', hideBelow:760},
-      {n:'zebra', sp:'zebra', k:1, x:770, y:850, z:6.5, m:'peek', amp:100, period:5, phase:.2, fx:'neigh', hideBelow:800},
-      {n:'lion', sp:'lion', k:1, x:960, y:920, z:8, m:'peek', amp:130, period:6, phase:.55, fx:'roar', hideBelow:830},
+      {n:'zebra', sp:'zebra', k:1, x:770, y:790, z:6.5, m:'peek', amp:100, period:5, phase:.2, fx:'neigh', hideBelow:800},
+      {n:'lion', sp:'lion', k:1, x:960, y:850, z:8, m:'peek', amp:130, period:6, phase:.55, fx:'roar', hideBelow:830},
       {n:'elephant', sp:'elephant', k:2, x0:2350, x1:2860, y:880, z:7, m:'walk', speed:28, phase:.3, fx:'trumpet'},
       {n:'hippo', sp:'hippo', k:1, x:1700, y:880, z:5, m:'peek', amp:80, period:4.5, phase:.1, fx:'hippo', hideBelow:832},
       {n:'flamingo', sp:'flamingo', k:1, x:1990, y:850, z:6, m:'sway', speed:1.5, fx:'honk'},
       {n:'rhino', sp:'rhino', k:1, x0:90, x1:330, y:770, z:3, m:'walk', speed:18, phase:.6, fx:'snort'},
       {n:'eagle', sp:'eagle', k:1, x:1600, y:250, z:1.5, m:'fly', range:1250, speed:.12, phase:0, fx:'screech'},
       {n:'leopard', sp:'leopard', k:1, x:2330, y:518, z:4.2, m:'bob', amp:3, speed:1, fx:'growl', hidden:true, hideAbove:452},
-      {n:'turtle', sp:'turtleSm', k:1, x:2960, y:950, z:8.5, m:'peek', amp:46, period:7, phase:.7, fx:'crunch', hidden:true, hideBelow:885}
+      {n:'turtle', sp:'turtleSm', k:1, x:2960, y:880, z:8.5, m:'peek', amp:46, period:7, phase:.7, fx:'crunch', hidden:true, hideBelow:885}
     ]},
   jungle:{n:'Jungle', icon:ART.monkey, sky:['#B8EEBC','#93DA97'], horizon:665, ground:['#7CC96B','#4FA84C'], overhead:'leaves', tuft:'#2E7A33',
     props:[
@@ -5931,13 +5931,13 @@ const SCENES = {
     animals:[
       {n:'monkey', sp:'monkey', k:1, px:760, py:0, len:400, z:4, m:'swing', amp:.38, speed:1.4, fx:'ooh'},
       {n:'parrot', sp:'parrotSm', k:1, x:1210, y:342, z:4, m:'bob', amp:5, speed:3, fx:'squawk'},
-      {n:'gorilla', sp:'gorilla', k:1, x:1370, y:900, z:6, m:'peek', amp:110, period:6, phase:.3, fx:'thump', hideBelow:820},
+      {n:'gorilla', sp:'gorilla', k:1, x:1370, y:820, z:6, m:'peek', amp:110, period:6, phase:.3, fx:'thump', hideBelow:820},
       {n:'tiger', sp:'tiger', k:1, x0:2300, x1:2900, y:900, z:6, m:'walk', speed:30, phase:.2, fx:'growl'},
       {n:'frog', sp:'frogSm', k:1, x:1700, y:903, z:4, m:'hop', amp:60, period:3, phase:.4, fx:'ribbit'},
       {n:'sloth', sp:'sloth', k:1, x:2850, y:420, z:4, m:'sway', speed:.6, fx:'yawn'},
       {n:'butterfly', sp:'butterflySm', k:1, x:1800, y:480, z:8, m:'fly', range:800, speed:.35, phase:1, fx:'flutter'},
       {n:'lizard', sp:'lizardSm', k:1, turn:'right', x:1880, y:650, z:2.2, m:'bob', amp:6, speed:2, fx:'flick', hidden:true},
-      {n:'owl', sp:'owlSm', k:1, x:300, y:560, z:2.2, m:'peek', amp:40, period:5, phase:.5, fx:'hoot', hidden:true, hideBelow:552, clip:true}
+      {n:'owl', sp:'owlSm', k:1, x:300, y:560, z:2.2, m:'peek', amp:40, period:5, phase:.5, fx:'hoot', hidden:true, hideBelow:552}
     ]},
   dino:{n:'Dino valley', icon:ART.longneck, sky:['#8FD2F5','#FFE7BE'], horizon:595, ground:['#A6D86E','#6DB54A'],
     props:[
@@ -5957,12 +5957,21 @@ const SCENES = {
       {n:'triceratops', sp:'trike', k:1, x0:220, x1:640, y:890, z:6, m:'walk', speed:24, phase:.1, fx:'huff'},
       {n:'stegosaurus', sp:'stego', k:1, x0:2650, x1:3050, y:885, z:6, m:'walk', speed:20, phase:.6, fx:'stego'},
       {n:'pterodactyl', sp:'ptero', k:1, x:1500, y:230, z:1.8, m:'fly', range:1200, speed:.14, phase:2, fx:'screech'},
-      {n:'baby dinosaur', sp:'babySm', k:1, x:1520, y:902, z:8, m:'peek', amp:50, period:5, phase:.3, fx:'peep', hidden:true, hideBelow:880},
+      {n:'baby dinosaur', sp:'babySm', k:1, x:1520, y:865, z:8, m:'peek', amp:50, period:5, phase:.3, fx:'peep', hidden:true, hideBelow:880},
       {n:'crocodile', sp:'crocodile', k:1, x:2240, y:930, z:5, m:'peek', amp:40, period:6, phase:.6, fx:'snap', hidden:true, hideBelow:900}
     ]}
 };
 Object.values(SCENES).forEach(sc => {
-  sc.animals.forEach(a => { a.a = ART[a.sp]; a.size = PX.canvas(a.sp).height * a.k * AP; });
+  sc.animals.forEach(a => {
+    const c = a.turn ? PX.variant(a.sp, a.turn) : PX.canvas(a.sp), d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data;
+    a.a = ART[a.sp]; a.size = c.height * a.k * AP; a.artWidth = c.width;
+    const ink = {x0:c.width, x1:0, y0:c.height, y1:0};
+    for (let y=0;y<c.height;y++) for (let x=0;x<c.width;x++) if (d[(y*c.width + x)*4 + 3]){
+      ink.x0 = Math.min(ink.x0, x); ink.x1 = Math.max(ink.x1, x + 1);
+      ink.y0 = Math.min(ink.y0, y); ink.y1 = Math.max(ink.y1, y + 1);
+    }
+    a.ink = ink;
+  });
   sc.items = [...sc.props.map(p => ({p})), ...sc.animals.map(a => ({a}))].sort((u, v) => (u.p || u.a).z - (v.p || v.a).z);
 });
 const SCENE_KEYS = Object.keys(SCENES);
@@ -5971,9 +5980,9 @@ const ease = k => k < .5 ? 2*k*k : 1 - Math.pow(-2*k + 2, 2)/2;
 function upAmt(a, t){
   if (a.upUntil && a.upUntil > t) return 1;
   const p = ((t / a.period) + a.phase) % 1;
-  if (p < .1 || p > .92) return 0;
-  if (p < .28) return ease((p - .1)/.18);
-  if (p > .74) return ease((.92 - p)/.18);
+  if (p < .18 || p > .9) return 0;
+  if (p < .34) return ease((p - .18)/.16);
+  if (p > .74) return ease((.9 - p)/.16);
   return 1;
 }
 /* where an animal is now, in world units. Pixel sprites never rotate: swaying is a one-pixel shuffle. */
@@ -5981,7 +5990,8 @@ function pose(a, t, allUp){
   let x = a.x, y = a.y, flip = false;
   switch (a.m){
     case 'walk': { const span = a.x1 - a.x0, d = (t*a.speed + a.phase*2*span) % (2*span), fwd = d < span; x = a.x0 + (fwd ? d : 2*span - d); flip = fwd; y -= (Math.floor(t*6) % 2)*AP; break; }
-    case 'peek': y += allUp ? 0 : a.amp * (1 - upAmt(a, t)); break;
+    // Lower the whole sprite past its cover, not just a fixed bobbing distance.
+    case 'peek': y += allUp ? 0 : Math.max(a.amp, a.size + (a.hideBelow ?? a.y) - a.y + AP) * (1 - upAmt(a, t)); break;
     case 'bob': y += Math.sin(t*a.speed + (a.phase || 0)) * a.amp; break;
     case 'stomp': y -= Math.abs(Math.sin(t*2.2 + a.phase)) * a.amp; break;
     case 'sway': x += Math.round(Math.sin(t*a.speed + (a.phase || 0))*1.4)*AP; break;
@@ -5994,15 +6004,23 @@ function pose(a, t, allUp){
 }
 /* the part of an animal you can actually see (not behind grass, water or leaves) */
 function visBox(a, ps){
-  const s = a.size, top = Math.max(ps.y - s, a.hideAbove ?? -1e9), bot = Math.min(ps.y, a.hideBelow ?? 1e9);
-  return {x0:ps.x - s*.45, x1:ps.x + s*.45, y0:top, y1:bot, h:Math.max(0, bot - top)};
+  const k = a.k*AP, ink = a.ink, left = ps.x - a.artWidth*k/2;
+  const top = Math.max(ps.y - a.size + ink.y0*k, a.hideAbove ?? -1e9), bot = Math.min(ps.y - a.size + ink.y1*k, a.hideBelow ?? 1e9);
+  return {x0:left + (ps.flip ? a.artWidth - ink.x1 : ink.x0)*k, x1:left + (ps.flip ? a.artWidth - ink.x0 : ink.x1)*k,
+    y0:top, y1:bot, h:Math.max(0, bot - top)};
 }
 function drawAnimal(g, a, ps, ox, oy){
   const c = a.turn ? PX.variant(a.sp, a.turn) : ps.flip ? PX.variant(a.sp, 'flip') : PX.canvas(a.sp), w = c.width*a.k, h = c.height*a.k;
   const x = Math.round(A(ps.x) - w/2) - ox, y = Math.round(A(ps.y)) - h - oy;
   if (a.m === 'swing'){ const vx = Math.round(A(a.px)) - ox, hx = x + (ps.flip ? w - 9 : 8), hy = y + 3;
     for (let i=0, n=Math.max(Math.abs(hx - vx), Math.abs(hy + oy)); i<=n; i++){ const px = Math.round(vx + (hx - vx)*i/n), py = Math.round(-oy + (hy + oy)*i/n); g.fillStyle = '#1E4A20'; g.fillRect(px - 1, py, 3, 1); g.fillStyle = '#3E8A3A'; g.fillRect(px, py, 1, 1); } }
-  if (a.clip){ g.save(); g.beginPath(); g.rect(-1e4, -1e4, 2e4, Math.round(A(a.hideBelow)) - oy + 1e4); g.clip(); g.drawImage(c, x, y, w, h); g.restore(); }
+  // Detection and drawing share cover boundaries. Finite foreground props alone
+  // cannot hide a retreating animal: its feet otherwise escape below the prop.
+  if (a.hideBelow != null || a.hideAbove != null){
+    const top = a.hideAbove == null ? -1e4 : Math.round(A(a.hideAbove)) - oy;
+    const bottom = a.hideBelow == null ? 1e4 : Math.round(A(a.hideBelow)) - oy;
+    g.save(); g.beginPath(); g.rect(-1e4, top, 2e4, bottom - top); g.clip(); g.drawImage(c, x, y, w, h); g.restore();
+  }
   else g.drawImage(c, x, y, w, h);
 }
 /* draw the world so that world point (vx,vy) lands at the canvas top-left, s canvas px per world unit:

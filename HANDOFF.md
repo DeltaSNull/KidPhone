@@ -4,7 +4,8 @@ Read SCHOOL_ROADMAP.md first, then AGENTS.md. This is the agreed plan going forw
 
 ## Active batch
 
-- Phone/game review R-11 to R-13 on `codex/phone-game-review`; finish verification/PR/release first. App ideas I-01 to I-06 are pending in SCHOOL_ROADMAP.md.
+- Pretend-camera hide/pop-out fix R-14 on `codex/camera-peek`; complete canvas checks, browser CI and release. Owner wants animals fully hidden behind cover, then photographable when popped up.
+- R-11 to R-13 released in [PR #10](https://github.com/DeltaSNull/KidPhone/pull/10), main `cccf0df`; all six browser jobs and [Deploy](https://github.com/DeltaSNull/KidPhone/actions/runs/37411773562) passed. Live index matched the tested file. App ideas I-01 to I-06 remain pending.
 - R-09/R-10 released in [PR #9](https://github.com/DeltaSNull/KidPhone/pull/9), main `32ca93c`; all six checks and [Deploy](https://github.com/DeltaSNull/KidPhone/actions/runs/37404482562) passed. Live index matched the tested file.
 - R-08 released in [PR #8](https://github.com/DeltaSNull/KidPhone/pull/8), main `3774c47`; all six checks and [Deploy](https://github.com/DeltaSNull/KidPhone/actions/runs/37400523026) passed. Owner says the natural quack improved other areas; piano consistency is corrected by R-09.
 - R-05 to R-07 released in [PR #7](https://github.com/DeltaSNull/KidPhone/pull/7), main `8dd7ed8`; all six checks and [Deploy](https://github.com/DeltaSNull/KidPhone/actions/runs/37390768685) passed, live file verified.
@@ -12,6 +13,13 @@ Read SCHOOL_ROADMAP.md first, then AGENTS.md. This is the agreed plan going forw
 - P1-14 / P3-06 follow-up released in [PR #5](https://github.com/DeltaSNull/KidPhone/pull/5), main `f0b0658`; all six browser test jobs and [Deploy](https://github.com/DeltaSNull/KidPhone/actions/runs/37341705042) passed.
 - G-05/G-06 are released: [PR #4](https://github.com/DeltaSNull/KidPhone/pull/4), main `ead5c96`, all checks and [deployment](https://github.com/DeltaSNull/KidPhone/actions/runs/37329072126) passed. G-04 real-phone/family tuning remains pending.
 - Next untracked School candidates: Today's Adventure (P3-01, P3-07, P3-08), Toddler Play Together (P3-03), Sorting Station, Pattern Train, Story Time, Feelings Friends (P4-01 to P4-04). Sound Safari (P3-05) waits on the letter sounds (T-04).
+
+## Pretend-camera hide and pop out — Codex, 2026-10-06
+
+- R-14 implemented on `codex/camera-peek`; CI/release pending. Root cause: hideBelow/hideAbove affected detection but almost never clipped animal drawing; peek travel also did not always lower the whole sprite behind cover. Foreground props have finite height, so animals could emerge below the pond/bush/grass.
+- Behavior: actual sprite pixels clip at cover boundaries; peek travel lowers the entire sprite behind cover, with hidden/show pauses and gentle transitions. Pop-up positions for zebra, lion, gorilla, turtle and baby dinosaur now expose recognizable faces. Detection uses opaque sprite bounds so transparent margins cannot earn invisible-animal credit. Free camera exploration, existing art/voices, local photos and permission policy are preserved.
+- Verification: clipping/full-retreat tests failed on the old drawing; checks then exposed the turtle's unreachable photo goal, transparent-margin photo credit and the gorilla remaining behind its bush. Recognition check failed for the old zebra pop-up. Final tests/camera-peek.cjs passed all eight animals across 80 cycle samples in each of three Chromium layouts: zero below-cover pixels, full hidden/exposed pauses, no invisible photo credit, actual scene disappearance and visible emergence. Actual shutter saves distinct photos without/with hippo labels when hidden/popped up. Hidden/up scene panels inspected. Test-only probes are injected by the test server, not shipped in the app. Full npm test, independent review, Chromium/WebKit CI and publication results are recorded in the batch PR; physical phone timing/family play remains R-04.
+- Claude: this is the plan going forward. Check SCHOOL_ROADMAP.md, HANDOFF.md and AGENTS.md before anything else; fetch current main and inspect open PRs/checks. Finish this camera batch's outstanding verification/release first. Do not overwrite another model's active branch. Preserve the holds on profiles/tracking and lesson phonics.
 
 ## Phone and game review — Codex, 2026-10-06
 
