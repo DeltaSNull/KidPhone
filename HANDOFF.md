@@ -4,11 +4,19 @@ Read SCHOOL_ROADMAP.md first, then AGENTS.md. This is the agreed plan going forw
 
 ## Active batch
 
-- Owner-directed learning and photo refinement R-05 to R-07 on `codex/play-refinement`. Check its PR and CI/release first. This is the plan going forward for Claude and Codex; read these progress notes before anything else.
+- Owner-reported duck sound fix R-08 on `codex/duck-quack`; check its PR/checks and release first.
+- R-05 to R-07 released in [PR #7](https://github.com/DeltaSNull/KidPhone/pull/7), main `8dd7ed8`; all six checks and [Deploy](https://github.com/DeltaSNull/KidPhone/actions/runs/37390768685) passed, live file verified.
 - R-01 to R-03 are released in [PR #6](https://github.com/DeltaSNull/KidPhone/pull/6), main `6264166`; all browser checks and [Deploy](https://github.com/DeltaSNull/KidPhone/actions/runs/37385286207) passed. R-04 physical checks remain pending.
 - P1-14 / P3-06 follow-up released in [PR #5](https://github.com/DeltaSNull/KidPhone/pull/5), main `f0b0658`; all six browser test jobs and [Deploy](https://github.com/DeltaSNull/KidPhone/actions/runs/37341705042) passed.
 - G-05/G-06 are released: [PR #4](https://github.com/DeltaSNull/KidPhone/pull/4), main `ead5c96`, all checks and [deployment](https://github.com/DeltaSNull/KidPhone/actions/runs/37329072126) passed. G-04 real-phone/family tuning remains pending.
 - Next untracked School candidates: Today's Adventure (P3-01, P3-07, P3-08), Toddler Play Together (P3-03), Sorting Station, Pattern Train, Story Time, Feelings Friends (P4-01 to P4-04). Sound Safari (P3-05) waits on the letter sounds (T-04).
+
+## Duck quack correction — Codex, 2026-10-06
+
+- R-08: replace the short Pekin/pond excerpt with four natural-pitch mallard quacks from Jonathon Jongsma's XC62258, cut at 1.08–2.68 s. Credit and CC BY-SA 3.0 adaptation notes are in assets/sounds/CREDITS.md. New filename quack-v2.mp3 avoids reusing the old audio URL; generator respects the source's output filename. Other recordings remain unchanged.
+- The animal piano duck uses FX.quack() too, with its existing bell note carrying the musical pitch. Calls, camera, Wild Tap and games already use this shared recording. Synthetic fallback remains available when recordings are unavailable.
+- Verification: rebuilt only this recording through the existing audio processing; 1.59 s, phone −24.0 LUFS, full-range −23.6 LUFS, peak 0.275 before MP3. Existing recording level/load and piano tests plus the new recorded-duck assertion run in full smoke CI. Local browser validation initially could not launch because the Chromium binary was absent; installation/retry and final CI/release results are recorded in this branch's PR. Physical phone listening and owner confirmation remain pending under R-04; do not claim automated tests judge recognizability.
+- Claude: this is the plan going forward. Check SCHOOL_ROADMAP.md, HANDOFF.md and AGENTS.md before anything else, fetch main and inspect open PRs/latest release. Finish this fix's verification/release first, then resume owner feedback or the agreed School candidates. Profiles/tracking and lesson phonics remain on hold.
 
 ## Learning controls and photo browsing — Codex, 2026-10-05
 

@@ -182,16 +182,16 @@ def main():
         else:
             a = cut(spec); used.setdefault(spec['file'], set()).add(name)
         a = finish(a, spec)
-        encode(a, os.path.join(OUT, name + '.mp3'))
+        encode(a, os.path.join(OUT, spec.get('output', name + '.mp3')))
         made[name] = round(len(a) / SR, 2)
         print(f'  {name:9s} {made[name]:4.2f}s  phone {loudness(speaker(a)):5.1f}  full {loudness(a):5.1f} LUFS  {spec.get("note", "")}')
 
     if args.only:
         return
-    json.dump({n: ({'file': n + '.mp3', 'then': src[n]['then']} if src[n].get('then') else n + '.mp3') for n in made},
+    json.dump({n: ({'file': src[n].get('output', n + '.mp3'), 'then': src[n]['then']} if src[n].get('then') else src[n].get('output', n + '.mp3')) for n in made},
               open(os.path.join(OUT, 'sounds.json'), 'w'), indent=1)   # "then": a synthesized sound the page plays right after
     for f in os.listdir(OUT):
-        if f.endswith('.mp3') and f[:-4] not in made:
+        if f.endswith('.mp3') and f not in {src[n].get('output', n + '.mp3') for n in made}:
             os.remove(os.path.join(OUT, f))
     lines = ['# Credits for the animal sounds', '',
              'These recordings come from [Wikimedia Commons](https://commons.wikimedia.org/). Each was cut to a short call,',
@@ -202,12 +202,12 @@ def main():
         i = infos[t]; lic = f"[{i['license']}]({i['license_url']})" if i['license_url'] else i['license']
         lines.append(f"| [{t[5:]}]({i['page']}) | {i['author'].replace('|', '/')} | {lic} | {', '.join(sorted(names))} |")
     open(os.path.join(OUT, 'CREDITS.md'), 'w').write('\n'.join(lines) + '\n')
-    print(f'{len(made)} sounds, {sum(os.path.getsize(os.path.join(OUT, n + ".mp3")) for n in made) / 1e3:.0f} KB')
+    print(f'{len(made)} sounds, {sum(os.path.getsize(os.path.join(OUT, src[n].get("output", n + ".mp3"))) for n in made) / 1e3:.0f} KB')
     if args.sheet:
         tiles = []
         for n in made:
             png = os.path.join(CACHE, f'spec-{n}.png')
-            subprocess.run(['ffmpeg', '-loglevel', 'error', '-y', '-i', os.path.join(OUT, n + '.mp3'), '-lavfi',
+            subprocess.run(['ffmpeg', '-loglevel', 'error', '-y', '-i', os.path.join(OUT, src[n].get('output', n + '.mp3')), '-lavfi',
                             f"showspectrumpic=s=420x130:legend=0:color=intensity:scale=log:fscale=lin:stop=11000,drawtext=text='{n}':fontcolor=white:fontsize=16:x=6:y=4", png], check=True)
             tiles.append(png)
         cols = 4; rows = (len(tiles) + cols - 1) // cols
