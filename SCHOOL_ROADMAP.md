@@ -2,7 +2,7 @@
 
 Created: 2026-10-04  
 Review baseline: `413fbb1c45b559d260f58ec98fa59a0279c4e26f`  
-Status: Parent access controls, play-time limits, School sound controls and motion games deployed. Counting improvements and Dino Picnic are implemented; Animal Delivery is partly implemented. Profiles and learning-progress tracking are deferred. Latest verified main: `8dd7ed8` ([passing CI and deployment](https://github.com/DeltaSNull/KidPhone/actions/runs/37390768685)). Optional PIN and the expanded Delivery route are released in [PR #5](https://github.com/DeltaSNull/KidPhone/pull/5). R-01 to R-03 are released in [PR #6](https://github.com/DeltaSNull/KidPhone/pull/6). R-05 to R-07 are released in [PR #7](https://github.com/DeltaSNull/KidPhone/pull/7). Duck sound correction R-08 is underway on `codex/duck-quack`.
+Status: Parent access controls, play-time limits, School sound controls and motion games deployed. Counting improvements and Dino Picnic are implemented; Animal Delivery is partly implemented. Profiles and learning-progress tracking are deferred. Latest verified main: `3774c47` ([passing CI and deployment](https://github.com/DeltaSNull/KidPhone/actions/runs/37400523026)). Optional PIN and the expanded Delivery route are released in [PR #5](https://github.com/DeltaSNull/KidPhone/pull/5). R-01 to R-03 are released in [PR #6](https://github.com/DeltaSNull/KidPhone/pull/6). R-05 to R-07 are released in [PR #7](https://github.com/DeltaSNull/KidPhone/pull/7). Duck sound R-08 is released in [PR #8](https://github.com/DeltaSNull/KidPhone/pull/8). Piano consistency and background recovery R-09/R-10 are underway on `codex/audio-return`.
 
 **Continuing with either model? Read [HANDOFF.md](HANDOFF.md) and [AGENTS.md](AGENTS.md) before editing.**
 
@@ -20,6 +20,9 @@ This batch follows the owner's request to use best judgment on overall refinemen
 - [x] **R-07 — Photo browsing:** position counter, descriptive labels, keyboard browsing/Escape/focus, covered gallery inert, scroll cancellation for inserted thumbnails. **Implemented — same branch; focused Chromium checks passed in three layouts. Existing touch/swipe and storage preserved; CI/release tracked in branch PR.**
 
 - [x] **R-08 — Duck quack correction:** natural-pitch mallard recording and shared duck piano playback; versioned asset and updated source/license credit. **Implemented on `codex/duck-quack`; audio levels measured, browser/CI/release tracked in branch PR. Owner listening remains R-04.**
+
+- [x] **R-09 — Piano duck consistency:** two short, tuned synthesized quacks to match the other animal keys; natural mallard recording preserved elsewhere. **Implemented on `codex/audio-return`; focused browser/CI and release results tracked in branch PR. Owner listening remains R-04.**
+- [x] **R-10 — Background audio recovery:** retire stale graph on the next foreground sound/gesture, including running-but-silent and closed engines; preserve recordings/settings, discard hidden requests, cover pagehide/pageshow return. **Implemented on same branch; focused Chromium simulations passed, final validation and release tracked in PR. Physical iPhone output remains R-04.**
 
 ## Current owner-directed detour: regular motion games
 
@@ -140,6 +143,7 @@ Use these as curriculum/design references, not as claims that app scores diagnos
 
 | Date | Change | Evidence |
 | --- | --- | --- |
+| 2026-10-06 | Piano sound consistency R-09 and background audio recovery R-10. | `codex/audio-return`; [handoff](HANDOFF.md) |
 | 2026-10-05 | Learning controls and photo browsing refinement R-05 to R-07 underway. | `codex/play-refinement`; [handoff](HANDOFF.md) |
 | 2026-10-05 | R-01 to R-03 released; all browser checks and deployment passed. | [PR #6](https://github.com/DeltaSNull/KidPhone/pull/6), main `6264166`, [run 37385286207](https://github.com/DeltaSNull/KidPhone/actions/runs/37385286207) |
 | 2026-10-05 | Overall refinement R-01 to R-03: scroll-safe settings, quick navigation/keyboard access, visible round controls and background narration cleanup. Physical usability R-04 remains open. | `codex/app-refinement`; [handoff](HANDOFF.md); branch PR is authoritative for checks/release |
