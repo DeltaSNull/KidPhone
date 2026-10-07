@@ -7835,6 +7835,16 @@ const NumSnack = (() => {
 /* ----- Animal Delivery (P3-06): nine deliveries, then a clear ending. No carrier animal beside the pickup.
    Start with one object and two locations; later choose among three objects, learn more spatial relations,
    and transfer them to a mirrored garden. Existing recordings supply every instruction; no learning data saved. ----- */
+/* Cache small, opaque pixel rasters for the new play props. */
+function pixelPicture(w,h,layers,css='px',label=''){
+  const key=JSON.stringify([w,h,layers]),cache=pixelPicture.cache||(pixelPicture.cache=new Map());
+  if(!cache.has(key)){
+    const c=document.createElement('canvas');c.width=w;c.height=h;const g=c.getContext('2d');g.imageSmoothingEnabled=false;
+    layers.forEach(([path,fill,stroke,width=1])=>{const p=new Path2D(path);if(fill){g.fillStyle=fill;g.fill(p);}if(stroke){g.strokeStyle=stroke;g.lineWidth=width;g.stroke(p);}});
+    const image=g.getImageData(0,0,w,h);for(let i=3;i<image.data.length;i+=4)image.data[i]=image.data[i]>=128?255:0;g.putImageData(image,0,0);cache.set(key,c.toDataURL('image/png'));
+  }
+  return `<img class="${css}" src="${cache.get(key)}" ${label?`alt="${label}"`:'alt="" aria-hidden="true"'}>`;
+}
 const Delivery = (() => {
   const root = $('#delivery'), world = $('#adWorld'), tray = $('#adParcels');
   const PLACES = {tree:[0,32], box:[35,18], table:[66,32]};
@@ -7851,7 +7861,7 @@ const Delivery = (() => {
   const orderText=(r,it)=>`Put ${NUMW[r.want]} ${r.want===1?it.n:(it.many||it.n+'s')} ${REL[r.spot]}!`;
   function pic(k){
     const c=COLORS.find(it=>it.k===k);
-    if(c)return `<svg class="px" viewBox="0 0 16 16" role="img" aria-label="${c.n}" shape-rendering="crispEdges"><path fill="#543929" d="M5 1h6v1h2v2h2v8h-2v2h-2v1H5v-1H3v-2H1V4h2V2h2z"/><path fill="${c.color}" d="M5 2h6v1h2v2h1v6h-1v2h-2v1H5v-1H3v-2H2V5h1V3h2z"/><path fill="#FFF3D6" d="M5 3h4v2H5zM3 5h2v3H3z"/></svg>`;
+    if(c)return pixelPicture(16,16,[['M5 1h6v1h2v2h2v8h-2v2h-2v1H5v-1H3v-2H1V4h2V2h2z','#543929'],['M5 2h6v1h2v2h1v6h-1v2h-2v1H5v-1H3v-2H2V5h1V3h2z',c.color],['M5 3h4v2H5zM3 5h2v3H3z','#FFF3D6']],'px',c.n);
     return schoolPic(k==='smallstar'||k==='bigstar'?'star':k).replace('class="px"',`class="px${k==='smallstar'?' ad-small':''}"`);
   }
   const level = () => advanced?2:rights >= 6 ? 2 : rights >= 3 ? 1 : 0;
@@ -8317,7 +8327,8 @@ const MotionGames = (() => {
     intro = 0;
     if (id === 'balltrail'){
       const m = maze(); [x, y] = m.s;
-      world.innerHTML = `<svg class="mg-route" viewBox="0 0 100 100" aria-label="Trail to the star"><polyline points="${m.path.map(p=>p.join(',')).join(' ')}" fill="none" stroke="#FFF6CC" stroke-width="2" stroke-dasharray="2 3"/></svg>` + m.walls.map(([a, b, w, h]) => `<div class="mg-hedge" style="left:${a}%; top:${b}%; width:${w}%; height:${h}%"></div>`).join('')
+      const dots=m.path.slice(1).flatMap((p,i)=>{const a=m.path[i],d=Math.hypot(p[0]-a[0],p[1]-a[1]);return Array.from({length:Math.ceil(d/5)},(_,j)=>`M${Math.round(a[0]+(p[0]-a[0])*j*5/d)} ${Math.round(a[1]+(p[1]-a[1])*j*5/d)}h2v2h-2z`);}).join(' ');
+      world.innerHTML = pixelPicture(100,100,[[dots,'#FFF6CC']],'mg-route','Trail to the star') + m.walls.map(([a, b, w, h]) => `<div class="mg-hedge" style="left:${a}%; top:${b}%; width:${w}%; height:${h}%"></div>`).join('')
         + `<div class="mg-goal" style="left:${m.g[0]}%; top:${m.g[1]}%">${ART.star}</div>`;
     } else {
       got = 0; x = 50; y = pet().fly ? 72 : 82;
@@ -8663,7 +8674,7 @@ const DinoBuddies = (() => {
   const lastTap = [0, 0];
   let turns = false, turn = 0;
   const TURN_LINES = ['Take turns! A star, then a heart. You can help either side!', 'Star turn!', 'Heart turn!'];
-  function cue(){ sides.forEach((el,i) => el.dataset.turn = String(turns && (solo || i === turn))); $('#dbCue').textContent = turns ? (turn ? '♥ Heart turn' : '★ Star turn') : ''; }
+  function cue(){ sides.forEach((el,i) => el.dataset.turn = String(turns && (solo || i === turn))); $('#dbCue').textContent = turns ? (turn ? 'Heart turn' : 'Star turn') : ''; }
   function replay(){ say(turns ? TURN_LINES[turn + 1] : 'Dino Buddies! Tap tap tap! Help the egg hatch!', 0, 'menus'); }
   tap($('#dbTurns'), () => { turns = !turns; turn = 0; $('#dbTurns').setAttribute('aria-pressed', String(turns)); cue(); say(turns ? TURN_LINES[0] : 'Dino Buddies! Tap tap tap! Help the egg hatch!', 0, 'menus'); });
   tap($('#dbReplay'), replay);
@@ -9473,14 +9484,15 @@ const SchoolAdventures = (() => {
   const titles = {sorting:'Sorting Station',patterntrain:'Pattern Train',storytime:'Story Time',feelings:'Feelings Friends'};
   const colors = {red:'#E95252',blue:'#428BDD',yellow:'#F3C447',green:'#70B968'};
   const shape = (color='red',kind='square',small=false) => {
-    const forms = {square:'<path d="M7 7h18v18H7z"/>',circle:'<path d="M11 5h10v3h4v4h3v8h-3v4h-4v3H11v-3H7v-4H4v-8h3V8h4z"/>',triangle:'<path d="M14 4h4v5h3v5h3v5h3v8H5v-8h3v-5h3V9h3z"/>'};
-    return `<svg class="sa-token${small?' sa-small':''}" viewBox="0 0 32 32" aria-hidden="true" shape-rendering="crispEdges"><g fill="${colors[color]}" stroke="#493B3A" stroke-width="1">${forms[kind]}</g></svg>`;
+    const forms = {square:'M7 7h18v18H7z',circle:'M11 5h10v3h4v4h3v8h-3v4h-4v3H11v-3H7v-4H4v-8h3V8h4z',triangle:'M14 4h4v5h3v5h3v5h3v8H5v-8h3v-5h3V9h3z'};
+    return pixelPicture(32,32,[[forms[kind],colors[color],'#493B3A']],'sa-token'+(small?' sa-small':''));
   };
   const face = feeling => {
     const mouths={happy:'M9 19h3v3h8v-3h3v6H9z',sad:'M9 23h3v-3h8v3h3v3h-3v-3h-8v3H9z',frustrated:'M10 22h12v3H10z',worried:'M13 21h6v5h-6z',excited:'M10 19h12v8H10z'};
-    return `<svg class="sa-token" viewBox="0 0 32 32" aria-hidden="true" shape-rendering="crispEdges"><path fill="#F8D77C" stroke="#59432B" d="M8 2h16v3h4v5h3v13h-3v5h-5v3H9v-3H4v-5H1V10h3V5h4z"/><path fill="#493B3A" d="M8 12h4v4H8z M20 12h4v4h-4z ${mouths[feeling]||mouths.happy}"/>${feeling==='frustrated'?'<path stroke="#493B3A" stroke-width="2" d="m7 7 6 3m6 0 6-3"/>':''}${feeling==='worried'?'<path stroke="#493B3A" stroke-width="2" d="m7 9 6-3m6 0 6 3"/>':''}${feeling==='sad'?'<path fill="#428BDD" d="M5 17h3v6H5z"/>':''}</svg>`;
+    const layers=[['M8 2h16v3h4v5h3v13h-3v5h-5v3H9v-3H4v-5H1V10h3V5h4z','#F8D77C','#59432B'],['M8 12h4v4H8z M20 12h4v4h-4z '+(mouths[feeling]||mouths.happy),'#493B3A']];
+    if(feeling==='frustrated')layers.push(['m7 7 6 3m6 0 6-3',null,'#493B3A',2]);if(feeling==='worried')layers.push(['m7 9 6-3m6 0 6 3',null,'#493B3A',2]);if(feeling==='sad')layers.push(['M5 17h3v6H5z','#428BDD']);return pixelPicture(32,32,layers,'sa-token');
   };
-  const garden = kind => `<svg class="sa-token" viewBox="0 0 40 32" aria-hidden="true" shape-rendering="crispEdges"><path fill="#A5DCEB" d="M0 0h40v32H0z"/><path fill="#917057" d="M0 25h40v7H0z"/>${kind==='seed'?'<path fill="#F8CE8D" stroke="#5E472C" d="M17 24h7v5h-7z"/>':kind==='water'?'<path fill="#548EE0" d="M9 3h18v12H9z M27 9h8v3h-8z M30 15h3v3h-3z M27 20h3v3h-3z M22 23h3v3h-3z"/>':'<path fill="#40894B" d="M19 12h3v15h-3z M9 10h10v8h-6v-3H9z M22 7h10v7h-4v4h-6z"/><path fill="#F9D763" d="M3 2h7v7H3z"/>'}</svg>`;
+  const garden = kind => pixelPicture(40,32,[['M0 0h40v32H0z','#A5DCEB'],['M0 25h40v7H0z','#917057'],...(kind==='seed'?[['M17 24h7v5h-7z','#F8CE8D','#5E472C']]:kind==='water'?[['M9 3h18v12H9z M27 9h8v3h-8z M30 15h3v3h-3z M27 20h3v3h-3z M22 23h3v3h-3z','#548EE0']]:[['M19 12h3v15h-3z M9 10h10v8h-6v-3H9z M22 7h10v7h-4v4h-6z','#40894B'],['M3 2h7v7H3z','#F9D763']])],'sa-token');
   const art = key => {
     if (['sad','happy','frustrated','worried','excited'].includes(key)) return face(key);
     if (['seed','sprout','water'].includes(key)) return garden(key);
@@ -9489,8 +9501,8 @@ const SchoolAdventures = (() => {
     if(key==='square'||key==='circle')return shape('blue',key);
     if(key==='small'||key==='big')return shape('yellow','square',key==='small');
     if(key==='duck'||key==='owl')return `<span class="sa-animal">${ART[key]}</span>`;
-    const symbols={sit:'<path d="M5 18h9v5h-4v6H6v-6H3V12h4z M23 18h7v5h-4v6h-4v-6h-3V12h4z"/>',breathe:'<path d="M5 8h13v3H5z M3 15h22v3H3z M5 22h13v3H5z"/>',ask:'<path d="M4 5h24v17H16l-7 6v-6H4z"/>',turn:'<path d="M4 8h17V4l7 7-7 7v-4H4z M28 22H11v-4l-7 7 7 7v-4h17z"/>',grab:'<path d="M10 10h13v17H8V14h2z M10 3h3v9h-3z M15 1h3v11h-3z M20 3h3v9h-3z"/>',blanket:'<path d="M3 8h26v21H3z"/>',ball:'<path d="M10 3h12v4h5v5h3v10h-3v5H7v-5H3V12h4V7h3z"/>'};
-    return `<svg class="sa-token" viewBox="0 0 32 34" aria-hidden="true" shape-rendering="crispEdges"><g fill="#8470BA">${symbols[key]||symbols.ask}</g></svg>`;
+    const symbols={sit:'M5 18h9v5h-4v6H6v-6H3V12h4z M23 18h7v5h-4v6h-4v-6h-3V12h4z',breathe:'M5 8h13v3H5z M3 15h22v3H3z M5 22h13v3H5z',ask:'M4 5h24v17H16l-7 6v-6H4z',turn:'M4 8h17V4l7 7-7 7v-4H4z M28 22H11v-4l-7 7 7 7v-4h17z',grab:'M10 10h13v17H8V14h2z M10 3h3v9h-3z M15 1h3v11h-3z M20 3h3v9h-3z',blanket:'M3 8h26v21H3z',ball:'M10 3h12v4h5v5h3v10h-3v5H7v-5H3V12h4V7h3z'};
+    return pixelPicture(32,34,[[symbols[key]||symbols.ask,'#8470BA']],'sa-token');
   };
   const opt=(key,label)=>({key,label,art:()=>art(key)});
   const round=(goal,scene,options,target,yes,hint)=>({goal,scene,options,target,yes,hint});

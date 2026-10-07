@@ -8,7 +8,9 @@ Status: Parent access controls, play-time limits, School sound controls and moti
 
 ## Current owner-directed refinement: overall app polish
 
-Approved expansion, 2026-10-07: P3-06 quantity/attributes; I-02 through I-06 game/lifecycle improvements; P4-01 through P4-04 Sorting, Patterns, Stories and Feelings. Implemented on `codex/play-learning-expansion` based on released main `3e7c72c`. Scratch restoration, recording regeneration and fresh browser checks are in progress; no release claim or physical-family verification. Full accessibility and gradual module extraction remain ongoing. Profiles, learner tracking and phonics remain deferred. See the current HANDOFF entry and branch PR before continuing.
+Approved expansion, 2026-10-07: P3-06 quantity/attributes; I-02 through I-06 game/lifecycle improvements; P4-01 through P4-04 Sorting, Patterns, Stories and Feelings. Implemented on `codex/play-learning-expansion` based on released main `3e7c72c`. Restored implementation, 2,330 recordings with zero missing spoken lines, focused three-layout Chromium checks and Pages/offline checks are complete. Delivery's initial landscape timeout passed the diagnostic rerun. Full smoke/Safari CI and release evidence remain pending; physical-family verification remains open. Full accessibility and gradual module extraction remain ongoing. Profiles, learner tracking and phonics remain deferred. See the current HANDOFF entry and branch PR before continuing.
+
+Publication remains a draft pending full corrected smoke and Safari CI. The owner explicitly approved the final code/audio publication with “Always allow”; all 294 replacement MP3 uploads succeeded, resolving the earlier approval holds. This batch includes the complete 2,330-clip bank and verified raster correction. Check PR #14 for current head, CI and release status; do not claim deployment from local tests alone.
 
 This batch follows the owner's request to use best judgment on overall refinement. It preserves the existing games and the holds on profiles, learning tracking and lesson phonics. Check the branch PR for CI and publication status before continuing.
 
