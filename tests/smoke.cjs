@@ -643,7 +643,11 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   check((await page.evaluate(() => window.__toyPhone.snack())).fed === 1 && await page.locator('#stFed .s').count() === 1, 'Snack Time: the right food is eaten and earns a sticker');
   check(await osc() > before + 2, 'Snack Time: eating makes munching and animal sounds');
   await shot('24-snacktime-fed');
-  await sleep(4800);
+  // Departure follows the real animal recording, then the next animal's arrival animation.
+  // Wait for playable food choices rather than truncating a long recording with a fixed delay.
+  await page.waitForFunction(() => {
+    const s = window.__toyPhone.snack(); return !!s.want && s.choices === 2 && s.fed === 1;
+  }, null, {polling:50, timeout:12000});
   check((await said()).some(s => /^Yum! The [\w ]+ loves/.test(s)), 'Snack Time says yum (after the munching)');
   snack = await page.evaluate(() => window.__toyPhone.snack());
   check(!!snack.want, `Snack Time: the next animal walks in (${snack.animal})`);

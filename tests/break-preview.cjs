@@ -17,6 +17,15 @@ const server=http.createServer((req,res)=>{const f=path.join(root,new URL(req.ur
   console.log('ok '+width+'x'+height+' '+msg);};
   await p.goto(`http://127.0.0.1:${server.address().port}/`);
   await p.waitForFunction(()=>window.__toyPhone);
+  await p.evaluate(()=>{
+    window.__previewFocus=[];
+    for(const type of ['focusin','focusout','pointerdown','pointerup','touchend','click']){
+      document.addEventListener(type,e=>{
+        window.__previewFocus.push({type,target:e.target.id,active:document.activeElement?.id,time:Math.round(performance.now())});
+        if(window.__previewFocus.length>30)window.__previewFocus.shift();
+      },true);
+    }
+  });
   const hold=async()=>{await p.locator('#clock').focus();
   await p.keyboard.down('Enter');
   await p.locator('#settings').waitFor({state:'visible'});
@@ -39,6 +48,9 @@ await hold();
   await p.locator('#homeBtn').tap();
   await p.locator('#settings').waitFor({state:'visible'});
   check(await p.locator('#home').isVisible()&&await p.locator('#settings .sheet').evaluate(e=>e.scrollTop===0),'Home returns to settings at the home screen and top of sheet');
+  await p.waitForFunction(()=>document.activeElement===document.getElementById('doneBtn'),null,{timeout:3000}).catch(async err=>{
+    console.log('Preview focus events',await p.evaluate(()=>window.__previewFocus));throw err;
+  });
   check(await p.locator('#doneBtn').evaluate(e=>e===document.activeElement),'returned settings has keyboard focus');
   await p.locator('#doneBtn').click();
   check(await p.locator('#breakTime').isVisible(),'closing settings preserves the real timeout lock');

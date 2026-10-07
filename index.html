@@ -9142,7 +9142,13 @@ const PLAY = (() => {
   return {
     navigate(){ if (preview) return false; if (ending && !st.ended){ end(true); return true; } return st.ended && !!settings.play; },
     ended: () => !!preview || (st.ended && !!settings.play), render, startPreview, cancelPreview,
-    returnPreview(){ if(!preview)return false; go(accessHome()); cancelPreview(); openSettings(); return true; },
+    returnPreview(){
+      if(!preview)return false;
+      go(accessHome()); cancelPreview(); openSettings();
+      // WebKit may settle touch focus after the pointer handler; keep it inside the returned dialog.
+      requestAnimationFrame(()=>{const sheet=$('#settings');if(!sheet.hidden && !sheet.contains(document.activeElement))$('#doneBtn').focus({preventScroll:true});});
+      return true;
+    },
     state: () => ({limit:settings.play, used:Math.round(st.used/1000), ending:!!ending, ended:st.ended, shown:!el.hidden}),
     add(ms){ st.used += ms; },   // (for the tests)
     lines: () => [SAY.soon, SAY.done]
