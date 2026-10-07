@@ -643,7 +643,11 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   check((await page.evaluate(() => window.__toyPhone.snack())).fed === 1 && await page.locator('#stFed .s').count() === 1, 'Snack Time: the right food is eaten and earns a sticker');
   check(await osc() > before + 2, 'Snack Time: eating makes munching and animal sounds');
   await shot('24-snacktime-fed');
-  await sleep(4800);
+  // Departure follows the real animal recording, then the next animal's arrival animation.
+  // Wait for playable food choices rather than truncating a long recording with a fixed delay.
+  await page.waitForFunction(() => {
+    const s = window.__toyPhone.snack(); return !!s.want && s.choices === 2 && s.fed === 1;
+  }, null, {polling:50, timeout:12000});
   check((await said()).some(s => /^Yum! The [\w ]+ loves/.test(s)), 'Snack Time says yum (after the munching)');
   snack = await page.evaluate(() => window.__toyPhone.snack());
   check(!!snack.want, `Snack Time: the next animal walks in (${snack.animal})`);
@@ -653,7 +657,7 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   const school = () => page.evaluate(() => window.__toyPhone.school());
   await tap('[data-app="school"]'); await sleep(600);
   check(await page.locator('#schoolList .gamecard').count() === 7, 'School shows its learning games');
-  check((await page.$$eval('#schoolList .gamecard', bs => bs.map(b => b.getAttribute('aria-label')))).join() === 'ABC Zoo,Letter Path,ABC Snack,123 Zoo,123 Snack,Dino Picnic,Animal Delivery', 'ABC Zoo first, then the Letter Path, ABC Snack, the counting games, Dino Picnic and Animal Delivery');
+  check((await page.$$eval('#schoolList .gamecard', bs => bs.map(b => b.getAttribute('aria-label')))).join() === 'ABC Zoo,123 Zoo,Letter Path,ABC Snack,123 Snack,Dino Picnic,Animal Delivery', 'ABC Zoo and 123 Zoo first, then Letter Path, ABC Snack, 123 Snack, Dino Picnic and Animal Delivery');
   await shot('28-school'); await fits('school');
   const lp = () => page.evaluate(() => window.__toyPhone.path());
   const until = async (fn, n = 30) => { for (let i = 0; i < n && !(await fn()); i++) await sleep(300); return fn(); };

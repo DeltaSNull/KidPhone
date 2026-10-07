@@ -77,6 +77,9 @@ jobs:
       - name: Install ${{ matrix.engine }}
         run: npx playwright install --with-deps ${{ matrix.engine }}
 
+      - name: Play-time preview
+        run: node tests/break-preview.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
+
       - name: Run Pages/offline checks
         run: ${{ matrix.command }}
 

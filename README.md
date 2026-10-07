@@ -362,6 +362,7 @@ Hold the clock in the top-left corner for **3 seconds**. If **Parent PIN** is On
 - **Off** (the default), **15 min**, **30 min** or **1 hour**. When the time is up, the voice says "Almost time for a break!" and a little moon shows in the status bar; the child can finish what they're doing. The session ends as they leave it (or at a menu, or after two minutes): a sleepy owl under the moon covers the toy with "Time for a break! See you soon!" The home button doesn't get past it and no calls come in.
 - Only a grown-up starts more play: hold the clock (and enter the PIN, if set), then **Start a new session**, a longer limit, or Off. The break screen stays until then, even if the toy is closed and opened again.
 - Only time with the toy on screen counts (not settings, not the phone asleep), and each day starts fresh.
+- **Try it → Play-time preview** demonstrates the heads-up and owl without changing the real session. Press Home to return to parent settings at the Home screen (School in School-only mode). This also works when the limit is Off; Home exits only the preview, not a real break.
 
 **Not planned for now:** child profiles and progress tracking are on hold while the toy is being tested. See [the roadmap](SCHOOL_ROADMAP.md) and [current handoff](HANDOFF.md).
 

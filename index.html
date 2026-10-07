@@ -672,8 +672,10 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img:not(.px){image-rendering
 .nz-cell.in .art{animation:lp-unlock .45s cubic-bezier(.3,1.6,.5,1)}
 .nz-badge{position:absolute; right:-6px; bottom:-8px; display:flex; pointer-events:none} .nz-badge .glyph{height:calc(var(--c) * .5); width:auto; display:block}
 .nz-grid{grid-template-columns:repeat(5,minmax(0,1fr))}
+.nz-grid .az-tile{position:relative; aspect-ratio:4 / 5}
+@media (orientation:landscape){.nz-grid .az-tile{aspect-ratio:auto; height:var(--t)}}
 @media (orientation:landscape){ .nz-grid{--t:min(72px, calc((100dvh - 110px) / 2.6)); grid-template-columns:repeat(5,var(--t)); grid-auto-rows:var(--t); align-content:center; padding:0} }
-.nz-grid .az-tile .glyph{height:80%; width:auto; max-width:92%} .nz-num .glyph{max-width:none}
+.nz-grid .az-tile .glyph{position:absolute; left:50%; top:50%; translate:-50% -50%; height:80%; width:auto; max-width:92%} .nz-num .glyph{max-width:none}
 .az-song .glyph{height:30px; width:auto; max-width:46px; margin-top:-4px}
 .ns-tray{flex-direction:column; gap:10px; padding-top:10px}
 .ns-frame{--c:clamp(40px, min(15vw, 6.5vh), 60px); align-self:center; min-height:var(--c)}
@@ -701,7 +703,7 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img:not(.px){image-rendering
 @media (orientation:landscape){ #delivery{grid-template-rows:none; grid-template-columns:minmax(0,1fr) auto} }
 .ad-stage{position:relative; min-height:0; min-width:0; display:grid; place-items:end center; padding:76px 0 0; container-type:size; overflow:hidden}
 @media (orientation:landscape){ .ad-stage{padding:8px 0 0 80px} }
-.ad-ground{position:absolute; left:-100vw; right:-100vw; top:75%; bottom:0; z-index:0}   /* the grass, on past the garden's edges */
+.ad-ground{background:#83C962; position:absolute; left:-100vw; right:-100vw; top:75%; bottom:0; z-index:0}   /* the grass, on past the garden's edges */
 .ad-world{position:relative; width:min(100cqw, 100cqh * 4 / 3); aspect-ratio:4 / 3; touch-action:none}
 .ad-place{position:absolute; z-index:1; aspect-ratio:1; pointer-events:none} .ad-place .px{width:100%; height:100%}
 .ad-place[data-place="box"]{z-index:2}   /* (in front of whatever is in it) */
@@ -888,6 +890,8 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img:not(.px){image-rendering
 #breakTime .bt-zzz{position:absolute; color:#FFFDF6; font-family:var(--digits); font-size:clamp(16px, 4.5vmin, 26px); animation:bt-zzz 3s ease-out infinite}
 @keyframes bt-twinkle{50%{opacity:.35}}
 @keyframes bt-zzz{0%{opacity:0; transform:translate(0,10px) scale(.7)} 30%{opacity:1} 100%{opacity:0; transform:translate(18px,-40px) scale(1.2)}}
+#breakPreviewNotice{position:absolute; inset:var(--status) 0 0; z-index:40; display:grid; place-items:center; padding:24px; background:rgba(31,42,92,.9); color:#FFFDF6; text-align:center; font-size:clamp(24px,6vmin,40px)}
+.bt-preview-hint{position:absolute; bottom:16px; left:12px; right:12px; color:#FFFDF6; text-align:center; font-size:18px}
 #breakIc{display:flex; height:100%; align-items:center} #breakIc .px{height:62%; width:auto} #breakIc[hidden]{display:none}
 #settings{position:absolute; inset:0; z-index:50; display:grid; place-items:center; padding:12px; background:rgba(59,43,32,.5)}
 #ready{position:absolute; inset:0; z-index:55; display:grid; place-items:center; padding:12px; background:rgba(59,43,32,.5)}
@@ -1242,11 +1246,13 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img:not(.px){image-rendering
       </div>
     </section>
 
+    <div id="breakPreviewNotice" hidden role="status">Almost time for a break!</div>
     <section id="breakTime" hidden aria-label="Time for a break">
       <span class="bt-star art" style="left:12%; top:10%"></span><span class="bt-star art" style="left:30%; top:22%; animation-delay:.8s"></span>
       <span class="bt-star art" style="right:10%; top:46%; animation-delay:1.5s"></span><span class="bt-star art" style="left:8%; top:62%; animation-delay:.4s"></span>
       <span class="bt-star art" style="right:22%; bottom:9%; animation-delay:1.1s"></span>
       <div class="bt-moon art" id="btMoon"></div>
+      <p class="bt-preview-hint" id="breakPreviewHint" hidden>Preview · Press Home to return to parent settings</p>
       <div class="bt-owl art" id="btOwl" role="img" aria-label="A sleepy owl"></div>
       <span class="bt-zzz" style="left:58%; top:48%">z</span><span class="bt-zzz" style="left:62%; top:44%; animation-delay:1.5s">Z</span>
     </section>
@@ -1328,7 +1334,7 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img:not(.px){image-rendering
           <button class="sbtn" id="noClear">Keep them</button>
         </div>
         <div class="srow"><span>Try it</span>
-          <div class="seg"><button class="sbtn" id="testRing">Ring now</button><button class="sbtn" id="testSound">Test sound</button></div></div>
+          <div class="seg"><button class="sbtn" id="testRing">Ring now</button><button class="sbtn" id="testSound">Test sound</button><button class="sbtn" id="testBreak">Play-time preview</button></div></div>
         <p class="note" id="soundNote"></p>
         <p class="note" id="voiceNote"></p>
         <p class="note" id="familyNote"></p>
@@ -5413,6 +5419,7 @@ function leaveApp(name){
 }
 $('#homeBtn').innerHTML = ICON.home;
 tap($('#homeBtn'), () => {
+  if (PLAY.returnPreview()){ FX.boop(); return; }
   FX.boop();
   closeSettings();
   const inCall = !!call;
@@ -5620,7 +5627,7 @@ function scheduleIncoming(){
   incomingTimer = setTimeout(() => { incomingDue = true; maybeRing(); }, (60 + Math.random()*120) * 1000);
 }
 function maybeRing(force){
-  if (!appAllowed('phone') || !$('#parentGate').hidden || !$('#breakTime').hidden) return;
+  if (!appAllowed('phone') || PLAY.ended() || !$('#parentGate').hidden || !$('#breakTime').hidden) return;
   if (!force && (!incomingDue || !settings.incoming)) return;
   if (call || current !== 'home' || !$('#settings').hidden || document.visibilityState !== 'visible') return;
   incomingDue = false;
@@ -7016,9 +7023,10 @@ function abcSound(e, at = 0){
 /* ----- the School menu: one card per learning game ----- */
 const SCHOOL = [
   {id:'abczoo', n:'ABC Zoo', note:'Every letter, A to Z', cls:'g-abc', art:() => `<span class="art">${glyphImg('A')}</span><span class="art big">${glyphImg('B')}</span><span class="art">${glyphImg('C')}</span>`},
+  {id:'numzoo', n:'123 Zoo', note:'Count to ten', cls:'g-num', art:() => `<span class="art">${glyphImg('1')}</span><span class="art big">${glyphImg('2')}</span><span class="art">${glyphImg('3')}</span>`},
   {id:'letterpath', n:'Letter Path', note:'One letter at a time', cls:'g-path', art:() => `<span class="art">${glyphImg('a')}</span><span class="art big">${ART.owl}</span><span class="art">${glyphImg('b')}</span>`},
   {id:'abcsnack', n:'ABC Snack', note:'Feed the letter', cls:'g-abcsnack', art:() => `<span class="art big">${ART.monkey}</span><span class="art">${glyphImg('a')}</span>`},
-  {id:'numzoo', n:'123 Zoo', note:'Count to ten', cls:'g-num', art:() => `<span class="art">${glyphImg('1')}</span><span class="art big">${glyphImg('2')}</span><span class="art">${glyphImg('3')}</span>`},
+
   {id:'numsnack', n:'123 Snack', note:'Count the snacks', cls:'g-numsnack', art:() => `<span class="art big">${ART.dog}</span><span class="art">${glyphImg('3')}</span>`},
   {id:'dinopicnic', n:'Dino Picnic', note:'Give the snacks', cls:'g-picnic', art:() => `<span class="art big">${ART.trex}</span><span class="art">${schoolPic('meat')}</span>`},
   {id:'delivery', n:'Animal Delivery', note:'In, on, under', cls:'g-deliv', art:() => `<span class="art big">${ART.kangaroo}</span><span class="art">${schoolPic('box')}</span>`}
@@ -7548,11 +7556,21 @@ function renderPathNote(){
 /* Counting with a ten-frame: two rows of five boxes, filled left to right, the way early math classes show a number
    (seven is "five and two more"). Numbers are drawn in the same school-print pixel style as the letters. */
 const NUMW = ['zero','one','two','three','four','five','six','seven','eight','nine','ten'];
-/* a number as one picture: its digits side by side, a little overlapped (so 10 sizes like any single glyph) */
+/* Keep digits at one scale: trim empty side margins before composing a multi-digit number. */
 function numCanvas(n){
-  return once('num' + n, () => { const ds = String(n).split('').map(d => glyphCanvas(d)), ov = Math.round(ds[0].width*.16), c = document.createElement('canvas');
-    c.width = ds.reduce((t, d) => t + d.width, 0) - ov*(ds.length - 1); c.height = ds[0].height;
-    const g = c.getContext('2d'); let x = 0; ds.forEach(d => { g.drawImage(d, x, 0); x += d.width - ov; }); return c; });
+  return once('num' + n, () => {
+    const ds = String(n).split('').map(d => {
+      const c=glyphCanvas(d), data=c.getContext('2d').getImageData(0,0,c.width,c.height).data;
+      let left=c.width, right=0;
+      for(let y=0;y<c.height;y++)for(let x=0;x<c.width;x++)if(data[(y*c.width+x)*4+3]){left=Math.min(left,x);right=Math.max(right,x);}
+      return {c,left,width:right-left+1};
+    });
+    const gap=2, c=document.createElement('canvas');
+    c.width=ds.reduce((sum,d)=>sum+d.width,0)+gap*(ds.length-1); c.height=ds[0].c.height;
+    const g=c.getContext('2d'); let x=0;
+    ds.forEach(d=>{g.drawImage(d.c,d.left,0,d.width,c.height,x,0,d.width,c.height);x+=d.width+gap;});
+    return c;
+  });
 }
 const numImg = n => n < 10 ? glyphImg(String(n)) : `<img class="px glyph" src="${pxURL(numCanvas(n), 4).slice(5, -2)}" alt="" draggable="false">`;   // (10 stays on one line)
 const countWord = i => cap(NUMW[i]) + '!';   // "Three!"
@@ -9060,6 +9078,7 @@ const PLAY = (() => {
   const saved = store.get('session', {}) || {}, fresh = saved.day !== today();
   let st = {day:today(), used:fresh ? 0 : Math.max(0, +saved.used || 0), ended:!fresh && !!saved.ended};
   let ending = 0, last = performance.now(), savedAt = 0, quietUntil = 0;
+  let preview = null, previewTimer = 0;
   const SAY = {soon:'Almost time for a break!', done:'Time for a break! See you soon!'};
   const limit = () => settings.play * 60000;
   const save = () => { savedAt = performance.now(); store.set('session', st); };
@@ -9072,10 +9091,11 @@ const PLAY = (() => {
     hush(); stopSong(); if (call){ stopCallSounds(); closeCall(); }
     if (!leaving) go(accessHome());
     show(true);
-    setTimeout(() => { if (st.ended) say(SAY.done); }, 600);
+    setTimeout(() => { if (st.ended && !preview) say(SAY.done); }, 600);
   }
   function tick(){
     const now = performance.now(), dt = Math.min(now - last, 5000); last = now;   // (a long gap is the phone asleep, not play)
+    if (preview) return;
     if (st.day !== today()){ st = {day:today(), used:0, ended:false}; ending = 0; save(); show(false); soon(false); }
     if (!settings.play || st.ended || document.visibilityState !== 'visible' || !$('#settings').hidden || !$('#parentGate').hidden) return;
     st.used += dt;
@@ -9085,6 +9105,28 @@ const PLAY = (() => {
   }
   setInterval(tick, 1000);
   owl.addEventListener('pointerdown', e => { e.preventDefault(); const now = performance.now(); retrigger(owl, 'hop'); if (now < quietUntil) return; quietUntil = now + 6000; FX.pop(); say(SAY.done); });
+  /* A demonstration owns its timers and never writes the real session or consumes its grace period. */
+  function cancelPreview(){
+    if (!preview) return false;
+    if (ending) ending += performance.now() - preview.started;
+    clearTimeout(previewTimer); previewTimer=0; preview=null; last=performance.now();
+    $('#apps').inert=false;
+    hush(); $('#breakPreviewNotice').hidden=true; $('#breakPreviewHint').hidden=true;
+    soon(!!ending); show(st.ended && !!settings.play);
+    return true;
+  }
+  function startPreview(){
+    cancelPreview(); preview={started:performance.now()};
+    closeSettings();
+    hush(); stopSong(); stopFx(); if(call){stopCallSounds();closeCall();}
+    go(accessHome()); $('#apps').inert=true; $('#homeBtn').focus({preventScroll:true}); show(false); soon(true);
+    $('#breakPreviewNotice').hidden=false; say(SAY.soon);
+    previewTimer=setTimeout(()=>{
+      if(!preview)return;
+      $('#breakPreviewNotice').hidden=true; soon(false); show(true); $('#breakPreviewHint').hidden=false;
+      say(SAY.done);
+    }, Math.max(4500,lineMs(SAY.soon)+600));
+  }
   /* a parent changed the limit or started over: more time left means more play */
   function update(){ if (!settings.play || st.used < limit()){ st.ended = false; ending = 0; soon(false); show(false); } save(); render(); }
   function render(){
@@ -9098,8 +9140,15 @@ const PLAY = (() => {
   tapInScroll($('#playReset'), () => { st.used = 0; update(); FX.cheer(); });
   if (st.ended && settings.play) show(true);
   return {
-    navigate(){ if (ending && !st.ended){ end(true); return true; } return st.ended && !!settings.play; },
-    ended: () => st.ended && !!settings.play, render,
+    navigate(){ if (preview) return false; if (ending && !st.ended){ end(true); return true; } return st.ended && !!settings.play; },
+    ended: () => !!preview || (st.ended && !!settings.play), render, startPreview, cancelPreview,
+    returnPreview(){
+      if(!preview)return false;
+      go(accessHome()); cancelPreview(); openSettings();
+      // WebKit may settle touch focus after the pointer handler; keep it inside the returned dialog.
+      requestAnimationFrame(()=>{const sheet=$('#settings');if(!sheet.hidden && !sheet.contains(document.activeElement))$('#doneBtn').focus({preventScroll:true});});
+      return true;
+    },
     state: () => ({limit:settings.play, used:Math.round(st.used/1000), ending:!!ending, ended:st.ended, shown:!el.hidden}),
     add(ms){ st.used += ms; },   // (for the tests)
     lines: () => [SAY.soon, SAY.done]
@@ -9131,7 +9180,7 @@ function renderSettings(){
 }
 function sizeSettings(){ $('#settings .sheet').style.scrollPaddingTop=($('#settings .shead').offsetHeight+8)+'px'; }
 let countAtOpen=settings.count;
-function openSettings(){ countAtOpen=settings.count; renderAccess(); hush(); $('#confirmClear').hidden = true; $('#confirmPath').hidden = true; renderSettings(); pickVoice(); showSound(); $('#settings').hidden = false; sizeSettings(); $('#settings .sheet').scrollTop=0; $('#doneBtn').focus({preventScroll:true}); FX.cheer(); }
+function openSettings(){ PLAY.cancelPreview(); countAtOpen=settings.count; renderAccess(); hush(); $('#confirmClear').hidden = true; $('#confirmPath').hidden = true; renderSettings(); pickVoice(); showSound(); $('#settings').hidden = false; sizeSettings(); $('#settings .sheet').scrollTop=0; $('#doneBtn').focus({preventScroll:true}); FX.cheer(); }
 /* is the sound engine running? (the animals, drums and ringtones all come from it; the voice doesn't) */
 function showSound(){
   const n = $('#soundNote'); if (!n) return;
@@ -9181,6 +9230,7 @@ $$('[data-vol]').forEach(b => tap(b, () => { settings.vol = +b.dataset.vol; save
 tap($('#clearBtn'), () => { if (Photos.list.length) $('#confirmClear').hidden = false; });
 tap($('#noClear'), () => { $('#confirmClear').hidden = true; });
 tap($('#yesClear'), () => { Photos.clear(); store.set('seeded', true); $('#confirmClear').hidden = true; renderSettings(); if (current === 'photos'){ closeViewer(true); renderGrid(); } showThumb(); });
+tapInScroll($('#testBreak'), () => PLAY.startPreview());
 tap($('#testSound'), () => { FX.cheer(); say('Hello! This is how loud I am.'); });
 tap($('#testRing'), () => { closeSettings(); if (call) return; if (current !== 'home') go('home'); setTimeout(() => maybeRing(true), 600); });
 tap($('#doneBtn'), () => { closeSettings(); FX.pop(); });
@@ -9222,11 +9272,11 @@ let lastTouch = 0;
 document.addEventListener('touchend', e => { const now = Date.now(); if (now - lastTouch < 350 && !inScroll(e)) e.preventDefault(); lastTouch = now; }, {passive:false});
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible'){ keepAwake(); updateClock(); if (current === 'camera' && cam.mode !== 'safari') startReal(); if ((camMotion() && !AR.listening) || (tiltMotion() && AR.perm !== 'granted')) askMotion().then(() => { renderLookNote(); renderTiltNote(); }); }
-  else { clearHold(); closeSettings(); hush(); stopSong(); if (call){ stopCallSounds(); closeCall(); } closeStream(); stopFx(); parkAudio(); }   // the camera and narrator never run off screen
+  else { PLAY.cancelPreview(); clearHold(); closeSettings(); hush(); stopSong(); if (call){ stopCallSounds(); closeCall(); } closeStream(); stopFx(); parkAudio(); }   // the camera and narrator never run off screen
 });
 let resizeT = 0;
 window.addEventListener('resize', () => { clearTimeout(resizeT); resizeT = setTimeout(() => { fillScreen(); fitContacts(); if(!$('#settings').hidden)sizeSettings(); if (current === 'camera'){ sizeCamera(); if (cam.mode !== 'safari'){ updateLookUI(); placeLenses(); } } if (!bgWatch) paintBackgrounds(); }, 120); });
-window.addEventListener('pagehide', () => {clearHold();hush();stopSong();if(call){stopCallSounds();closeCall();}closeStream();stopFx();parkAudio();});
+window.addEventListener('pagehide', () => {PLAY.cancelPreview();clearHold();hush();stopSong();if(call){stopCallSounds();closeCall();}closeStream();stopFx();parkAudio();});
 window.addEventListener('pageshow', () => { setSession(); });   // back/forward-cache restoration keeps recovery armed until the first sound
 paintBackgrounds(); if (bgWatch) bgFor.forEach((fn, el) => bgWatch.observe(el));
 

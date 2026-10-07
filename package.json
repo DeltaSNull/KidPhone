@@ -10,7 +10,7 @@
     "test:pages": "node tests/pages.cjs",
     "test:webkit": "node tests/webkit.cjs",
     "test:pages:webkit": "node tests/pages.cjs --webkit",
-    "test:ci": "npm test && npm run test:pages && npm run test:webkit && npm run test:pages:webkit && npm run test:parents && npm run test:parents:webkit && npm run test:motion && npm run test:motion:webkit && npm run test:delivery && npm run test:delivery:webkit && npm run test:refinement && npm run test:refinement:webkit && npm run test:play-refinement && npm run test:play-refinement:webkit && npm run test:audio-return && npm run test:audio-return:webkit && npm run test:phone-game-review && npm run test:phone-game-review:webkit && npm run test:camera-peek && npm run test:camera-peek:webkit",
+    "test:ci": "npm test && npm run test:pages && npm run test:webkit && npm run test:pages:webkit && npm run test:parents && npm run test:parents:webkit && npm run test:motion && npm run test:motion:webkit && npm run test:delivery && npm run test:delivery:webkit && npm run test:refinement && npm run test:refinement:webkit && npm run test:play-refinement && npm run test:play-refinement:webkit && npm run test:audio-return && npm run test:audio-return:webkit && npm run test:phone-game-review && npm run test:phone-game-review:webkit && npm run test:camera-peek && npm run test:camera-peek:webkit && npm run test:break-preview && npm run test:break-preview:webkit",
     "test:parents": "node tests/parent-controls.cjs",
     "test:parents:webkit": "node tests/parent-controls.cjs --webkit",
     "test:motion": "node tests/motion-games.cjs",
@@ -26,7 +26,9 @@
     "test:phone-game-review": "node tests/phone-game-review.cjs",
     "test:phone-game-review:webkit": "node tests/phone-game-review.cjs --webkit",
     "test:camera-peek": "node tests/camera-peek.cjs",
-    "test:camera-peek:webkit": "node tests/camera-peek.cjs --webkit"
+    "test:camera-peek:webkit": "node tests/camera-peek.cjs --webkit",
+    "test:break-preview": "node tests/break-preview.cjs",
+    "test:break-preview:webkit": "node tests/break-preview.cjs --webkit"
   },
   "devDependencies": {
     "@fontsource/pixelify-sans": "5.3.0",
