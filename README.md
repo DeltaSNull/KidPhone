@@ -1,5 +1,7 @@
 # KidPhone
 
+Expansion in review: optional quantity/color/size deliveries, longer Ball Trail and Star Flight journeys, pretend friend missions, cooperative Dino/Paint options, and four new School activities: Sorting Station, Pattern Train, Story Time and Feelings Friends. Follow HANDOFF.md for verification and publication status.
+
 **Play it:** https://deltasnull.github.io/KidPhone/
 
 A pretend phone for a 1.5-year-old and a 3.5-year-old, made to run on Dad's iPhone in Safari under

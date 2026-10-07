@@ -1,4 +1,4 @@
-/* Ball Trail and Star Flight: steering by a held finger and by tilt, hedges, the five star slots, rounds that roll on,
+/* Ball Trail and Star Flight: steering by a held finger and by tilt, hedges, five-route garden and six-animal journey endings/replay,
    motion only after a grown-up allowed it (never asked from a game), Touch only, turning the screen, and cleanup.
    Run in Chromium, or with --webkit. The page's clock is faked, so a "hold for two seconds" takes no real time. */
 const assert = require('node:assert/strict');
@@ -48,7 +48,7 @@ const check = (condition, message) => { assert.ok(condition, message); console.l
         await page.evaluate(() => { window.turn = {angle:0}; Object.defineProperty(screen, 'orientation', {configurable:true, get:() => window.turn}); });
         await page.clock.runFor(100);
       };
-      const go = async id => { await page.evaluate(id => window.__toyPhone.go(id), id); await page.clock.runFor(500); };
+      const go = async id => { await page.evaluate(id => window.__toyPhone.go(id), id); await page.clock.runFor(2300); };
       const state = () => page.evaluate(() => window.__toyPhone.motionGames());
       const run = ms => page.clock.runFor(ms);
       const sensor = (beta, gamma) => page.evaluate(([beta, gamma]) => { const e = new Event('deviceorientation'); Object.assign(e, {alpha:0, beta, gamma}); window.dispatchEvent(e); }, [beta, gamma]);
@@ -71,7 +71,7 @@ const check = (condition, message) => { assert.ok(condition, message); console.l
       await go('balltrail');
       check(await page.evaluate(() => window.permissionCount) === asked, `${tag}: opening a tilt game never asks Safari`);
       check((await state()).tilt, `${tag}: with motion allowed, the game listens for tilt`);
-      check(await page.locator('#balltrail button').count() === 0, `${tag}: no buttons on the kids' screen`);
+      check(await page.locator('#balltrail .mg-route').count() === 1, `${tag}: a visible route preview guides the first turns`);
       const board = await page.locator('#balltrail .mg-board').boundingBox();
       check(board.width > 200 && board.y >= 0 && board.y + board.height <= viewport.height && board.x + board.width <= viewport.width, `${tag}: the field is big and fits on screen ${JSON.stringify(board)}`);
       check(Math.abs((board.width - 18) - (board.height - 24)) < 1.5, `${tag}: the inside of the field is square`);
@@ -116,12 +116,30 @@ const check = (condition, message) => { assert.ok(condition, message); console.l
       await hold('balltrail', 15, 82); await hold('balltrail', 82, 82, 2600);
       st = await state();
       check(st.done && st.got === 1 && await lit('balltrail') === 1, `${tag}: reaching the star lights the first slot ${JSON.stringify(st)}`);
-      await run(2600); st = await state();
+      await run(4600); st = await state();
       check(!st.done && st.round === 1 && st.maze === 1 && Math.abs(st.x - 13) < .5, `${tag}: the next maze starts by itself`);
       await page.screenshot({animations:'disabled', path:path.join(__dirname, 'screenshots', `motion-maze-${tag}.png`)});
       for (const [x, y] of [[13, 86], [50, 86], [50, 20], [87, 20], [85, 86]]) await hold('balltrail', x, y);
       st = await state();
       check(st.done && st.got === 2, `${tag}: the two-hedge maze can be finished with a finger ${JSON.stringify(st)}`);
+
+      // Each later path is hand checked with the full ball radius, including both horizontal routes.
+      const laterPaths = [
+        [[87,86],[50,86],[50,20],[13,20],[14,85]],
+        [[16,17],[82,17],[82,51],[16,51],[16,83],[82,83]],
+        [[17,17],[17,50],[83,50],[83,83],[17,83]]
+      ];
+      for(const pathPoints of laterPaths){
+        await run(4600); const route=(await state()).round;
+        for(const [px,py] of pathPoints) await hold('balltrail',px,py,2600);
+        check((await state()).done && (await state()).got===route+1, `${tag}: distinct route ${route+1} is reachable with the whole ball`);
+      }
+      await run(6000);
+      check((await state()).round===4 && (await state()).got===5, `${tag}: five-star garden remains finished until replay`);
+      check(await page.locator('#balltrail .mg-finish .px').count()>=5, `${tag}: the ending displays all five earned stars`);
+      await page.screenshot({animations:'disabled',path:path.join(__dirname,'screenshots',`motion-garden-finish-${tag}.png`)});
+      await page.locator('#balltrail .mg-replay').click(); await run(2300);
+      check((await state()).round===0 && (await state()).got===0 && !(await state()).done, `${tag}: garden replay starts a fresh five-route journey`);
 
       // leaving stops listening; a reading after that does nothing
       await go('home'); st = await state();
@@ -129,12 +147,18 @@ const check = (condition, message) => { assert.ok(condition, message); console.l
       await sensor(20, 40);
 
       // --- Star Flight: longer food stages, alternating flying/ground animals.
-      await go('starflight');
+      await page.evaluate(()=>window.__toyPhone.go('starflight'));
+      const introFood = await page.locator('#starflight .mg-star').first().evaluate(e=>e.style.top);
+      await run(1000);
+      check(await page.locator('#starflight .mg-next').count()===1 && await page.locator('#starflight .mg-star').first().evaluate(e=>e.style.top)===introFood, `${tag}: animal and food preview pauses falling food before play`);
+      await run(1400);
+      check(await page.locator('#starflight .mg-journey span').count()===6, `${tag}: the visual journey includes all six animals`);
       check((await state()).tilt && (await state()).target===8 && await lit('starflight') === 0, `${tag}: the first animal needs eight blueberries, not five quick stars`);
       const flapBefore=await page.locator('#starflight .mg-me').evaluate(e=>e.style.getPropertyValue('--flap'));await run(250);
       check(await page.locator('#starflight .mg-wing').count()===1 && await page.locator('#starflight .mg-me').evaluate(e=>e.style.getPropertyValue('--flap'))!==flapBefore, `${tag}: flying animals flap a simple pixel wing`);
       const campaign=[['parrot','blueberry',true,1,8],['dog','bone',false,1,8],['eagle','fish',true,2,10],['monkey','banana',false,2,10],['butterfly','flower',true,3,12],['panda','bamboo',false,3,12]];
       for(const [animal,food,flying,difficulty,target] of campaign){
+        check(await page.locator('#starflight .mg-habitat').getAttribute('aria-label'), `${tag}: each animal has a named habitat`);
         st=await state();check(st.animal===animal&&st.food===food&&st.flying===flying&&st.level===difficulty&&st.target===target,`${tag}: stage ${st.round+1} is ${animal}/${food}, level ${difficulty}, goal ${target}`);
         if(animal==='parrot'||animal==='dog'||animal==='butterfly')await page.screenshot({animations:'disabled',path:path.join(__dirname,'screenshots',`motion-playing-${animal}-${tag}.png`)});
         if(!flying){
@@ -152,11 +176,15 @@ const check = (condition, message) => { assert.ok(condition, message); console.l
           st=await state();const near=st.stars.filter(s=>s.good).reduce((a,b)=>Math.hypot(st.x-a.x,st.y-a.y)<Math.hypot(st.x-b.x,st.y-b.y)?a:b);
           await hold('starflight',near.x,Math.max(6,Math.min(94,near.y+4)),200);
         }
-        st=await state();check(st.done&&st.got===target&&await lit('starflight')===target,`${tag}: ${animal} stage completes only after ${target} matching foods`);
+        st=await state();check(await page.locator('#starflight .mg-journey .visited').count()===st.round+1,`${tag}: only animals already helped are marked visited`);check(st.done&&st.got===target&&await lit('starflight')===target,`${tag}: ${animal} stage completes only after ${target} matching foods`);
         if(animal==='parrot'||animal==='dog'||animal==='butterfly')await page.screenshot({animations:'disabled',path:path.join(__dirname,'screenshots',`motion-${animal}-${tag}.png`)});
-        await run(3400);check(!(await state()).done&&(await state()).got===0,`${tag}: the next animal starts with an empty collection`);
+        if(animal!=='panda'){await run(5400);check(!(await state()).done&&(await state()).got===0,`${tag}: the next animal starts with an empty collection`);}
       }
-      check((await state()).animal==='parrot'&&(await state()).level===3,`${tag}: after all six animals difficulty stays capped at level three`);
+      await run(6000);
+      check((await state()).animal==='panda' && (await state()).done && await page.locator('#starflight .mg-finish .mg-friends .px').count()===6,`${tag}: the six-animal ending stays for a deliberate replay`);
+      await page.screenshot({animations:'disabled',path:path.join(__dirname,'screenshots',`motion-journey-finish-${tag}.png`)});
+      await page.locator('#starflight .mg-replay').click(); await run(2300);
+      check((await state()).animal==='parrot' && (await state()).level===1 && (await state()).got===0,`${tag}: replay resets the journey to its calm first encounter`);
       check(errors.length === 0, `${tag}: no JavaScript errors ${errors.join('; ')}`);
 
       // --- motion not allowed: touch still steers, and the game still never asks

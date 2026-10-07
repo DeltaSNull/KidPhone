@@ -86,6 +86,16 @@ jobs:
       - name: Motion games
         run: node tests/motion-games.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
 
+      - name: Expanded Delivery and School activities
+        run: |
+          node tests/delivery-expanded.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
+          node tests/school-activities.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
+
+      - name: Cooperative play and interruption recovery
+        run: |
+          node tests/social-play.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
+          node tests/social-lifecycle.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
+
       - name: Interaction refinement
         run: node tests/refinement.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
 

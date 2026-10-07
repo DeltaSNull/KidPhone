@@ -1,0 +1,26 @@
+/* Real UI contract for optional quantity/attribute deliveries. */
+const assert=require('node:assert/strict'),{chromium,webkit}=require('playwright'),fs=require('node:fs'),path=require('node:path'),http=require('node:http');
+const ROOT=path.resolve(__dirname,'..');
+const server=http.createServer((req,res)=>{const p=path.join(ROOT,new URL(req.url,'http://localhost').pathname);const f=p===ROOT+'/'?path.join(ROOT,'index.html'):p;if(!f.startsWith(ROOT+'/')||!fs.existsSync(f)||!fs.statSync(f).isFile()){res.writeHead(404);res.end();return;}res.setHeader('Content-Type',f.endsWith('.html')?'text/html':f.endsWith('.json')?'application/json':'application/octet-stream');fs.createReadStream(f).pipe(res);});
+(async()=>{await new Promise(r=>server.listen(0,'127.0.0.1',r));const browser=await(process.argv.includes('--webkit')?webkit:chromium).launch();try{for(const viewport of [{width:390,height:844},{width:844,height:390},{width:375,height:667}]){
+const ctx=await browser.newContext({viewport,hasTouch:true,isMobile:true});await ctx.route('https://**',r=>r.abort());await ctx.route('**/assets/voice/voice.json',r=>r.fulfill({status:404,body:''}));await ctx.addInitScript(()=>localStorage.setItem('toyphone.settings',JSON.stringify({incoming:false,camera:'pretend',silent:false,tilt:'off'})));
+const p=await ctx.newPage(),errors=[];p.on('pageerror',e=>errors.push(e.message));await p.goto(`http://127.0.0.1:${server.address().port}/index.html`);await p.waitForFunction(()=>window.__toyPhone);const state=()=>p.evaluate(()=>__toyPhone.delivery()); async function tap(sel){const b=await p.locator(sel).boundingBox();assert.ok(b,sel);await p.touchscreen.tap(b.x+b.width/2,b.y+b.height/2);await p.waitForTimeout(220);}
+await p.evaluate(()=>__toyPhone.go('delivery'));
+// The advanced route is discoverable from the start as well as after the simple route.
+assert.equal(await p.locator('#adChallenge').count(),1,'an optional quantity and attribute route is available');
+await tap('#adChallenge');await p.waitForFunction(()=>__toyPhone.delivery().advanced);
+let s=await state();assert.equal(s.want,1);assert.equal(s.got,0);assert.equal(s.done,false);assert.ok(await p.locator('#adCheck').isVisible());assert.ok(await p.locator('#adUndo').isDisabled());
+async function add(spot){s=await state();await tap(`[data-item="${s.itemKey}"]`);await tap(`[data-spot="${spot||s.target}"]`);await p.waitForFunction(()=>!__toyPhone.delivery().busy);}
+async function checkRound(){const before=(await state()).rights;await tap('#adCheck');try{await p.waitForFunction(n=>__toyPhone.delivery().rights===n,before+1,{timeout:5000});}catch(e){console.error('Delivery state at failure',await state());await p.screenshot({path:'/tmp/delivery-failed.png'});throw e;}await p.waitForFunction(()=>{const d=__toyPhone.delivery();return d.done||!d.busy;});}
+await tap('#adCheck');assert.equal((await state()).rights,0,'empty delivery cannot score');
+await add(s.spots.find(k=>k!==s.target));await tap('#adCheck');assert.equal((await state()).rights,0,'wrong destination cannot score');await tap('#adUndo');assert.equal((await state()).got,0,'undo removes misplaced parcel');
+await add();await add();await tap('#adCheck');assert.equal((await state()).rights,0,'too many does not score');await tap('#adUndo');assert.equal((await state()).got,1);await checkRound();
+const kinds=new Set();for(let round=1;round<6;round++){s=await state();kinds.add(s.attribute);assert.equal(s.rights,round);const before=JSON.stringify({want:s.want,target:s.target,rights:s.rights,got:s.got});await tap('#adReplay');s=await state();assert.equal(JSON.stringify({want:s.want,target:s.target,rights:s.rights,got:s.got}),before);
+if(s.attribute){const wrong=s.choices.find(k=>k!==s.itemKey);await tap(`[data-item="${wrong}"]`);await tap(`[data-spot="${s.target}"]`);assert.equal((await state()).got,0,'attribute distractor cannot be delivered');}
+for(let n=0;n<s.want;n++)await add();await checkRound();}
+assert.ok(kinds.has('color')&&kinds.has('size'),'both color and size choices practiced');assert.equal((await state()).done,true);assert.equal(await p.locator('#adRoute .done').count(),6);assert.ok(await p.locator('#adFinish').isVisible());
+await tap('#adAgain');assert.equal((await state()).advanced,false,'replay returns to simple route');await tap('#adChallenge');s=await state();await tap(`[data-item="${s.itemKey}"]`);await tap(`[data-spot="${s.target}"]`);await p.evaluate(()=>__toyPhone.go('school'));await p.waitForTimeout(800);assert.equal((await state()).got,0,'leaving cancels flying parcel');
+await p.evaluate(()=>__toyPhone.go('delivery'));await tap('#adChallenge');
+const boxes=await p.locator('#delivery button:visible').evaluateAll(bs=>bs.map(b=>{const r=b.getBoundingClientRect();return {id:b.id,x:r.x,y:r.y,w:r.width,h:r.height};}));assert.ok(boxes.every(b=>b.w>=44&&b.h>=44&&b.x>=0&&b.y>=0&&b.x+b.w<=viewport.width+1&&b.y+b.h<=viewport.height+1),JSON.stringify(boxes));
+fs.mkdirSync(path.join(ROOT,'tests/screenshots'),{recursive:true});await p.screenshot({path:path.join(ROOT,`tests/screenshots/delivery-expanded-${viewport.width}.png`)});assert.deepEqual(errors,[]);console.log('PASS expanded delivery',viewport);await ctx.close();
+}}finally{await browser.close();}})().catch(e=>{console.error(e);process.exitCode=1;}).finally(()=>server.close());

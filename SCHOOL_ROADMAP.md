@@ -8,6 +8,8 @@ Status: Parent access controls, play-time limits, School sound controls and moti
 
 ## Current owner-directed refinement: overall app polish
 
+Approved expansion, 2026-10-07: P3-06 quantity/attributes; I-02 through I-06 game/lifecycle improvements; P4-01 through P4-04 Sorting, Patterns, Stories and Feelings. Implemented on `codex/play-learning-expansion` based on released main `3e7c72c`. Scratch restoration, recording regeneration and fresh browser checks are in progress; no release claim or physical-family verification. Full accessibility and gradual module extraction remain ongoing. Profiles, learner tracking and phonics remain deferred. See the current HANDOFF entry and branch PR before continuing.
+
 This batch follows the owner's request to use best judgment on overall refinement. It preserves the existing games and the holds on profiles, learning tracking and lesson phonics. Check the branch PR for CI and publication status before continuing.
 
 - [x] **R-01 — Scroll-safe settings:** changes occur on a stationary finger lift; movement, cancellation or sheet scrolling cancels the change, including dynamic letter and voice controls. Normal child game taps retain their immediate response.

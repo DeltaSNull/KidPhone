@@ -656,8 +656,8 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   // --- SCHOOL: the Letter Path, ABC Zoo, ABC Snack
   const school = () => page.evaluate(() => window.__toyPhone.school());
   await tap('[data-app="school"]'); await sleep(600);
-  check(await page.locator('#schoolList .gamecard').count() === 7, 'School shows its learning games');
-  check((await page.$$eval('#schoolList .gamecard', bs => bs.map(b => b.getAttribute('aria-label')))).join() === 'ABC Zoo,123 Zoo,Letter Path,ABC Snack,123 Snack,Dino Picnic,Animal Delivery', 'ABC Zoo and 123 Zoo first, then Letter Path, ABC Snack, 123 Snack, Dino Picnic and Animal Delivery');
+  check(await page.locator('#schoolList .gamecard').count() === 11, 'School shows its learning games');
+  check((await page.$$eval('#schoolList .gamecard', bs => bs.map(b => b.getAttribute('aria-label')))).join() === 'ABC Zoo,123 Zoo,Letter Path,ABC Snack,123 Snack,Dino Picnic,Animal Delivery,Sorting Station,Pattern Train,Story Time,Feelings Friends', 'School preserves the original order and adds the four new activities');
   await shot('28-school'); await fits('school');
   const lp = () => page.evaluate(() => window.__toyPhone.path());
   const until = async (fn, n = 30) => { for (let i = 0; i < n && !(await fn()); i++) await sleep(300); return fn(); };
