@@ -443,6 +443,24 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img:not(.px){image-rendering
 .mg-floor{position:absolute;left:0;right:0;top:91%;bottom:0;background:repeating-linear-gradient(90deg,#4B984D 0 8px,#69B758 8px 16px);border-top:4px solid #36733D}
 .mg-next{position:absolute;inset:25%;display:flex;align-items:center;justify-content:center;gap:8px;background:#FFF8DCF2;border:4px solid #8A7048;z-index:4;pointer-events:none}
 .mg-next .px{width:40%;height:auto}
+.mg-route{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;opacity:.65}
+.mg-habitat{position:absolute;inset:0;pointer-events:none;overflow:hidden;opacity:.7}
+.mg-habitat .px{position:absolute;width:25%;height:30%;bottom:3%}
+.mg-habitat .px:last-child{right:-4%;width:35%;height:42%}
+.mg-habitat[data-place="mountains"]{background:linear-gradient(135deg,transparent 65%,#9CA7B3 65% 74%,transparent 74%),linear-gradient(225deg,transparent 65%,#B9C5C8 65% 78%,transparent 78%)}
+.mg-habitat[data-place="garden"]{background:linear-gradient(0deg,#A7D97A 0 15%,transparent 15%)}
+.mg-habitat[data-place="jungle"]{background:repeating-linear-gradient(90deg,#386B4930 0 5%,transparent 5% 29%)}
+.mg-habitat[data-place="bamboo"]{background:repeating-linear-gradient(90deg,transparent 0 17%,#67964A50 17% 20%,transparent 20% 23%)}
+.mg-journey{display:flex;justify-content:center;gap:3px;margin-bottom:5px}
+.mg-journey span{opacity:.3;filter:grayscale(1)}
+.mg-journey span.visited,.mg-journey span.current{opacity:1;filter:none}
+.mg-journey span.current{outline:2px solid #7A5539;background:#FFF5CB}
+.mg-journey .px{width:23px;height:23px}
+.mg-finish{position:absolute;inset:10%;z-index:5;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:12px;background:#FFF8DCF5;border:4px solid #8A7048}
+.mg-friends{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;max-width:220px}
+.mg-friends .px{width:46px;height:46px}
+.mg-replay{display:grid;place-items:center;width:64px;height:56px;background:#F8CE63;border:4px solid #946A35;color:#49382E;font-size:32px;cursor:pointer}
+@media(orientation:landscape){.mg-journey{flex-wrap:wrap;max-width:96px}.mg-journey .px{width:24px;height:24px}.mg-finish{inset:5%;gap:8px}.mg-friends .px{width:38px;height:38px}}
 @media(orientation:landscape){#starflight .mg-got{width:106px;grid-template-columns:1fr;align-content:center}.mg-foodslots{grid-column:1;grid-template-columns:repeat(3,1fr)}.mg-want{justify-content:center}.mg-level{font-size:18px}}
 #starflight .mg-me{width:19%; height:19%}
 .mg-me.hop .mg-body,.mg-me.hop canvas{animation:mg-cheer .5s 2}
@@ -530,6 +548,20 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img:not(.px){image-rendering
 .wt-bub.popped{animation:none; background:none}
 .wt-bub.popped span,.wt-bub.popped .px{animation:wt-drop .9s ease-in forwards}
 @keyframes wt-drop{0%{transform:scale(1.3)}30%{transform:scale(1.4) translateY(-20px)}100%{transform:translateY(60vh); opacity:0}}
+
+/* Optional cooperative controls stay clear of the pictures and use large native buttons. */
+.social-tools{position:absolute;top:4px;left:4px;right:4px;z-index:8;display:flex;justify-content:center;align-items:center;gap:5px;pointer-events:none}
+.social-tools button,.social-shelf button{pointer-events:auto;min-width:44px;min-height:44px;border:3px solid #3B2B20;border-radius:9px;background:#FFF6E0;color:#3B2B20;font-size:14px;font-family:inherit;font-weight:700;padding:6px}
+.social-tools button[aria-pressed="true"]{background:#FFC83D}
+#dbCue{font-size:13px;background:#FFF6E0;border-radius:6px;padding:4px;max-width:90px}
+#dbCue:empty{display:none}.db-side[data-turn="true"]{box-shadow:inset 0 0 0 7px #FFF6E0}
+.db-side:focus-visible,.pp-side:focus-visible{outline:6px solid #FFF6E0;outline-offset:-9px}
+.social-shelf{position:absolute;inset:0;z-index:15;background:#FFF1DC;padding:12px;overflow:auto;text-align:center}
+#ppShelfPictures{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin:14px 0}#ppShelfPictures button{width:64px;height:64px}#ppShelfPictures img{width:48px;height:48px;object-fit:contain}#ppShelfPreview img{width:min(50vmin,230px);height:min(50vmin,230px);object-fit:contain}
+#call.talking{grid-template-rows:minmax(0,1fr) auto auto auto auto;grid-template-areas:"face" "name" "time" "mission" "btns"}
+#friendMission,#missionPanel{grid-area:mission}
+@media (orientation:landscape){#call.talking{grid-template-rows:auto auto auto auto;grid-template-areas:"face name" "face time" "face mission" "face btns"}#call.talking .callbtns .round{width:72px;height:72px}#call.talking .callbtns{padding-top:0}}
+#missionPanel{text-align:center;max-width:95%}#missionCue{margin:4px;font-size:16px}#missionPanel button,#friendMission{min-height:44px;margin:3px}#call:has(#missionPanel:not([hidden])) .face{--face:min(40vmin,190px)}
 
 /* ---------- Game: Dino Buddies (the second game, moved in whole): two halves, one shared egg ---------- */
 .app.db{display:grid; grid-template-rows:1fr auto 1fr; overflow:hidden; background:var(--db-sand);
@@ -728,6 +760,18 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img:not(.px){image-rendering
   border-style:solid; border-color:transparent; border-width:9px 9px 15px; border-image:var(--f-cream) 9 9 15 fill / 9px 9px 15px stretch}
 .ad-parcel .px{width:70%; height:70%} .ad-parcel.empty .px{visibility:hidden}
 .ad-float{position:absolute; left:0; top:0; z-index:20; pointer-events:none; width:72px; height:72px} .ad-float .px{width:100%; height:100%}
+
+
+#delivery{grid-template-rows:minmax(0,1fr) auto auto}
+.ad-tools{display:flex;align-items:center;justify-content:center;gap:12px;padding:0 12px 8px;min-height:56px}
+.ad-tools .round{width:56px;height:56px;flex:none} #adCheck{--disc:var(--d-go)}
+#adChallenge,#adMore{min-width:64px;min-height:48px;padding:6px 12px}
+#adOrder{display:flex;align-items:center;justify-content:center;gap:4px;min-width:0}
+#adOrder .ad-order-pic{width:36px;height:36px;display:grid;place-items:center}
+#adOrder .px{width:100%;height:100%} .ad-tools button:disabled{opacity:.4}
+.ad-parcel .ad-small{width:40%;height:40%}.ad-item .ad-small,.ad-float .ad-small{width:58%;height:58%;margin:21%}
+.ad-finish{gap:12px}.ad-finish .art{width:110px;height:110px}
+@media (orientation:landscape){#delivery{grid-template-rows:minmax(0,1fr) 60px}.ad-tools{grid-column:1/-1;padding:0 80px 4px}.ad-tray{padding-bottom:0}.ad-replay{right:112px}}
 
 /* ---------- School: Dino Picnic. Snacks scattered on the blanket; tap them onto the dino's plate (a jumble, no boxes) ---------- */
 .dp-plate{flex:none; align-self:center; position:relative; width:min(86%, 330px); height:clamp(70px, 12vh, 100px); margin:0 0 8px;
@@ -936,6 +980,21 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img:not(.px){image-rendering
 @keyframes ring{to{transform:scale(4); opacity:0}}
 
 @media (prefers-reduced-motion:reduce){ *{animation-duration:.01ms!important; transition-duration:.01ms!important} .wt-bub{animation-duration:var(--dur)!important} }
+/* Short School adventures share large picture choices and explicit child-paced Next. */
+#schoolList{overflow-y:auto;overscroll-behavior:contain;touch-action:pan-y;grid-auto-rows:minmax(108px,1fr)}
+#schoolList .gamecard:last-child:nth-child(odd){grid-column:auto}
+.g-sorting{background:#FBD9BB}.g-pattern{background:#C9E8F5}.g-story{background:#D9EFC5}.g-feelings{background:#F7D5E1}
+.app.sa{display:grid;grid-template-rows:auto auto minmax(64px,1fr) auto auto;gap:8px;padding:10px;background:#FFF1CB;color:#493B3A;overflow:hidden}
+.sa-top{display:flex;align-items:center;gap:8px}.sa-top h2{font-size:20px;margin:0;flex:1;text-align:center}.sa-count{font-size:16px;white-space:nowrap}
+.sa-controls{display:flex;gap:6px}.sa button{border:3px solid #7D634D;background:#FFFDF5;box-shadow:0 3px #C6A679;border-radius:5px;min-width:48px;min-height:48px;font:inherit;color:#493B3A;touch-action:manipulation}
+.sa-controls button{width:48px;font-size:16px}.sa-controls .px{width:25px;height:25px}.sa button:focus-visible{outline:4px solid #3575BB;outline-offset:2px}
+.sa-goal{font-size:21px;text-align:center;margin:0;line-height:1.13}.sa-scene{display:flex;align-items:center;justify-content:center;min-height:0;gap:12px;overflow:hidden;background:#E5F1D1;border:3px solid #A5BE8C;border-radius:6px;padding:6px}
+.sa-token{width:80px;height:80px;max-height:100%;flex-shrink:1}.sa-token.sa-small{padding:17px}.sa-animal{display:flex;align-items:center;justify-content:center;width:90px;height:90px;max-height:100%;min-width:0}.sa-animal>.px{width:100%;height:100%;object-fit:contain}
+.sa-scene>.sa-token{width:135px;height:135px}.sa-scene>.sa-small{padding:32px}.sa-story-picture,.sa-friend{display:flex;gap:24px;align-items:center;justify-content:center;height:100%}.sa-story-picture .sa-token,.sa-friend .sa-token{width:120px;height:120px}.sa-story-picture .sa-animal,.sa-friend .sa-animal{width:110px;height:110px}
+.sa-choices{display:flex;gap:8px;align-items:stretch;justify-content:center;min-width:0}.sa-choices button{display:flex;flex:1;min-width:0;flex-direction:column;align-items:center;justify-content:center;padding:5px;gap:2px;font-size:20px;line-height:1.1;min-height:92px}.sa-choices .sa-token,.sa-choices .sa-animal{height:58px;width:58px}.sa-choices .sa-small{padding:14px}.sa-choices button:disabled{opacity:1}.sa-choices .sa-chosen{background:#D9F3BC;border-color:#55763D}.sa-hint{outline:4px solid #E8B432;outline-offset:-5px}
+.sa-bottom{display:flex;align-items:center;gap:8px;min-height:50px}.sa-feedback{font-size:18px;line-height:1.1;flex:1;margin:0}.sa-actions button{padding:6px 12px;white-space:nowrap;background:#D9F3BC}.sa-parent{font-size:20px;line-height:1.15;text-align:center;margin:0}.sa-train{display:flex;align-items:center;justify-content:center;width:100%;gap:4px}.sa-car{min-width:0;flex:1;display:flex;align-items:center;justify-content:center;background:#FFFDF5;border:2px solid #85694F;border-bottom:8px solid #85694F;padding:3px;height:66px}.sa-car .sa-token,.sa-car .sa-animal{width:100%;height:100%}.sa-car .sa-small{padding:10px}.sa-missing{font-size:32px;max-width:45px}
+@media(orientation:landscape){#schoolList{grid-auto-rows:minmax(100px,1fr)}.app.sa{grid-template-columns:1fr 1fr;grid-template-rows:48px auto minmax(60px,1fr) 52px;gap:5px 10px;padding:6px 10px}.sa-top{grid-column:1/-1}.sa-top h2{font-size:20px}.sa-goal{grid-column:1/-1;font-size:18px}.sa-scene{grid-column:1;grid-row:3}.sa-choices{grid-column:2;grid-row:3}.sa-choices button{font-size:17px;min-height:60px}.sa-choices .sa-token,.sa-choices .sa-animal{height:42px;width:42px}.sa-bottom{grid-column:1/-1;grid-row:4;min-height:48px}.sa-feedback{font-size:16px}.sa-parent{font-size:18px}.sa-car{height:60px}.sa-story-picture .sa-token,.sa-friend .sa-token{width:75px;height:75px}.sa-story-picture .sa-animal,.sa-friend .sa-animal{width:75px;height:75px}}
+
 </style>
 <!-- page:end -->
 </head>
@@ -1116,7 +1175,8 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img:not(.px){image-rendering
         <div class="ad-route" id="adRoute" aria-label="Delivery route progress"></div>
         <button class="round ad-replay" id="adReplay" aria-label="Say it again"></button>
         <div class="ad-tray" id="adParcels"></div>
-        <div class="ad-finish" id="adFinish" hidden><div class="art" id="adFinishArt"></div><button class="round" id="adAgain" aria-label="Another delivery route"></button></div>
+        <div class="ad-tools"><button class="sbtn" id="adChallenge" aria-label="More deliveries: quantities, colors and sizes">More</button><div id="adOrder" aria-label="Delivery order"></div><button class="round count-undo" id="adUndo" aria-label="Take the last parcel back" hidden></button><button class="round" id="adCheck" aria-label="Check delivery" hidden></button></div>
+        <div class="ad-finish" id="adFinish" hidden><div class="art" id="adFinishArt"></div><button class="round" id="adAgain" aria-label="Another delivery route"></button><button class="sbtn" id="adMore" aria-label="Try quantities, colors and sizes">More deliveries</button></div>
       </section>
 
       <!-- SCHOOL: Dino Picnic (give the dino the number of snacks it wants: tap them onto its plate, then the check) -->
@@ -1188,6 +1248,7 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img:not(.px){image-rendering
 
       <!-- GAME: Dino Buddies (two kids, one egg) -->
       <section class="app db" id="dinobuddies" hidden aria-label="Dino Buddies">
+        <div class="social-tools"><button id="dbReplay" aria-label="Hear the goal again">↻</button><button id="dbTurns" aria-pressed="false">Take turns</button><span id="dbCue" aria-live="polite"></span></div>
         <section class="db-side db-a" data-side="0" aria-label="Green side"><div class="db-dino"></div></section>
         <section class="db-mid" aria-label="Shared nest">
           <div class="db-nest"><div class="db-egg" id="dbEgg"></div><div class="db-baby" id="dbBaby"></div></div>
@@ -1210,6 +1271,8 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img:not(.px){image-rendering
 
       <!-- GAME: Paint Pals (two kids, one picture each, painted by rubbing) -->
       <section class="app pp" id="paintpals" hidden aria-label="Paint Pals">
+        <div class="social-tools"><button id="ppReplay" aria-label="Hear the goal again">↻</button><button id="ppPrompt" aria-pressed="false">Try a circle</button><button id="ppShelf">Pictures</button></div>
+        <div id="ppShelfPanel" class="social-shelf" hidden role="dialog" aria-label="Your paintings"><button id="ppShelfClose">Back to painting</button><div id="ppShelfPictures"></div><div id="ppShelfPreview"></div></div>
         <section class="pp-side pp-a" aria-label="Orange side">
           <div class="pp-easel"><canvas class="pp-cv"></canvas><span class="pp-star" data-art="starBright"></span><span class="pp-hand" data-art="hand"></span></div>
         </section>
@@ -1228,6 +1291,8 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img:not(.px){image-rendering
       <div class="face" id="callFace"></div>
       <div class="callname" id="callName"></div>
       <div class="calltime" id="callTime"></div>
+      <button class="sbtn" id="friendMission" hidden>Play hello</button>
+      <div id="missionPanel" hidden><p id="missionCue" aria-live="polite"></p><button class="sbtn" id="missionReplay" aria-label="Hear the invitation again">↻</button><button class="sbtn" id="missionReply">Hello!</button></div>
       <div class="callbtns">
         <button class="round stop" id="declineBtn" aria-label="Decline"></button>
         <button class="round go" id="answerBtn" aria-label="Answer"></button>
@@ -4737,7 +4802,7 @@ const saveSettings = () => store.set('settings', settings);
 /* Access policy is separate from sound/game settings and applies to all navigation and device entry points. */
 const ACCESS_APPS = ['school','games','camera','photos','music','phone'];
 const ACCESS_GROUP = {wildtap:'games', dinobuddies:'games', snacktime:'games', paintpals:'games', balltrail:'games', starflight:'games',
-  letterpath:'school', abczoo:'school', abcsnack:'school', numzoo:'school', numsnack:'school', delivery:'school', dinopicnic:'school'};
+  letterpath:'school', abczoo:'school', abcsnack:'school', numzoo:'school', numsnack:'school', delivery:'school', dinopicnic:'school', sorting:'school', patterntrain:'school', storytime:'school', feelings:'school'};
 const savedAccess = store.get('access', {}) || {};
 let access = {v:2, mode:['full','school','custom'].includes(savedAccess.mode) ? savedAccess.mode : 'full',
   apps:Object.fromEntries(ACCESS_APPS.map(k => [k, savedAccess.apps?.[k] !== false])),
@@ -5362,7 +5427,7 @@ function updateClock(){ const d = new Date(); $('#clockTxt').textContent = ((d.g
 updateClock(); setInterval(updateClock, 10000);
 
 /* ---------- Navigation ---------- */
-const APPS = ['home','phone','camera','photos','music','games','wildtap','dinobuddies','snacktime','paintpals','balltrail','starflight','school','letterpath','abczoo','abcsnack','numzoo','numsnack','delivery','dinopicnic'];
+const APPS = ['home','phone','camera','photos','music','games','wildtap','dinobuddies','snacktime','paintpals','balltrail','starflight','school','letterpath','abczoo','abcsnack','numzoo','numsnack','delivery','dinopicnic','sorting','patterntrain','storytime','feelings'];
 let current = 'home';
 const APP_SAY = {phone:'Phone! Who do you want to call?', camera:'Camera! Slide to look around. Then press the big button!', music:'Music! Let\'s play!', games:'Games! Pick a game!'};
 function go(name, fromEl){
@@ -5391,6 +5456,7 @@ function enterApp(name){
   if (name === 'dinobuddies') DinoBuddies.enter();
   if (name === 'snacktime') SnackTime.enter();
   if (name === 'paintpals') PaintPals.enter();
+  if (['sorting','patterntrain','storytime','feelings'].includes(name)) SchoolAdventures.enter(name);
   if (name === 'school') say(SCHOOL_SAY.school, 0, 'menus');
   if (name === 'abczoo') AbcZoo.enter();
   if (name === 'abcsnack') AbcSnack.enter();
@@ -5401,6 +5467,7 @@ function enterApp(name){
   if (name === 'dinopicnic') DinoPicnic.enter();
 }
 function leaveApp(name){
+  if (['sorting','patterntrain','storytime','feelings'].includes(name)) SchoolAdventures.leave();
   if (name === 'camera') stopCamera();
   if (name === 'music') stopSong();
   if (name === 'photos') closeViewer(true);
@@ -5516,6 +5583,8 @@ $('#hangupBtn').innerHTML = ICON.hangup; $('#declineBtn').innerHTML = ICON.hangu
 function callLater(fn, ms){ if (!call) return; const c = call; const id = setTimeout(() => { c.timers.delete(id); if (call === c) fn(); }, ms); c.timers.add(id); }
 function setCallState(s){
   call.state = s; callEl.className = s;
+  $('#friendMission').hidden = s !== 'talking' || call.c.family || call.mission != null;
+  $('#missionPanel').hidden = s !== 'talking' || call.mission == null;
   $('#declineBtn').hidden = $('#answerBtn').hidden = s !== 'ringing';
   $('#hangupBtn').hidden = s === 'ringing';
   const t = $('#callTime');
@@ -5533,7 +5602,8 @@ function openCall(c, state){
   prefetchLines(['Calling ' + sp(c) + '!', sp(c) + ' is calling you! Ring ring!']);
 }
 const BYES = ['Bye bye!', 'Okay, bye bye!', "Okay, I'll call you later. Bye bye!", 'I have to go eat my dinner now. Bye bye, buddy!'];
-const callLines = c => [...c.lines, ...FILLERS.map(f => f(c)), ...BYES];
+const MISSION_LINES = ['Hello, buddy! Can you say hello? Tap hello when you are ready!', 'Hello! Can you give me a wave? Tap when you have waved!', 'I am waving too! Thank you for playing. Shall we say bye bye?'];
+const callLines = c => [...c.lines, ...FILLERS.map(f => f(c)), ...BYES, ...MISSION_LINES];
 function stopCallSounds(){
   if (!call) return;
   call.timers.forEach(clearTimeout); call.timers.clear();
@@ -5590,6 +5660,22 @@ function talk(first){
   callLater(() => animalTalk(c, text), d);
   callLater(talk, Math.max(5200, d + lineMs(text, c) + 1800));
 }
+function replayMission(){ if (call?.state === 'talking' && call.mission != null) animalTalk(call.c, MISSION_LINES[call.mission]); }
+function showMission(){
+  if (!call || call.state !== 'talking') return;
+  $('#friendMission').hidden = true; $('#missionPanel').hidden = false;
+  $('#missionCue').textContent = ['Say hello', 'Give your friend a wave', 'Say goodbye'][call.mission];
+  $('#missionReply').textContent = ['Hello!', 'I waved!', 'Bye bye!'][call.mission];
+  replayMission();
+}
+function stopMissionDialogue(){
+  stopCallSounds();
+  call.tick=setInterval(updateCallTime,250);updateCallTime();
+  callLater(()=>endCall(BYES[3]),Math.max(0,CALL_MAX_MS-(performance.now()-call.started)));
+}
+tap($('#friendMission'), () => { if (!call || call.state !== 'talking') return; stopMissionDialogue(); call.mission = 0; showMission(); });
+tap($('#missionReplay'), replayMission);
+tap($('#missionReply'), () => { if (!call || call.state !== 'talking' || call.mission == null) return; stopMissionDialogue(); if (call.mission === 2) endCall(BYES[0]); else { call.mission++; showMission(); } });
 function hangUp(){ if (call && call.state !== 'ending') endCall(BYES[0]); }
 function decline(){ if (call && call.state === 'ringing') endCall(BYES[1]); }
 function endCall(words){
@@ -7029,12 +7115,16 @@ const SCHOOL = [
 
   {id:'numsnack', n:'123 Snack', note:'Count the snacks', cls:'g-numsnack', art:() => `<span class="art big">${ART.dog}</span><span class="art">${glyphImg('3')}</span>`},
   {id:'dinopicnic', n:'Dino Picnic', note:'Give the snacks', cls:'g-picnic', art:() => `<span class="art big">${ART.trex}</span><span class="art">${schoolPic('meat')}</span>`},
-  {id:'delivery', n:'Animal Delivery', note:'In, on, under', cls:'g-deliv', art:() => `<span class="art big">${ART.kangaroo}</span><span class="art">${schoolPic('box')}</span>`}
+  {id:'delivery', n:'Animal Delivery', note:'In, on, under', cls:'g-deliv', art:() => `<span class="art big">${ART.kangaroo}</span><span class="art">${schoolPic('box')}</span>`},
+  {id:'sorting', n:'Sorting Station', note:'Find what belongs', cls:'g-sorting', art:() => `<span class="art">${schoolPic('box')}</span>`},
+  {id:'patterntrain', n:'Pattern Train', note:'What comes next?', cls:'g-pattern', art:() => `<span class="art">${schoolPic('bus')}</span>`},
+  {id:'storytime', n:'Story Time', note:'Duck grows a seed', cls:'g-story', art:() => `<span class="art">${ART.duck}</span>`},
+  {id:'feelings', n:'Feelings Friends', note:'How do you feel?', cls:'g-feelings', art:() => `<span class="art">${ART.owl}</span>`}
 ];
 SCHOOL.forEach(g => {
   const b = document.createElement('button'); b.className = 'gamecard ' + g.cls; b.setAttribute('aria-label', g.n);
   b.innerHTML = `<span class="gtext"><span class="gname">${g.n}</span><span class="gnote">${g.note}</span></span><span class="gart">${g.art()}</span>`;
-  tap(b, () => { FX.pop(); retrigger(b, 'go'); go(g.id, b); }, {bump:false});
+  tapInScroll(b, () => { FX.pop(); retrigger(b, 'go'); go(g.id, b); }, {bump:false});
   $('#schoolList').appendChild(b);
 });
 $$('.sc-back').forEach(b => { b.innerHTML = ICON.grid; tap(b, () => { FX.boop(); go('school'); }); });
@@ -7745,6 +7835,16 @@ const NumSnack = (() => {
 /* ----- Animal Delivery (P3-06): nine deliveries, then a clear ending. No carrier animal beside the pickup.
    Start with one object and two locations; later choose among three objects, learn more spatial relations,
    and transfer them to a mirrored garden. Existing recordings supply every instruction; no learning data saved. ----- */
+/* Cache small, opaque pixel rasters for the new play props. */
+function pixelPicture(w,h,layers,css='px',label=''){
+  const key=JSON.stringify([w,h,layers]),cache=pixelPicture.cache||(pixelPicture.cache=new Map());
+  if(!cache.has(key)){
+    const c=document.createElement('canvas');c.width=w;c.height=h;const g=c.getContext('2d');g.imageSmoothingEnabled=false;
+    layers.forEach(([path,fill,stroke,width=1])=>{const p=new Path2D(path);if(fill){g.fillStyle=fill;g.fill(p);}if(stroke){g.strokeStyle=stroke;g.lineWidth=width;g.stroke(p);}});
+    const image=g.getImageData(0,0,w,h);for(let i=3;i<image.data.length;i+=4)image.data[i]=image.data[i]>=128?255:0;g.putImageData(image,0,0);cache.set(key,c.toDataURL('image/png'));
+  }
+  return `<img class="${css}" src="${cache.get(key)}" ${label?`alt="${label}"`:'alt="" aria-hidden="true"'}>`;
+}
 const Delivery = (() => {
   const root = $('#delivery'), world = $('#adWorld'), tray = $('#adParcels');
   const PLACES = {tree:[0,32], box:[35,18], table:[66,32]};
@@ -7754,19 +7854,39 @@ const Delivery = (() => {
   const ITEMS = [{k:'apple',n:'apple'}, {k:'banana',n:'banana'}, {k:'gift',n:'present'}, {k:'star',n:'star'}, {k:'egg',n:'egg'}, {k:'ball',n:'ball'}];
   const ENTER = 'Animal Delivery! Put each thing where it goes!', FINISH = 'You did it!';
   const PUT = (it,s) => `Put the ${it.n} ${REL[s]}!`, YES = s => `Yes! ${cap(REL[s])}!`, THAT = s => `That's ${REL[s]}.`;
-  const pic = k => schoolPic(k), level = () => rights >= 6 ? 2 : rights >= 3 ? 1 : 0;
+  const COLORS=[{k:'redball',n:'red ball',many:'red balls',color:'#EF5555'}, {k:'blueball',n:'blue ball',many:'blue balls',color:'#438BE0'}, {k:'yellowball',n:'yellow ball',many:'yellow balls',color:'#F4C83D'}];
+  const SIZES=[{k:'smallstar',n:'small star',many:'small stars',size:'small'}, {k:'bigstar',n:'big star',many:'big stars',size:'big'}];
+  const ROUNDS=[{want:1,items:ITEMS,spot:'inBox'}, {want:2,items:ITEMS,spot:'onTable'}, {want:3,items:ITEMS,spot:'underTable'}, {want:2,items:COLORS,attribute:'color',spot:'nextBox'}, {want:1,items:SIZES,attribute:'size',spot:'underTree'}, {want:3,items:SIZES,attribute:'size',spot:'inBox'}];
+  const ADVANCE='More deliveries! Match the order, then tap the check!', CORRECT='Check how many and where they go. You can take one back.';
+  const orderText=(r,it)=>`Put ${NUMW[r.want]} ${r.want===1?it.n:(it.many||it.n+'s')} ${REL[r.spot]}!`;
+  function pic(k){
+    const c=COLORS.find(it=>it.k===k);
+    if(c)return pixelPicture(16,16,[['M5 1h6v1h2v2h2v8h-2v2h-2v1H5v-1H3v-2H1V4h2V2h2z','#543929'],['M5 2h6v1h2v2h1v6h-1v2h-2v1H5v-1H3v-2H2V5h1V3h2z',c.color],['M5 3h4v2H5zM3 5h2v3H3z','#FFF3D6']],'px',c.n);
+    return schoolPic(k==='smallstar'||k==='bigstar'?'star':k).replace('class="px"',`class="px${k==='smallstar'?' ad-small':''}"`);
+  }
+  const level = () => advanced?2:rights >= 6 ? 2 : rights >= 3 ? 1 : 0;
   let cur=null, selected=null, target=null, last=null, rights=0, misses=0, pickMisses=0, busy=true, drag=null, done=false, epoch=0;
+  let advanced=false, order=null, placed=[];
   const seen = new Set();
+  const total=()=>advanced?ROUNDS.length:9;
+  const prompt=()=>advanced?orderText(order,cur):PUT(cur,target);
+  function tools(){
+    $('#adUndo').hidden=$('#adCheck').hidden=!advanced; $('#adChallenge').hidden=advanced;
+    $('#adChallenge').disabled=busy; $('#adUndo').disabled=busy||!placed.length; $('#adCheck').disabled=busy||done;
+    $('#adOrder').innerHTML=advanced?Array.from({length:order.want},()=>`<span class="ad-order-pic">${pic(cur.k)}</span>`).join(''):'';
+    $('#adOrder').setAttribute('aria-label',advanced?prompt():'Delivery order');
+    $('#adReplay').disabled=busy||done;
+  }
   const mirror = () => rights >= 6;
   const point = k => { const s=SPOTS[k], x=s.length>3?s[3]:s[0], y=s.length>3?s[4]:s[1]; return [mirror()?100-x:x,y]; };
   const uhuh = () => { tone(392,370,.15,'triangle',.13); tone(330,300,.22,'triangle',.13,.19); };
   const chime = () => { tone(660,990,.12,'triangle',.12); tone(880,1320,.16,'triangle',.11,.1); };
-  put($('#adReplay'), ART.ear); put($('#adAgain'), ART.play);
+  put($('#adReplay'), ART.ear); put($('#adAgain'), ART.play); put($('#adCheck'), ART.check); put($('#adUndo'), ICON.left);
   $('#adFinishArt').innerHTML=pic('gift');
-  const ask = () => { if(cur && !done && !busy){ hush(); say(PUT(cur,target),0,'school'); } };
+  const ask = () => { if(cur && !done && !busy){ hush(); say(prompt(),0,'school'); } };
   function progress(){
-    $('#adRoute').innerHTML=Array.from({length:9},(_,i)=>`<span class="${i<rights?'done':''}">${pic('star')}</span>`).join('');
-    $('#adRoute').setAttribute('aria-label', `${rights} of 9 deliveries complete`);
+    $('#adRoute').innerHTML=Array.from({length:total()},(_,i)=>`<span class="${i<rights?'done':''}">${pic('star')}</span>`).join('');
+    $('#adRoute').setAttribute('aria-label', `${rights} of ${total()} deliveries complete`);
   }
   function garden(){
     world.innerHTML='<div class="ad-ground"></div>';
@@ -7791,7 +7911,7 @@ const Delivery = (() => {
     return true;
   }
   function parcels(){
-    const choices=level()===0?[cur]:shuffle([cur,...shuffle(ITEMS.filter(it=>it!==cur)).slice(0,2)]);
+    const pool=advanced?order.items:ITEMS; const choices=level()===0?[cur]:shuffle([cur,...shuffle(pool.filter(it=>it!==cur)).slice(0,2)]);
     selected=level()===0?cur.k:null; tray.innerHTML='';
     choices.forEach((it,i)=>{
       const b=document.createElement('button'); b.className='ad-parcel'; b.dataset.item=it.k; if(i===0)b.id='adParcel';
@@ -7824,16 +7944,17 @@ const Delivery = (() => {
     });
   }
   function next(first){
+    placed=[]; if(advanced){order=ROUNDS[rights];cur=rnd(order.items);target=order.spot;}
     garden(); const on=LEVELS[level()], fresh=on.filter(k=>!seen.has(k));
-    cur=rnd(ITEMS.filter(it=>it!==cur));
-    target=rnd((fresh.length?fresh:on).filter(k=>k!==last)); last=target; seen.add(target);
-    misses=pickMisses=0; busy=false; parcels(); progress();
-    later(()=>say(first?ENTER+' '+PUT(cur,target):PUT(cur,target),0,'school'),first?300:150);
+    if(!advanced){cur=rnd(ITEMS.filter(it=>it!==cur)); target=rnd((fresh.length?fresh:on).filter(k=>k!==last));} last=target; seen.add(target);
+    misses=pickMisses=0; busy=false; parcels(); progress(); tools();
+    later(()=>say(first?(advanced?ADVANCE:ENTER)+' '+prompt():prompt(),0,'school'),first?300:150);
   }
   function place(k,from){
     if(busy || done || !cur)return;
     if(selected!==cur.k){retrigger(tray,'wig'); ask(); return;}
-    busy=true; const b=tray.querySelector(`[data-item="${selected}"]`); b.classList.add('empty'); FX.swoosh();
+    if(advanced && placed.length>=5)return;
+    busy=true; tools(); const b=tray.querySelector(`[data-item="${selected}"]`); b.classList.add('empty'); FX.swoosh();
     const a=root.getBoundingClientRect(),w=world.getBoundingClientRect(),r=from||b.getBoundingClientRect(),size=w.width*.11,[px,py]=point(k);
     const x0=r.left-a.left+r.width/2-size/2,y0=r.top-a.top+r.height/2-size/2,x1=w.left-a.left+w.width*px/100-size/2,y1=w.top-a.top+w.height*py/100-size/2;
     const f=document.createElement('div'); f.className='ad-float'; f.style.width=f.style.height=size+'px'; f.innerHTML=pic(cur.k); root.appendChild(f);
@@ -7842,22 +7963,37 @@ const Delivery = (() => {
       f.remove(); if(turn!==epoch || current!=='delivery')return;
       const it=document.createElement('div'); it.className='ad-item'+(k==='inBox'?' in':''); it.innerHTML=pic(cur.k);
       it.style.left=px+'%'; it.style.top=py+'%'; world.appendChild(it);
+      if(advanced){
+        const count=placed.filter(p=>p.spot===k).length; it.style.left=(px+(count%3-1)*5)+'%'; it.style.top=(py-Math.floor(count/3)*8)+'%';
+        placed.push({spot:k,key:cur.k,el:it}); b.classList.remove('empty'); busy=false; tools(); FX.pop(); return;
+      }
       if(k===target){
         rights++; progress(); retrigger(it,'yes'); chime(); FX.pop(); const [x,y]=rel(it); confetti(x,y,18); hush(); say(YES(k),0,'school');
-        later(()=>{if(rights===9){done=true; $('#adFinish').hidden=false; $('#adReplay').hidden=true; hush(); say(FINISH,0,'school');}else next(false);},2100);
+        later(()=>{if(rights===9){finish();}else next(false);},2100);
       }else{
         misses++; uhuh(); hush(); say(THAT(k)+' '+PUT(cur,target),0,'school');
         if(misses>=2)world.querySelector(`[data-spot="${target}"]`)?.classList.add('hint');
-        later(()=>{it.remove(); b.classList.remove('empty'); retrigger(b,'bump'); busy=false;},1300);
+        later(()=>{it.remove(); b.classList.remove('empty'); retrigger(b,'bump'); busy=false; tools();},1300);
       }
     };
   }
-  function enter(){epoch++; rights=0; last=cur=selected=null; done=false; seen.clear(); drag?.f.remove(); drag=null; $('#adFinish').hidden=true; $('#adReplay').hidden=false; world.innerHTML=''; next(true);}
-  tap($('#adReplay'),ask,{throttle:1500}); tap($('#adAgain'),enter);
+  function finish(){done=true; busy=true; $('#adFinish').hidden=false; $('#adReplay').hidden=true; tray.inert=true; $('.ad-tools',root).inert=true; world.inert=true; tools(); hush(); say(FINISH,0,'school'); $('#adAgain').focus({preventScroll:true});}
+  function undo(){if(!advanced||busy||!placed.length)return;placed.pop().el.remove();tools();FX.swoosh();}
+  function check(){
+    if(!advanced||busy||done)return;
+    if(placed.length!==order.want||placed.some(p=>p.spot!==target||p.key!==cur.k)){
+      misses++;uhuh();hush();say(CORRECT+' '+prompt(),0,'school');
+      if(misses>=2)world.querySelector(`[data-spot="${target}"]`)?.classList.add('hint'); return;
+    }
+    busy=true;rights++;progress();tools();chime();hush();say(YES(target),0,'school');
+    const [x,y]=rel(world);confetti(x,y,18); later(()=>rights===total()?finish():next(false),2100);
+  }
+  function enter(more=false){advanced=more===true; order=advanced?ROUNDS[0]:null;placed=[];tray.inert=false;$('.ad-tools',root).inert=false;world.inert=false;epoch++; rights=0; last=cur=selected=null; done=false; seen.clear(); drag?.f.remove(); drag=null; $('#adFinish').hidden=true; $('#adReplay').hidden=false; world.innerHTML=''; next(true);}
+  tap($('#adReplay'),ask,{throttle:1500}); tap($('#adAgain'),()=>enter()); tap($('#adMore'),()=>enter(true)); tap($('#adChallenge'),()=>enter(true)); tap($('#adUndo'),undo); tap($('#adCheck'),check);
   return {
-    enter, leave(){epoch++; busy=true; $$('.ad-float',root).forEach(f=>f.remove()); drag=null;},
-    state:()=>({item:cur?.n,itemKey:cur?.k,selected,target,level:level(),spots:$$('.ad-spot',world).map(b=>b.dataset.spot),rights,misses,pickMisses,busy,done,mirrored:mirror(),choices:$$('.ad-parcel',tray).map(b=>b.dataset.item),placed:$$('.ad-item',world).length,hint:$$('.ad-spot.hint',world).map(b=>b.dataset.spot)}),
-    lines:()=>[ENTER,FINISH,...ITEMS.flatMap(it=>Object.keys(REL).map(k=>PUT(it,k))),...Object.keys(REL).flatMap(k=>[YES(k),THAT(k)])]
+    enter, leave(){epoch++; busy=true; placed=[]; $$('.ad-float',root).forEach(f=>f.getAnimations().forEach(a=>a.cancel())); $$('.ad-float',root).forEach(f=>f.remove()); drag=null;},
+    state:()=>({advanced,want:order?.want||1,got:placed.length,attribute:order?.attribute||null,item:cur?.n,itemKey:cur?.k,selected,target,level:level(),spots:$$('.ad-spot',world).map(b=>b.dataset.spot),rights,misses,pickMisses,busy,done,mirrored:mirror(),choices:$$('.ad-parcel',tray).map(b=>b.dataset.item),placed:$$('.ad-item',world).length,hint:$$('.ad-spot.hint',world).map(b=>b.dataset.spot)}),
+    lines:()=>[ENTER,FINISH,ADVANCE,CORRECT,...ROUNDS.flatMap(r=>r.items.map(it=>orderText(r,it))),...ITEMS.flatMap(it=>Object.keys(REL).map(k=>PUT(it,k))),...Object.keys(REL).flatMap(k=>[YES(k),THAT(k)])]
   };
 })();
 
@@ -8095,35 +8231,38 @@ tap(dancer, () => { const s = songPick; FX[s.fx] && FX[s.fx](); retrigger(dancer
    go, turned to match the screen. Ball Trail keeps five stars; Star Flight has longer animal-food stages and three
    difficulty tiers. Nothing to lose, no timer, nothing to read. */
 const MotionGames = (() => {
-  const SAY = {balltrail:'Roll the ball to the star!', starflight:'Fly the parrot to the stars!', found:'You found the star!', five:'Five stars! Nice flying!'};
+  const SAY = {balltrail:'Roll the ball to the star!', found:'You found the star!', five:'Five stars! Your garden is complete!', journey:'You helped all six animals! Play again?'};
   // Existing Snack Time pictures and recordings: the cue names the food, not a score.
   const PETS = [
-    {a:'parrot', food:'blueberry', fly:true, wing:'#E8423F', want:'The parrot wants a blueberry!', yum:'Yum! The parrot loves blueberries!'},
-    {a:'dog', food:'bone', fly:false, want:'The puppy wants a bone!', yum:'Yum! The puppy loves bones!'},
-    {a:'eagle', food:'fish', fly:true, wing:'#8A5632', want:'The eagle wants a fish!', yum:'Yum! The eagle loves fish!'},
-    {a:'monkey', food:'banana', fly:false, want:'The monkey wants a banana!', yum:'Yum! The monkey loves bananas!'},
-    {a:'butterfly', food:'flower', fly:true, wing:'#FF9E8E', want:'The butterfly wants a flower!', yum:'Yum! The butterfly loves flowers!'},
-    {a:'panda', food:'bamboo', fly:false, want:'The panda wants some bamboo!', yum:'Yum! The panda loves bamboo!'}
+    {a:'parrot', habitat:'treetops', food:'blueberry', fly:true, wing:'#E8423F', want:'The parrot wants a blueberry!', yum:'Yum! The parrot loves blueberries!'},
+    {a:'dog', habitat:'park', food:'bone', fly:false, want:'The puppy wants a bone!', yum:'Yum! The puppy loves bones!'},
+    {a:'eagle', habitat:'mountains', food:'fish', fly:true, wing:'#8A5632', want:'The eagle wants a fish!', yum:'Yum! The eagle loves fish!'},
+    {a:'monkey', habitat:'jungle', food:'banana', fly:false, want:'The monkey wants a banana!', yum:'Yum! The monkey loves bananas!'},
+    {a:'butterfly', habitat:'garden', food:'flower', fly:true, wing:'#FF9E8E', want:'The butterfly wants a flower!', yum:'Yum! The butterfly loves flowers!'},
+    {a:'panda', habitat:'bamboo', food:'bamboo', fly:false, want:'The panda wants some bamboo!', yum:'Yum! The panda loves bamboo!'}
   ];
-  const LEVELS = [{target:8, fall:10, count:2, decoy:false, drift:0}, {target:10, fall:14, count:3, decoy:true, drift:2}, {target:12, fall:18, count:3, decoy:true, drift:5}];
+  const LEVELS = [{target:8, fall:8, count:2, decoy:false, drift:0}, {target:10, fall:11, count:3, decoy:true, drift:2}, {target:12, fall:14, count:3, decoy:true, drift:5}];
   // hedges [left, top, width, height] in percent of the field; the ball starts at s; the star garden's corner is g
   const MAZES = [
-    {walls:[[42, 0, 14, 60]], s:[15, 15], g:[73, 73]},
-    {walls:[[28, 0, 12, 62], [60, 38, 12, 62]], s:[13, 14], g:[77, 77]},
-    {walls:[[60, 0, 12, 62], [28, 38, 12, 62]], s:[87, 14], g:[6, 77]}
+    {walls:[[42, 0, 14, 60]], s:[15, 15], g:[73, 73], path:[[15,15],[15,82],[82,82]]},
+    {walls:[[28, 0, 12, 62], [60, 38, 12, 62]], s:[13, 14], g:[77, 77], path:[[13,14],[13,86],[50,86],[50,20],[87,20],[85,86]]},
+    {walls:[[60, 0, 12, 62], [28, 38, 12, 62]], s:[87, 14], g:[6, 77], path:[[87,14],[87,86],[50,86],[50,20],[13,20],[14,85]]},
+    {walls:[[0,30,65,10],[35,64,65,10]], s:[16,17], g:[73,75], path:[[16,17],[82,17],[82,51],[16,51],[16,83],[82,83]]},
+    {walls:[[35,30,65,10],[0,64,65,10]], s:[83,17], g:[6,75], path:[[83,17],[17,17],[17,51],[83,51],[83,83],[17,83]]}
   ];
   const R = 6, SPEED = 40, CATCH = 12;   // the ball's half-size, percent of the field per second at full steer, how near a star counts
   let id = null, el = null, board = null, me = null, world = null, raf = 0, last = 0;
   let x = 50, y = 50, round = 0, got = 0, done = false, finger = null, bumping = false, stars = [];
-  let velocity = [0,0], rotation = [0,0,0,1], ball = null, flap = 0, elapsed = 0, rejected = 0;
+  let velocity = [0,0], rotation = [0,0,0,1], ball = null, flap = 0, elapsed = 0, rejected = 0, intro = 0;
   const pet = () => PETS[round % PETS.length];
   const levelIndex = () => Math.min(2, Math.floor(round / 2));
   const level = () => LEVELS[levelIndex()];
   let raw = null, zero = null, angle = 0, live = 0, listening = false;   // tilt: the latest reading, the grip it counts from
+  const keys=new Set();
 
   const tiltOK = () => tiltMotion() && !!window.DeviceOrientationEvent && (typeof DeviceOrientationEvent.requestPermission !== 'function' || AR.perm === 'granted');
   const screenAngle = () => Number(screen.orientation?.angle ?? window.orientation ?? 0);
-  const maze = () => MAZES[round ? 1 + (round - 1) % 2 : 0];
+  const maze = () => MAZES[round % MAZES.length];
   function sensor(e){
     if (!Number.isFinite(e.beta) || !Number.isFinite(e.gamma)) return;
     raw = [e.gamma, e.beta]; live = performance.now();
@@ -8136,6 +8275,7 @@ const MotionGames = (() => {
   }
   /* which way to go, each from -1 to 1: toward a held finger, or the way the phone is tipped */
   function steer(t){
+    if(keys.size)return [(keys.has('ArrowRight')?1:0)-(keys.has('ArrowLeft')?1:0),(keys.has('ArrowDown')?1:0)-(keys.has('ArrowUp')?1:0)];
     if (finger) return [clamp((finger.x - x)/8, -1, 1), clamp((finger.y - y)/8, -1, 1)];
     if (!raw || !zero || t - live > 1500) return [0, 0];
     const a = angle*Math.PI/180, dx = raw[0] - zero[0], dy = raw[1] - zero[1];
@@ -8148,7 +8288,7 @@ const MotionGames = (() => {
     if (id === 'balltrail') hud.innerHTML = Array.from({length:5}, (_, i) => `<span class="${i < got ? 'on' : ''}">${ART.star}</span>`).join('');
     else {
       hud.setAttribute('aria-label', `${pet().a}: ${got} of ${level().target} ${pet().food}, difficulty ${levelIndex()+1}`);
-      hud.innerHTML = `<div class="mg-want" aria-label="${pet().want}">${ART[pet().a]}${ART[pet().food]}</div><div><div class="mg-level" aria-label="Difficulty ${levelIndex()+1} of 3">${Array.from({length:3},(_,i)=>`<span class="${i<=levelIndex()?'on':''}">${ART.star}</span>`).join('')}</div><div class="mg-foodslots">${Array.from({length:level().target},(_,i)=>`<span class="${i<got?'on':''}">${ART[pet().food]}</span>`).join('')}</div></div>`;
+      hud.innerHTML = `<div class="mg-want" aria-label="${pet().want}">${ART[pet().a]}${ART[pet().food]}</div><div><div class="mg-journey" aria-label="Animal journey">${PETS.map((p,i)=>`<span class="${i<round||(done&&i===round)?'visited':i===round?'current':''}" aria-label="${p.a}${i===round?', current animal':i<round?', visited':', ahead'}">${ART[p.a]}</span>`).join('')}</div><div class="mg-foodslots">${Array.from({length:level().target},(_,i)=>`<span class="${i<got?'on':''}">${ART[pet().food]}</span>`).join('')}</div></div>`;
     }
   }
   // Roll a shaded pixel sphere around the axis perpendicular to actual travel. A flat
@@ -8184,10 +8324,11 @@ const MotionGames = (() => {
   function start(){
     done = false; finger = null; bumping = false; zero = null; velocity = [0,0]; elapsed = 0; rejected = 0;
     me.classList.remove('hop','eating');
-    if (got >= 5){ got = 0; slots(); }
+    intro = 0;
     if (id === 'balltrail'){
       const m = maze(); [x, y] = m.s;
-      world.innerHTML = m.walls.map(([a, b, w, h]) => `<div class="mg-hedge" style="left:${a}%; top:${b}%; width:${w}%; height:${h}%"></div>`).join('')
+      const dots=m.path.slice(1).flatMap((p,i)=>{const a=m.path[i],d=Math.hypot(p[0]-a[0],p[1]-a[1]);return Array.from({length:Math.ceil(d/5)},(_,j)=>`M${Math.round(a[0]+(p[0]-a[0])*j*5/d)} ${Math.round(a[1]+(p[1]-a[1])*j*5/d)}h2v2h-2z`);}).join(' ');
+      world.innerHTML = pixelPicture(100,100,[[dots,'#FFF6CC']],'mg-route','Trail to the star') + m.walls.map(([a, b, w, h]) => `<div class="mg-hedge" style="left:${a}%; top:${b}%; width:${w}%; height:${h}%"></div>`).join('')
         + `<div class="mg-goal" style="left:${m.g[0]}%; top:${m.g[1]}%">${ART.star}</div>`;
     } else {
       got = 0; x = 50; y = pet().fly ? 72 : 82;
@@ -8195,32 +8336,43 @@ const MotionGames = (() => {
       me.style.setProperty('--wing',pet().wing || '#E8423F');
       me.innerHTML = `<span class="mg-body ${pet().fly?'flies':'walk'}">${ART[pet().a]}${pet().fly?'<span class="mg-wing"></span>':''}</span>`;
       me.setAttribute('aria-label',pet().a);
-      world.innerHTML = pet().fly ? '' : '<div class="mg-floor"></div>';
+      const scenery = pet().habitat==='garden' ? ART.flower+ART.flower : pet().habitat==='bamboo' ? ART.bamboo+ART.bamboo : pet().habitat==='mountains' ? '' : schoolPic('tree')+schoolPic('tree');
+      world.innerHTML = `<div class="mg-habitat" data-place="${pet().habitat}" aria-label="${pet().habitat}">${scenery}</div>` + (pet().fly ? '' : '<div class="mg-floor"></div>');
       stars = Array.from({length:level().count},()=>({node:document.createElement('span')}));
       stars.forEach((st,i)=>{st.node.className='mg-piece mg-star';world.appendChild(st.node);recycle(st,i,true);place(st.node,st.x,st.y);});
       slots(); say(pet().want,0,'menus');
+      intro = 2; const cue=document.createElement('div');cue.className='mg-next';cue.setAttribute('aria-label',pet().want);cue.innerHTML=ART[pet().a]+ART[pet().food];world.appendChild(cue);
     }
     place(me, x, y);
+  }
+  function finish(){
+    const cue=document.createElement('div');cue.className='mg-finish';cue.setAttribute('aria-label',id==='balltrail'?'Five-star garden complete':'Animal journey complete');
+    cue.innerHTML=`<div class="mg-friends">${id==='balltrail'?ART.star.repeat(5):PETS.map(p=>ART[p.a]).join('')}</div><button class="mg-replay" aria-label="Play again">↻</button>`;
+    world.appendChild(cue);tap(cue.querySelector('button'),()=>{round=0;got=0;slots();start();if(id==='balltrail')say(SAY.balltrail,0,'menus');});
+    say(id==='balltrail'?SAY.five:SAY.journey,0,'menus');
   }
   function star(){   // one more star: it lights the next slot; the fifth finishes the round
     if (done) return;
     got++; slots(); FX.pop();
     if (id === 'starflight'){retrigger(me,'eating');if(got < level().target)return;}
-    done = true; finger = null; velocity = [0,0];
+    done = true; finger = null; velocity = [0,0]; slots();
     later(() => { FX.cheer(); retrigger(me, 'hop'); }, 250);
     if (id === 'balltrail'){ retrigger(world.querySelector('.mg-goal'), 'hop'); say(SAY.found, 0, 'menus'); }
     else {
       say(pet().yum, 0, 'menus');
-      const next = PETS[(round+1)%PETS.length], cue = document.createElement('div'); cue.className='mg-next';
+      const next = PETS[Math.min(round+1,PETS.length-1)], cue = document.createElement('div'); cue.className='mg-next';
       cue.setAttribute('aria-label','Next: '+next.want);cue.innerHTML=ART[next.a]+ART[next.food];world.appendChild(cue);
     }
-    later(() => { round++; start(); }, id==='starflight' || got >= 5 ? 3200 : 2400);
+    if ((id==='balltrail' && got===5) || (id==='starflight' && round===PETS.length-1)){
+      world.querySelector('.mg-next')?.remove();later(finish,1200);
+    } else later(() => { round++; start(); }, id==='starflight' ? 3200 : 2400);
   }
   function frame(t){
     if (!id) return;
     const dt = clamp((t - last)/1000, 0, .035); last = t;
     listen(tiltOK());
     if (!done && !document.hidden && $('#settings').hidden && $('#parentGate').hidden){
+      if(intro>0){intro=Math.max(0,intro-dt);if(!intro){world.querySelector('.mg-next')?.remove();zero=null;}raf=requestAnimationFrame(frame);return;}
       elapsed += dt;
       let [vx, vy] = steer(t);
       if (id==='starflight' && !pet().fly) vy=0;
@@ -8245,6 +8397,7 @@ const MotionGames = (() => {
       place(me, x, y);
       if (id === 'balltrail'){ const [gx, gy] = maze().g; if (x > gx && x < gx + 17 && y > gy && y < gy + 17) star(); }
       else for (const [i,st] of stars.entries()){
+        const waiting = !st.good && elapsed<6;st.node.hidden=waiting;if(waiting)continue;
         st.y += level().fall*dt;
         st.x = clamp(st.base+Math.sin(elapsed*1.1+i)*level().drift,8,92);
         if (Math.hypot(x - st.x, y - st.y) < CATCH){
@@ -8263,13 +8416,17 @@ const MotionGames = (() => {
   }
   ['balltrail', 'starflight'].forEach(name => {
     const field = $('#' + name + ' .mg-board');
+    field.tabIndex=0;field.setAttribute('aria-label',name==='balltrail'?'Ball Trail. Use arrow keys to roll the ball.':'Star Flight. Use arrow keys to move the animal.');
+    field.addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)||e.target!==field)return;e.preventDefault();keepAwake();if(!done&&intro<=0)keys.add(e.key);});
+    field.addEventListener('keyup',e=>keys.delete(e.key));
+    field.addEventListener('blur',()=>keys.clear());
     const point = e => { const r = field.getBoundingClientRect(), b = parseFloat(getComputedStyle(field).borderLeftWidth) || 0;
       finger = {x:(e.clientX - r.left - b)/(r.width - 2*b)*100, y:(e.clientY - r.top - b)/(r.width - 2*b)*100}; };
-    field.addEventListener('pointerdown', e => { if (done) return; e.preventDefault(); keepAwake(); try{ field.setPointerCapture(e.pointerId); }catch(err){} point(e); });
+    field.addEventListener('pointerdown', e => { if (done || intro>0) return; e.preventDefault(); keepAwake(); try{ field.setPointerCapture(e.pointerId); }catch(err){} point(e); });
     field.addEventListener('pointermove', e => { if (finger) point(e); });
     ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(ev => field.addEventListener(ev, () => { if (finger){ finger = null; zero = null; velocity=[0,0]; } }));   // letting go: tilt counts from the grip now
   });
-  document.addEventListener('visibilitychange', () => { finger = null; zero = null; velocity=[0,0]; last = performance.now(); });
+  document.addEventListener('visibilitychange', () => { keys.clear();finger = null; zero = null; velocity=[0,0]; last = performance.now(); });
   return {
     enter(name){
       id = name; el = $('#' + name); board = el.querySelector('.mg-board'); me = el.querySelector('.mg-me'); world = el.querySelector('.mg-world');
@@ -8278,11 +8435,11 @@ const MotionGames = (() => {
       round = 0; got = 0; slots(); start(); if(name==='balltrail')say(SAY.balltrail, 0, 'menus');
       last = performance.now(); raf = requestAnimationFrame(frame);
     },
-    leave(){ cancelAnimationFrame(raf); listen(false); finger = null; velocity=[0,0];id = null;ball=null; },
+    leave(){ keys.clear();cancelAnimationFrame(raf); listen(false); finger = null; velocity=[0,0];id = null;ball=null; },
     lines: () => [...Object.values(SAY),...PETS.flatMap(p=>[p.want,p.yum])],
     state: () => ({id, x, y, round, got, done, tilt:listening, maze:id === 'balltrail' ? MAZES.indexOf(maze()) : null,
       rotation:rotation.slice(), animal:id==='starflight'?pet().a:null, food:id==='starflight'?pet().food:null, flying:id==='starflight'?pet().fly:null,
-      level:levelIndex()+1, target:id==='starflight'?level().target:5, rejected, elapsed,
+      level:levelIndex()+1, target:id==='starflight'?level().target:5, rejected, elapsed, intro,
       stars:stars.map(st => ({x:st.x, y:st.y,good:st.good,food:st.food}))})
   };
 })();
@@ -8295,7 +8452,7 @@ const GAMES = [
   {id:'dinobuddies', n:'Dino Buddies', p:[1,2], cls:'g-dino', art:`<span class="art mid">${ART.trex}</span><span class="art sm">${ART.egg}</span><span class="art mid flip">${ART.trex}</span>`},
   {id:'paintpals', n:'Paint Pals', p:[1,2], cls:'g-paint', art:`<span class="art mid flip">${ppHalf('giraffe')}</span><span class="art sm">${ART.brush}</span><span class="art mid">${ppHalf('lion')}</span>`},
   {id:'balltrail', n:'Ball Trail', p:[1], cls:'g-roll', art:`<span class="art big">${schoolPic('ball')}</span><span class="art">${ART.star}</span>`},
-  {id:'starflight', n:'Star Flight', p:[1], cls:'g-fly', art:`<span class="art big">${ART.parrot}</span><span class="art">${ART.star}</span>`}
+  {id:'starflight', n:'Star Flight', p:[1], cls:'g-fly', art:`<span class="art big">${ART.parrot}</span><span class="art">${ART.blueberry}</span>`}
 ];
 GAMES.forEach(g => {
   const b = document.createElement('button'); b.className = 'gamecard ' + g.cls; b.setAttribute('aria-label', g.n);
@@ -8515,6 +8672,12 @@ const DinoBuddies = (() => {
   let solo = false, fill = 0, hatching = false, hatchBaby = null, buddy = DINOS[clamp(saved.buddy | 0, 0, DINOS.length - 1)];
   let family = Array.isArray(saved.family) ? saved.family.filter(i => DINOS[i]).slice(0, 8) : [];
   const lastTap = [0, 0];
+  let turns = false, turn = 0;
+  const TURN_LINES = ['Take turns! A star, then a heart. You can help either side!', 'Star turn!', 'Heart turn!'];
+  function cue(){ sides.forEach((el,i) => el.dataset.turn = String(turns && (solo || i === turn))); $('#dbCue').textContent = turns ? (turn ? 'Heart turn' : 'Star turn') : ''; }
+  function replay(){ say(turns ? TURN_LINES[turn + 1] : 'Dino Buddies! Tap tap tap! Help the egg hatch!', 0, 'menus'); }
+  tap($('#dbTurns'), () => { turns = !turns; turn = 0; $('#dbTurns').setAttribute('aria-pressed', String(turns)); cue(); say(turns ? TURN_LINES[0] : 'Dino Buddies! Tap tap tap! Help the egg hatch!', 0, 'menus'); });
+  tap($('#dbReplay'), replay);
   /* each side plays its own instrument on the same pentatonic scale, so two kids mashing at once still sounds like music */
   const PENTA = [262,294,330,392,440,523,587,659,784,880], step = [0, 4];
   function note(side){
@@ -8536,20 +8699,23 @@ const DinoBuddies = (() => {
   function renderFamily(){ famEl.innerHTML = ''; family.forEach(i => { const s = document.createElement('span'); put(s, DINOS[i].a); famEl.appendChild(s); }); }
   const centerOf = el => { const r = el.getBoundingClientRect(), a = root.getBoundingClientRect(); return [r.left - a.left + r.width/2, r.top - a.top + r.height/2]; };
   sides.forEach((side, s) => {
-    side.addEventListener('pointerdown', e => {
+    side.setAttribute('role','button'); side.tabIndex = 0;
+    const activate = e => {
       e.preventDefault(); keepAwake();
       const now = performance.now();
       if (now - lastTap[s] < 110) return;   // a palm-mash counts as one tap, not ten
       lastTap[s] = now;
       const a = root.getBoundingClientRect();
-      note(s);
+      const part = turns ? turn : s; note(part);
+      if (turns){ turn = 1 - turn; cue(); }
       if (!hatching) retrigger(dinoEls[s], 'db-hop');
-      const [rx, ry] = relPt(e); ripple(rx, ry);
-      flyTreat(e.clientX - a.left, e.clientY - a.top);
-    });
+      const r = side.getBoundingClientRect(), x = e.clientX || r.left+r.width/2, y = e.clientY || r.top+r.height/2;
+      flyTreat(x - a.left, y - a.top, part);
+    };
+    side.addEventListener('pointerdown', activate); keyboardTap(side, activate);
   });
-  function flyTreat(x, y){
-    const t = document.createElement('div'); t.className = 'db-treat art'; t.innerHTML = rnd(TREATS);
+  function flyTreat(x, y, part){
+    const t = document.createElement('div'); t.className = 'db-treat art'; t.innerHTML = turns ? [ART.star, ART.heart][part] : rnd(TREATS);
     root.appendChild(t);
     const [nx, ny] = centerOf(eggEl);
     const mx = (x + nx)/2 + (Math.random() - .5)*80, my = Math.min(y, ny) - 40;
@@ -8589,7 +8755,7 @@ const DinoBuddies = (() => {
     babyEl.classList.remove('db-show'); newEgg(); hatching = false;
   }
   const who = whoPicker(root, 'Dino Buddies', 'dinobuddies', n => {
-    solo = n === 1; root.classList.toggle('solo', solo); drawEgg();
+    solo = n === 1; root.classList.toggle('solo', solo); drawEgg(); cue();
     say('Dino Buddies! Tap tap tap! Help the egg hatch!', 0, 'menus');
   });
   setBuddy(buddy); newEgg(); renderFamily();
@@ -8597,7 +8763,7 @@ const DinoBuddies = (() => {
     enter(){ who.show(); say('Dino Buddies! One player, or two?', 0, 'menus'); },
     leave(){ $$('.db-treat', root).forEach(t => { t.getAnimations().forEach(a => { a.onfinish = null; a.cancel(); }); t.remove(); }); settleHatch(); who.hide(); },
     fill: () => fill, family: () => family.length, players: () => solo ? 1 : 2,
-    lines: () => ['Dino Buddies! Tap tap tap! Help the egg hatch!', 'Dino Buddies! One player, or two?', ...CHEER1, ...CHEER2, ...DINOS.map(d => 'A baby ' + d.n + '!')]
+    lines: () => [...TURN_LINES, 'Dino Buddies! Tap tap tap! Help the egg hatch!', 'Dino Buddies! One player, or two?', ...CHEER1, ...CHEER2, ...DINOS.map(d => 'A baby ' + d.n + '!')]
   };
 })();
 
@@ -8718,7 +8884,7 @@ const SnackTime = (() => {
   tap(think, () => { if (eating || !cur) return; FX.pop(); retrigger(think, 'wig'); hush(); wants(); }, {bump:false});
   return {
     enter(){ say('Snack Time! The animals are hungry!', 0, 'menus'); cur = null; arrive(); },
-    leave(){ $$('.st-bite', root).forEach(t => t.remove()); eating = true; },
+    leave(){ $$('.st-bite', root).forEach(t => { t.getAnimations().forEach(a => { a.onfinish = null; a.cancel(); }); t.remove(); }); cur = null; eating = true; },
     state: () => ({want: cur && !eating ? cur.food : null, animal: cur && cur.a, fed, choices: foodsEl.children.length}),
     lines: () => ['Snack Time! The animals are hungry!', 'Hooray! Five full tummies!', ...SNACKS.flatMap(s => [WANTS(s), YUM(s)])]
   };
@@ -8773,6 +8939,29 @@ const PaintPals = (() => {
   const an = n => (/^[aeiou]/i.test(n) ? 'an ' : 'a ') + n;
   const ONE = n => an(nameOf(n)).replace(/^a/, 'A') + '!', TWO = (a, b) => `Beautiful! ${an(nameOf(a)).replace(/^a/, 'A')} and ${an(nameOf(b))}!`;
   const here = () => current === 'paintpals';
+  let prompt = false, archived = false;
+  const PROMPT = 'Try making a circle with your finger! You can paint any way you like!';
+  const timers = new Set();
+  function schedule(fn, ms){ const id = setTimeout(() => { timers.delete(id); if (here()) fn(); }, ms); timers.add(id); }
+  function stopTimers(){ timers.forEach(clearTimeout); timers.clear(); S.forEach(s => { clearInterval(s.fillTimer); s.fillTimer = null; }); }
+  function replay(){ say(prompt ? PROMPT : 'Paint Pals! Rub your picture to paint it!', 0, 'menus'); }
+  tap($('#ppPrompt'), () => { prompt = !prompt; $('#ppPrompt').setAttribute('aria-pressed', String(prompt)); replay(); });
+  tap($('#ppReplay'), replay);
+  tap($('#ppShelf'), () => {
+    $('#ppShelfPanel').hidden = false; $('#ppShelfPictures').innerHTML = ''; $('#ppShelfPreview').innerHTML = '';
+    gallery.forEach(n => { const b = document.createElement('button'); b.setAttribute('aria-label', nameOf(n)); put(b, ART[n]); tap(b, () => { put($('#ppShelfPreview'), ART[n]); say(ONE(n), 0, 'names'); }); $('#ppShelfPictures').appendChild(b); });
+    if (!gallery.length) $('#ppShelfPreview').textContent = 'Your finished pictures will go here.';
+    S.forEach(s => s.el.inert = true); $('.social-tools', root).inert = true; $('#ppShelfClose').focus();
+  });
+  function closeShelf(){ $('#ppShelfPanel').hidden = true; S.forEach(s => s.el.inert = false); $('.social-tools', root).inert = false; }
+  tap($('#ppShelfClose'), () => { closeShelf(); $('#ppShelf').focus(); });
+  function archive(){
+    const completed=active().filter(s=>s.done&&!s.archived);
+    completed.forEach(s=>{s.archived=true;gallery.push(s.page.name);});
+    if(!archived&&active().every(s=>s.done)){archived=true;rounds++;}
+    if(completed.length){gallery=gallery.slice(-8);renderGallery();store.set('paintpals',{gallery,next:pairNo,solo:soloNo});}
+  }
+
   /* each side has its own instrument on one pentatonic scale, wandering up and down while a finger paints */
   function note(s){
     const now = performance.now(); if (now - s.lastNote < 85) return; s.lastNote = now;
@@ -8788,7 +8977,7 @@ const PaintPals = (() => {
     s.cv.style.width = k*s.page.w + 'px'; s.cv.style.height = k*s.page.h + 'px';
   }
   function load(s, name){
-    s.page = ppPage(name); s.mask = new Uint8Array(s.page.w*s.page.h); s.left = s.page.paintable.length; s.done = s.shown = false; s.ptr.clear();
+    s.page = ppPage(name); s.mask = new Uint8Array(s.page.w*s.page.h); s.left = s.page.paintable.length; s.done = s.shown = false; s.archived = false; s.ptr.clear();
     s.flip = s.i === 0 ? !FACES_RIGHT.has(name) : FACES_RIGHT.has(name);   // the two animals face each other
     s.cv.width = s.page.w; s.cv.height = s.page.h; s.cv.classList.toggle('flip', s.flip);
     s.el.classList.remove('pp-done'); s.easel.classList.remove('pp-hop', 'pp-dance'); s.hand.hidden = false;
@@ -8797,6 +8986,7 @@ const PaintPals = (() => {
   }
   /* two players get a pair; one player paints the same animals one at a time, on one big page */
   function newRound(){
+    stopTimers(); archived = false;
     loaded = players;
     if (players === 1){ load(S[0], PAIRS.flat()[soloNo % (PAIRS.length*2)]); soloNo++; }
     else {
@@ -8861,7 +9051,7 @@ const PaintPals = (() => {
     s.done = true; s.ptr.clear();
     const page = s.page, rest = shuffle(page.paintable.filter(i => !s.mask[i])), per = Math.max(1, Math.ceil(rest.length / 12));
     let f = 0;
-    const fill = setInterval(() => {
+    const fill = s.fillTimer = setInterval(() => {
       if (s.page !== page){ clearInterval(fill); return; }
       rest.splice(0, per).forEach(i => s.mask[i] = 1); draw(s);
       if (here()) tone(PENTA[Math.min(PENTA.length - 1, f)]*2, PENTA[Math.min(PENTA.length - 1, f)]*2, .12, 'sine', .07);
@@ -8872,36 +9062,38 @@ const PaintPals = (() => {
   /* done: whichever picture finishes filling in second starts the meeting (done only means "filling in") */
   function finished(s){
     s.shown = true; s.el.classList.add('pp-done');
+    archive();
     if (!here()) return;
     retrigger(s.easel, 'pp-hop');
     s.quietUntil = performance.now() + (FX[CALL[s.page.name]](.1) || 1)*1000;
     const [x, y] = rel(s.easel); confetti(x, y, 22);
     say(ONE(s.page.name), 0, 'names');
     const other = S[1 - s.i];
-    if (players === 1) later(meet, 1700);
-    else if (other.shown) later(meet, 1700);
-    else later(() => { if (!other.done && !other.ptr.size) other.hand.hidden = false; }, 4000);   // nudge the other side
+    if (players === 1) schedule(meet, 1700);
+    else if (other.shown) schedule(meet, 1700);
+    else schedule(() => { if (!other.done && !other.ptr.size) other.hand.hidden = false; }, 4000);   // nudge the other side
   }
   /* both done: the two animals dance and call to each other, then go up on the shelf (one player: the one animal dances) */
   function meet(){
     if (party) return;
-    party = true; FX.cheer();
+    party = true; archive(); FX.cheer();
     active().forEach(s => { retrigger(s.easel, 'pp-dance'); const [x, y] = rel(s.easel); confetti(x, y, 30); });
     if (players === 1){
       const a = S[0].page.name;
       say('Beautiful! ' + ONE(a), 0, 'names');
-      later(() => { gallery.push(a); gallery = gallery.slice(-8); renderGallery(); rounds++; party = false; newRound(); }, 2800);
+      schedule(() => { party = false; newRound(); }, 2800);
       return;
     }
     const [a, b] = S.map(s => s.page.name);
     say(TWO(a, b), 0, 'names');
     const t1 = FX[CALL[a]](.5) || 1.5, t2 = FX[CALL[b]](t1 + .15) || t1 + 1;
-    later(() => {
-      gallery.push(a, b); gallery = gallery.slice(-8); renderGallery();
-      rounds++; party = false; newRound();
+    schedule(() => {
+      party = false; newRound();
     }, Math.max(3600, t2*1000 + 300));
   }
   S.forEach(s => {
+    s.el.setAttribute('role', 'button'); s.el.tabIndex = 0;
+    keyboardTap(s.el, () => { if (!s.page || s.done || party || !here()) return; const r = s.el.getBoundingClientRect(); fling(s, {clientX:r.left+20, clientY:r.top+60}); });
     s.el.addEventListener('pointerdown', e => {
       e.preventDefault(); keepAwake();
       if (!s.page || party) return;
@@ -8921,6 +9113,8 @@ const PaintPals = (() => {
   });
   if (typeof ResizeObserver === 'function') S.forEach(s => new ResizeObserver(() => size(s)).observe(s.el));
   const who = whoPicker(root, 'Paint Pals', 'paintpals', n => {
+    stopTimers();
+    archive();
     players = n; root.classList.toggle('solo', n === 1);
     say('Paint Pals! Rub your picture to paint it!', 0, 'menus');
     /* a different number of players, or left during a celebration: new pictures. Otherwise carry on where they were */
@@ -8931,8 +9125,8 @@ const PaintPals = (() => {
   newRound(); renderGallery();
   return {
     enter(){ who.show(); say('Paint Pals! One player, or two?', 0, 'menus'); },
-    leave(){ $$('.pp-drop, .pp-spark', root).forEach(d => { d.getAnimations().forEach(a => { a.onfinish = null; a.cancel(); }); d.remove(); }); S.forEach(s => s.ptr.clear()); who.hide(); },
-    lines: () => ['Paint Pals! Rub your picture to paint it!', 'Paint Pals! One player, or two?', 'Beautiful!', ...PAIRS.flat().map(ONE), ...PAIRS.flatMap(([a, b]) => [TWO(a, b), TWO(b, a)])],
+    leave(){ stopTimers(); closeShelf(); S.forEach(s => { if (s.done){ s.page.paintable.forEach(i => s.mask[i] = 1); s.left = 0; s.shown = true; draw(s); s.el.classList.add('pp-done'); } }); archive(); $$('.pp-drop, .pp-spark', root).forEach(d => { d.getAnimations().forEach(a => { a.onfinish = null; a.cancel(); }); d.remove(); }); S.forEach(s => s.ptr.clear()); who.hide(); },
+    lines: () => [PROMPT, 'Paint Pals! Rub your picture to paint it!', 'Paint Pals! One player, or two?', 'Beautiful!', ...PAIRS.flat().map(ONE), ...PAIRS.flatMap(([a, b]) => [TWO(a, b), TWO(b, a)])],
     state: () => ({players, painted: active().map(s => +(1 - s.left/s.page.paintable.length).toFixed(3)), done: active().map(s => s.done), names: active().map(s => s.page.name), rounds, gallery: gallery.length})
   };
 })();
@@ -9283,7 +9477,109 @@ paintBackgrounds(); if (bgWatch) bgFor.forEach((fn, el) => bgWatch.observe(el));
 /* Offline after the first visit when self-hosted over HTTPS (artifacts and file:// skip this). */
 try{ if ('serviceWorker' in navigator && location.protocol === 'https:' && !/claude\.ai|claudeusercontent/.test(location.hostname)) navigator.serviceWorker.register('sw.js').catch(() => {}); }catch(e){}
 
-/* ---------- Start (and keep the current app across live updates) ---------- */
+/* Every line the toy can say, for tools/voices to record: the narrator's lines, then each animal's own phone lines */
+/* ---------- School adventures: short, untracked play with explicit next steps ---------- */
+const SchoolAdventures = (() => {
+  const IDS = ['sorting','patterntrain','storytime','feelings'];
+  const titles = {sorting:'Sorting Station',patterntrain:'Pattern Train',storytime:'Story Time',feelings:'Feelings Friends'};
+  const colors = {red:'#E95252',blue:'#428BDD',yellow:'#F3C447',green:'#70B968'};
+  const shape = (color='red',kind='square',small=false) => {
+    const forms = {square:'M7 7h18v18H7z',circle:'M11 5h10v3h4v4h3v8h-3v4h-4v3H11v-3H7v-4H4v-8h3V8h4z',triangle:'M14 4h4v5h3v5h3v5h3v8H5v-8h3v-5h3V9h3z'};
+    return pixelPicture(32,32,[[forms[kind],colors[color],'#493B3A']],'sa-token'+(small?' sa-small':''));
+  };
+  const face = feeling => {
+    const mouths={happy:'M9 19h3v3h8v-3h3v6H9z',sad:'M9 23h3v-3h8v3h3v3h-3v-3h-8v3H9z',frustrated:'M10 22h12v3H10z',worried:'M13 21h6v5h-6z',excited:'M10 19h12v8H10z'};
+    const layers=[['M8 2h16v3h4v5h3v13h-3v5h-5v3H9v-3H4v-5H1V10h3V5h4z','#F8D77C','#59432B'],['M8 12h4v4H8z M20 12h4v4h-4z '+(mouths[feeling]||mouths.happy),'#493B3A']];
+    if(feeling==='frustrated')layers.push(['m7 7 6 3m6 0 6-3',null,'#493B3A',2]);if(feeling==='worried')layers.push(['m7 9 6-3m6 0 6 3',null,'#493B3A',2]);if(feeling==='sad')layers.push(['M5 17h3v6H5z','#428BDD']);return pixelPicture(32,32,layers,'sa-token');
+  };
+  const garden = kind => pixelPicture(40,32,[['M0 0h40v32H0z','#A5DCEB'],['M0 25h40v7H0z','#917057'],...(kind==='seed'?[['M17 24h7v5h-7z','#F8CE8D','#5E472C']]:kind==='water'?[['M9 3h18v12H9z M27 9h8v3h-8z M30 15h3v3h-3z M27 20h3v3h-3z M22 23h3v3h-3z','#548EE0']]:[['M19 12h3v15h-3z M9 10h10v8h-6v-3H9z M22 7h10v7h-4v4h-6z','#40894B'],['M3 2h7v7H3z','#F9D763']])],'sa-token');
+  const art = key => {
+    if (['sad','happy','frustrated','worried','excited'].includes(key)) return face(key);
+    if (['seed','sprout','water'].includes(key)) return garden(key);
+    if (['red','blue','yellow','green'].includes(key)) return shape(key,'circle');
+    if(key==='red-square')return shape(); if(key==='blue-circle')return shape('blue','circle');
+    if(key==='square'||key==='circle')return shape('blue',key);
+    if(key==='small'||key==='big')return shape('yellow','square',key==='small');
+    if(key==='duck'||key==='owl')return `<span class="sa-animal">${ART[key]}</span>`;
+    const symbols={sit:'M5 18h9v5h-4v6H6v-6H3V12h4z M23 18h7v5h-4v6h-4v-6h-3V12h4z',breathe:'M5 8h13v3H5z M3 15h22v3H3z M5 22h13v3H5z',ask:'M4 5h24v17H16l-7 6v-6H4z',turn:'M4 8h17V4l7 7-7 7v-4H4z M28 22H11v-4l-7 7 7 7v-4h17z',grab:'M10 10h13v17H8V14h2z M10 3h3v9h-3z M15 1h3v11h-3z M20 3h3v9h-3z',blanket:'M3 8h26v21H3z',ball:'M10 3h12v4h5v5h3v10h-3v5H7v-5H3V12h4V7h3z'};
+    return pixelPicture(32,34,[[symbols[key]||symbols.ask,'#8470BA']],'sa-token');
+  };
+  const opt=(key,label)=>({key,label,art:()=>art(key)});
+  const round=(goal,scene,options,target,yes,hint)=>({goal,scene,options,target,yes,hint});
+  const sorting=[
+    round('Match this red square. Find the one that is exactly the same.',()=>shape(),[opt('blue-circle','Blue circle'),opt('red-square','Red square')],'red-square','An exact match! Same color, shape, and size.','Look for a red square, just like this one.'),
+    round('Sort by color. Where does this red circle belong?',()=>shape('red','circle'),[opt('red','Red group'),opt('blue','Blue group')],'red','The red shapes belong together.','Only look at the color this time. Find red.'),
+    round('Now sort by shape. Where does this blue square belong?',()=>shape('blue','square'),[opt('circle','Circle group'),opt('square','Square group')],'square','Squares go together, whatever their color.','A square has four straight sides. Find the square group.'),
+    round('Sort by size. Where does this small block belong?',()=>shape('yellow','square',true),[opt('big','Big group'),opt('small','Small group')],'small','The small blocks belong together.','Compare their sizes. Find the small block.'),
+    round('Sort this blue square by shape. Find its shape group.',()=>shape('blue','square'),[opt('square','Square group'),opt('circle','Circle group')],'square','You sorted by shape. Next we will change the rule!','Look at its four straight sides. Find the square group.'),
+    round('New rule! Sort the same blue square by color. Find its color group.',()=>shape('blue','square'),[opt('red','Red group'),opt('blue','Blue group')],'blue','You changed the rule! Now the blue shapes go together.','It is still a square, but our new rule is color. Find blue.')
+  ];
+  const train=keys=>()=>`<div class="sa-train">${keys.map(k=>`<span class="sa-car">${art(k)}</span>`).join('')}<span class="sa-car sa-missing">?</span></div>`;
+  const pattern=[
+    round('Red, blue, red, blue, red. What comes next?',train(['red','blue','red','blue','red']),[opt('red','Red'),opt('blue','Blue')],'blue','Red, blue! The colors repeat.','Say the repeating part with me. Red, blue. Find blue.'),
+    round('Big, small, big, small, big. What comes next?',train(['big','small','big','small','big']),[opt('small','Small'),opt('big','Big')],'small','Big, small! The sizes repeat.','A big block is followed by a small block.'),
+    round('Yellow, yellow, green. Yellow, yellow. What comes next?',train(['yellow','yellow','green','yellow','yellow']),[opt('yellow','Yellow'),opt('green','Green')],'green','Yellow, yellow, green! Three cars make the repeating part.','Two yellow cars, then a green car. Find green.'),
+    round('Owl, duck, owl, duck, owl. What comes next?',train(['owl','duck','owl','duck','owl']),[opt('duck','Duck'),opt('owl','Owl')],'duck','Owl, duck! You found the same kind of pattern with animals.','Each owl is followed by a duck.')
+  ];
+  const storyScene=kind=>()=>`<div class="sa-story-picture"><span class="sa-animal">${ART.duck}</span>${garden(kind)}</div>`;
+  const events=[opt('seed','Plant seed'),opt('water','Give water'),opt('sprout','See sprout')];
+  const story=[
+    round('Duck found a sprout. A sprout is a tiny new plant. Can you find the sprout?',storyScene('sprout'),[opt('seed','Seed'),opt('sprout','Sprout')],'sprout','Yes, a sprout is a tiny new plant. Let us find out how it grew.','Find the tiny green plant with leaves.'),
+    round('First, Duck planted a seed. The soil was dry. What could help the seed grow?',storyScene('seed'),[opt('blanket','A blanket'),opt('water','Some water')],'water','Duck gave the seed some water.','Plants need water. Which picture shows water?'),
+    round('Duck watered the seed. The sun warmed the soil. Then a tiny sprout appeared! What appeared?',storyScene('sprout'),[opt('sprout','A sprout'),opt('ball','A ball')],'sprout','A sprout appeared! Duck watched it grow.','Remember the tiny new plant. It is called a sprout.'),
+    round('Tell the story. What happened first?',storyScene('seed'),events,'seed','First, Duck planted a seed.','Before watering, Duck put a seed in the soil.'),
+    round('Duck planted a seed. What happened next?',storyScene('water'),[opt('sprout','See sprout'),opt('water','Give water')],'water','Next, Duck gave the seed some water.','The soil was dry. Duck gave it water.'),
+    round('Duck planted the seed and watered it. What happened last?',storyScene('sprout'),[opt('seed','Plant seed'),opt('sprout','See sprout')],'sprout','Last, a tiny sprout appeared. You told the story in order!','At the end, a tiny green plant appeared.')
+  ];
+  const feelings=[];
+  const friends=[
+    {feeling:'sad',situation:'Duck says, I feel sad. My friend went home.',help:'sit',label:'Sit together',good:'You can ask, would you like me to sit with you? It is okay to feel sad.',hint:'Ask what Duck needs. Sitting together can help.'},
+    {feeling:'frustrated',situation:'Owl says, I feel frustrated. My tower fell down.',help:'breathe',label:'Breathe together',good:'Take a slow breath together. Then ask if Owl wants help rebuilding.',hint:'A slow breath can help before trying again.'},
+    {feeling:'worried',situation:'Duck says, I feel worried. I am waiting for my grown-up.',help:'ask',label:'Ask a grown-up',good:'Ask a trusted grown-up to stay nearby and help while you wait.',hint:'Find a trusted grown-up who can help.'},
+    {feeling:'excited',situation:'Owl says, I feel excited. I want a turn with the toy!',help:'turn',label:'Ask for a turn',good:'Ask, can I have a turn when you are done? You can play nearby while you wait.',hint:'Ask for a turn, then let your friend finish.'}
+  ];
+  friends.forEach((f,i)=>{
+    const scene=()=>`<div class="sa-friend">${art(i%2?'owl':'duck')}${face(f.feeling)}</div>`;
+    feelings.push(round(`${f.situation} Can you find the ${f.feeling} face?`,scene,[opt('happy','Happy'),opt(f.feeling,f.feeling[0].toUpperCase()+f.feeling.slice(1))],f.feeling,`That face can show ${f.feeling}. People can show feelings in different ways.`,`${f.situation} Listen to what our friend tells us.`));
+    feelings.push(round(`${f.situation} What could you try to help?`,scene,[opt(f.help,f.label),opt('grab','Grab the toy')],f.help,f.good,f.hint));
+  });
+  const rounds={sorting,patterntrain:pattern,storytime:story,feelings};
+  const finish={sorting:'You sorted by color, shape, and size. You even changed the rule!',patterntrain:'Your pattern train is ready! You found repeating colors, sizes, and animals.',storytime:'The end! Together, tell someone how Duck grew a plant. What would you like to grow?',feelings:'Every feeling is welcome. We can ask what our friends need and try a kind response.'};
+  const parent={sorting:'Together: sort real socks by color, then change the rule to size.',patterntrain:'Together: take turns making a clap, tap, clap, tap pattern.',storytime:'Together: tell the seed story. What happened first, next, and last? What would you grow?',feelings:'Together: how do you feel today? What helps you when you are waiting?'};
+  const freeLines={sorting:'Explore the shapes. Tap any shape to hear its name.',patterntrain:'Make a train! Tap any picture to add a car. There is no wrong pattern here.',storytime:'Explore the story pictures. Tap any picture to tell that part of the story.',feelings:'Explore the feelings. Tap a face. All feelings are okay.'};
+  const explore={sorting:[opt('red-square','Red square'),opt('blue-circle','Blue circle'),opt('small','Small block')],patterntrain:[opt('red','Red'),opt('blue','Blue'),opt('duck','Duck')],storytime:events,feelings:[opt('sad','Sad'),opt('frustrated','Frustrated'),opt('worried','Worried'),opt('excited','Excited')]};
+  const freeStory={seed:'First, Duck planted a seed.',water:'Next, Duck gave the seed some water.',sprout:'Last, a tiny sprout appeared.'};
+  const AGAIN='Let us play again!', NEXT='Ready for the next part?', EXPLORE='Explore', LESSON='Back to game';
+  let active=null, step=0, solved=false, misses=0, free=false, cars=[];
+  const speak=s=>say(s,0,'school');
+  const root=()=>$('#'+active), currentRound=()=>rounds[active][step];
+  function button(key,label,html,fn){const b=document.createElement('button');b.setAttribute(key,'');b.setAttribute('aria-label',label);b.innerHTML=html;tap(b,fn);return b;}
+  function render(){
+    const host=root(), id=active, done=step>=rounds[id].length, r=currentRound();
+    host.innerHTML=`<div class="sa-top"><div class="sa-controls"></div><h2>${titles[id]}</h2><span class="sa-count">${free?'Play':done?'Complete':`${step+1} / ${rounds[id].length}`}</span></div><p class="sa-goal">${free?freeLines[id]:done?finish[id]:r.goal}</p><div class="sa-scene"></div><div class="sa-choices"></div><div class="sa-bottom"><p class="sa-feedback" aria-live="polite"></p><div class="sa-actions"></div></div>`;
+    const controls=host.querySelector('.sa-controls');
+    controls.append(button('data-back','School',ICON.grid,()=>go('school')),button('data-replay','Hear the goal',ICON.speaker||'Hear',()=>speak(free?freeLines[id]:done?finish[id]:r.goal)),button('data-explore',free?LESSON:EXPLORE,free?'Game':'Play',()=>{free=!free;solved=false;misses=0;cars=[];render();speak(free?freeLines[id]:done?finish[id]:r.goal);}));
+    const scene=host.querySelector('.sa-scene');scene.innerHTML=free?(id==='patterntrain'?train(cars)():explore[id].map(o=>o.art()).join('')):done?`<span class="sa-animal">${ART.owl}</span>`:r.scene();
+    if(done&&!free){const p=document.createElement('p');p.className='sa-parent';p.textContent=parent[id];host.querySelector('.sa-choices').append(p);host.querySelector('.sa-actions').append(button('data-again','Play again','Play again',()=>{step=0;solved=false;misses=0;render();speak(currentRound().goal);}));host.querySelector('[data-again]').focus({preventScroll:true});return;}
+    (free?explore[id]:r.options).forEach(o=>{
+      const b=button('data-choice',o.label,`${o.art()}<span>${o.label}</span>`,()=>{
+        if(active!==id)return;
+        if(free){if(id==='patterntrain'){cars.push(o.key);if(cars.length>5)cars.shift();scene.innerHTML=train(cars)();}else scene.innerHTML=o.art();speak(id==='storytime'?freeStory[o.key]:o.label+'!');return;}
+        if(solved)return;
+        if(o.key!==r.target){misses++;host.querySelector('.sa-feedback').textContent=r.hint;speak(r.hint);if(misses>=2)host.querySelector(`[data-choice="${r.target}"]`).classList.add('sa-hint');return;}
+        solved=true;host.querySelector('.sa-feedback').textContent=r.yes;speak(r.yes);b.classList.add('sa-chosen');
+        host.querySelectorAll('[data-choice]').forEach(c=>c.disabled=true);
+        const next=button('data-next','Next','Next →',()=>{step++;solved=false;misses=0;render();speak(step>=rounds[id].length?finish[id]:currentRound().goal);});host.querySelector('.sa-actions').append(next);next.focus({preventScroll:true});
+      });b.setAttribute('data-choice',o.key);host.querySelector('.sa-choices').append(b);
+    });
+    host.querySelector('[data-choice]')?.focus({preventScroll:true});
+  }
+  IDS.forEach(id=>{const s=document.createElement('section');s.className='app sa';s.id=id;s.hidden=true;s.setAttribute('aria-label',titles[id]);$('#apps').append(s);});
+  return {enter(id){active=id;step=0;solved=false;misses=0;free=false;cars=[];render();speak(currentRound().goal);},leave(){active=null;cars=[];},
+    lines:()=>[...Object.values(finish),...Object.values(freeLines),...Object.values(freeStory),AGAIN,NEXT,...Object.values(rounds).flatMap(rs=>rs.flatMap(r=>[r.goal,r.yes,r.hint])),...Object.values(explore).flatMap(os=>os.map(o=>o.label+'!'))]};
+})();
+
+/* ---------- Start after dynamic School sections exist ---------- */
 buildContacts();
 loadFamily();
 loadSounds();
@@ -9294,7 +9590,7 @@ seedPhotos();
 window.claude?.hot?.snapshot?.(() => ({ app: current, scene: cam.scene }));
 const start = (data) => { if (data && data.scene && SCENES[data.scene]) cam.scene = data.scene; go(data?.app || accessHome()); };
 window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? {});
-/* Every line the toy can say, for tools/voices to record: the narrator's lines, then each animal's own phone lines */
+
 function voiceLines(){
   const N = [
     "Hi buddy! It's your phone!", ...Object.values(APP_SAY), 'Who do you want to call?', 'Press the numbers!', ...NUMWORD.map(w => w + '!'),
@@ -9306,7 +9602,7 @@ function voiceLines(){
     ...Object.values(CAM_SAY), ...Object.values(MODE_SAY), 'Move the phone to look all around!', ...COSTUMES.map(c => `You're ${article(COSTUME_NAME[c])}!`), ...LOOK_ORDER.slice(1).map(k => LOOKS[k].say),
     ...Object.values(MUSIC_SAY), ...SONGS.map(x => x.n + '!'), 'Yay! Great dancing!', 'Stop!', 'Hello! This is how loud I am.',
     ...WildTap.lines(), ...DinoBuddies.lines(), ...SnackTime.lines(), ...PaintPals.lines(), ...MotionGames.lines(),
-    SCHOOL_SAY.school, ...LetterPath.lines(), ...AbcZoo.lines(), ...AbcSnack.lines(), ...NumZoo.lines(), ...NumSnack.lines(), ...Delivery.lines(), ...DinoPicnic.lines(), ...PLAY.lines()
+    SCHOOL_SAY.school, ...LetterPath.lines(), ...AbcZoo.lines(), ...AbcSnack.lines(), ...NumZoo.lines(), ...NumSnack.lines(), ...Delivery.lines(), ...DinoPicnic.lines(), ...SchoolAdventures.lines(), ...PLAY.lines()
   ];
   /* the narrator records whole lines and their sentences (for lines put together at play time); animals record whole lines */
   const out = new Map(), put1 = (who, x) => out.set(who + '|' + x, {who, s:x});

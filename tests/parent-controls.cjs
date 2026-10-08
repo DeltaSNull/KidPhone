@@ -152,6 +152,10 @@ const check = (condition, message) => { assert.ok(condition, message); console.l
     // Backgrounding must relock parent settings even if the phone remains on the same page.
     await page.evaluate(() => { Object.defineProperty(document, 'visibilityState', {configurable:true, value:'hidden'}); document.dispatchEvent(new Event('visibilitychange')); });
     check(!(await visible('#settings')), 'backgrounding closes and relocks settings');
+    // Remove the test-owned override before returning to the foreground and navigating.
+    await page.evaluate(() => { delete document.visibilityState; document.dispatchEvent(new Event('visibilitychange')); });
+    check(await page.evaluate(() => document.visibilityState) === 'visible', 'foreground restores native visibility');
+    check(!(await visible('#settings')), 'foreground return keeps settings locked');
     await reload(); await page.waitForFunction(() => window.__toyPhone);
     await hold();
     for (let i=0; i<5; i++) await pin('1111');
