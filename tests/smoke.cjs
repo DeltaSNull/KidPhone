@@ -977,7 +977,7 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   const pc = await page.$$eval('.pp-cv', cs => cs.map(c => { const r = c.getBoundingClientRect(); return [r.x, r.y, r.width, r.height]; }));
   check(pc.every(b => b[2] >= 120 && b[2] % 32 === 0), `Paint Pals: each picture is big and pixel-sharp (${pc.map(b => b[2]).join(', ')}px)`);
   // Stay beside each canvas and below the optional toolbar, so this tests paint flinging.
-  const corners = await page.$eval('.pp-side', ss => ss.map(s => { const r = s.getBoundingClientRect(); return [r.x + 12, r.y + r.height / 2]; }));
+  const corners = await page.$$eval('.pp-side', ss => ss.map(s => { const r = s.getBoundingClientRect(); return [r.x + 12, r.y + r.height / 2]; }));
   check(await page.evaluate(points => points.every(([x, y], i) => document.querySelectorAll('.pp-side')[i].contains(document.elementFromPoint(x, y))), corners), 'Paint Pals: both paint taps reach their own side');
   await touch('touchStart', corners); await sleep(30); await touch('touchEnd', []);
   // Observe the actual paint landing; a fixed sleep can end before Web Animations finish on a busy runner.
