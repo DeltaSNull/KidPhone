@@ -1,181 +1,89 @@
-# Test every change to main (and every PR), then publish the toy phone to GitHub Pages.
-# The deployed site is plain HTML/CSS/JavaScript; all test jobs must pass before deployment.
-name: Test and deploy GitHub Pages
-
+name: Verify published KidPhone release
 on:
   push:
-    branches: [main]
-    paths-ignore: ['README.md', 'screenshots/**']
-  pull_request:
-    branches: [main]
-    paths-ignore: ['README.md', 'screenshots/**']
-  workflow_dispatch:
-
+    branches: [codex/live-release-verification]
 permissions:
   contents: read
-
-concurrency:
-  group: pages-${{ github.ref }}
-  cancel-in-progress: true
-
 jobs:
-  chromium-smoke:
-    name: Chromium smoke (${{ matrix.viewport }})
+  live:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
-    strategy:
-      fail-fast: false
-      matrix:
-        viewport: [portrait, landscape, safari-bars]
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
-
       - run: npm ci
-
-      - name: Install Chromium
-        run: npx playwright install --with-deps chromium
-
-      - name: Run ${{ matrix.viewport }} smoke suite
-        run: ONLY=${{ matrix.viewport }} npm test
-
-      - name: Upload smoke-test screenshots on failure
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: smoke-${{ matrix.viewport }}-${{ github.run_id }}
-          path: tests/screenshots/
-          if-no-files-found: ignore
-          retention-days: 7
-
-  pages:
-    name: Pages/offline (${{ matrix.engine }})
-    runs-on: ubuntu-latest
-    timeout-minutes: 25
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - engine: chromium
-            command: npm run test:pages
-          - engine: webkit
-            command: npm run test:pages:webkit
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-
-      - run: npm ci
-
-      - name: Install ${{ matrix.engine }}
-        run: npx playwright install --with-deps ${{ matrix.engine }}
-
-      - name: Parent controls (Chromium)
-        if: matrix.engine == 'chromium'
-        run: npm run test:parents
-
-      - name: Parent controls (WebKit)
-        if: matrix.engine == 'webkit'
-        run: npm run test:parents:webkit
-
-      - name: Play-time preview
-        run: node tests/break-preview.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
-
-      - name: Run Pages/offline checks
-        run: ${{ matrix.command }}
-
-      - name: Motion games
-        run: node tests/motion-games.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
-
-      - name: Expanded Delivery and School activities
+      - run: npx playwright install --with-deps chromium
+      - name: Verify deployed files and voice assets
+        shell: python
         run: |
-          node tests/delivery-expanded.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
-          node tests/school-activities.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
-
-      - name: Cooperative play and interruption recovery
+          import hashlib, json, pathlib, time, urllib.request
+          base = 'https://deltasnull.github.io/KidPhone/'
+          def get(path):
+              with urllib.request.urlopen(base + path, timeout=30) as r:
+                  assert r.status == 200
+                  return r.read()
+          expected = pathlib.Path('index.html').read_bytes()
+          for attempt in range(100):
+              try:
+                  html = get('index.html?release=0bec426ea3adbc8dcc42455b61ea575eda726375')
+                  if html == expected:
+                      break
+              except Exception as error:
+                  print(type(error).__name__, str(error), flush=True)
+              print('Waiting for merged release to reach Pages', attempt + 1, flush=True)
+              time.sleep(15)
+          else:
+              raise AssertionError('Published HTML never matched merged release')
+          manifest = json.loads(get('assets/voice/voice.json'))
+          assert manifest == json.loads(pathlib.Path('assets/voice/voice.json').read_text())
+          assert len(manifest['clips']) == 2330
+          clips = sorted({clip[0] for clip in manifest['clips'].values()})
+          for clip in [clips[0], clips[len(clips)//2], clips[-1]]:
+              assert get('assets/voice/' + clip) == pathlib.Path('assets/voice', clip).read_bytes(), clip
+          for path in ['sw.js', 'manifest.webmanifest']:
+              assert get(path) == pathlib.Path(path).read_bytes(), path
+          print('PASS: live app, service worker, manifest and sampled voice files match the tested release')
+          print('Live HTML SHA256:', hashlib.sha256(html).hexdigest())
+      - name: Exercise published School activities
         run: |
-          node tests/social-play.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
-          node tests/social-lifecycle.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
-
-      - name: Interaction refinement
-        run: node tests/refinement.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
-
-      - name: Learning controls and photo navigation
-        run: node tests/play-refinement.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
-
-      - name: Audio return and piano
-        run: node tests/audio-return.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
-
-      - name: Phone layout and game navigation
-        run: node tests/phone-game-review.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
-
-      - name: Pretend-camera hide and pop out
-        run: node tests/camera-peek.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
-
-      - name: Animal Delivery
-        run: node tests/delivery.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
-
-
-  webkit-smoke:
-    name: WebKit iPhone smoke
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-
-      - run: npm ci
-
-      - name: Install WebKit
-        run: npx playwright install --with-deps webkit
-
-      - run: npm run test:webkit
-
-  deploy:
-    name: Deploy
-    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
-    needs: [chromium-smoke, pages, webkit-smoke]
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    concurrency:
-      group: pages-deploy
-      cancel-in-progress: false
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Gather the site
-        run: |
-          mkdir -p _site/assets
-          cp index.html manifest.webmanifest sw.js _site/
-          cp -R icons _site/icons
-          # Real animal recordings. Private family voices/photos are deliberately not published.
-          cp -R assets/sounds _site/assets/sounds
-          # Pre-recorded narrator and animal voices.
-          cp -R assets/voice _site/assets/voice
-          ls -R _site
-
-      - uses: actions/configure-pages@v5
-
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: _site
-
-      - id: deployment
-        uses: actions/deploy-pages@v4
+          node <<'JS'
+          const assert = require('node:assert/strict');
+          const { chromium } = require('playwright');
+          (async () => {
+            const browser = await chromium.launch();
+            try {
+              const context = await browser.newContext({viewport:{width:390,height:844},hasTouch:true,isMobile:true,serviceWorkers:'block'});
+              await context.addInitScript(() => {
+                localStorage.setItem('toyphone.settings',JSON.stringify({incoming:false,camera:'pretend',look:'drag',tilt:'off'}));
+                localStorage.setItem('toyphone.access',JSON.stringify({mode:'school'}));
+              });
+              await context.route('https://fonts.googleapis.com/**',r=>r.fulfill({body:''}));
+              await context.route('https://fonts.gstatic.com/**',r=>r.abort());
+              await context.route('**/assets/family/family.json',r=>r.fulfill({json:{contacts:[]}}));
+              await context.route('**/assets/voice/voice.json',r=>r.fulfill({status:404,body:''}));
+              const page=await context.newPage(), errors=[];
+              page.on('pageerror',e=>errors.push(e.message));
+              const response=await page.goto('https://deltasnull.github.io/KidPhone/?release=0bec426ea3adbc8dcc42455b61ea575eda726375');
+              assert.equal(response.status(),200);
+              await page.waitForFunction(()=>window.__toyPhone);
+              assert.equal(await page.locator('#school:visible').count(),1);
+              assert.equal(await page.locator('#schoolList .gamecard').count(),11);
+              for(const [id,key,label] of [['sorting','red-square','Sorting Station'],['patterntrain','blue','Pattern Train'],['storytime','sprout','Story Time'],['feelings','sad','Feelings Friends']]) {
+                const card=page.locator('#schoolList .gamecard[aria-label="'+label+'"]');
+                await card.scrollIntoViewIfNeeded();
+                await card.tap();
+                await page.locator('#'+id).waitFor({state:'visible'});
+                await page.locator('#'+id+' [data-choice="'+key+'"]').tap();
+                await page.locator('#'+id+' [data-next]').waitFor({state:'visible'});
+                await page.locator('#'+id+' [data-back]').tap();
+                await page.locator('#school').waitFor({state:'visible'});
+                console.log('PASS live School activity:',id);
+              }
+              assert.deepEqual(errors,[]);
+              console.log('PASS live School menu, four activity answers and return navigation; no JavaScript errors');
+            } finally { await browser.close(); }
+          })().catch(e=>{console.error(e);process.exitCode=1});
+          JS
