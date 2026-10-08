@@ -9,6 +9,7 @@ await p.evaluate(()=>__toyPhone.go('delivery'));
 // The advanced route is discoverable from the start as well as after the simple route.
 assert.equal(await p.locator('#adChallenge').count(),1,'an optional quantity and attribute route is available');
 await tap('#adChallenge');await p.waitForFunction(()=>__toyPhone.delivery().advanced);
+assert.ok(await p.locator('.ad-parcel').evaluateAll(bs=>bs.every(b=>{const r=b.getBoundingClientRect();return b.contains(document.elementFromPoint(r.x+r.width/2,r.y+r.height/2));})),'every parcel can be tapped without hitting another control');
 let s=await state();assert.equal(s.want,1);assert.equal(s.got,0);assert.equal(s.done,false);assert.ok(await p.locator('#adCheck').isVisible());assert.ok(await p.locator('#adUndo').isDisabled());
 async function add(spot){s=await state();await tap(`[data-item="${s.itemKey}"]`);await tap(`[data-spot="${spot||s.target}"]`);await p.waitForFunction(()=>!__toyPhone.delivery().busy);}
 async function checkRound(){const before=(await state()).rights;await tap('#adCheck');try{await p.waitForFunction(n=>__toyPhone.delivery().rights===n,before+1,{timeout:5000});}catch(e){console.error('Delivery state at failure',await state());await p.screenshot({path:'/tmp/delivery-failed.png'});throw e;}await p.waitForFunction(()=>{const d=__toyPhone.delivery();return d.done||!d.busy;});}

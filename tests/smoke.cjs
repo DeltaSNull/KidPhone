@@ -163,8 +163,7 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
       const vw = innerWidth, vh = innerHeight, small = [], off = [];
       document.querySelectorAll('button').forEach(b => {
         const s = b.getBoundingClientRect(); if (!s.width || b.closest('[hidden]') || b.closest('.sheet') || b.closest('.ltrack')) return;   // (the selfie strip slides: only part of it shows)
-        // School now has an intentional scrollable menu; its cards are checked individually below.
-        if (!b.closest('#schoolList') && (s.left < -1 || s.top < -1 || s.right > vw + 1 || s.bottom > vh + 1)) off.push(b.getAttribute('aria-label') || b.className);
+        if (s.left < -1 || s.top < -1 || s.right > vw + 1 || s.bottom > vh + 1) off.push(b.getAttribute('aria-label') || b.className);
         if (Math.min(s.width, s.height) < 76) small.push(`${b.getAttribute('aria-label') || b.className} ${Math.round(s.width)}x${Math.round(s.height)}`);
       });
       return { sw: document.documentElement.scrollWidth, vw, off, small };
@@ -657,13 +656,8 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   // --- SCHOOL: the Letter Path, ABC Zoo, ABC Snack
   const school = () => page.evaluate(() => window.__toyPhone.school());
   await tap('[data-app="school"]'); await sleep(600);
-  check(await page.locator('#schoolList .gamecard').count() === 11, 'School shows its learning games');
-  check((await page.$$eval('#schoolList .gamecard', bs => bs.map(b => b.getAttribute('aria-label')))).join() === 'ABC Zoo,123 Zoo,Letter Path,ABC Snack,123 Snack,Dino Picnic,Animal Delivery,Sorting Station,Pattern Train,Story Time,Feelings Friends', 'School preserves the original order and adds the four new activities');
-  for (const card of await page.locator('#schoolList .gamecard').all()) {
-    await card.evaluate(b => b.scrollIntoView({block:'nearest',inline:'nearest',behavior:'instant'}));
-    check(await card.evaluate(b => { const r=b.getBoundingClientRect(), p=b.closest('#schoolList').getBoundingClientRect(); return r.top>=p.top-1&&r.bottom<=p.bottom+1&&r.left>=p.left-1&&r.right<=p.right+1; }), `School menu: ${await card.getAttribute('aria-label')} is reachable by scrolling`);
-  }
-  await page.locator('#schoolList').evaluate(el => el.scrollTop=0);
+  check(await page.locator('#schoolList .gamecard').count() === 7, 'School shows its learning games');
+  check((await page.$$eval('#schoolList .gamecard', bs => bs.map(b => b.getAttribute('aria-label')))).join() === 'ABC Zoo,123 Zoo,Letter Path,ABC Snack,123 Snack,Dino Picnic,Animal Delivery', 'ABC Zoo and 123 Zoo first, then Letter Path, ABC Snack, 123 Snack, Dino Picnic and Animal Delivery');
   await shot('28-school'); await fits('school');
   const lp = () => page.evaluate(() => window.__toyPhone.path());
   const until = async (fn, n = 30) => { for (let i = 0; i < n && !(await fn()); i++) await sleep(300); return fn(); };
@@ -976,8 +970,9 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   check(await visible('.pp-a') && await visible('.pp-b'), 'Paint Pals, 2 players: a picture for each player');
   const pc = await page.$$eval('.pp-cv', cs => cs.map(c => { const r = c.getBoundingClientRect(); return [r.x, r.y, r.width, r.height]; }));
   check(pc.every(b => b[2] >= 120 && b[2] % 32 === 0), `Paint Pals: each picture is big and pixel-sharp (${pc.map(b => b[2]).join(', ')}px)`);
-  // Stay outside the canvas, with clearance from the clock's mobile touch-target adjustment.
-  const corners = await page.$$eval('.pp-side', ss => ss.map(s => { const r = s.getBoundingClientRect(); return [r.x + 20, r.y + 24]; }));
+  // Stay beside each canvas and below the optional toolbar, so this tests paint flinging.
+  const corners = await page.$$eval('.pp-side', ss => ss.map(s => { const r = s.getBoundingClientRect(); return [r.x + 12, r.y + r.height / 2]; }));
+  check(await page.evaluate(points => points.every(([x, y], i) => document.querySelectorAll('.pp-side')[i].contains(document.elementFromPoint(x, y))), corners), 'Paint Pals: both paint taps reach their own side');
   await touch('touchStart', corners); await sleep(30); await touch('touchEnd', []);
   // Observe the actual paint landing; a fixed sleep can end before Web Animations finish on a busy runner.
   await page.waitForFunction(() => window.__toyPhone.paint().painted.every(v => v > 0), null, {timeout:5000}).catch(() => {});
