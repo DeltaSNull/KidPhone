@@ -77,6 +77,14 @@ jobs:
       - name: Install ${{ matrix.engine }}
         run: npx playwright install --with-deps ${{ matrix.engine }}
 
+      - name: Parent controls (Chromium)
+        if: matrix.engine == 'chromium'
+        run: npm run test:parents
+
+      - name: Parent controls (WebKit)
+        if: matrix.engine == 'webkit'
+        run: npm run test:parents:webkit
+
       - name: Play-time preview
         run: node tests/break-preview.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
 
@@ -114,13 +122,6 @@ jobs:
       - name: Animal Delivery
         run: node tests/delivery.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
 
-      - name: Parent controls (Chromium)
-        if: matrix.engine == 'chromium'
-        run: npm run test:parents
-
-      - name: Parent controls (WebKit)
-        if: matrix.engine == 'webkit'
-        run: npm run test:parents:webkit
 
   webkit-smoke:
     name: WebKit iPhone smoke
