@@ -7,8 +7,7 @@ on 2026-10-09 from a 6,400-word log; the old text is in git history.)
 
 ## Active batch
 
-- None claimed. Last: **R-22 — Story Time shelf and clearer help pictures** (Claude, 2026-10-09, branch
-  `claude/story-shelf`), see History.
+- None claimed. Last: **R-23 — consistency pass** (Claude, 2026-10-09, branch `claude/consistency-pass`), see History.
 - Next candidates, in order: physical checks with the family (R-04, G-04, T-09); Today's Adventure (P3-01, P3-07,
   P3-08); Toddler Play Together (P3-03); consistent game controls (I-06). Sound Safari (P3-05) waits on T-04.
 
@@ -84,10 +83,14 @@ on 2026-10-09 from a 6,400-word log; the old text is in git history.)
 
 ## History (newest first)
 
-- 2026-10-09 R-22 Story Time shelf (Claude): Story Time opens on a shelf of covers; Duck's Garden (water pail page),
-  Owl and the Egg, Frog's Rainy Day. Stories are data in `BOOKS`, pictures in `STORY_CARDS` (40x32, drawn with `Pix`).
-  Feelings' help pictures: a grown-up holding a child's hand, a face blowing a pinwheel (`schoolPic('grownup')`,
-  `schoolPic('blow')`).
+- 2026-10-09 R-23 consistency pass (Claude): drums and animal piano leveled for a phone speaker through the compressor
+  (`renderPad` test hook; smoke checks the spread); Sorting's target on an answer-sized card and a one-shape "same size"
+  round; Pattern Train's big-and-small answers at car size; no stretched answer pictures; kitty eats fish, stegosaurus
+  ferns; Feelings' unkind choice is `schoolPic('grab')`, not the "wave" hand.
+- 2026-10-09 R-22 Story Time shelf (Claude, [PR #18](https://github.com/DeltaSNull/KidPhone/pull/18)): Story Time
+  opens on a shelf of covers; Duck's Garden (water pail page), Owl and the Egg, Frog's Rainy Day. Stories are data in
+  `BOOKS`, pictures in `STORY_CARDS` (40x32, drawn with `Pix`). Feelings' help pictures: a grown-up holding a child's
+  hand, a face blowing a pinwheel (`schoolPic('grownup')`, `schoolPic('blow')`).
 - 2026-10-09 R-21 Feelings Friends as stories (Claude, [PR #17](https://github.com/DeltaSNull/KidPhone/pull/17)): a
   two-page story per friend (two per feeling, eight friends), then "How does Owl feel?" with the face hidden until it's
   named. New props in `saProp()`.

@@ -23,6 +23,9 @@ Guided Access. It's one self-contained `index.html` (vanilla JS, no build step),
   Starts with 4 sample photos. Keeps the newest 60. There's no delete button for kids.
 - **Music**: a pentatonic xylophone, drum pads, an animal piano (every key is an animal sound in tune), and
   4 songs with a dancing animal: Twinkle Twinkle, Old MacDonald, The Wheels on the Bus, If You're Happy and You Know It.
+  The pads are leveled for a phone's own speaker, through the toy's compressor: the six drums within about 2 dB of each
+  other (the drum and the conga ring in the mids, since a phone can't play their old deep booms), and the animal piano
+  near the xylophone (the smoke test keeps them there).
 - **Games**: a controller icon that opens a game picker. Each card says who it's for: "1 player" with one little kid, or
   "1 or 2 players" with two (numbers are in the 8-bit digit font, so a 2 never reads as an 8). A game for 1 or 2 asks
   first, with two big buttons: one kid, or two kids. The last choice glows.
@@ -52,7 +55,7 @@ Guided Access. It's one self-contained `index.html` (vanilla JS, no build step),
     31 animals, each shuffled in once before any comes back: monkey and banana, penguin and fish, puppy and bone, panda and
     bamboo, giraffe and leaf, chick and corn, turtle and strawberry, parrot and blueberry, frog and fly, hippo and
     watermelon, cow and grass, lion and meat, tiger and meat, elephant and peanut, zebra and grass, rhino and apple,
-    flamingo and shrimp, eagle and fish, gorilla and orange, butterfly and flower, kitty and milk, duck and peas, kangaroo
+    flamingo and shrimp, eagle and fish, gorilla and orange, butterfly and flower, kitty and fish, duck and peas, kangaroo
     and carrot, octopus and shrimp, lizard and fly, crocodile and fish, and the dinosaurs: T. rex and meat, long neck and
     leaf, triceratops and fern, stegosaurus and fern, pterodactyl and fish.
   - *Dino Buddies* (1 or 2 players): the split-screen game for both boys. Every tap on either half flies a treat into one
@@ -131,7 +134,7 @@ Guided Access. It's one self-contained `index.html` (vanilla JS, no build step),
     (no boxes to read the number from), so the child counts the snacks themselves. Tap the plate to put the last one
     back, and the green check to feed it: "Yum! Three drumsticks!" Too few or too many is said gently, and after two
     tries rings on the plate show how many. One to three for the first three dinos, then up to five. T rex and
-    drumsticks, long neck and leaves, triceratops and ferns, stegosaurus and strawberries, pterodactyl and fish. With
+    drumsticks, long neck and leaves, triceratops and ferns, stegosaurus and ferns too, pterodactyl and fish. With
     *Help count* the rings are there from the start and the dino eats as soon as they're filled.
   - *Animal Delivery*: a nine-stop route for vocabulary and following directions. The voice says "Put the apple
     under the tree!" A single object starts the route; after three deliveries the child chooses the requested object
@@ -144,7 +147,9 @@ Guided Access. It's one self-contained `index.html` (vanilla JS, no build step),
     Nothing is saved as learning evidence.
   - *Sorting Station*: "Find the same one!", then one the same color, the same shape, the same size, and a rule switch
     at the end: the same picture sorted first by shape, then by color ("Now find one the same color!"). Shapes are
-    squares, circles and triangles in four colors, big or small, different each play.
+    squares, circles and triangles in four colors, big or small, different each play. The picture to match sits on a
+    card exactly the size of the answer cards, so big and small look the same there as in the answers; "the same
+    size" shows one shape three times (the same-color one is the wrong size).
   - *Pattern Train*: a bus pulls five wagons and a glowing "?" wagon: "What comes next?" Color patterns (AB, AAB, ABC),
     an animal pattern and a big-small pattern, new each play. A right answer makes the wagons bounce in a little tune.
     Afterwards the kids can make their own train from colors and a duck.
@@ -158,7 +163,7 @@ Guided Access. It's one self-contained `index.html` (vanilla JS, no build step),
     tower." "Chick knocks it down!"), then "How does Owl feel?" with three faces to choose from (happy, sad, mad,
     scared). The friend's face stays hidden until the feeling is named, so it's worked out from what happened rather
     than matched; then the face appears. For the hard feelings, what helps comes next: a hug (a heart), a big breath
-    (a face blowing a pinwheel), a grown-up (a grown-up holding a child's hand), never "take the toy". There are two
+    (a face blowing a pinwheel), a grown-up (a grown-up holding a child's hand), never grabbing the toy (a hand snatching a teddy). There are two
     stories for each feeling, each about a different friend (a present, a party; a friend going home, a balloon
     floating away; a tower knocked down, a picture scribbled on; thunder, a crocodile), and each play tells one per
     feeling in a new order. These four work like the other School games: nothing to read, the question as a big

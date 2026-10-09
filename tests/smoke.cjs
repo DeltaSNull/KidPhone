@@ -76,6 +76,19 @@ function phoneSpeaker(x, fs) {
   return y;
 }
 
+/* How loud a short hit sounds: the loudest 150 ms (K-weighted mean square, in dB). Drum and piano hits are over in a
+   fraction of a second, so the 400 ms blocks of integrated loudness would average them with silence. */
+function hitLoudness(x, fs, win = 0.15) {
+  const K = Math.tan(Math.PI * 1681.974450955533 / fs), Q = 0.7071752369554196, Vh = 10 ** (3.999843853973347 / 20), Vb = Vh ** 0.4996667741545416, a0 = 1 + K / Q + K * K;
+  const b = [(Vh + Vb * K / Q + K * K) / a0, 2 * (K * K - Vh) / a0, (Vh - Vb * K / Q + K * K) / a0], a = [1, 2 * (K * K - 1) / a0, (1 - K / Q + K * K) / a0];
+  const n = Math.round(win * fs); let x1 = 0, x2 = 0, y1 = 0, y2 = 0, e = 0, best = 0; const y = new Float64Array(x.length);
+  for (let i = 0; i < x.length; i++) {
+    const v = b[0] * x[i] + b[1] * x1 + b[2] * x2 - a[1] * y1 - a[2] * y2; x2 = x1; x1 = x[i]; y2 = y1; y1 = v; y[i] = v;
+    e += v * v; if (i >= n) e -= y[i - n] * y[i - n]; if (i >= n - 1) best = Math.max(best, e / n);
+  }
+  return 10 * Math.log10(best);
+}
+
 /* record what the page plays and says */
 function instrument() {
   window.__osc = 0; window.__src = 0; window.__said = []; window.__decoded = 0;
@@ -221,6 +234,17 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
     const lv = loud.map(v => v[1]), spread = Math.max(...lv) - Math.min(...lv);
     check(spread <= 2.5, `animal calls are within 2.5 dB of each other on a phone speaker (spread ${spread.toFixed(1)} dB: ${loud.sort((a, b) => a[1] - b[1]).filter((v, i, a) => i === 0 || i === a.length - 1).map(v => v[0] + ' ' + v[1].toFixed(1)).join(', ')})`);
     check(!blast.length, `no animal call is louder than -18.5 LUFS full-range ${blast.join(', ')}`);
+    /* the Music pads, through the toy's compressor, on a phone speaker: the six drums about as loud as each other (the
+       drum and the conga used to be mostly bass the phone can't play, 15-25 dB under the cymbal), the animal piano keys
+       close together and near the xylophone */
+    const pads = await page.evaluate(() => window.__toyPhone.pads()), level = {};
+    for (const kind of ['drum', 'xylo', 'piano']) {
+      level[kind] = [];
+      for (let i = 0; i < pads[kind]; i++) level[kind].push(hitLoudness(phoneSpeaker(Float64Array.from(await page.evaluate(([k, i]) => window.__toyPhone.renderPad(k, i), [kind, i])), 44100), 44100));
+    }
+    const spreadOf = v => Math.max(...v) - Math.min(...v), median = v => [...v].sort((p, q) => p - q)[v.length >> 1], fmt = v => v.map(x => x.toFixed(1)).join(' ');
+    check(spreadOf(level.drum) <= 3.5, `the six drum pads are within 3.5 dB of each other on a phone speaker (${fmt(level.drum)})`);
+    check(spreadOf(level.piano) <= 5.5 && Math.abs(median(level.piano) - median(level.xylo)) <= 6, `the animal piano keys are close together and near the xylophone on a phone speaker (piano ${fmt(level.piano)}; xylophone ${fmt(level.xylo)})`);
   }
   if (family) {
     /* every real recording loads, and plays at the toy's level (-24 LUFS on a phone speaker, at most -19 full-range) without clipping */
