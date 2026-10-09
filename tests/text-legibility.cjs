@@ -54,8 +54,7 @@ const server=http.createServer((req,res)=>{const p=path.join(ROOT,new URL(req.ur
     await nativeScroll('#schoolList','school');
     for(const id of ['sorting','patterntrain','storytime','feelings']){
       await page.evaluate(id=>window.__toyPhone.go(id),id);await page.waitForTimeout(150);
-      assert.ok((await compare('#'+id+' .sa-count')).every(d=>d.difference<.06),id+' progress uses clear digits');
-      assert.ok(await page.locator('#'+id+' .sa-count').evaluate(el=>el.scrollWidth<=el.clientWidth),id+' progress fits');
+      assert.ok(!/\d/.test(await page.locator('#'+id).innerText()),id+' shows progress as stars, with no numbers to read');
     }
     // A future plain text update must inherit the correction, including font-weight 500 body copy.
     await page.evaluate(()=>{const p=document.createElement('p');p.id='futureCounter';p.textContent='25 of 28';p.style.fontWeight='500';document.body.append(p);});

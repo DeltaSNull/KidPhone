@@ -1,186 +1,103 @@
 # Model handoff
 
-Read SCHOOL_ROADMAP.md first, then AGENTS.md. This is the agreed plan going forward for both Claude and Codex. For “continue,” resume the next unfinished item here after fetching current main and inspecting open PRs.
+Read SCHOOL_ROADMAP.md first, then AGENTS.md. Before changing code: fetch main, check open PRs and branches, and claim
+the work under *Active batch*. Keep this file short: what's true now, the owner's decisions, how things are built, and
+what's open. Each batch's full story lives in its PR and commit messages; the history at the end links them. (Condensed
+on 2026-10-09 from a 6,400-word log; the old text is in git history.)
 
 ## Active batch
 
-- R-19 — Whole-app text/number legibility, 2026-10-08, `codex/text-legibility`, [PR #15](https://github.com/DeltaSNull/KidPhone/pull/15), based on verified main `0bec426`. Owner reports Settings' 24-photo counter looking like 84. Root cause: prior per-number `b.n` fixes left plain and dynamic numeric text in Pixelify, whose 2/5 can resemble 8/S. The shared display stack now routes every ASCII digit through the existing clear Press Start 2P glyphs at a size matched to the lettering; the original font and OFL notice are embedded in the HTML so external-font failure/offline use cannot restore ambiguous digits. Labels/art retain the pixel style. Small supporting copy gets open letterforms, and Settings explanations/Dino turn cues have a 14px floor.
-- The regression first failed on the actual persisted 24-photo counter, then passed in Chromium at 390×844, 844×390 and 375×667. It compares rendered 0–9 against the approved clear font in the photo counter, School labels, all four new adventure counters and a plain dynamic text node. The font fixture deliberately provides no app number font: the app must supply its embedded font. A separate regression caught the former 13px Settings explanation. Screenshot/layout audit and complete browser CI remain release gates; physical iPhone feedback remains open.
-- Additional audit corrections: full animal names use readable 14px labels, with grid columns chosen to keep words intact and portraits sized above them. Games cards reserve title/player-note height and scroll on short screens. Games and School register scroll-aware taps after attachment, so scrolling cancels activation. Contact text bounds, all six reachable game cards, full title/player-note bounds, scroll cancellation and normal taps are regression-tested. Smoke layout checks retain per-card scrolling/containment checks instead of treating intentional menu scrolling as overflow. A 90-state portrait/landscape/short-phone screenshot audit found and corrected the contact-name truncation and short-phone game-title clipping; final audit/CI results follow in the PR.
-- Long optional family names are also checked: a realistic generic fixture initially reproduced portraits overlapping labels on a short phone. Whole-word preference now applies only when the portraits fit; otherwise names wrap and contact rows retain enough height, with scrolling if needed. Contact scroll-aware taps attach after insertion. Contacts/School cards allow pan-y, and the document touch-scroll whitelist includes Contacts and both game menus; a native drag regression exposed the previous document-level prevention. Regression and smoke checks verify every contact is reachable and its portrait remains above its complete label.
-- PR #14 is released, superseding the earlier pending/draft entries: [main `0bec426`](https://github.com/DeltaSNull/KidPhone/commit/0bec426ea3adbc8dcc42455b61ea575eda726375), [all six browser jobs and deployment passed](https://github.com/DeltaSNull/KidPhone/actions/runs/37816231252), [live files and four School activities verified](https://github.com/DeltaSNull/KidPhone/actions/runs/37817381382). Features: P3-06 quantity/color/size Delivery; I-02–I-06 game/lifecycle/cooperative improvements; P4-01–P4-04 Sorting, Patterns, Stories and Feelings; all 2,330 recordings. The Delivery landscape overlay, Paint smoke gallery tap, and synthetic WebKit hidden-state reload are corrected. Live source matched the tested release.
-- Standing owner approval (“Always allow” and “Proceed with what’s necessary to make the changes live and working”) permits code/generated-audio publication, merge and deployment without repeated confirmation. Preserve concurrent work; never force-push shared branches.
-- Continue holding profiles/tracking/lesson phonics. The broader accessibility review, shared School journey, gradual module extraction and physical family checks remain open. R-19 is a typography review, not completion of those separate items.
+- None claimed. Last: **R-20 — kid-friendly pass** (Claude, 2026-10-09, branch `claude/kid-friendly-pass`), see History.
+- Next candidates, in order: physical checks with the family (R-04, G-04, T-09); Today's Adventure (P3-01, P3-07,
+  P3-08); Toddler Play Together (P3-03); consistent game controls (I-06). Sound Safari (P3-05) waits on T-04.
 
-## School layout and play-time preview — Codex, 2026-10-06
+## Owner's decisions in effect
 
-- R-16: 123 Zoo is the second School card, next to ABC Zoo. Number 10 used a wide canvas including blank digit side margins; a constrained intrinsic grid image also made its button shorter. Trim blank sides while composing 10, retain the same vertical scale and both colored digits, and size pictures inside consistent tiles. Portrait/landscape/short Safari panels inspected with bundled fonts.
-- R-17: Delivery's dynamically created .ad-ground missed the initial background renderer and stayed transparent, leaving the grass only at the tray below the garden. A CSS grass fallback ensures the ground is visible every round, immediately at the bases of tree/box/table; existing positions, relation targets, mirror/drag/game behavior preserved.
-- R-18: Settings → Try it → Play-time preview speaks/shows Almost time for a break, then speaks Time for a break and shows the existing owl. Home during either phase cancels preview and opens Settings at accessHome, sheet top and Done focus. The real stored session, used time and expired/grace state are retained; preview pauses ticking/grace duration, owns a cancelable timer, blocks covered app input/calls, and cancels on background/pagehide. It works with play time Off as a parent demonstration. Real breaks still require Settings to start more play.
-- Verification: missing preview control failed first. New tests/break-preview.cjs checks real recorded narration logs, expired and active sessions, early Home cancellation, repeated preview, pagehide, covered-input/focus and actual grace/timeout enforcement in three layouts, Chromium/WebKit CI. Independent review found a count-mode refresh on closing Settings could end grace before preview was marked active; exact regression and correction are part of this batch. Final preview passed all three Chromium layouts, including the count-mode/grace regression and real timeout afterward. Off-mode one-off checks played both recorded lines and preserved the complete session in three layouts; panels inspected. Existing Delivery, parent-controls and interaction-refinement suites passed locally. Independent review found no remaining issues and also checked School-only/expired Home return. Full npm test and Chromium/WebKit CI/release results are tracked in the batch PR. Physical iPhone listening/timing remains R-04.
-- Earlier R-15 local smoke found one existing Snack Time fixed-wait failure after the long T. rex recording; actual lion arrival completed 206ms later and PR/main CI passed. If encountered, replace that fixed wait with bounded readiness for the next food choices (I-06/T-08), preserving the real recording/animation/assertions; never shorten or skip app behavior to satisfy the wait.
-- Claude: this is the plan going forward. Check SCHOOL_ROADMAP.md, HANDOFF.md and AGENTS.md before anything else; fetch current main and inspect this batch PR/checks. Complete any outstanding verification/release, then use owner feedback or agreed I-01/I-03/I-04 priorities. Preserve the holds on profiles/tracking and lesson phonics. Do not reimplement completed batches or overwrite another model's active work. Final release evidence in the PR is authoritative when these committed notes still say release pending.
+- **Progress tracking is on hold** while the family tests: no profiles, skill records, Together attribution, migration
+  or dashboard (P1-10 to P1-12, P2-01 to P2-09, P4-06 to P4-08, T-02, T-06). Store nothing about a child.
+- **Letter sounds stay out of the lessons** until the owner says they sound right (T-04). Letter Path and ABC Snack ask
+  by letter name only ("Which one starts with A?", "Puppy wants an S!"); the 26 sounds play only on the parent page.
+- **Animal Delivery has no "on the box"** (on and in both looked like on top of the open box).
+- **Numbers use the clear 8-bit digits everywhere** (Pixelify's 5 looked like S, 2 like 8): the display font routes
+  every digit to an embedded Press Start 2P face, so nothing extra is needed for new numbers (R-19).
+- **Parent PIN is optional, off by default** (P1-14). Restrictions work without it; Settings says a child can learn the
+  clock hold when School only or Custom is on without a PIN.
+- **Star Flight's long animal-food journey came from the owner's feedback** (PR #4: 8/10/12 foods per animal, six
+  animals). Don't shorten it without asking; family testing (G-04) decides.
+- **Standing approval:** the owner allows publishing, merging and deploying changes that pass CI ("Always allow",
+  "Proceed with what's necessary to make the changes live"). Ask before anything that would lose data or history.
+- **Never:** a real call (`tel:` links), `alert()`/`confirm()`, the family's clips or photos in the repo, copies of
+  Apple's iOS screens, icons or branding. Leave the old DeltaSNull/Claude repo alone.
 
+## How it's built (what to keep consistent)
 
-- CI follow-up (PR #13): initial run 37545640945 found the existing Snack Time fixed-delay race in portrait (next elephant) and lost Settings focus after the preview Home touch in WebKit. Snack smoke now waits up to 12 seconds for a real next request/two choices after one feeding, preserving recordings and app behavior. Preview return restores focus on the next rendered frame only if it is outside the visible Settings dialog; the bounded focus assertion remains. Preview runs early in both CI engines for prompt feedback. Correction diff reviewed without remaining findings; WebKit local launch/install-deps is blocked by missing libraries and host setgroups/seteuid permissions, so actual WebKit focus correction needs CI. Final corrected tests/break-preview.cjs passed all three Chromium layouts; ONLY=portrait npm test passed all checks, including next-animal readiness and real timeout enforcement. Independent correction review found no issues. Correction CI/publication still pending. The local execution environment disconnected before full npm test finished; focused local suites passed earlier, but do not claim the full local run completed. Remote changes after that interruption must be fetched before continuing in the old local worktree.
+- One `index.html` (no build step) plus `assets/`, `sw.js` (offline) and `tests/`. Each app is a module with
+  `enter`/`leave` called from `enterApp`/`leaveApp`, and `go()` navigates (it clears `later()` timers and the voice).
+  Games: `WildTap`, `SnackTime`, `DinoBuddies`, `PaintPals`, `MotionGames` (Ball Trail, Star Flight). School: `AbcZoo`,
+  `NumZoo`, `LetterPath`, `AbcSnack`, `NumSnack`, `DinoPicnic`, `Delivery`, `SchoolAdventures` (Sorting Station,
+  Pattern Train, Story Time, Feelings Friends). Parent side: `ACCESS_GROUP`/`appAllowed` (a new app must be listed or it
+  is blocked), settings, `PLAY` (play time). Test hooks are on `window.__toyPhone` (e.g. `adventure()`,
+  `motionGames()`, `delivery()`, `dinos()`, `voiceMissing()`).
+- **The kids can't read.** On their screens: pictures and short spoken lines (about ten words at most), picture buttons
+  in the pixel frames (`--fr`) or discs (`--disc`), the berry speaker to hear it again, stars for progress, a gentle
+  "uh-uh" plus a hint for a wrong answer and a glow after two, no timers and nothing to lose. Words are for the
+  grown-up only (settings, the small "Together:" idea on School end screens).
+- **Taps:** kid controls answer on touch-down (`tap()`); lists and cards use `tapInScroll()` (acts on lift; a scroll
+  cancels it; a toddler may slide 36px, settings only 14px).
+- **Look:** painted backgrounds come from `BG` painters registered in `BGS` (a section created later must register
+  itself with `bgFor`/`bgWatch`); frames and discs are CSS variables; pixel sprites are `ART.*`, `schoolPic()` and
+  `pixelPicture()`.
+- **Voice:** every spoken line is listed by its module's `lines()` and recorded with Kokoro:
+  `python3 tools/voices/make_voices.py --model kokoro-fp32.onnx --voices voices.npz` (see tools/voices/README.md; it
+  records only what's new and prunes unused clips). Then `window.__toyPhone.voiceMissing()` must be empty. Voice areas
+  `school` and `find` always speak; the others follow Settings ("Opening apps" is off by default).
+- **Motion:** only a grown-up's tap asks Safari (the getting-ready card, *Move the phone*, *Tilt and touch*, Done);
+  games never call `requestPermission`.
 
-## Complete contact portraits — Codex, 2026-10-06
+## Tests and CI
 
-- R-15 released in [PR #12](https://github.com/DeltaSNull/KidPhone/pull/12); final checks/deployment/live verification are recorded above. The general .face img rule gave animal sprites the same 50% border radius/object-fit crop as family photos. It clipped opaque pixels at the corners of the sprite, inside the larger circular badge, especially feet and tails. The same rule affected call portraits and smoothed pixel edges.
-- Two selectors now apply photo cropping and smooth rendering only to images without .px. Animals retain their existing 74% sizing, full rectangular sprite and inherited pixelated rendering. The round badge itself stays intact. No contact/game/voice/storage behavior changed.
-- Verification: one-off real-browser probe reproduced the radius/masked opaque corners before the fix for all 12 animals in portrait, landscape and short Safari layouts. After correction all 12 display the complete sprite with crisp pixels; shared call portrait checked in each layout. Contact screenshots inspected. Synthetic family-photo crop check and full existing npm test/Chromium/WebKit CI/release evidence are tracked in the batch PR; no new permanent test was added for this small CSS fix. Physical iPhone feedback remains R-04.
-- Claude: this is the plan going forward. Check SCHOOL_ROADMAP.md, HANDOFF.md and AGENTS.md before anything else; fetch current main and inspect the batch PR/checks. R-15 is released; use owner feedback or the agreed I-01/I-03/I-04 priorities. Profiles/tracking and lesson phonics remain on hold.
+- CI (`.github/workflows/deploy-pages.yml`) runs the smoke test in portrait, landscape and short-Safari layouts, the
+  WebKit iPhone smoke, and two Pages/offline jobs (Chromium and WebKit) that also run: text-legibility,
+  parent-controls, break-preview, motion-games, school-activities, delivery-expanded, social-play, social-lifecycle,
+  refinement, play-refinement, audio-return, phone-game-review, camera-peek and delivery. Main deploys only when all
+  pass.
+- WebKit can't run in either model's container; CI is the WebKit check. Run the focused suites you touch plus the
+  smoke test locally before pushing.
+- Tests should tap the way kids do (`page.touchscreen.tap`), not only keyboard Enter or synthetic clicks.
 
-## Pretend-camera hide and pop out — Codex, 2026-10-06
+## Open, not done
 
-- R-14 released in [PR #11](https://github.com/DeltaSNull/KidPhone/pull/11); final checks/deployment/live verification are recorded above. Root cause: hideBelow/hideAbove affected detection but almost never clipped animal drawing; peek travel also did not always lower the whole sprite behind cover. Foreground props have finite height, so animals could emerge below the pond/bush/grass.
-- Behavior: actual sprite pixels clip at cover boundaries; peek travel lowers the entire sprite behind cover, with hidden/show pauses and gentle transitions. Pop-up positions for zebra, lion, gorilla, turtle and baby dinosaur now expose recognizable faces. Detection uses opaque sprite bounds so transparent margins cannot earn invisible-animal credit. Free camera exploration, existing art/voices, local photos and permission policy are preserved.
-- Verification: clipping/full-retreat tests failed on the old drawing; checks then exposed the turtle's unreachable photo goal, transparent-margin photo credit and the gorilla remaining behind its bush. Recognition check failed for the old zebra pop-up. Final tests/camera-peek.cjs passed all eight animals across 80 cycle samples in each of three Chromium layouts: zero below-cover pixels, full hidden/exposed pauses, no invisible photo credit, actual scene disappearance and visible emergence. Actual shutter saves distinct photos without/with hippo labels when hidden/popped up. Hidden/up scene panels inspected. Test-only probes are injected by the test server, not shipped in the app. Full npm test, independent review, Chromium/WebKit CI and publication results are recorded in the batch PR; physical phone timing/family play remains R-04.
-- Claude: this is the plan going forward. Check SCHOOL_ROADMAP.md, HANDOFF.md and AGENTS.md before anything else; fetch current main and inspect open PRs/checks. Finish this camera batch's outstanding verification/release first. Do not overwrite another model's active branch. Preserve the holds on profiles/tracking and lesson phonics.
+- Physical checks: real iPhone (Safari and home screen, Guided Access, sound after sleep, tilt grip) and a family
+  playtest of the newer games (R-04, G-04, T-09). Nothing in the browser tests proves a child can use it.
+- The first-time voice warm-up downloads every narrator clip (about 17 MB); warming only the apps that are switched on
+  would save data.
+- Much of the newer code is packed into long single lines; reformat a module when you next change it (T-01 also wants
+  gradual extraction).
 
-## Phone and game review — Codex, 2026-10-06
+## History (newest first)
 
-- R-11: the Call icon's 84% height expanded its implicit grid row to 80px within a 60px content area; it sat low and crossed the frame. A 46px square icon now centers inside the usable face in portrait, landscape and short Safari layouts. Number keys and pretend call behavior remain intact.
-- R-12: removing Web Animation nodes did not cancel their onfinish callbacks. Real Chromium reproduction showed an old Dino treat crediting a newly opened egg and a Paint Pals drop painting after Home. Leaving now clears completion handlers and cancels those animations before removing nodes. Dino hatch completion uses navigation-managed later(); leaving during an earned hatch settles the baby exactly once, cancels the celebration, and starts a fresh egg. Partial egg fill and unfinished paint pictures remain available on return.
-- R-13: Dino egg wiggle previously replaced its −50% centering with zero translation, shifting it out of the nest. Keyframes now oscillate around −50%. The test pauses the real CSS animation and samples its center through the duration; it failed on the old CSS before correction.
-- Verification: baseline audio-return passed. Each of the initial four focused regressions (Call containment/centering, old Dino treat, earned hatch return, hidden paint drop) failed for its intended reason before the fix and passed individually in all three Chromium layouts. tests/phone-game-review.cjs is wired into Chromium/WebKit CI. Final combined Chromium suite passed in all three layouts, including sampled egg centering. Independent review found no blocking issues in the code or the additional egg fix. The full local portrait smoke run is in progress; final smoke, CI and publication results are recorded in this branch's PR; physical phone validation remains R-04/G-04.
-- Review: existing regular games cover exploration/listening (Wild Tap, Snack Time), creating/cooperation (Dino Buddies, Paint Pals), route planning/motor play (Ball Trail) and target-food matching/steering (Star Flight). Repeated reward loops alone do not establish learning. I-01 to I-06 describe finite journeys, interactive calls, route variety, animal habitats, forgiving cooperative choices and consistent controls. The current three maze patterns and repeating six-animal route are concrete opportunities; these are ideas, not shipped gameplay.
-- Plugin status: Superpowers systematic debugging, test-first verification and code review used for this batch. Owner connected Context7 and Figma, but no callable tools for either were exposed during the review; no Figma file or Context7 lookup was performed. No dependency/framework change was needed.
-- Claude: this is the plan going forward. Check SCHOOL_ROADMAP.md, HANDOFF.md and AGENTS.md before anything else; fetch main and inspect PR/checks. Finish any failing review-batch checks or release first, then prioritize owner phone feedback and I-01, or I-03/I-04 for a regular-games detour. Keep profiles/tracking and phonics on hold. See I-06 for remaining lifecycle/assistive review; never present pending ideas or physical checks as complete.
-
-## Piano consistency and audio return — Codex, 2026-10-06
-
-- R-09: duck piano uses two brief filtered square-wave quacks tied to its key pitch, plus the existing bell note, matching the other synthesized animal keys. It never uses the longer field recording. The natural mallard recording remains in calls, camera, Wild Tap and games, where the owner found it better. Supersedes R-08's shared-piano behavior.
-- R-10: hidden/pagehide parks the AudioContext, clears held effects and stops narration/music/calls. The next foreground sound or gesture rebuilds the graph even if Safari reports the old engine as running; closed contexts recover too. Reuses decoded recordings; restores the saved parent volume and current School effects level. Hidden sound requests are discarded instead of queued for return; ordinary taps do not rebuild repeatedly. Both visibility return and back/forward restoration are covered. Safari may still require a tap to unlock output.
-- Verification: initial focused Chromium tests passed; final stronger replay assertion and full portrait smoke results plus Chromium/WebKit CI are recorded in this branch's PR. New tests/audio-return.cjs simulates hidden/return, a running-but-frozen render clock, BFCache-style pagehide/pageshow, a closed context, repeated cycles, every piano key, short synthesized duck, clip reuse, School quiet/volume preservation and recorded prompt playback. Both engine CI jobs run it. These simulations do not prove physical iOS audio output; owner checks remain R-04.
-- Technical context: WebKit reports https://bugs.webkit.org/show_bug.cgi?id=276016 and https://bugs.webkit.org/show_bug.cgi?id=263627 describe silent output despite running state. Existing wakeAudio only rebuilt interrupted/stuck states; it did not mark backgrounded contexts for replacement.
-- Claude: this is the plan going forward. Read SCHOOL_ROADMAP.md, HANDOFF.md and AGENTS.md before anything else, fetch current main and check open PRs/latest release. Finish this batch's verification/release first. Preserve the recorded quack outside piano and the toy-style piano quack; use owner iPhone feedback for R-04. Profiles/tracking and lesson phonics remain on hold.
-
-## Duck quack correction — Codex, 2026-10-06
-
-- R-08: replace the short Pekin/pond excerpt with four natural-pitch mallard quacks from Jonathon Jongsma's XC62258, cut at 1.08–2.68 s. Credit and CC BY-SA 3.0 adaptation notes are in assets/sounds/CREDITS.md. New filename quack-v2.mp3 avoids reusing the old audio URL; generator respects the source's output filename. Other recordings remain unchanged.
-- The animal piano duck uses FX.quack() too, with its existing bell note carrying the musical pitch. Calls, camera, Wild Tap and games already use this shared recording. Synthetic fallback remains available when recordings are unavailable.
-- Verification: rebuilt only this recording through the existing audio processing; 1.59 s, phone −24.0 LUFS, full-range −23.6 LUFS, peak 0.275 before MP3. Existing recording level/load and piano tests plus the new recorded-duck assertion run in full smoke CI. Local browser validation initially could not launch because the Chromium binary was absent; installation/retry and final CI/release results are recorded in this branch's PR. Physical phone listening and owner confirmation remain pending under R-04; do not claim automated tests judge recognizability.
-- Claude: this is the plan going forward. Check SCHOOL_ROADMAP.md, HANDOFF.md and AGENTS.md before anything else, fetch main and inspect open PRs/latest release. Finish this fix's verification/release first, then resume owner feedback or the agreed School candidates. Profiles/tracking and lesson phonics remain on hold.
-
-## Learning controls and photo browsing — Codex, 2026-10-05
-
-- R-05: consistent berry speaker buttons in ABC Snack, 123 Snack and Dino Picnic replay the current question using existing recordings. Replaying never changes the question, choices, quantity, hint state, letter record or completion count. Buttons are disabled during arrivals/eating/celebrations so prompts cannot interrupt a completed answer. Original thought-bubble replay remains.
-- R-06: explicit yellow take-one-back buttons in the independent counting games; disabled when empty or busy, hidden in Help count. Original box/plate take-back remains. Counting mode changes restart an active counting lesson on closing Settings, so its controls and quantity layout match the new mode. Dino Picnic uses a three-column scattered layout with reduced jitter and enough room for eight snack choices; choices stay unnumbered and shuffled. No new child tracking or curriculum.
-- R-07: photo position counter, descriptive image alt text, Left/Right/Home/End navigation and Escape back to the selected thumbnail. Opening focuses All photos; covered gallery becomes inert until closing. Thumbnail scroll cancellation binds after insertion into the gallery. Existing touch swiping, wrapping, private storage and Camera access rules remain.
-- Verification: focused Chromium checks passed in all three viewports; final dynamic-row layout check and full portrait smoke are recorded in the branch PR. `tests/play-refinement.cjs` runs in Chromium/WebKit CI across three viewports. It checks spoken question replay without changing state, add/remove and correct feeding, busy/empty/Help-count controls, changed-mode restart, six- and forced maximum-density later-stage snack target separation, photo counter/wrapping/keyboard/focus/inert and canceled gallery activation. Screenshots and focused Chromium results are recorded in the branch PR, along with the full portrait smoke result. Full existing regression jobs remain required before publication. Real-iPhone/family testing remains R-04; do not claim it was done.
-- Claude: this is the plan going forward. Read SCHOOL_ROADMAP.md, HANDOFF.md and AGENTS.md before anything else, fetch current main and inspect open PRs. Finish this batch's failing checks or release first; preserve question replay without scoring, independent counting take-back and touch navigation. Then use owner feedback for R-04 or resume the agreed untracked School candidates. Profiles/tracking and lesson phonics remain on hold.
-
-## Overall refinement — Codex, 2026-10-05
-
-- R-01: shared settings activation waits for a stationary lift. Moving more than 14px, pointercancel or sheet scrolling cancels it. Dynamic Letter Path chips and voice rows are attached before binding so scroll cancellation works. Native disabled controls remain inert; kid play controls still answer immediately.
-- R-02: sticky Access/Sound/School/Tools shortcuts work below the header; reopening resets scroll to zero and focuses Done. The dialog has a label, keyboard focus wrapping and Escape, with focus returned to the clock. Enter/Space can hold the clock for the same three seconds as touch; short holds and blur cancel. Shared buttons support native keyboard/assistive clicks without doubling physical taps; non-native role-button controls support Enter/Space. Selected settings expose aria-pressed alongside their existing visual state. This is partial P2-15 work, not a claim of complete accessibility.
-- R-03: round controls get a default paper disc, Delivery's replay a berry disc and restart a green disc. Background/pagehide cancels the parent hold and queued/playing narrator; speakLine rejects hidden-page prompts from delayed game callbacks.
-- Verification: focused `tests/refinement.cjs` covers three viewports, scrolling/movement/cancel, physical toggle deduplication, keyboard app/settings activation, short/long clock hold, shortcuts, focus reset/wrapping, colored Delivery replay, pagehide cancellation and hidden narration. Run by the Pages jobs for Chromium and WebKit. Full parent-control suite passed locally in Chromium. Final focused refinement suite passed locally in Chromium in all three layouts. Local portrait smoke completed with one Paint Pals assertion failure: its tap six pixels below the status bar was redirected by Chromium touch adjustment to the newly focusable clock (confirmed by recording pointer targets). The test now taps 20px/24px inside each side, outside the canvas and clear of the clock, and waits up to five seconds for both paint drops to land without retrying the gesture. Painting code is unchanged. All other assertions passed. The final CI gate remains authoritative. CI initially found a short-screen scroll target underneath the new sticky header; measured scroll padding now keeps scrollIntoView and keyboard focus below it, including after rotation. The new suite checks this regression. See [PR #6](https://github.com/DeltaSNull/KidPhone/pull/6) for final validation and release status. Screenshots inspected; no real-iPhone/family test claimed. R-04 remains open.
-- Claude: this is the plan going forward. Read SCHOOL_ROADMAP.md, HANDOFF.md and AGENTS.md before anything else; fetch current main and inspect this branch's PR/checks. Finish any outstanding CI/release work first. Then prioritize R-04 with owner feedback and the agreed untracked Today's Adventure / Play Together tasks. Do not undo the optional PIN, object-only Delivery, scroll-safe controls or motion-game progression. Profiles/tracking and lesson phonics remain on hold.
-
-## Optional PIN and Animal Delivery — Codex, 2026-10-05
-
-- P1-14: the first Settings row is a Parent PIN switch, Off on new installs. School only and Custom no longer force PIN creation. Turning On creates/confirms a PIN if needed; cancel returns to Settings without enabling it. Turning Off retains the salted digest for reuse and resets failed-attempt delays. Explicit saved on/off persists; legacy configured PINs migrate to On. Existing protection is not silently removed. Failed saves leave the prior protection active. PIN hashing, cooldown and recovery remain unchanged. App restrictions remain enforced with either switch position.
-- P3-06: remove the decorative/replay carrier animal, including animal pickup objects. Six clear objects (apple, banana, present, star, egg, ball). Three stages of three deliveries: one pickup/two destinations; then choose from three objects and add under the table; then mirror the garden and add under the tree/next to the box. Every relation is introduced before repeat questions. Wrong objects cannot score at a correct destination; object/destination hints appear after two misses. Speaker replays; nine stars show progress; present/play button ends the route and allows a fresh route. No child data saved and no speed scoring. All narration reuses existing clips.
-- Canceled drags do not submit; navigation invalidates animation callbacks so they cannot finish an old delivery. Pickup sizes adapt for portrait/landscape; destination hit targets stay at least 44px even while pulsing. Quantity and attribute combinations, dedicated toddler in/out and real-world follow-through remain unfinished under P3-06/P3-03/P3-08.
-- Local validation: focused Chromium parent checks and full portrait smoke passed (PIN off/on, reload, restrictions, canceled setup, failed storage write, legacy migration plus prior camera/call/offline checks). New `tests/delivery.cjs` passed in all three layouts: object rejection, hints, mirrored relations, nine-stop ending/restart, canceled drag and navigation cleanup. Screenshots inspected in portrait and landscape; all controls fit and hit targets measure at least 44px. Recorded prompt/ending coverage passed. CI and physical-phone checks remain pending until their results are recorded in [PR #5](https://github.com/DeltaSNull/KidPhone/pull/5).
-- First PR CI attempt passed Chromium Pages/offline, motion, Delivery and parent checks plus Safari smoke. The new Safari Delivery test stopped waiting after a fixed 500ms on the second animated delivery. The route suite now uses real time and bounded waits on actual game state, keeping Web Animations and stage timers on the same clock; all outcome assertions remain. Verify the new head in CI before release. Local Safari execution is unavailable due missing host libraries.
-- CI now runs Delivery in Chromium and WebKit. Pages/offline job limit is 25 minutes so slow dependency installation plus the added route suite has room; no checks are skipped. The previous PR's 15-minute Safari job timed out during passing tests after ~14 minutes of installation, then passed on retry.
-- Claude: check SCHOOL_ROADMAP.md, HANDOFF.md, current main and open PRs before continuing. Preserve default-off optional PIN, restrictions without PIN, removed carrier and this delivery route. Resume only any failing CI/release work for this batch, then the next agreed School item. Profiles/tracking and lesson phonics remain on hold.
-
-## Motion games batch — Codex, then Claude, 2026-10-05
-
-### Owner-feedback follow-up — Codex, 2026-10-05
-
-- G-05: Ball Trail formerly spun only from horizontal displacement. The new shaded 32px canvas sphere rotates its surface using both actual travel axes, not requested movement. Steering uses a continuous tilt dead zone and frame-rate-independent acceleration smoothing; short collision steps prevent diagonal corner penetration. Releasing touch stops momentum, and a blocked ball does not spin.
-- G-06: Star Flight now has six stages: parrot/blueberry (flying), puppy/bone (ground), eagle/fish (flying), monkey/banana (ground), butterfly/flower (flying), panda/bamboo (ground). Targets 8/10/12, fall rates 10/14/18 percent per second, later sideways drift and one other-food stream. Only matching food fills collection slots. Wrong food gently cues the goal; no lives, lost collection, or saved child data. After six stages it cycles at capped difficulty three. Ground y is fixed; forward/back tilt and touch cannot lift the animal. Flying animals have a simple animated pixel wing; walkers step only while moving. Next-animal previews make the stage transition clear.
-- Existing parent permission behavior is preserved: no game-screen prompts or buttons. Narration reuses the existing recorded Snack Time wants/yum lines; no new audio assets. Ground/sky backgrounds update on each stage and resize. All stage/puff timers use the navigation-cleared `later()` mechanism.
-- Local validation: Chromium completed all six animal stages in all three phone layouts, along with two-axis/stopped-ball texture checks, ground touch/tilt constraints, food/difficulty goals, wrong-food cues, capped progression and existing permission/access/maze checks. Screenshots inspected for the new sphere and food-goal layout; existing recorded wants/yum lines checked for coverage. A final expanded rerun and full CI gates are tracked by the branch PR before publication. Real-iPhone smoothness, wing appearance and difficulty tuning remain open under G-04.
-- Claude: this follow-up is the plan going forward. Read progress files first, inspect the branch/PR and checks, and do not restore the old five-star loop or horizontal-only rotation. No profile/tracking/phonics work is authorized by this game detour.
-
-- Owner-directed detour from School: **G-01 Ball Trail**, **G-02 Star Flight**, **G-03 shared motion controls**. Codex built them on `codex/motion-games` (PR #3) and hit a usage limit while fixing the parent-test reload race; Claude fixed that on main (the parent-controls test answers voice.json with 404, so no clips are downloading when it reloads; waiting for quiet outlasted the 30-second PIN cooldown) and then, at the owner's go-ahead, reworked the games for the kids before the merge.
-- `MotionGames` (one module, both games, routes `balltrail`/`starflight` in `ACCESS_GROUP` games, blocked in School only). No buttons or words on the kids' screen: a finger held on the field steers (the piece heads for it), and tilt steers once motion is allowed. Tilt counts from the first reading of a round and re-centers whenever a finger lets go; it turns with `screen.orientation.angle`; readings older than 1.5 s are ignored. Five star slots (`.mg-got`, the sticker frame) fill as stars come; rounds start over by themselves (`later`, so leaving cancels them). Ball Trail: `MAZES` (one hedge first, then two two-hedge mazes in turn), hedges in the leaf frame, the star garden in the sun frame, a boop per bump. Star Flight: two stars drift down; five is a cheer. Painted fields `BG.lawn`/`BG.sky`. Hook: `motionGames()`.
-- Motion permission: `askMotion` now serves the pretend camera (`camMotion`: Camera allowed, Move the phone) and the tilt games (`tiltMotion`: Games allowed, new setting `settings.tilt` 'on'/'off', row *Tilt games*). The getting-ready card and Done ask for either; the games themselves never call `requestPermission` (they listen only when `AR.perm` is granted, or there's no permission API), so Safari never asks in front of the kids.
-- Voice (narrator, 'menus' area like "Tap the egg!"): "Roll the ball to the star!", "Fly the parrot to the stars!", "You found the star!", "Five stars! Nice flying!" (6 clips). Game cards: the two new ones come after the four the kids know.
-- Tests: `tests/motion-games.cjs` (Chromium and WebKit in CI, three layouts): no question when a game opens, tilt steering, the hedge, re-centering on lift, the turned screen, finishing both mazes by finger, star slots, rounds starting over, leaving stops listening, Star Flight's five, motion denied (touch still steers), Touch only. Parent controls: Tilt games is disabled when Games is blocked.
-- **G-04 remains open** for the real iPhone (permission, grip, both landscapes, Guided Access Motion) and a family playtest; speed (40% of the field a second) and the 20° full tilt may need tuning from that. Don't claim these were done.
-
-## Current progress review — Codex, 2026-10-04 (America/Chicago)
-
-- Reviewed main `962721c`: 16 of 56 roadmap tasks checked complete (P1: 10, P2: 4, P3: 1, P4: 0, T: 1). Animal Delivery is partly complete; attributes and quantity remain open.
-- Latest main [CI run 37251734648](https://github.com/DeltaSNull/KidPhone/actions/runs/37251734648) passed all six test jobs and Deploy. No open PRs at review time. This review checked code and CI evidence; it did not repeat full suites or perform real-iPhone/family testing.
-- The `claude/wip-phase3` branch is an older WIP snapshot with divergent history. Main already contains the tested Dino Picnic/Delivery work and subsequent owner-feedback fixes. Do not merge that WIP snapshot blindly or restore its old sounds/on-the-box behavior.
-- Next priority: P2-14 + P3-01/P3-07/P3-08 — a short Today's Adventure with a teaching objective, guided practice, fresh example, clear ending, and a real-world action with an adult. Keep it untracked while tracking is deferred. Then P3-03, the dedicated toddler Play Together experience; Help count alone is not that experience.
-- Continue honoring the recorded hold on profiles/tracking and on lesson phonics until the owner approves the sounds. Do not implement profiles merely because an older handoff suggested them.
-- Documentation contradictions about play-time limits, School sounds, and Letter Path phonics were reconciled in this review. No app code changed.
-
-## Owner's feedback, 2026-10-05
-
-- Letter Path uses letter names only until the sounds are right (T-04): "This is a. A is for apple!", "Which one starts with A?", "Which one is a?", "Yes! That's a!". `P_SAY.sound` and the 26 sound clips stay only for the parent page's *Hear the sound*. Don't bring sounds back into lessons until the owner says they're right.
-- Animal Delivery has no "on the box" (the box is open: on and in both looked like on top). Spots: in the box (tap the box; the thing sits behind its front, peeking out), on/under the table, under the tree, next to the box. Levels: in the box / on the table, + under the table, + under the tree and next to the box.
-- Numbers a grown-up reads in the display font (Pixelify Sans) can be misread: its 5 looks like S and its 2 like 8. The PIN keypad digits and dots, the play-time buttons (15 min, 30 min) and the numbers in the play-time and PIN-wait notes now use `var(--digits)` (Press Start 2P): `.pin-num` on keypad digits, `b.n` around numbers in text. Superseded by R-19: plain and dynamically inserted digits now inherit the clear font automatically; `b.n` remains for existing explicit number sizing.
-
-## Last batch: Dino Picnic and Animal Delivery (done)
-
-- Claude, 2026-10-04, on `main`. Both are School games (`ACCESS_GROUP` school), with School-menu cards; the School menu became a two-column picture grid (four across in landscape) to fit seven cards.
-- `Delivery` (P3-06): a 4:3 garden (`#adWorld`, ground at 75%, grass `.ad-ground` running past its edges) with tree/box/table pictures (`SCHOOL_PIX.tree`, `table`, new `ball`), spots `SPOTS` in percent; `LEVELS` add spots after 3 and 6 right in the session (nothing stored). Drag from `#adParcel` or tap a spot; wrong spots are named, the right one glows after two misses. Hook: `delivery()`.
-- `DinoPicnic` (P3-04): `.st` layout; snacks scattered on `#dpSpread`, tapped onto `#dpPlate` at shuffled `SLOTS`; plate tap takes back; `#dpFeed` checks; rings after two misses; `settings.count === 'help'` shows rings and auto-eats. Hook: `dinos()`.
-- Voice lines recorded (120). Smoke tests cover both games (drag, wrong spot, level step, hint; too many, take back, feed, Help count) in all three layouts.
-
-## Owner's request, 2026-10-04: ABC Snack asks by letter name only
-
-- The letter sounds still don't sound right to the owner, so ABC Snack no longer asks for a sound ("Monkey wants /s/!"): the sound stage, the Sounds setting and those 234 voice clips are gone; a saved `lv: 2` or `abc: 'sound'` becomes little letters. At that point sounds remained in Letter Path; the later owner feedback above removed them from its lessons too. They now remain only in the parent page for review. Bring sounds back to ABC Snack only when the owner says the phonics audio is right (T-04).
-
-## Last batch: play time, School sounds, Phase 2 without tracking (done)
-
-- Claude, 2026-10-04, directly on `main` (CI tests every push before it deploys).
-- P1-08 Play time: `PLAY` in `index.html`; parent setting Off/15/30/60 min (`settings.play`), session in `toyphone.session` ({day, used, ended}). Heads-up "Almost time for a break!" and `#breakIc` moon; ends as `go()` leaves the activity (`PLAY.navigate()`), at a menu after 4 s, or after 2 min; `#breakTime` owl screen blocks Home (go → accessHome) and calls (`ringIn`, `maybeRing`); persists across reloads until Start a new session (`#playReset`), a longer limit, Off, or a new day. Test hooks: `session()`, `playTime(ms)`.
-- P1-09 School sounds: a `fx` gain between effects and `master` (the voice bypasses it); `syncFx()` in `go()` applies `settings.schoolFx` (on/quiet/off) in School screens only; `busy()` ignores muted effects so the voice doesn't wait for them. VOICE entries with `need:true` (school, find) are always on (`VOICE_NEED`), shown checked and disabled. Hook: `fxLevel()`.
-- P2-10: ABC Snack `ORDER = LETTERS` (A–Z, A–F first). P2-11: `INK` plain-ink glyphs, ~35% of ABC Snack rounds after three animals (`state().plain`, `#asFoods[data-plain]`) and the last Letter Path Find round (`.lp-cards[data-plain]`). P2-13: 123 Snack Count myself (`settings.count`, default `self`): 5 or 10 boxes, basket adds, tapping the frame takes the last back, `#nsFeed` checks; `FEW`/`MANY` lines; boxes glow (`aim`) after two wrong feeds; Help count keeps the old guided flow.
-- 23 new voice clips. Tests: smoke (all three layouts) covers all of the above; parent-controls still passes. Real-phone checks are listed in the README's manual checklist.
-
-## Earlier batch: parent access controls (done)
-
-- Status: Done. Codex implemented it; Claude fixed the last CI failure and integrated it, 2026-10-04.
-- Merged: [PR #2](https://github.com/DeltaSNull/KidPhone/pull/2), rebased onto main as `ca5c487`, `794069e`, `49191c6`. Main run [#26](https://github.com/DeltaSNull/KidPhone/actions/runs/37218633269) passed every test job and deployed to GitHub Pages.
-- Scope: P1-01 through P1-07, P1-13 and T-05: parent PIN, School-only/Custom/Full phone, navigation enforcement, camera/call shutdown, permission suppression, local persistence, parent guidance, and the access-control tests.
-- Files changed: `index.html`, `tests/parent-controls.cjs`, `tests/smoke.cjs`, `package.json`, `.github/workflows/deploy-pages.yml`, `README.md`, roadmap, and this handoff.
-
-## Implemented behavior
-
-- Full phone remains the initial experience. School-only/Custom require creating and confirming a four-digit PIN. Clock hold opens the PIN gate once configured; changing the PIN happens inside unlocked settings.
-- Salted SHA-256 digest and access choices are local under `toyphone.access`; no plaintext PIN is stored. Five wrong attempts trigger a persisted 30-second cooldown. Home, settings completion, and backgrounding close the parent session.
-- School-only routes Home and restored/disabled screens to School. Custom has independent app toggles and requires at least one available app. Nested school/game screens inherit their section policy.
-- Disabling Camera stops active/pending streams and motion listening. Permission entry points check policy. Disabling Phone ends calls and suppresses incoming/test rings.
-- Failed persistence is reported; a failed policy save does not falsely apply it. PIN recovery and Guided Access are documented in README.
-
-## Validation
-
-- Focused Chromium parent-control checks passed, including setup confirmation, wrong/changed PINs, cooldown across reloads, blocked nested routes, Custom selections, calls, live fake-camera shutdown, background relock, and cached offline launch.
-- Landscape PIN layout was inspected and adjusted so all keypad rows fit. Final layout checks passed; a restored-Camera startup case was then added for CI.
-- Chromium Pages/offline suite passed.
-- Existing portrait smoke completed with one failure: its tapAll helper did not scroll to Volume after the new controls pushed it below the viewport. The helper now centers settings-sheet targets before tapping; a direct volume-persistence assertion was added to the focused suite. CI must verify the corrected full suite.
-- WebKit browser downloaded, but local host dependencies could not be installed (system package permissions). Run the WebKit suites in GitHub CI; do not claim local WebKit validation.
-- Real iPhone Safari/home-screen and family usability checks remain pending. Automated tests do not verify a child's learning.
-- Claude: CI run 37204038090 passed every job except Pages/offline (webkit), which stopped at `tests/parent-controls.cjs`'s forced-offline reload: Playwright WebKit on Linux throws an internal browser error reloading a service-worker page after `context.setOffline(true)` (the same limitation `tests/pages.cjs` documents). The WebKit run now checks that a launch under the service worker keeps School-only and that the worker cached the offline shell; Chromium still does the full forced-offline launch. Chromium parent controls re-run locally: all passed. WebKit can't be installed in Claude's container either (download blocked), so CI verifies it.
-
-- Final: every CI job passed on `b128461` ([run 37212605934](https://github.com/DeltaSNull/KidPhone/actions/runs/37212605934)): Chromium smoke in portrait, landscape and the short Safari view; Pages/offline and parent controls in Chromium and WebKit; WebKit iPhone smoke. Claude also ran the full Chromium smoke and Pages/offline suites locally on that commit: all passed. The same commit passed again on main in run #26 before deploying.
-- Still pending: T-09 real-iPhone checks of the PIN gate, School only and Custom (Safari and home-screen), and family usability.
-
-## Deferred tracking work
-
-P1-10 to P1-12 (profiles, Together progress attribution, legacy migration), the skill model/learning records, and the parent dashboard remain on hold per the owner's decision while testing. Resume only when the owner changes that decision.
-
-If tracking resumes, ABC Snack and Letter Path each capture their progress object inside a closure. Profile switching must reload/reset in-memory state deliberately; changing storage keys alone can mix children's records. Keep private child observations off GitHub.
-
-P1-08 (play-time limits) and P1-09 (School effects/narration controls) are already implemented. Follow the Current progress review and roadmap for the next active work.
-
-## Explicitly unfinished / limitations
-
-- No individual profiles, dedicated toddler Play Together learning journey, or legacy-progress migration yet. Play-time limits and separate School effect/narration controls are implemented.
-- Shared letter statistics, stars, and completion-based progression still exist; they should not be treated as proof of independent learning. New counting/Delivery activities are implemented, but guided lesson structure and offline follow-through remain open. Audio assets must be regenerated and checked when lesson wording changes.
-- Parent policy is still inside the single-file app; gradual module extraction (T-01) remains future work.
-- PIN is a toddler-facing settings gate, not device security or a server account. Clearing website storage resets it and may erase progress/photos; README explains targeted vs full recovery.
-- Policy is stored per browser/home-screen storage. Configure the copy handed to the child; there is no cloud sync.
-- GitHub instructions support switching models, but another model cannot see uncommitted/unpushed edits. Read current branch/PR state before continuing and avoid concurrent edits to the same files.
+- 2026-10-09 R-20 kid-friendly pass (Claude): Sorting/Pattern Train/Story Time/Feelings rebuilt for pre-readers
+  (pictures, short lines, three shuffled answers, varied rounds, stars, auto-advance), Sorting's exact match fixed,
+  picture buttons for call missions, Delivery's More, motion replay and the Dino/Paint extras, forgiving card taps,
+  School-only-without-PIN note, this handoff condensed. New tests/school-activities.cjs.
+- 2026-10-08 R-19 legibility (Codex, [PR #15](https://github.com/DeltaSNull/KidPhone/pull/15)): clear digits
+  everywhere via an embedded number font; readable settings text; contact names and short-screen menus.
+- 2026-10-07 expansion (Codex, [PR #14](https://github.com/DeltaSNull/KidPhone/pull/14)): Delivery quantity/color/size
+  rounds; Ball Trail mazes with a dotted route; Star Flight animal journey; call hello game; Dino Buddies turns; Paint
+  Pals prompt and picture shelf; Sorting, Pattern Train, Story Time, Feelings (P4-01 to P4-04).
+- 2026-10-06 (Codex): School layouts and play-time preview, R-16 to R-18 ([PR #13](https://github.com/DeltaSNull/KidPhone/pull/13));
+  complete contact portraits, R-15 ([#12](https://github.com/DeltaSNull/KidPhone/pull/12)); pretend-camera animals hide
+  behind cover, R-14 ([#11](https://github.com/DeltaSNull/KidPhone/pull/11)); centered Call button and stale game
+  animations, R-11 to R-13 ([#10](https://github.com/DeltaSNull/KidPhone/pull/10)); sound back after the phone sleeps
+  and a toy-style piano duck, R-09/R-10 ([#9](https://github.com/DeltaSNull/KidPhone/pull/9)); natural mallard quack,
+  R-08 ([#8](https://github.com/DeltaSNull/KidPhone/pull/8), credited in assets/sounds/CREDITS.md).
+- 2026-10-05 (Codex): question replay, take-one-back and photo browsing, R-05 to R-07 ([#7](https://github.com/DeltaSNull/KidPhone/pull/7));
+  scroll-safe settings with shortcuts and keyboard support, R-01 to R-03 ([#6](https://github.com/DeltaSNull/KidPhone/pull/6));
+  optional PIN and the nine-stop Delivery route, P1-14/P3-06 ([#5](https://github.com/DeltaSNull/KidPhone/pull/5));
+  two-axis rolling ball and Star Flight stages, G-05/G-06 ([#4](https://github.com/DeltaSNull/KidPhone/pull/4)).
+- 2026-10-05 motion games (Codex, then Claude, [PR #3](https://github.com/DeltaSNull/KidPhone/pull/3)): Ball Trail and
+  Star Flight, the *Tilt games* setting, no permission prompts in front of the kids. Same day (Claude, on main): Letter
+  Path by letter name, Delivery without "on the box", clear PIN digits, parent-test reload fix.
+- 2026-10-04 (Claude, on main): Dino Picnic and Animal Delivery (P3-04, P3-06); play time, School sounds and Phase 2
+  without tracking (P1-08, P1-09, P2-10, P2-11, P2-13); counting games. (Codex, [PR #2](https://github.com/DeltaSNull/KidPhone/pull/2)):
+  parent PIN, School only, Custom, access enforcement (P1-01 to P1-07, P1-13, T-05).
