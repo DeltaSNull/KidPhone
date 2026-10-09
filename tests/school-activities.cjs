@@ -100,6 +100,19 @@ const BOOKS = ['seed', 'egg', 'rain'];   // Story Time's shelf
           await ready(id); st = await state();
           if (st.phase === 'done') break;
           const feel = id === 'feelings' && /^How does \w+ feel\?$/.test(st.ask);
+          if (id === 'sorting'){
+            // layout sizes (offsetWidth): the opening zoom scales everything for its first 0.3 s
+            const [target, card] = await page.evaluate(() => ['#sorting .sa-target .sa-pic', '#sorting .sa-choices .sa-pic'].map(q => { const e = document.querySelector(q); return [e.offsetWidth, e.offsetHeight]; }));
+            check(Math.abs(target[0] - card[0]) < 1 && Math.abs(target[1] - card[1]) < 1, `${tag} sorting: the picture to match is drawn at the answers' size (${st.ask})`);
+            if (/same size/.test(st.ask)){
+              const kinds = new Set([...st.choices, st.right].map(k => k.split('-')[2])), sizes = st.choices.map(k => k.split('-')[0]);
+              check(kinds.size === 1 && sizes.filter(z => z === st.right.split('-')[0]).length === 1, `${tag} sorting: "the same size" is all one shape, and only the answer is that size ${JSON.stringify(st.choices)}`);
+            }
+          }
+          if (id === 'patterntrain' && st.choices.some(k => k.startsWith('small'))){
+            const [car, pic] = await page.evaluate(() => ['#patterntrain .sa-car .px', '#patterntrain .sa-choices .sa-pic'].map(q => document.querySelector(q).offsetWidth));
+            check(Math.abs(car - pic) < 1.5, `${tag} patterntrain: the big-and-small answers are drawn at the train cars' size (${Math.round(car)} / ${Math.round(pic)}px)`);
+          }
           if (id === 'sorting' && /same one/.test(st.ask)){
             const same = await page.evaluate(() => { const a = window.__toyPhone.adventure(), s = document.querySelector('#sorting .sa-scene img'), c = document.querySelector(`#sorting [data-choice="${a.right}"] img`); return s.getAttribute('src') === c.getAttribute('src'); });
             check(same, `${tag} sorting: "the same one" is drawn exactly the same, size included`);

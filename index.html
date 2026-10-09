@@ -1108,7 +1108,7 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img:not(.px){image-rendering
 .sa-stars{align-self:center; justify-self:center; display:flex; flex-wrap:wrap; justify-content:center; gap:3px; max-width:calc(100% - 156px); pointer-events:none}
 .sa-stars .px{width:22px; height:22px; opacity:.22} .sa-stars .on .px{opacity:1} .sa-stars .on:last-of-type{animation:wt-bounce .6s}
 .sa-scene{position:relative; min-width:0; min-height:0; display:flex; align-items:center; justify-content:center; gap:4%; container-type:size}
-.sa-scene .px{width:100%; height:100%; display:block}
+.sa-scene .px{width:100%; height:100%; display:block; object-fit:contain}
 .sa-big{width:min(52cqw, 78cqh); height:min(52cqw, 78cqh)} .sa-big.sa-wide{width:min(56cqw, 98cqh); height:auto} .sa-big.sa-card{width:min(40cqw, 62cqh); height:min(40cqw, 62cqh)}
 .sa-duck{width:min(34cqw, 52cqh); height:min(34cqw, 52cqh); flex:none} .sa-duck .px,.sa-away .px{transform:scaleX(-1)}   /* the friend looks at the story */
 .sa-mid{width:min(25cqw, 44cqh); height:min(25cqw, 44cqh); flex:none} .sa-mid.sa-up{width:min(13cqw, 22cqh); height:min(13cqw, 22cqh); align-self:flex-start; margin:4cqh 6cqw 0}
@@ -1122,7 +1122,8 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img:not(.px){image-rendering
 .sa-q{background:#FFF1A6; display:grid; place-items:center; font-size:min(7cqw, 22cqh); line-height:1; color:#7A5A3A; animation:st-hint 1.1s ease-in-out infinite}
 .sa-choices{display:flex; gap:10px; min-width:0; min-height:0}
 .sa-choice{flex:1 1 0; min-width:0; height:clamp(96px, 17vh, 150px); display:flex; align-items:center; justify-content:center; padding:4px; --fr:var(--f-paper)}
-.sa-choice .sa-pic{display:block; height:100%; max-height:100%; max-width:100%; aspect-ratio:1} .sa-choice .sa-pic .px{width:100%; height:100%; display:block}
+.sa-choice .sa-pic{display:block; height:100%; max-height:100%; max-width:100%; aspect-ratio:1} .sa-choice .sa-pic .px{width:100%; height:100%; display:block; object-fit:contain}   /* never stretched when the card isn't square */
+.sa-target{flex:none; width:calc((100% - 20px)/3); height:clamp(96px, 17vh, 150px); --fr:var(--f-cream)}   /* Sorting: one answer card's size */
 .sa-choice.yes{--fr:var(--f-sun)} .sa-choice.hint{--fr:var(--f-lit); animation:st-hint 1.1s ease-in-out infinite} .sa-choice.wig{animation:wig .3s 2}
 .sa-finish{display:grid; justify-items:center; align-content:center; gap:14px; text-align:center; grid-row:2 / -1}
 /* Story Time's shelf: a big cover for each story (its friend and its last page), one under another */
@@ -1137,6 +1138,7 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img:not(.px){image-rendering
   .app.sa{grid-template-rows:64px minmax(0,1fr); grid-template-columns:minmax(0,1fr) clamp(120px, 20vw, 170px); padding:4px 10px 8px}
   .sa-stars{grid-column:1 / -1} .sa-scene{grid-row:2; grid-column:1}
   .sa-choices{grid-row:2; grid-column:2; flex-direction:column} .sa-choice{height:auto; flex:1; min-height:0}
+  .sa-target{flex:none; width:clamp(120px, 20vw, 170px); height:calc((100% - 20px)/3)}
   .sa-finish{grid-column:1 / -1}
   .sa-shelf{grid-column:1 / -1; grid-template-columns:repeat(3, minmax(0, 1fr)); grid-auto-rows:auto; max-height:none}
   .sa-book{flex-direction:column; gap:4%} .sa-book-pet{height:auto; width:38%} .sa-book-pic{height:auto; width:min(92%, 34vh)}
@@ -4978,6 +4980,8 @@ function saveAccess(next){
      for while the engine isn't running is held for a moment and played as soon as it runs again. Every touch checks
      the engine; one that won't restart is replaced with a new one. */
 const VOLS = [.25, .45, .7, 1];
+/* the master compressor (also used when the tests render a sound to measure it) */
+function squash(c){ const k = c.createDynamicsCompressor(); k.threshold.value = -16; k.knee.value = 10; k.ratio.value = 4; k.attack.value = .004; k.release.value = .25; return k; }
 /* Safari's audio session: "playback" plays through the silent switch. Only with the recorded voice loaded, since in that
    mode the phone's speech voice can't be used (a copy without clip files, like the artifact, stays "ambient" and speaks). */
 const playback = () => { try{ return !!(settings.silent && navigator.audioSession && VB.map); }catch(e){ return false; } };   // (VB comes later in the file)
@@ -5004,8 +5008,7 @@ function audio(){
       setSession();
       const c = ctx = new (window.AudioContext || window.webkitAudioContext)();
       audioNeedsReset = document.visibilityState !== 'visible';
-      const comp = c.createDynamicsCompressor();  // two kids mashing at once never clips
-      comp.threshold.value = -16; comp.knee.value = 10; comp.ratio.value = 4; comp.attack.value = .004; comp.release.value = .25;
+      const comp = squash(c);  // two kids mashing at once never clips
       master = c.createGain(); master.gain.value = VOLS[settings.vol];
       master.connect(comp); comp.connect(c.destination);
       fx = c.createGain(); fx.gain.value = fxLv; fx.connect(master);   // sound effects and animal calls; the voice goes straight to master
@@ -7269,6 +7272,13 @@ const SCHOOL_PIX = {
     P.poly([[23.5, 10], [23.5, 1.5], [30.5, 3.5]], 'r').poly([[23.5, 10], [32, 10], [30, 17]], 'y').poly([[23.5, 10], [23.5, 18.5], [16.5, 16.5]], 'u').poly([[23.5, 10], [15, 10], [17, 3]], 'g');
     P.rect(23, 9, 2, 2, 'k'); P.outline('o', 'a'); },
     {f:'#F8D77C', F:'#D9A84A', l:'#FFE9A8', k:'#493B3A', c:'#F5A0A0', a:'#5BA8F0', w:'#C98A4E', r:'#E95252', y:'#F3C447', u:'#428BDD', g:'#70B968', o:'#493B3A'}],
+  /* (the unkind choice in "what can help": snatching someone's teddy. Not the open hand, which means "wave hello" in calls) */
+  grab:[P => { P.ell(11, 20, 7, 8, 'b').ell(11, 10, 5.5, 5, 'b').ell(6.5, 6, 2, 2, 'b').ell(15.5, 6, 2, 2, 'b').ell(11, 21, 4, 5, 'l').ell(11, 12.5, 2.6, 2, 'l');
+    P.rect(16, 15, 6, 4, 'b'); P.shade('b', 'B', null, 1); P.rect(8, 8, 2, 2, 'k').rect(13, 8, 2, 2, 'k').rect(10, 11, 3, 2, 'k');
+    P.rect(25, 13, 7, 8, 'r').ell(22, 17, 4, 4.5, 's').rect(18, 13, 5, 2, 's').rect(18, 16, 5, 2, 's').rect(18, 19, 5, 2, 's').rect(20, 21, 3, 2, 's');
+    P.line(19, 15, 22, 15, 'S').line(19, 18, 22, 18, 'S'); P.outline('o');
+    P.line(27, 6, 31, 6, 'w').line(25, 9, 31, 9, 'w').line(27, 25, 31, 25, 'w').line(25, 28, 31, 28, 'w'); },
+    {b:'#B07A42', B:'#7A4E26', l:'#E8C28A', k:'#3B2314', r:'#E95252', s:'#F6C79A', S:'#C98A5E', w:'#7FA9D8', o:'#3B2314'}],
   book:[P => { P.poly([[2, 8], [15, 6], [16, 8], [16, 28], [15, 27], [2, 29]], 'p').poly([[30, 8], [17, 6], [16, 8], [16, 28], [17, 27], [30, 29]], 'p').rect(16, 8, 1, 20, 'd');
     for (let i=0;i<5;i++) P.line(5, 11 + i*3.5, 13, 10 + i*3.5, 'l').line(19, 10 + i*3.5, 27, 11 + i*3.5, 'l');
     P.rect(1, 29, 30, 2, 'c'); P.outline('o'); },
@@ -8237,7 +8247,7 @@ const DinoPicnic = (() => {
     {a:'trex', n:'T rex', f:'meat', one:'drumstick', many:'drumsticks', x:'bigroar', m:[.15,.33]},
     {a:'longneck', n:'long neck', f:'leaf', one:'leaf', many:'leaves', x:'bellow', m:[.07,.2]},
     {a:'trike', n:'triceratops', f:'fern', one:'fern', many:'ferns', x:'huff', m:[.08,.55]},
-    {a:'stego', n:'stegosaurus', f:'strawberry', one:'strawberry', many:'strawberries', x:'stego', m:[.06,.73]},
+    {a:'stego', n:'stegosaurus', f:'fern', one:'fern', many:'ferns', x:'stego', m:[.06,.73]},   // ferns, as in Snack Time (no fruit yet in its day)
     {a:'ptero', n:'pterodactyl', f:'fish', one:'fish', many:'fish', x:'screech', m:[.42,.3]}];
   const noun = (d, n) => n === 1 ? d.one : d.many;
   const WANT = (d, n) => `${cap(d.n)} wants ${NUMW[n]} ${noun(d, n)}!`, GOT = (d, n) => `${cap(NUMW[n])} ${noun(d, n)}!`;
@@ -8362,38 +8372,44 @@ function mallet(f, vol=.3, at=0){ synth({f, dur:1.2, vol, at}); synth({f:f*4, du
 /* xylophone: 8 bars on C-major pentatonic, so any mash sounds nice */
 const XYLO = [[523.25,'#F0524F'],[587.33,'#FF9F43'],[659.25,'#FFC83D'],[783.99,'#7CC96B'],[880,'#5CC9B5'],[1046.5,'#3D8FE0'],[1174.66,'#6F7BE0'],[1318.51,'#A46FD1']];
 XYLO.forEach(([f, c], i) => { const b = document.createElement('button'); b.className = 'bar'; b.dataset.i = i; b.setAttribute('aria-label', 'Bar ' + (i + 1)); b.style.setProperty('--c', c); b.style.setProperty('--fr', frameURL(c, dim(c, .6))); b.style.setProperty('--len', (100 - i*5.2) + '%'); $('#xylo').appendChild(b); });
-playField($('#xylo'), '.bar', (b, e) => { const [f] = XYLO[+b.dataset.i]; mallet(f); retrigger(b, 'hit'); const [x, y] = relPt(e); flyNote(x, y); });
+const barVol = i => .3 - i*.012;   // the high bars a little softer, so all eight sound about as loud on a phone
+playField($('#xylo'), '.bar', (b, e) => { const i = +b.dataset.i; mallet(XYLO[i][0], barVol(i)); retrigger(b, 'hit'); const [x, y] = relPt(e); flyNote(x, y); });
 
-/* drums */
+/* drums: all six about as loud on a phone speaker (within ~2 dB through the master compressor; see the smoke test).
+   A phone barely plays anything under 300 Hz, so the drum and the conga ring in the mids (a buzzy body, a beater
+   click, a longer decay the compressor doesn't squash), with only a little deep sine for headphones. */
 const DRUMS = [
-  {a:ART.drum, w:'BOOM!', c:'#F0524F', s(){ tone(160,45,.4,'sine',.75); noise(.03,'lowpass',2000,800,.2); }},
-  {a:ART.conga, w:'BONG!', c:'#FF9F43', s(){ tone(260,140,.35,'sine',.55); tone(390,200,.15,'triangle',.12); }},
-  {a:ART.clap, w:'CLAP!', c:'#FFC83D', s(){ [0,.012,.026].forEach(d=>noise(.04,'bandpass',1600,1400,.45,d)); noise(.18,'bandpass',1400,1000,.3,.03); }},
-  {a:ART.bell, w:'DING!', c:'#7CC96B', s(){ tone(830,830,.7,'triangle',.22); tone(1245,1245,.5,'sine',.12); tone(2490,2490,.2,'sine',.05); }},
-  {a:ART.cymbal, w:'TSSS!', c:'#5BB8E8', s(){ noise(1.1,'highpass',6000,4000,.22); noise(.2,'bandpass',3500,3000,.14); }},
-  {a:ART.star, w:'TING!', c:'#A46FD1', s(){ tone(2637,2637,1.2,'sine',.14); tone(5274,5274,.6,'sine',.04); }}
+  {a:ART.drum, w:'BOOM!', c:'#F0524F', s(){ tone(420,180,.7,'sawtooth',.27,0,0,2400); tone(620,260,.55,'triangle',.38); tone(150,60,.5,'sine',.12); noise(.08,'bandpass',2200,1000,.9); }},
+  {a:ART.conga, w:'BONG!', c:'#FF9F43', s(){ tone(520,400,.55,'sine',.42); tone(1040,800,.3,'triangle',.38); tone(520,400,.2,'square',.09,0,0,2400); noise(.03,'bandpass',2800,2300,.9); }},
+  {a:ART.clap, w:'CLAP!', c:'#FFC83D', s(){ [0,.012,.026].forEach(d=>noise(.04,'bandpass',1600,1400,1.6,d)); noise(.18,'bandpass',1400,1000,1,.03); noise(.05,'highpass',1200,1200,.4); }},
+  {a:ART.bell, w:'DING!', c:'#7CC96B', s(){ tone(830,830,.7,'triangle',.3); tone(1245,1245,.5,'sine',.16); tone(2490,2490,.2,'sine',.06); }},
+  {a:ART.cymbal, w:'TSSS!', c:'#5BB8E8', s(){ noise(1.1,'highpass',6000,4000,.13); noise(.2,'bandpass',3500,3000,.08); }},
+  {a:ART.star, w:'TING!', c:'#A46FD1', s(){ tone(2637,2637,1.2,'sine',.105); tone(5274,5274,.6,'sine',.03); }}
 ];
 DRUMS.forEach((d, i) => { const b = document.createElement('button'); b.className = 'pad'; b.dataset.i = i; b.setAttribute('aria-label', d.w); b.style.setProperty('--c', d.c); b.style.setProperty('--fr', frameURL(d.c, dim(d.c, .6))); b.innerHTML = `<span class="art">${d.a}</span>`; $('#drums').appendChild(b); });
 playField($('#drums'), '.pad', b => { const d = DRUMS[+b.dataset.i]; d.s(); retrigger(b, 'hit'); popWord(b, d.w); });
 
-/* animal piano: every key is an animal sound, tuned to the same pentatonic scale */
+/* animal piano: every key is an animal sound, tuned to the same pentatonic scale. The low animals sit an octave
+   or so above their real voices and ring through brighter filters: an octave down was mostly bass the phone's speaker
+   can't play, so the cow, lion, elephant, dog and frog keys were about 12 dB quieter than the xylophone. */
 const PFX = {
-  moo(f){ synth({f:f*.5, f1:f*.46, dur:.75, type:'sawtooth', vol:.17, lp:700, vib:5, atk:.1}); },
-  rawr(f){ noise(.35,'lowpass',f*3,f*1.4,.22); synth({f:f*.5, f1:f*.42, dur:.38, type:'sawtooth', vol:.09, vib:22, lp:1400}); },
-  toot(f){ synth({f:f*.8, f1:f, dur:.45, type:'sawtooth', vol:.1, vib:6, lp:2400}); },
-  woof(f){ [0,.2].forEach(d => { synth({f:f*.7, f1:f*.45, dur:.13, type:'square', vol:.1, lp:1200, at:d}); noise(.08,'lowpass',900,500,.2,d); }); },
-  ribbit(f){ [0,.06,.12].forEach(d => synth({f, f1:f*.85, dur:.05, type:'square', vol:.08, lp:1600, at:d})); },
-  quack(f){ [0,.22].forEach(d => synth({f:f*.75, f1:f*.55, dur:.16, type:'square', vol:.095, lp:1600, q:1.5, rel:.07, at:d})); },   // two short, tuned toy quacks, matching the other synthesized piano animals
-  meow(f){ synth({f:f*.9, f1:f*1.3, dur:.2, type:'triangle', vol:.2}); synth({f:f*1.3, f1:f*.85, dur:.4, type:'triangle', vol:.2, at:.18, vib:6}); },
-  tweet(f){ [0,.12,.24].forEach(d => synth({f:f*2, f1:f*2.6, dur:.09, vol:.15, at:d})); }
+  moo(f){ synth({f:f*.75, f1:f*.68, dur:.75, type:'sawtooth', vol:.36, lp:1500, vib:5, atk:.1}); },
+  rawr(f){ noise(.35,'lowpass',f*5,f*2,.8); synth({f:f*.75, f1:f*.6, dur:.38, type:'sawtooth', vol:.26, vib:22, lp:2200}); },
+  toot(f){ synth({f, f1:f*1.2, dur:.45, type:'sawtooth', vol:.36, vib:6, lp:3000}); },
+  woof(f){ [0,.2].forEach(d => { synth({f, f1:f*.65, dur:.13, type:'square', vol:.28, lp:2000, at:d}); noise(.08,'lowpass',1600,700,.55,d); }); },
+  ribbit(f){ [0,.06,.12].forEach(d => synth({f, f1:f*.85, dur:.05, type:'square', vol:.3, lp:2200, at:d})); },
+  quack(f){ [0,.22].forEach(d => synth({f:f*.75, f1:f*.55, dur:.16, type:'square', vol:.14, lp:1600, q:1.5, rel:.07, at:d})); },   // two short, tuned toy quacks, matching the other synthesized piano animals
+  meow(f){ synth({f:f*.9, f1:f*1.3, dur:.2, type:'triangle', vol:.26}); synth({f:f*1.3, f1:f*.85, dur:.4, type:'triangle', vol:.26, at:.18, vib:6}); },
+  tweet(f){ [0,.12,.24].forEach(d => synth({f:f*2, f1:f*2.6, dur:.09, vol:.22, at:d})); }
 };
 const PIANO = [
   {a:ART.cow, w:'MOO!', f:261.63, x:'moo', c:'#F0524F'}, {a:ART.lion, w:'ROAR!', f:293.66, x:'rawr', c:'#FF9F43'}, {a:ART.elephant, w:'TOOT!', f:329.63, x:'toot', c:'#FFC83D'}, {a:ART.dog, w:'WOOF!', f:392, x:'woof', c:'#7CC96B'},
   {a:ART.frog, w:'RIBBIT!', f:440, x:'ribbit', c:'#5CC9B5'}, {a:ART.duck, w:'QUACK!', f:523.25, x:'quack', c:'#3D8FE0'}, {a:ART.cat, w:'MEOW!', f:587.33, x:'meow', c:'#6F7BE0'}, {a:ART.chick, w:'TWEET!', f:659.25, x:'tweet', c:'#A46FD1'}
 ];
 PIANO.forEach((k, i) => { const b = document.createElement('button'); b.className = 'pkey'; b.dataset.i = i; b.setAttribute('aria-label', k.w); b.style.setProperty('--c', k.c); b.style.setProperty('--disc', discURL(lit(k.c, .55), 20, dim(k.c, .55))); if ([0,1,3,5,6].includes(i)) b.classList.add('blk'); b.innerHTML = `<span class="art">${k.a}</span>`; $('#piano').appendChild(b); });   // black keys sit between C-D, D-E, G-A
+const playKey = k => { PFX[k.x](k.f); synth({f:k.f*2, dur:.5, vol:.15}); };   // the animal, and the key's own note
 playField($('#piano'), '.pkey', b => {
-  const k = PIANO[+b.dataset.i]; PFX[k.x](k.f); synth({f:k.f*2, dur:.5, vol:.06});
+  const k = PIANO[+b.dataset.i]; playKey(k);
   b.classList.add('hit'); setTimeout(() => b.classList.remove('hit'), 180); popWord(b, k.w);
 });
 
@@ -9022,7 +9038,7 @@ const SnackTime = (() => {
     {a:'eagle', n:'eagle', food:'fish', w:'a fish', fp:'fish', x:'screech', m:[.12,.55]},
     {a:'gorilla', n:'gorilla', food:'orange', w:'an orange', fp:'oranges', x:'thump', m:[.45,.45]},
     {a:'butterfly', n:'butterfly', food:'flower', w:'a flower', fp:'flowers', x:'flutter', m:[.5,.35]},
-    {a:'cat', n:'kitty', food:'milk', w:'some milk', fp:'milk', x:'meow', m:[.33,.4]},
+    {a:'cat', n:'kitty', food:'fish', w:'a fish', fp:'fish', x:'meow', m:[.33,.4]},   // (not milk: cats shouldn't drink it)
     {a:'duck', n:'duck', food:'peas', w:'some peas', fp:'peas', x:'quack', m:[.08,.36]},
     {a:'kangaroo', n:'kangaroo', food:'carrot', w:'a carrot', fp:'carrots', x:'boing', m:[.12,.36]},
     {a:'octopus', n:'octopus', food:'shrimp', w:'a shrimp', fp:'shrimp', x:'splash', m:[.5,.5]},
@@ -9823,8 +9839,8 @@ const SchoolAdventures = (() => {
   const FEELINGS = Object.keys(STORIES), ALL_STORIES = FEELINGS.flatMap(feel => STORIES[feel].map(s => ({...s, feel})));
   const feelAsk = s => `How does ${s.name} feel?`, feelYes = s => `Yes! ${s.name} feels ${s.feel}!`, helpAsk = s => `What can help ${s.name}?`;
   const HELP_FOR = {sad:'hug', mad:'breath', scared:'grownup'}, HELP_YES = {hug:'A hug can help!', breath:'A big breath can help!', grownup:'A grown-up can help!'};
-  const HELP = {hug:() => ART.heart, breath:() => schoolPic('blow'), grownup:() => schoolPic('grownup'), take:() => ART.hand};
-  const HELP_LABEL = {hug:'a hug', breath:'a big breath', grownup:'a grown-up', take:'take the toy'};
+  const HELP = {hug:() => ART.heart, breath:() => schoolPic('blow'), grownup:() => schoolPic('grownup'), take:() => schoolPic('grab')};
+  const HELP_LABEL = {hug:'a hug', breath:'a big breath', grownup:'a grown-up', take:'grab the toy'};
   const prop = k => { const [name, how] = k.split(' '); return {art:saProp(name) || schoolPic(name), how}; };
   /* the friend on the left, turned to face the story; one thing beside it is big, two are smaller */
   const storyScene = (s, things) => () => `<span class="sa-duck">${ART[s.pet]}</span>` + things.map(prop).map(({art, how}) =>
@@ -9837,17 +9853,19 @@ const SchoolAdventures = (() => {
     if (rule === 'same'){ right = {...t}; wrong = [{...t, color:other(COLORS, t.color)}, {...t, kind:other(KINDS, t.kind)}]; }
     if (rule === 'color'){ const k = other(KINDS, t.kind); right = {...t, kind:k}; wrong = [{...t, color:other(COLORS, t.color)}, {...t, color:other(COLORS, t.color), kind:other(KINDS, t.kind, k)}]; }
     if (rule === 'shape'){ const c = other(COLORS, t.color); right = {...t, color:c}; wrong = [{...t, kind:other(KINDS, t.kind)}, {...t, color:other(COLORS, t.color, c), kind:other(KINDS, t.kind)}]; }
-    if (rule === 'size'){ const flip = t.size === 'big' ? 'small' : 'big'; right = {...t, color:other(COLORS, t.color), kind:other(KINDS, t.kind)}; wrong = [{...t, size:flip}, {...t, size:flip, color:other(COLORS, t.color, right.color)}]; }
+    // same size: all three the same shape, so size is what tells them apart; the same-color one is the wrong size
+    if (rule === 'size'){ const flip = t.size === 'big' ? 'small' : 'big'; right = {...t, color:other(COLORS, t.color)}; wrong = [{...t, size:flip}, {...t, size:flip, color:other(COLORS, t.color, right.color)}]; }
     const ask = now ? SAY.sorting[rule === 'color' ? 'nowColor' : 'nowShape'] : SAY.sorting[rule];
-    return {scene:() => `<span class="sa-big">${saShape(t.color, t.kind, t.size)}</span>`, ask, right:tok(right).key, choices:[tok(right), ...wrong.map(tok)],
+    // the picture to match sits on a card exactly the size of the answer cards, so "the same size" looks the same size
+    return {scene:() => `<div class="sa-choice sa-target"><span class="sa-pic">${saShape(t.color, t.kind, t.size)}</span></div>`, ask, right:tok(right).key, choices:[tok(right), ...wrong.map(tok)],
       yes:SAY.sorting.yes[rule], hint:SAY.sorting.hint[rule]};
   }
   const car = c => c.color ? saShape(c.color, c.kind || 'circle', c.size || 'big') : ART[c.pet];
   const carKey = c => c.pet || `${c.size || 'big'}-${c.color}-${c.kind || 'circle'}`;
-  function trainRound(seq, answer, decoys){
+  function trainRound(seq, answer, decoys, actual = false){
     const choice = c => ({key:carKey(c), art:car(c), label:c.pet || `${c.size === 'small' ? 'small ' : ''}${c.color}`});
     return {scene:() => `<div class="sa-train"><span class="sa-engine">${schoolPic('bus')}</span>${seq.map(c => `<span class="sa-car">${car(c)}</span>`).join('')}<span class="sa-car sa-q">?</span></div>`,
-      ask:SAY.patterntrain.ask, right:carKey(answer), choices:[choice(answer), ...decoys.map(choice)], yes:SAY.patterntrain.yes, hint:SAY.patterntrain.hint, train:true};
+      ask:SAY.patterntrain.ask, right:carKey(answer), choices:[choice(answer), ...decoys.map(choice)], yes:SAY.patterntrain.yes, hint:SAY.patterntrain.hint, train:true, actual};
   }
   function makeRounds(id){
     if (id === 'sorting'){
@@ -9858,7 +9876,7 @@ const SchoolAdventures = (() => {
       const [a, b, c] = shuffle(COLORS).map(color => ({color})), [p, q, r] = shuffle(PETS).map(pet => ({pet})), [x, y, z] = shuffle(COLORS).map(color => ({color}));
       const s = pick(COLORS), big = {color:s, kind:'square'}, small = {color:s, kind:'square', size:'small'};
       return [trainRound([a, b, a, b, a], b, [a, c]), trainRound([p, q, p, q, p], q, [p, r]), trainRound([x, x, y, x, x], y, [x, z]),
-        trainRound([big, small, big, small, big], small, [big, {color:other(COLORS, s), kind:'square'}]), trainRound([a, b, c, a, b], c, [a, b])];
+        trainRound([big, small, big, small, big], small, [big, {color:other(COLORS, s), kind:'square'}], true), trainRound([a, b, c, a, b], c, [a, b])];
     }
     if (id === 'storytime'){
       const b = BOOKS.find(x => x.key === book), friend = `<span class="sa-duck">${ART[b.pet]}</span>`;
@@ -9899,7 +9917,14 @@ const SchoolAdventures = (() => {
       const b = document.createElement('button'); b.className = 'sa-choice'; b.dataset.choice = c.key; b.setAttribute('aria-label', c.label);
       b.innerHTML = `<span class="sa-pic">${c.art}</span>`; e.choices.appendChild(b); tap(b, () => answer(c.key, b));
     });
+    if (r.actual) requestAnimationFrame(() => carSize(e));
     speak(intro + r.ask);
+  }
+  /* Pattern Train's big-and-small train: the answers drawn at the train cars' size, so a small one looks small next to
+     the train (in the bigger answer cards a small square was bigger than a big one on the train) */
+  function carSize(e){
+    const car = e.scene.querySelector('.sa-car .px'); if (!car) return;
+    const px = car.offsetWidth; $$('.sa-pic', e.choices).forEach(p => { p.style.width = p.style.height = px + 'px'; });
   }
   function answer(key, b){
     const e = els[id], r = cur();
@@ -9968,6 +9993,7 @@ const SchoolAdventures = (() => {
     tap(e.scene, () => { const r = cur(); if (id === k && phase === 'page' && r) speak(r.line); }, {bump:false});
     put($('.sa-again', s), ART.play); tap($('.sa-again', s), () => { if (id === k) start(); });
     put($('.sa-train-own', s), schoolPic('bus')); tap($('.sa-train-own', s), () => { if (id === k) freeTrain(); });
+    if (k === 'patterntrain' && window.ResizeObserver) new ResizeObserver(() => { const r = cur(); if (id === k && r && r.actual && phase === 'ask') carSize(e); }).observe(e.scene);
     const paint = BG.grad(BACK[k]); bgFor.set(s, paint); if (bgWatch) bgWatch.observe(s);
   });
 
@@ -10032,7 +10058,15 @@ async function renderFx(name, secs=3, synthOnly=false){
   const buf = await off.startRendering();
   return {len, data:Array.from(buf.getChannelData(0))};
 }
-window.__toyPhone = { motionGames: () => MotionGames.state(), adventure: () => SchoolAdventures.state(), go, renderFx, speakable, voiceLines, lineMs,
+/* test hook: render one Music pad offline, through the toy's master compressor, so the tests can compare loudness */
+async function renderPad(kind, i, secs=2){
+  const prev = [ctx, master, fx, OUT, noiseBuf], off = new OfflineAudioContext(1, 44100*secs, 44100), comp = squash(off);
+  ctx = off; master = off.createGain(); master.connect(comp); comp.connect(off.destination); fx = null; OUT = null;
+  try{ if (kind === 'drum') DRUMS[i].s(); else if (kind === 'xylo') mallet(XYLO[i][0], barVol(i)); else playKey(PIANO[i]); }
+  finally { [ctx, master, fx, OUT, noiseBuf] = prev; }
+  return Array.from((await off.startRendering()).getChannelData(0));
+}
+window.__toyPhone = { motionGames: () => MotionGames.state(), renderPad, pads: () => ({drum:DRUMS.length, xylo:XYLO.length, piano:PIANO.length}), adventure: () => SchoolAdventures.state(), go, renderFx, speakable, voiceLines, lineMs,
   voice: () => ({loaded: !!VB.map, clips: VB.map ? Object.keys(VB.map).length : 0, played: VB.played, fallbacks: VB.fallbacks.slice(), log: VB.log.slice(), last: VB.last}),
   recorded: () => Object.keys(REC), trims: FX_TRIM,
   voiceMissing: () => voiceLines().filter(l => !(VB.map && VB.map[l.who + '|' + l.s])).map(l => l.who + '|' + l.s),
