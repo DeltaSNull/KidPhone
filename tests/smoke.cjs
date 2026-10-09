@@ -164,7 +164,7 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
       document.querySelectorAll('button').forEach(b => {
         const s = b.getBoundingClientRect(); if (!s.width || b.closest('[hidden]') || b.closest('.sheet') || b.closest('.ltrack')) return;   // (the selfie strip slides: only part of it shows)
         // School now has an intentional scrollable menu; its cards are checked individually below.
-        if (!b.closest('#schoolList') && (s.left < -1 || s.top < -1 || s.right > vw + 1 || s.bottom > vh + 1)) off.push(b.getAttribute('aria-label') || b.className);
+        if (!b.closest('#schoolList, #gameList, #contacts') && (s.left < -1 || s.top < -1 || s.right > vw + 1 || s.bottom > vh + 1)) off.push(b.getAttribute('aria-label') || b.className);
         if (Math.min(s.width, s.height) < 76) small.push(`${b.getAttribute('aria-label') || b.className} ${Math.round(s.width)}x${Math.round(s.height)}`);
       });
       return { sw: document.documentElement.scrollWidth, vw, off, small };
@@ -247,6 +247,11 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   const nContacts = await page.locator('.contact').count();
   check(nContacts === (family ? 13 : 12), `contacts grid shows ${nContacts} portraits`);
   await shot('2-phone-contacts');
+  for (const card of await page.locator('#contacts .contact').all()) {
+    await card.evaluate(b => b.scrollIntoView({block:'nearest',inline:'nearest',behavior:'instant'}));
+    check(await card.evaluate(b => {const r=b.getBoundingClientRect(),p=b.closest('#contacts').getBoundingClientRect(),f=b.querySelector('.face').getBoundingClientRect(),n=b.querySelector('.nm').getBoundingClientRect();return r.top>=p.top-1&&r.bottom<=p.bottom+1&&r.left>=p.left-1&&r.right<=p.right+1&&f.top>=r.top&&f.bottom<=n.top&&n.bottom<=r.bottom;}), `Contact: ${await card.getAttribute('aria-label')} is reachable with its portrait above its name`);
+  }
+  await page.locator('#contacts').evaluate(el => el.scrollTop=0);
   await fits('phone contacts');
   await tap(`.contact[aria-label="Call Lion"]`);
   check(await state() === 'dialing', 'tapping Lion dials');
@@ -555,6 +560,12 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   check(await page.locator('#gameList .gamecard').count() === 6, 'games list shows all six games');
   const notes = await page.$$eval('#gameList .gamecard', cs => cs.map(c => c.getAttribute('aria-label') + ': ' + c.querySelector('.gplay').textContent.trim()));
   check(JSON.stringify(notes) === JSON.stringify(['Wild Tap: 1 player', 'Snack Time: 1 player', 'Dino Buddies: 1 or 2 players', 'Paint Pals: 1 or 2 players', 'Ball Trail: 1 player', 'Star Flight: 1 player']), `each game card says how many players ${JSON.stringify(notes)}`);
+  for (const card of await page.locator('#gameList .gamecard').all()) {
+    await card.evaluate(b => b.scrollIntoView({block:'nearest',inline:'nearest',behavior:'instant'}));
+    check(await card.evaluate(b => { const r=b.getBoundingClientRect(), p=b.closest('#gameList').getBoundingClientRect(); return r.top>=p.top-1&&r.bottom<=p.bottom+1&&r.left>=p.left-1&&r.right<=p.right+1; }), `Games menu: ${await card.getAttribute('aria-label')} is reachable by scrolling`);
+    check(await card.evaluate(b => {const box=b.getBoundingClientRect();return [...b.querySelectorAll('.gname,.gplay')].every(el=>{const range=document.createRange();range.selectNodeContents(el);return [...range.getClientRects()].every(r=>r.top>=box.top&&r.bottom<=box.bottom&&r.left>=box.left&&r.right<=box.right);});}), 'game title and player note fit their card');
+  }
+  await page.locator('#gameList').evaluate(el => el.scrollTop=0);
   await shot('16-games');
   await fits('games');
   await tap('.gamecard[aria-label="Wild Tap"]'); await sleep(600);
