@@ -70,6 +70,8 @@ on 2026-10-09 from a 6,400-word log; the old text is in git history.)
 - WebKit in CI has hung waiting for a reload's "load" event right after parent-controls' background/foreground check
   (runs #76 and #87, twice each). That test now taps once after coming back (rebuilding the parked sound) and its
   reloads wait for the page to commit and the toy to be ready; a late "load" is logged. Not reproducible here.
+  WebKit's browser also died once in camera-peek's third layout (heavy pixel checks in one shared browser); each
+  layout now gets its own browser.
 
 ## Open, not done
 
