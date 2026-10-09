@@ -1,8 +1,9 @@
 /* Sorting Station, Pattern Train, Story Time and Feelings Friends, played with real taps in three layouts:
    picture-only questions (nothing to read), three answers in a fresh order, Sorting's exact match drawn exactly the
    same, gentle misses with a glowing hint after two, stars and automatic next rounds, a full play to the end screen,
-   Pattern Train's free train, Feelings Friends telling each friend's story first and keeping the face hidden until
-   the feeling is named, the speaker repeating without changing anything, leaving mid-cheer, and School only.
+   Pattern Train's free train, Story Time's shelf (each story played to the end in portrait, the back arrow returning to
+   the shelf), Feelings Friends telling each friend's story first and keeping the face hidden until the feeling is
+   named, the speaker repeating without changing anything, leaving mid-cheer, and School only.
    Run in Chromium, or with --webkit. */
 const assert = require('node:assert/strict');
 const { chromium, webkit } = require('playwright');
@@ -20,6 +21,7 @@ const server = http.createServer((req, res) => {
 });
 const check = (condition, message) => { assert.ok(condition, message); console.log('ok  ' + message); };
 const IDS = ['sorting', 'patterntrain', 'storytime', 'feelings'];
+const BOOKS = ['seed', 'egg', 'rain'];   // Story Time's shelf
 
 (async () => {
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
@@ -49,10 +51,25 @@ const IDS = ['sorting', 'patterntrain', 'storytime', 'feelings'];
       const ready = id => page.waitForFunction(id => { const a = window.__toyPhone.adventure(); return a.id === id && (a.phase === 'done' || (a.phase === 'ask' && !a.busy)); }, id, {timeout:20000});
       const sceneFaces = () => page.locator('#feelings .sa-scene img[alt$=" face"]').evaluateAll(els => els.map(e => e.alt));
 
-      for (const id of IDS){
+      // every story on the shelf in portrait; one in the other layouts
+      const plays = IDS.flatMap(id => id !== 'storytime' ? [[id]] : (full ? BOOKS : [BOOKS[1]]).map(b => [id, b]));
+      for (const [id, book] of plays){
         await go(id);
         check(await page.locator(`#${id}:visible`).count() === 1, `${tag} ${id}: opens in School only`);
         if (id === 'feelings') check((await state()).phase === 'page' && (await sceneFaces()).length === 0, `${tag} feelings: a friend's story comes first, with no feeling face`);
+        if (book){
+          const sh = await state();
+          check(sh.phase === 'shelf' && BOOKS.every(b => sh.books.includes(b)), `${tag} storytime: opens on a shelf of stories ${JSON.stringify(sh.books)}`);
+          check(/^\s*$/.test(await page.locator('#storytime').innerText()), `${tag} storytime: the shelf is pictures only`);
+          const covers = await page.locator('#storytime .sa-book').evaluateAll(els => els.map(e => { const r = e.getBoundingClientRect(); return [r.left, r.top, r.right, r.bottom, r.width, r.height]; }));
+          check(covers.every(([l, t, r, b, w, h]) => l >= 0 && t >= 0 && r <= viewport.width && b <= viewport.height && w >= 96 && h >= 96),
+            `${tag} storytime: every cover is on screen and big enough ${JSON.stringify(covers.map(b => b.slice(4).map(Math.round)))}`);
+          await touch('#storytime .lesson-replay'); await page.waitForTimeout(150);
+          check((await state()).phase === 'shelf', `${tag} storytime: the speaker on the shelf just says it again`);
+          await touch(`#storytime [data-book="${book}"]`); await page.waitForTimeout(150);
+          const opened = await state();
+          check(opened.book === book && opened.phase === 'page', `${tag} storytime: tapping a cover starts that story (${book})`);
+        }
         await asking(id);
         let st = await state();
         // nothing to read: the only text on a question screen is the "?" of a missing train car or a thought
@@ -103,9 +120,22 @@ const IDS = ['sorting', 'patterntrain', 'storytime', 'feelings'];
             `${tag} feelings: four friends, one story for each feeling (${friends.join(', ')})`);
         }
         st = await state();
-        if (!full){ await touch(`#${id} .sc-back`); await page.waitForTimeout(250); continue; }
-        check(st.phase === 'done' && st.solved === st.total && await page.locator(`#${id} .sa-again:visible`).count() === 1, `${tag} ${id}: every star lit, then the end screen with play again`);
-        check(/Together/.test(await page.locator(`#${id} .sa-together`).innerText()), `${tag} ${id}: the end screen has an idea for the grown-up`);
+        if (!full){
+          await touch(`#${id} .sc-back`); await page.waitForTimeout(250);
+          if (book){
+            check((await state()).phase === 'shelf' && await page.locator('#storytime .sa-book:visible').count() === BOOKS.length, `${tag} storytime: the back arrow in a story returns to the shelf`);
+            await touch('#storytime .sc-back'); await page.waitForTimeout(250);
+            check(await page.locator('#school:visible').count() === 1, `${tag} storytime: the shelf's School button goes back to School`);
+          }
+          continue;
+        }
+        check(st.phase === 'done' && st.solved === st.total && await page.locator(`#${id} .sa-again:visible`).count() === 1, `${tag} ${id}${book ? ' ' + book : ''}: every star lit, then the end screen with play again`);
+        check(/Together/.test(await page.locator(`#${id} .sa-together`).innerText()), `${tag} ${id}${book ? ' ' + book : ''}: the end screen has an idea for the grown-up`);
+        if (book){   // the book button goes back to the shelf for the next story
+          await touch('#storytime .sa-more'); await page.waitForTimeout(200);
+          check((await state()).phase === 'shelf', `${tag} storytime: after ${book}, the book button returns to the shelf`);
+          if (book !== BOOKS[BOOKS.length - 1]) continue;
+        }
         if (id === 'patterntrain'){
           await touch('#patterntrain .sa-train-own'); await page.waitForTimeout(200);
           for (let i = 1; i <= 3; i++){ await touch(`#patterntrain .sa-choice:nth-child(${i})`); await page.waitForTimeout(150); }

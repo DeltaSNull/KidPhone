@@ -148,20 +148,24 @@ Guided Access. It's one self-contained `index.html` (vanilla JS, no build step),
   - *Pattern Train*: a bus pulls five wagons and a glowing "?" wagon: "What comes next?" Color patterns (AB, AAB, ABC),
     an animal pattern and a big-small pattern, new each play. A right answer makes the wagons bounce in a little tune.
     Afterwards the kids can make their own train from colors and a duck.
-  - *Story Time*: a three-page picture story read aloud ("Duck plants a seed. Duck gives it water. Look! A little
-    sprout!"), then five picture questions: what Duck planted, what the seed needed, what grew, what happened first
-    and last. A wrong picture gets the page read again.
+  - *Story Time*: opens on a shelf of stories, each cover a friend and the story's last picture ("Pick a story!").
+    Tapping one reads its three picture pages aloud, then asks picture questions about it, including what happened
+    first and last; a wrong picture gets the page read again. *Duck's Garden* (Duck plants a seed, waters it from a
+    pail, a sprout comes up), *Owl and the Egg* (an egg in a nest cracks and a chick comes out) and *Frog's Rainy Day*
+    (gray clouds, rain, a rainbow). The back arrow returns to the shelf, and so does the book button at the end.
+    New stories are a few lines of data in `BOOKS` plus their pictures in `STORY_CARDS`.
   - *Feelings Friends*: a two-page picture story about a friend, read aloud like Story Time ("Owl builds a tall
     tower." "Chick knocks it down!"), then "How does Owl feel?" with three faces to choose from (happy, sad, mad,
     scared). The friend's face stays hidden until the feeling is named, so it's worked out from what happened rather
-    than matched; then the face appears. For the hard feelings, what helps comes next: a hug, a big breath, a
-    grown-up (never "take the toy"). There are two stories for each feeling, each about a different friend (a
-    present, a party; a friend going home, a balloon floating away; a tower knocked down, a picture scribbled on;
-    thunder, a crocodile), and each play tells one per feeling in a new order.
-    These four work like the other School games: nothing to read, the question as a big picture and a short spoken
-    line (the berry speaker repeats it), three framed picture answers in a new order every time, stars along the top,
-    a gentle "uh-uh" and a hint for a wrong one and a glow after two, and the next round coming by itself after a
-    cheer. The end screen has play again and one idea for doing it together away from the phone.
+    than matched; then the face appears. For the hard feelings, what helps comes next: a hug (a heart), a big breath
+    (a face blowing a pinwheel), a grown-up (a grown-up holding a child's hand), never "take the toy". There are two
+    stories for each feeling, each about a different friend (a present, a party; a friend going home, a balloon
+    floating away; a tower knocked down, a picture scribbled on; thunder, a crocodile), and each play tells one per
+    feeling in a new order. These four work like the other School games: nothing to read, the question as a big
+    picture and a short spoken line (the berry speaker repeats it), three framed picture answers in a new order every
+    time, stars along the top, a gentle "uh-uh" and a hint for a wrong one and a glow after two, and the next round
+    coming by itself after a cheer. The end screen has play again and one idea for doing it together away from the
+    phone.
   - Parents get a page in settings: every Letter Path letter with its stars (tap one to hear its sound and lesson
     line, see its words and how to say the sound), In order or All open, and starting the path over; and ABC Snack's
     stage and the letters it has seen the child know, with a way to fix it at big letters, little letters or sounds.

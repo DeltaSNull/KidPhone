@@ -7,8 +7,8 @@ on 2026-10-09 from a 6,400-word log; the old text is in git history.)
 
 ## Active batch
 
-- None claimed. Last: **R-21 — Feelings Friends as stories** (Claude, 2026-10-09, branch `claude/feelings-stories`), see
-  History.
+- None claimed. Last: **R-22 — Story Time shelf and clearer help pictures** (Claude, 2026-10-09, branch
+  `claude/story-shelf`), see History.
 - Next candidates, in order: physical checks with the family (R-04, G-04, T-09); Today's Adventure (P3-01, P3-07,
   P3-08); Toddler Play Together (P3-03); consistent game controls (I-06). Sound Safari (P3-05) waits on T-04.
 
@@ -84,13 +84,18 @@ on 2026-10-09 from a 6,400-word log; the old text is in git history.)
 
 ## History (newest first)
 
-- 2026-10-09 R-21 Feelings Friends as stories (Claude): a two-page story per friend (two per feeling, eight friends),
-  then "How does Owl feel?" with the face hidden until it's named. New props in `saProp()`.
-
-- 2026-10-09 R-20 kid-friendly pass (Claude): Sorting/Pattern Train/Story Time/Feelings rebuilt for pre-readers
-  (pictures, short lines, three shuffled answers, varied rounds, stars, auto-advance), Sorting's exact match fixed,
-  picture buttons for call missions, Delivery's More, motion replay and the Dino/Paint extras, forgiving card taps,
-  School-only-without-PIN note, this handoff condensed. New tests/school-activities.cjs.
+- 2026-10-09 R-22 Story Time shelf (Claude): Story Time opens on a shelf of covers; Duck's Garden (water pail page),
+  Owl and the Egg, Frog's Rainy Day. Stories are data in `BOOKS`, pictures in `STORY_CARDS` (40x32, drawn with `Pix`).
+  Feelings' help pictures: a grown-up holding a child's hand, a face blowing a pinwheel (`schoolPic('grownup')`,
+  `schoolPic('blow')`).
+- 2026-10-09 R-21 Feelings Friends as stories (Claude, [PR #17](https://github.com/DeltaSNull/KidPhone/pull/17)): a
+  two-page story per friend (two per feeling, eight friends), then "How does Owl feel?" with the face hidden until it's
+  named. New props in `saProp()`.
+- 2026-10-09 R-20 kid-friendly pass (Claude, [PR #16](https://github.com/DeltaSNull/KidPhone/pull/16)):
+  Sorting/Pattern Train/Story Time/Feelings rebuilt for pre-readers (pictures, short lines, three shuffled answers,
+  varied rounds, stars, auto-advance), Sorting's exact match fixed, picture buttons for call missions, Delivery's
+  More, motion replay and the Dino/Paint extras, forgiving card taps, School-only-without-PIN note, this handoff
+  condensed. New tests/school-activities.cjs.
 - 2026-10-08 R-19 legibility (Codex, [PR #15](https://github.com/DeltaSNull/KidPhone/pull/15)): clear digits
   everywhere via an embedded number font; readable settings text; contact names and short-screen menus.
 - 2026-10-07 expansion (Codex, [PR #14](https://github.com/DeltaSNull/KidPhone/pull/14)): Delivery quantity/color/size

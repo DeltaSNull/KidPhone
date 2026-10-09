@@ -159,7 +159,7 @@ img[src^="data:image/png"]{image-rendering:-webkit-optimize-contrast; image-rend
 .art{line-height:1}
 .art > .px{width:1.15em; height:1.15em}
 /* frames: notched pixel corners, a light rim, a darker lip and a drop shadow, stretched to fit (border-image) */
-.tab,.contact,.dial,.key,.callbtn,.thumb,.pic,.song,.wt-tile,.wt-back,.wt-pad,.wt-choice,.wt-stickers,.wt-newegg,.st-food,.pp-easel,.who-btn,.sheet,.sbtn,.vopt,.confirm,.bar,.pad,.pkey,.vstage img,.pkey.blk::after,.lp-card,.lp-paper,.mg-hedge,.mg-goal,.sa-choice,.sa-think{
+.tab,.contact,.dial,.key,.callbtn,.thumb,.pic,.song,.wt-tile,.wt-back,.wt-pad,.wt-choice,.wt-stickers,.wt-newegg,.st-food,.pp-easel,.who-btn,.sheet,.sbtn,.vopt,.confirm,.bar,.pad,.pkey,.vstage img,.pkey.blk::after,.lp-card,.lp-paper,.mg-hedge,.mg-goal,.sa-choice,.sa-think,.sa-book{
   border-style:solid; border-color:transparent; border-width:9px 9px 15px; border-image:var(--fr, var(--f-paper)) 9 9 15 fill / 9px 9px 15px stretch;
   border-radius:0!important; box-shadow:none!important; background:none!important}
 .word,.wt-word,.nm,.gname,.gplay,.calltime,#zoomTxt,.lp-word{border-style:solid; border-color:transparent; border-width:6px 6px 9px; border-image:var(--tg, var(--t-paper)) 6 6 9 fill / 6px 6px 9px stretch; border-radius:0!important; box-shadow:none!important; background:none!important}
@@ -1125,6 +1125,11 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img:not(.px){image-rendering
 .sa-choice .sa-pic{display:block; height:100%; max-height:100%; max-width:100%; aspect-ratio:1} .sa-choice .sa-pic .px{width:100%; height:100%; display:block}
 .sa-choice.yes{--fr:var(--f-sun)} .sa-choice.hint{--fr:var(--f-lit); animation:st-hint 1.1s ease-in-out infinite} .sa-choice.wig{animation:wig .3s 2}
 .sa-finish{display:grid; justify-items:center; align-content:center; gap:14px; text-align:center; grid-row:2 / -1}
+/* Story Time's shelf: a big cover for each story (its friend and its last page), one under another */
+.sa-shelf{grid-row:2 / -1; display:grid; grid-auto-rows:minmax(0, 1fr); gap:12px; min-height:0; max-height:640px; align-self:center; height:100%; padding:2px 4px 8px}
+.sa-book{display:flex; align-items:center; justify-content:center; gap:6%; min-height:0; padding:6px 10px; --fr:var(--f-paper)}
+.sa-book-pet{height:min(78%, 30vw); aspect-ratio:1; flex:none} .sa-book-pic{height:min(100%, 46vw); aspect-ratio:40/32; flex:none}
+.sa-book .px{width:100%; height:100%; display:block} .sa-book-pet .px{transform:scaleX(-1)}
 .sa-end-art{width:min(40vmin, 160px); height:min(40vmin, 160px)} .sa-end-art .px{width:100%; height:100%}
 .sa-end-btns{display:flex; gap:18px}
 .sa-together{font-family:var(--reading); font-weight:600; font-size:15px; line-height:1.35; color:#5A4A3E; max-width:28em; margin:0 8px}
@@ -1133,6 +1138,8 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img:not(.px){image-rendering
   .sa-stars{grid-column:1 / -1} .sa-scene{grid-row:2; grid-column:1}
   .sa-choices{grid-row:2; grid-column:2; flex-direction:column} .sa-choice{height:auto; flex:1; min-height:0}
   .sa-finish{grid-column:1 / -1}
+  .sa-shelf{grid-column:1 / -1; grid-template-columns:repeat(3, minmax(0, 1fr)); grid-auto-rows:auto; max-height:none}
+  .sa-book{flex-direction:column; gap:4%} .sa-book-pet{height:auto; width:38%} .sa-book-pic{height:auto; width:min(92%, 34vh)}
 }
 
 </style>
@@ -7244,9 +7251,74 @@ const SCHOOL_PIX = {
   table:[P => { P.rect(1, 12, 30, 4, 't'); P.rect(1, 12, 30, 1, 'T'); P.rect(1, 15, 30, 1, 'd'); P.rect(3, 16, 3, 16, 'l').rect(26, 16, 3, 16, 'l'); P.rect(5, 16, 1, 16, 'd').rect(28, 16, 1, 16, 'd'); P.outline('o'); },
     {t:'#C8873E', T:'#E3A75C', d:'#7A4A1E', l:'#A0652A', o:'#3B2314'}],
   ball:[P => { P.ell(16, 17, 12, 12, 'r'); P.ell(16, 17, 4.5, 12, 'w'); P.shade('r', 'R', 'l', 2); P.set(10, 11, 'W').set(11, 10, 'W').set(10, 12, 'W'); P.outline('o'); },
-    {r:'#3D8FE0', R:'#2A63A8', l:'#7FB8F0', w:'#FFD84A', W:'#FFFFFF', o:'#1A2A4A'}]
+    {r:'#3D8FE0', R:'#2A63A8', l:'#7FB8F0', w:'#FFD84A', W:'#FFFFFF', o:'#1A2A4A'}],
+  /* (for Feelings Friends' "what can help": a grown-up holding a child's hand, and a big breath that turns a pinwheel;
+     and an open book for Story Time's shelf) */
+  grownup:[P => { P.ell(10, 6.5, 4.6, 4.8, 'h').ell(10, 8, 3.6, 3.5, 's').rect(6, 4, 9, 2, 'h');
+    P.rect(6, 12, 9, 9, 'b').rect(4, 13, 2, 7, 'b').rect(15, 13, 2, 6, 'b').rect(4, 20, 2, 2, 's').rect(16, 19, 2, 2, 's');
+    P.rect(7, 21, 3, 8, 'p').rect(11, 21, 3, 8, 'p').rect(6, 29, 4, 2, 'x').rect(11, 29, 4, 2, 'x');
+    P.ell(24, 15, 3.9, 3.9, 'y').ell(24, 16.6, 3, 2.8, 's').rect(21, 13, 7, 2, 'y');
+    P.rect(21, 20, 7, 6, 'r').rect(18, 20, 3, 2, 'r').rect(28, 21, 2, 4, 'r').rect(28, 25, 2, 1, 's');
+    P.rect(22, 26, 2, 3, 'q').rect(25, 26, 2, 3, 'q').rect(21, 29, 3, 2, 'x').rect(25, 29, 3, 2, 'x');
+    P.shade('b', 'B', null, 1).shade('r', 'E', null, 1).shade('p', 'P', null, 1);
+    P.set(8, 8, 'k').set(12, 8, 'k').rect(9, 10, 3, 1, 'm').set(23, 16, 'k').set(25, 16, 'k').rect(23, 18, 3, 1, 'm'); P.outline('o'); },
+    {h:'#6B4A2E', s:'#F6C79A', b:'#5BA8F0', B:'#3A7CC4', p:'#4A4E6E', P:'#33364F', x:'#3B2B20', y:'#F3C447', r:'#E95252', E:'#B8322F', q:'#428BDD', k:'#3B2314', m:'#C0504A', o:'#3B2314'}],
+  blow:[P => { P.ell(8, 22, 7.5, 7.5, 'f'); P.shade('f', 'F', 'l', 2);
+    P.rect(4, 20, 2, 1, 'k').rect(9, 20, 2, 1, 'k').ell(3, 24, 1.5, 1.3, 'c').ell(12, 24.5, 1.5, 1.3, 'c').ell(14.5, 25, 1.4, 1.6, 'k');
+    P.tube(16.5, 24, 18, 22, 19.5, 21.5, .55, .55, 'a').tube(17, 26.5, 19, 26, 20.5, 24.5, .55, .55, 'a').rect(23, 17, 2, 14, 'w');
+    P.poly([[23.5, 10], [23.5, 1.5], [30.5, 3.5]], 'r').poly([[23.5, 10], [32, 10], [30, 17]], 'y').poly([[23.5, 10], [23.5, 18.5], [16.5, 16.5]], 'u').poly([[23.5, 10], [15, 10], [17, 3]], 'g');
+    P.rect(23, 9, 2, 2, 'k'); P.outline('o', 'a'); },
+    {f:'#F8D77C', F:'#D9A84A', l:'#FFE9A8', k:'#493B3A', c:'#F5A0A0', a:'#5BA8F0', w:'#C98A4E', r:'#E95252', y:'#F3C447', u:'#428BDD', g:'#70B968', o:'#493B3A'}],
+  book:[P => { P.poly([[2, 8], [15, 6], [16, 8], [16, 28], [15, 27], [2, 29]], 'p').poly([[30, 8], [17, 6], [16, 8], [16, 28], [17, 27], [30, 29]], 'p').rect(16, 8, 1, 20, 'd');
+    for (let i=0;i<5;i++) P.line(5, 11 + i*3.5, 13, 10 + i*3.5, 'l').line(19, 10 + i*3.5, 27, 11 + i*3.5, 'l');
+    P.rect(1, 29, 30, 2, 'c'); P.outline('o'); },
+    {p:'#FFFDF5', d:'#C9B89A', l:'#9FB7D8', c:'#E95252', o:'#5A4A3E'}]
 };
 const schoolPic = name => SCHOOL_PIX[name] ? once('sp' + name, () => { const P = new Pix(32, 32), [draw, pal] = SCHOOL_PIX[name]; draw(P); return `<img class="px" src="${pxURL(P.canvas(pal), 4).slice(5, -2)}" alt="" draggable="false">`; }) : ART[name];
+/* Story Time's pictures, 40x32 scenes drawn like the School sprites: the things in them are outlined, then the sky
+   fills the rest. A nest, a garden bed and two clouds are shared by the pages of their story. */
+const cardSky = (x, y) => y < 12 ? 'S' : 'T', CARD_SKY = {S:'#A5DCEB', T:'#BCE6F2'}, CARD_GREY = {S:'#C4D6DE', T:'#D2E0E6'};
+const cardTilt = (pts, a, cx, cy) => pts.map(([x, y]) => [cx + x*Math.cos(a) - y*Math.sin(a), cy + x*Math.sin(a) + y*Math.cos(a)]);
+const cardBed = P => { P.rect(0, 24, 40, 8, 'd').ell(26, 24.5, 6, 2.5, 'd'); P.shade('d', 'D', 'L', 1); };
+const CARD_BED = {d:'#9C7452', D:'#6E4E34', L:'#B8906A'};
+const cardNest = P => { P.ell(20, 25, 12, 4.5, 'n').rect(8, 20, 24, 3, '.').ell(20, 22.6, 11, 1.4, 'n'); for (let x=10;x<31;x+=3) P.line(x, 22, x + 2, 27, 'N'); P.line(9, 25, 31, 25, 'N'); };
+const cardEgg = P => { P.rect(0, 26, 40, 6, 'g'); P.shade('g', 'G', null, 1); P.ell(20, 19, 5.5, 7, 'e'); P.shade('e', 'E', 'w', 2); };
+const CARD_NEST = {g:'#7CC86A', G:'#5AA84C', e:'#FFF6E0', E:'#E0D2B0', w:'#FFFFFF', s:'#8ACB7A', n:'#B07A42', N:'#7A4E26', ...CARD_SKY};
+const cardCloud = (P, x, y, s) => P.ell(x, y, 5*s, 3.5*s, 'c').ell(x + 5*s, y - 2*s, 5*s, 4.5*s, 'c').ell(x + 10*s, y, 5*s, 3.5*s, 'c').rect(x, y, 10*s, 3.5*s, 'c');
+const CARD_CLOUD = {g:'#7CC86A', G:'#5AA84C', c:'#A7AEBB', C:'#848C9A', w:'#C9CED8', ...CARD_GREY};
+const STORY_CARDS = {
+  seed:[P => { cardBed(P); P.ell(26, 24.6, 3, 1.3, 'h'); P.shape(26, 18, 1.5708, 5, (u, v) => (u/3.6)**2 + (v/(2.3 - u*.3))**2 <= 1, 'e'); P.shade('e', 'E', 'l', 1); P.ell(7, 6, 4, 4, 'u'); },
+    {...CARD_BED, h:'#4A3424', e:'#D9A860', E:'#A87634', l:'#F2CC8A', u:'#FFC83D', ...CARD_SKY, o:'#3B2B20'}, 'a seed going into the soil'],
+  water:[P => { cardBed(P);   // a water pail, tipped to pour onto the seed
+    P.poly(cardTilt([[-7, 0], [7, 0], [5, 11], [-5, 11]], -.95, 15, 10), 'm'); P.shade('m', 'M', 'n', 1); P.poly(cardTilt([[-7.5, -1], [7.5, -1], [7.5, 1], [-7.5, 1]], -.95, 15, 10), 'n');
+    const h = cardTilt([[-6, 0], [0, -8], [6, 0]], -.95, 15, 10); P.tube(h[0][0], h[0][1], h[1][0], h[1][1], h[2][0], h[2][1], .6, .6, 'x');
+    P.tube(20, 4.5, 26, 8, 27.5, 21, 1.4, 1.1, 'w').ell(23.5, 20, .8, 1, 'w').ell(31, 19, .8, 1, 'w').ell(29.5, 14, .7, .9, 'w'); },
+    {...CARD_BED, m:'#A9B7C6', M:'#7E8C9C', n:'#D3DCE6', x:'#5A6470', w:'#4F9BEA', ...CARD_SKY, o:'#3A3F48'}, 'a water pail pouring water on the seed'],
+  sprout:[P => { cardBed(P); P.rect(25, 12, 2, 12, 'g'); P.shape(20.5, 13, -.45, 7, (u, v) => (u/5.5)**2 + (v/2.6)**2 <= 1, 'g'); P.shape(31, 10, .45, 7, (u, v) => (u/5.5)**2 + (v/2.6)**2 <= 1, 'g');
+    P.shade('g', 'G', 'l', 1); P.ell(7, 6, 4, 4, 'u'); },
+    {...CARD_BED, g:'#5CB85C', G:'#3E8E41', l:'#8EDB7E', u:'#FFC83D', ...CARD_SKY, o:'#2E3A22'}, 'a sprout in the sun'],
+  nest:[P => { cardEgg(P); P.ell(18, 16, 1.2, 1, 's').ell(22, 20, 1.3, 1.1, 's').ell(19, 22, 1, .8, 's'); cardNest(P); }, {...CARD_NEST, o:'#4A3424'}, 'an egg in a nest'],
+  crack:[P => { cardEgg(P); P.ell(18, 19, 1.2, 1, 's'); for (let x=15, up=1; x<25; x+=2, up=!up) P.line(x, up ? 14 : 16, x + 2, up ? 16 : 14, 'k');
+    P.tube(12.5, 13, 11, 17, 12.5, 21, .4, .4, 'a').tube(10, 14, 8.5, 17, 10, 20, .4, .4, 'a').tube(27.5, 13, 29, 17, 27.5, 21, .4, .4, 'a').tube(30, 14, 31.5, 17, 30, 20, .4, .4, 'a'); cardNest(P); },
+    {...CARD_NEST, k:'#5A4A3E', a:'#FFFFFF', o:'#4A3424'}, 'the egg cracking', 'a'],
+  hatch:[P => { P.rect(0, 26, 40, 6, 'g'); P.shade('g', 'G', null, 1); P.ell(20, 12, 5, 4.5, 'y').ell(20, 18, 6, 5, 'y'); P.shade('y', 'Y', 'l', 1);
+    P.poly([[25, 11], [28, 12.5], [25, 14]], 'b').set(21, 10, 'k').set(22, 10, 'k');
+    P.ell(20, 21, 6.5, 4.5, 'e').rect(13, 16, 15, 3, '.'); for (let x=14;x<27;x+=3) P.poly([[x, 19], [x + 1.5, 16.5], [x + 3, 19]], 'e'); P.shade('e', 'E', null, 1);
+    P.poly([[15, 8], [20, 5.5], [25, 8], [23, 8.5], [21.5, 7], [20, 9], [18, 7], [16.5, 8.5]], 'e'); cardNest(P); },
+    {...CARD_NEST, y:'#FFD84A', Y:'#E8B020', l:'#FFF0A0', b:'#FF9F43', k:'#3B2314', o:'#4A3424'}, 'a chick in the nest'],
+  clouds:[P => { P.rect(0, 26, 40, 6, 'g'); P.shade('g', 'G', null, 1); cardCloud(P, 4, 9, 1); cardCloud(P, 22, 14, .8); P.shade('c', 'C', 'w', 1); }, {...CARD_CLOUD, o:'#4A5260'}, 'gray clouds'],
+  rain:[P => { P.rect(0, 26, 40, 6, 'g'); P.shade('g', 'G', null, 1); P.ell(26, 27, 8, 2, 'p').ell(26, 27, 5, 1, 'P'); cardCloud(P, 4, 7, 1); cardCloud(P, 22, 8, .9); P.shade('c', 'C', 'w', 1);
+    [[6, 14], [11, 17], [16, 13], [9, 21], [25, 15], [30, 19], [35, 14], [20, 20], [33, 22], [14, 23]].forEach(([x, y]) => P.rect(x, y, 1, 3, 'r')); },
+    {...CARD_CLOUD, p:'#5BA8F0', P:'#8FD3FF', r:'#4F9BEA', o:'#4A5260'}, 'rain falling'],
+  rainbow:[P => { P.rect(0, 26, 40, 6, 'g'); P.shade('g', 'G', null, 1); ['r', 'a', 'y', 'n', 'b', 'v'].forEach((c, i) => P.ell(20, 27, 17 - i*1.6, 17 - i*1.6, c)); P.ell(20, 27, 7.4, 7.4, '.').rect(0, 27, 40, 5, 'g');
+    P.ell(5, 24, 4, 2.6, 'c').ell(8, 23, 3, 3, 'c').ell(35, 24, 4, 2.6, 'c').ell(32, 23, 3, 3, 'c').ell(34, 5, 3.5, 3.5, 'u'); },
+    {g:'#7CC86A', G:'#5AA84C', r:'#E95252', a:'#FF9F43', y:'#F3C447', n:'#70B968', b:'#428BDD', v:'#8A6FD1', c:'#FFFFFF', u:'#FFC83D', ...CARD_SKY, o:'#4A4A5A'}, 'a rainbow']
+};
+function saCard(kind){
+  return once('sc' + kind, () => { const [draw, pal, label, skip = ''] = STORY_CARDS[kind], P = new Pix(40, 32); draw(P); P.outline('o', skip);
+    P.each(0, 0, 39, 31, (x, y) => { if (!P.get(x, y)) P.set(x, y, cardSky(x, y)); });
+    return `<img class="px" src="${pxURL(P.canvas(pal), 4).slice(5, -2)}" alt="${label}" draggable="false">`; });
+}
 /* a word for each letter, the picture and the sound it makes (fx: a toy sound; note is a little tune). Every word starts with
    its letter's sound (iguana, octopus, umbrella: the short vowels), except x, which phonics teaches at the end: fox. */
 const ABC = [
@@ -7275,7 +7347,7 @@ const SCHOOL = [
   {id:'delivery', n:'Animal Delivery', note:'In, on, under', cls:'g-deliv', art:() => `<span class="art big">${ART.kangaroo}</span><span class="art">${schoolPic('box')}</span>`},
   {id:'sorting', n:'Sorting Station', note:'Find what belongs', cls:'g-sorting', art:() => `<span class="art">${saShape('red','square')}</span><span class="art">${saShape('blue','circle')}</span><span class="art">${saShape('yellow','triangle')}</span>`},
   {id:'patterntrain', n:'Pattern Train', note:'What comes next?', cls:'g-pattern', art:() => `<span class="art">${saShape('red','circle')}</span><span class="art">${saShape('blue','circle')}</span><span class="art">${saShape('red','circle')}</span>`},
-  {id:'storytime', n:'Story Time', note:'Duck grows a seed', cls:'g-story', art:() => `<span class="art">${ART.duck}</span><span class="art">${saGarden('sprout')}</span>`},
+  {id:'storytime', n:'Story Time', note:'Pick a story', cls:'g-story', art:() => `<span class="art">${schoolPic('book')}</span><span class="art">${saCard('rainbow')}</span>`},
   {id:'feelings', n:'Feelings Friends', note:'How do you feel?', cls:'g-feelings', art:() => `<span class="art">${saFace('happy')}</span><span class="art">${saFace('sad')}</span>`}
 ];
 SCHOOL.forEach(g => {
@@ -9649,7 +9721,8 @@ try{ if ('serviceWorker' in navigator && location.protocol === 'https:' && !/cla
    - Sorting: find the same one, then one the same color / shape / size, ending with a rule switch on one picture
      (first the same shape, then the same color), the classic card-sorting step for this age.
    - Pattern Train: what comes next in a colour, animal, size or three-part pattern; afterwards, make your own train.
-   - Story Time: a three-page story read aloud (Duck plants a seed), then questions about it and its order.
+   - Story Time: a shelf of picture stories (a cover each: the friend and the last page); tap one to hear its three
+     pages read aloud, then answer picture questions about it and its order. The back arrow returns to the shelf.
    - Feelings Friends: a two-page story about a friend, read aloud like Story Time, then "How does Duck feel?" (happy,
      sad, mad, scared). The friend's face isn't shown until it's answered, so it's worked out from what happened, not
      matched; then pick what helps. One of two stories per feeling each play, each about a different friend. */
@@ -9669,13 +9742,6 @@ function saFace(feeling){
   if (feeling === 'sad') layers.push(['M5 17h3v6H5z', '#428BDD']);
   return pixelPicture(32, 32, layers, 'px', feeling + ' face');
 }
-function saGarden(kind){
-  const plant = kind === 'seed' ? [['M17 24h7v5h-7z', '#F8CE8D', '#5E472C']]
-    : kind === 'water' ? [['M17 24h7v5h-7z', '#F8CE8D', '#5E472C'], ['M9 3h18v12H9z M27 9h8v3h-8z M30 15h3v3h-3z M27 20h3v3h-3z M22 23h3v3h-3z', '#548EE0']]
-    : [['M19 12h3v15h-3z M9 10h10v8h-6v-3H9z M22 7h10v7h-4v4h-6z', '#40894B'], ['M3 2h7v7H3z', '#F9D763']];
-  return pixelPicture(40, 32, [['M0 0h40v32H0z', '#A5DCEB'], ['M0 25h40v7H0z', '#917057'], ...plant], 'px', {seed:'a seed in the soil', water:'watering the seed', sprout:'a sprout in the sun'}[kind]);
-}
-const saBreath = () => pixelPicture(32, 32, [['M4 9h14v3H4z M2 15h22v3H2z M4 21h14v3H4z M22 7h4v4h3v8h-3v4h-4v-3h3v-2h-3v-4h3v-2h-3z', '#5BA8F0']], 'px', 'a big breath');
 /* the Feelings Friends story props that aren't sprites already ('' for any other name) */
 function saProp(kind){
   const INK = '#493B3A', ball = (x, y, rx, ry) => `M${x - rx} ${y}a${rx} ${ry} 0 1 0 ${rx*2} 0a${rx} ${ry} 0 1 0 ${-rx*2} 0z`;
@@ -9710,18 +9776,36 @@ const SchoolAdventures = (() => {
       end:'You sorted them all!', together:'Together: sort socks or toys by color, then by size.'},
     patterntrain:{ask:'What comes next?', yes:'Yes! The pattern goes on!', hint:'Look at the train again!', end:'Choo choo! What a train!', free:'Make your own train!',
       together:'Together: clap, stomp, clap, stomp. What comes next?'},
-    storytime:{pages:['Duck plants a seed.', 'Duck gives it water.', 'Look! A little sprout!'],
-      end:'The end!', together:'Together: plant a seed in a cup, or tell the story with your hands: plant, water, grow!'},
+    storytime:{pick:'Pick a story!', end:'The end!'},
     feelings:{gentle:'Be gentle. Try again!', end:'Every feeling is okay!',
       together:'Together: stop in a story or at the park and ask, "How does that friend feel? What would help?"'}
   };
-  const STORY_ASK = [
-    {ask:'What did Duck plant?', yes:'Yes! A seed!', hint:0, right:'seed', wrong:['ball', 'egg']},
-    {ask:'What did the seed need?', yes:'Yes! Water!', hint:1, right:'water', wrong:['ball', 'star']},
-    {ask:'What grew?', yes:'Yes! A sprout!', hint:2, right:'sprout', wrong:['egg', 'star']},
-    {ask:'What happened first?', yes:'Yes! First, the seed!', hint:0, right:'seed', wrong:['water', 'sprout'], order:true},
-    {ask:'What happened last?', yes:'Yes! Last, the sprout!', hint:2, right:'sprout', wrong:['seed', 'water'], order:true}
+  /* Story Time's shelf. Each story: a friend, a cover (its last page), three pages of [line, picture], then questions
+     (hint: the page whose line answers it; the wrong answers are other pictures). Add a story here and to
+     STORY_CARDS for its pictures; the shelf, the voice lines and the tests pick it up. */
+  const BOOKS = [
+    {key:'seed', title:"Duck's Garden", pet:'duck', cover:'sprout', pages:[['Duck plants a seed.', 'seed'], ['Duck gives it water.', 'water'], ['Look! A little sprout!', 'sprout']],
+      ask:[{ask:'What did Duck plant?', yes:'Yes! A seed!', hint:0, right:'seed', wrong:['ball', 'egg']},
+        {ask:'What did the seed need?', yes:'Yes! Water!', hint:1, right:'water', wrong:['ball', 'star']},
+        {ask:'What grew?', yes:'Yes! A sprout!', hint:2, right:'sprout', wrong:['egg', 'star']},
+        {ask:'What happened first?', yes:'Yes! First, the seed!', hint:0, right:'seed', wrong:['water', 'sprout']},
+        {ask:'What happened last?', yes:'Yes! Last, the sprout!', hint:2, right:'sprout', wrong:['seed', 'water']}],
+      together:'Together: plant a seed in a cup, or tell the story with your hands: plant, water, grow!'},
+    {key:'egg', title:'Owl and the Egg', pet:'owl', cover:'hatch', pages:[['Owl finds an egg in a nest.', 'nest'], ['Crack, crack! The egg wiggles.', 'crack'], ['Hello, little Chick!', 'hatch']],
+      ask:[{ask:'What did Owl find?', yes:'Yes! An egg!', hint:0, right:'egg', wrong:['ball', 'apple']},
+        {ask:'Who came out of the egg?', yes:'Yes! A little chick!', hint:2, right:'chick', wrong:['dog', 'cat']},
+        {ask:'What happened first?', yes:'Yes! First, the egg in the nest!', hint:0, right:'nest', wrong:['crack', 'hatch']},
+        {ask:'What happened last?', yes:'Yes! Last, the chick!', hint:2, right:'hatch', wrong:['nest', 'crack']}],
+      together:'Together: what other babies come out of eggs? Ducks, turtles, even dinosaurs!'},
+    {key:'rain', title:"Frog's Rainy Day", pet:'frog', cover:'rainbow', pages:[['Frog sees gray clouds.', 'clouds'], ['Drip, drop! Frog splashes in the rain.', 'rain'], ['Look, Frog! A rainbow!', 'rainbow']],
+      ask:[{ask:'What fell from the clouds?', yes:'Yes! Rain!', hint:1, right:'rain', wrong:['apple', 'star']},
+        {ask:'Who splashed in the rain?', yes:'Yes! Frog!', hint:1, right:'frog', wrong:['cat', 'chick']},
+        {ask:'What came after the rain?', yes:'Yes! A rainbow!', hint:2, right:'rainbow', wrong:['moon', 'ball']},
+        {ask:'What happened first?', yes:'Yes! First, the clouds!', hint:0, right:'clouds', wrong:['rain', 'rainbow']},
+        {ask:'What happened last?', yes:'Yes! Last, the rainbow!', hint:2, right:'rainbow', wrong:['clouds', 'rain']}],
+      together:'Together: look out the window. What is the weather today?'}
   ];
+  const storyPic = k => STORY_CARDS[k] ? saCard(k) : schoolPic(k);
   /* Feelings Friends: two stories per feeling, each about its own friend, in two pages of [line, what's beside the
      friend]. Situations this age can read: a present, a party; a friend leaving, a lost balloon; a tower knocked down,
      a picture scribbled on; thunder, a crocodile. Props: a sprite, a saProp, or "frog away" (turned to leave) /
@@ -9739,7 +9823,7 @@ const SchoolAdventures = (() => {
   const FEELINGS = Object.keys(STORIES), ALL_STORIES = FEELINGS.flatMap(feel => STORIES[feel].map(s => ({...s, feel})));
   const feelAsk = s => `How does ${s.name} feel?`, feelYes = s => `Yes! ${s.name} feels ${s.feel}!`, helpAsk = s => `What can help ${s.name}?`;
   const HELP_FOR = {sad:'hug', mad:'breath', scared:'grownup'}, HELP_YES = {hug:'A hug can help!', breath:'A big breath can help!', grownup:'A grown-up can help!'};
-  const HELP = {hug:() => ART.heart, breath:saBreath, grownup:() => ART.contacts, take:() => ART.hand};
+  const HELP = {hug:() => ART.heart, breath:() => schoolPic('blow'), grownup:() => schoolPic('grownup'), take:() => ART.hand};
   const HELP_LABEL = {hug:'a hug', breath:'a big breath', grownup:'a grown-up', take:'take the toy'};
   const prop = k => { const [name, how] = k.split(' '); return {art:saProp(name) || schoolPic(name), how}; };
   /* the friend on the left, turned to face the story; one thing beside it is big, two are smaller */
@@ -9777,10 +9861,10 @@ const SchoolAdventures = (() => {
         trainRound([big, small, big, small, big], small, [big, {color:other(COLORS, s), kind:'square'}]), trainRound([a, b, c, a, b], c, [a, b])];
     }
     if (id === 'storytime'){
-      const thing = k => ({key:k, label:k, art:['seed', 'water', 'sprout'].includes(k) ? saGarden(k) : k === 'ball' ? schoolPic('ball') : ART[k]});
-      const pages = SAY.storytime.pages.map((line, i) => ({page:true, line, scene:() => `<span class="sa-duck">${ART.duck}</span><span class="sa-big sa-wide">${saGarden(['seed', 'water', 'sprout'][i])}</span>`}));
-      return [...pages, ...STORY_ASK.map(q => ({scene:() => `<span class="sa-duck">${ART.duck}</span><span class="sa-think">?</span>`, ask:q.ask, right:q.right,
-        choices:[q.right, ...q.wrong].map(thing), yes:q.yes, hint:SAY.storytime.pages[q.hint], order:q.order}))];
+      const b = BOOKS.find(x => x.key === book), friend = `<span class="sa-duck">${ART[b.pet]}</span>`;
+      return [...b.pages.map(([line, pic]) => ({page:true, line, scene:() => `${friend}<span class="sa-big sa-wide">${saCard(pic)}</span>`})),
+        ...b.ask.map(q => ({scene:() => `${friend}<span class="sa-think">?</span>`, ask:q.ask, right:q.right, yes:q.yes, hint:b.pages[q.hint][0],
+          choices:[q.right, ...q.wrong].map(k => ({key:k, label:k, art:storyPic(k)}))}))];
     }
     const told = shuffle(FEELINGS.map(feel => ({...pick(STORIES[feel]), feel})));   // one story per feeling, in a fresh order
     const faces = s => [s.feel, ...shuffle(FEELINGS.filter(x => x !== s.feel)).slice(0, 2)].map(k => ({key:k, art:saFace(k), label:k}));
@@ -9795,7 +9879,7 @@ const SchoolAdventures = (() => {
   }
 
   const els = {};
-  let id = null, rounds = [], step = 0, misses = 0, busy = false, phase = 'ask', solved = 0, cars = [];
+  let id = null, rounds = [], step = 0, misses = 0, busy = false, phase = 'ask', solved = 0, cars = [], book = null;
   const asks = () => rounds.filter(r => !r.page).length;
   const cur = () => rounds[step];
   const speak = s => { hush(); say(s, 0, 'school'); };
@@ -9803,8 +9887,8 @@ const SchoolAdventures = (() => {
   function stars(){ els[id].stars.innerHTML = Array.from({length:asks()}, (_, i) => `<span class="${i < solved ? 'on' : ''}">${ART.star}</span>`).join('');
     els[id].stars.setAttribute('aria-label', `${solved} of ${asks()} stars`); }
   function show(){
-    const e = els[id], r = cur(), intro = step === 0 ? TITLE[id] + '! ' : '';   // the first line says which game it is
-    e.finish.hidden = true; e.scene.hidden = e.choices.hidden = false; e.replay.hidden = false;
+    const e = els[id], r = cur(), intro = step === 0 ? (book ? BOOKS.find(b => b.key === book).title : TITLE[id]) + '! ' : '';   // the first line says which game or story it is
+    e.finish.hidden = true; e.scene.hidden = e.choices.hidden = false; e.replay.hidden = false; if (e.shelf){ e.shelf.hidden = true; backTo(e, 'shelf'); }
     e.scene.innerHTML = r.scene(); e.scene.setAttribute('aria-label', r.page ? r.line : r.ask); e.choices.innerHTML = ''; misses = 0; busy = false; stars();
     if (r.page){   // a story page: read it, then turn the page by itself (tap the picture to hear it again)
       phase = 'page'; e.choices.hidden = true; speak(intro + r.line);
@@ -9837,7 +9921,8 @@ const SchoolAdventures = (() => {
     if (step < rounds.length){ show(); return; }
     const e = els[id]; phase = 'done';
     e.scene.hidden = e.choices.hidden = true; e.replay.hidden = true; e.finish.hidden = false;
-    $('.sa-train-own', e.finish).hidden = id !== 'patterntrain';
+    $('.sa-train-own', e.finish).hidden = id !== 'patterntrain'; $('.sa-more', e.finish).hidden = id !== 'storytime';
+    $('.sa-together', e.finish).textContent = book ? BOOKS.find(b => b.key === book).together : SAY[id].together;
     retrigger($('.sa-end-art', e.finish), 'hop'); FX.cheer(); speak(SAY[id].end);
   }
   function freeTrain(){   // Pattern Train's last stop: any cars, any order, no wrong answers
@@ -9854,18 +9939,32 @@ const SchoolAdventures = (() => {
     speak(SAY.patterntrain.free);
   }
   function start(){ rounds = makeRounds(id); step = 0; solved = 0; cars = []; show(); }
+  /* the top-left button: School, or (inside a story) back to the shelf */
+  function backTo(e, where){ const b = $('.sc-back', e.root); b.innerHTML = where === 'shelf' ? ICON.left : ICON.grid; b.setAttribute('aria-label', where === 'shelf' ? 'Stories' : 'School'); }
+  function shelf(first){
+    const e = els[id]; phase = 'shelf'; book = null; rounds = []; step = 0; solved = 0; busy = false;
+    e.scene.hidden = e.choices.hidden = e.finish.hidden = true; e.shelf.hidden = false; e.replay.hidden = false;
+    e.stars.innerHTML = ''; e.stars.removeAttribute('aria-label'); backTo(e, 'school');
+    speak(first ? TITLE.storytime + '! ' + SAY.storytime.pick : SAY.storytime.pick);
+  }
 
   Object.keys(TITLE).forEach(k => {
     const s = document.createElement('section'); s.className = 'app sa'; s.id = k; s.hidden = true; s.setAttribute('aria-label', TITLE[k]);
     s.innerHTML = `<button class="sc-back" aria-label="School"></button><div class="sa-stars"></div><button class="round lesson-replay" aria-label="Say it again"></button>
-      <div class="sa-scene" role="img"></div><div class="sa-choices"></div>
+      <div class="sa-scene" role="img"></div><div class="sa-choices"></div>${k === 'storytime' ? '<div class="sa-shelf" hidden></div>' : ''}
       <div class="sa-finish" hidden><div class="art sa-end-art">${k === 'feelings' ? saFace('happy') : ART.star}</div>
-        <div class="sa-end-btns"><button class="round go sa-again" aria-label="Play again"></button><button class="round sa-train-own" aria-label="Make your own train"></button></div>
-        <p class="sa-together">${SAY[k].together}</p></div>`;
+        <div class="sa-end-btns"><button class="round go sa-again" aria-label="Play again"></button><button class="round sa-train-own" aria-label="Make your own train"></button><button class="round sa-more" aria-label="More stories"></button></div>
+        <p class="sa-together">${SAY[k].together || ''}</p></div>`;
     $('#apps').append(s);
-    const e = els[k] = {root:s, stars:$('.sa-stars', s), scene:$('.sa-scene', s), choices:$('.sa-choices', s), finish:$('.sa-finish', s), replay:$('.lesson-replay', s)};
-    $('.sc-back', s).innerHTML = ICON.grid; tap($('.sc-back', s), () => { FX.boop(); go('school'); });
-    put(e.replay, ART.ear); tap(e.replay, () => { const r = cur(); if (id === k && r && phase === 'ask') speak(r.ask); }, {throttle:1200});
+    const e = els[k] = {root:s, stars:$('.sa-stars', s), scene:$('.sa-scene', s), choices:$('.sa-choices', s), finish:$('.sa-finish', s), replay:$('.lesson-replay', s), shelf:$('.sa-shelf', s)};
+    $('.sc-back', s).innerHTML = ICON.grid; tap($('.sc-back', s), () => { FX.boop(); if (id === k && e.shelf && phase !== 'shelf'){ clearLater(); shelf(); } else go('school'); });
+    put(e.replay, ART.ear); tap(e.replay, () => { const r = cur(); if (id === k && r && phase === 'ask') speak(r.ask); else if (id === k && phase === 'shelf') speak(SAY.storytime.pick); }, {throttle:1200});
+    if (e.shelf) BOOKS.forEach(b => {   // a cover for each story: its friend and its last page
+      const c = document.createElement('button'); c.className = 'sa-book'; c.dataset.book = b.key; c.setAttribute('aria-label', b.title);
+      c.innerHTML = `<span class="sa-book-pet">${ART[b.pet]}</span><span class="sa-book-pic">${saCard(b.cover)}</span>`; e.shelf.appendChild(c);
+      tap(c, () => { if (id !== k || phase !== 'shelf') return; FX.pop(); book = b.key; start(); });
+    });
+    put($('.sa-more', s), schoolPic('book')); tap($('.sa-more', s), () => { if (id === k) shelf(); });
     tap(e.scene, () => { const r = cur(); if (id === k && phase === 'page' && r) speak(r.line); }, {bump:false});
     put($('.sa-again', s), ART.play); tap($('.sa-again', s), () => { if (id === k) start(); });
     put($('.sa-train-own', s), schoolPic('bus')); tap($('.sa-train-own', s), () => { if (id === k) freeTrain(); });
@@ -9873,19 +9972,20 @@ const SchoolAdventures = (() => {
   });
 
   return {
-    enter(k){ id = k; paintBG(els[k].root, bgFor.get(els[k].root), true); start(); },
+    enter(k){ id = k; book = null; paintBG(els[k].root, bgFor.get(els[k].root), true); if (els[k].shelf) shelf(true); else start(); },
     leave(){ id = null; },
     lines: () => [
       ...Object.values(TITLE).map(t => t + '!'),
       ...['same', 'color', 'shape', 'size', 'nowColor', 'nowShape'].map(k => SAY.sorting[k]), ...Object.values(SAY.sorting.yes), ...Object.values(SAY.sorting.hint), SAY.sorting.end,
       SAY.patterntrain.ask, SAY.patterntrain.yes, SAY.patterntrain.hint, SAY.patterntrain.end, SAY.patterntrain.free,
-      ...SAY.storytime.pages, SAY.storytime.end, ...STORY_ASK.flatMap(q => [q.ask, q.yes]),
+      SAY.storytime.pick, SAY.storytime.end, ...BOOKS.flatMap(b => [b.title + '!', ...b.pages.map(p => p[0]), ...b.ask.flatMap(q => [q.ask, q.yes])]),
       ...ALL_STORIES.flatMap(s => [...s.pages.map(p => p[0]), feelAsk(s), feelYes(s), ...(HELP_FOR[s.feel] ? [helpAsk(s)] : [])]), ...Object.values(HELP_YES),
       SAY.feelings.gentle, SAY.feelings.end
     ],
     state: () => {
       const r = id && rounds[step];
-      return {id, step, phase, solved, total:asks(), busy, misses, cars:cars.length,
+      return {id, step, phase, solved, total:asks(), busy, misses, cars:cars.length, book,
+        books:id && phase === 'shelf' ? $$('.sa-book', els[id].shelf).map(b => b.dataset.book) : [],
         ask:r && !r.page ? r.ask : null, right:r && !r.page ? r.right : null,
         choices:id ? $$('.sa-choice', els[id].choices).map(b => b.dataset.choice) : []};
     }
