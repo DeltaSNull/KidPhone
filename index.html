@@ -250,7 +250,8 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img:not(.px){image-rendering
   #phone .tabs{flex-direction:column; justify-content:center}
   #phone .tabs.two .tab{width:var(--bar); height:min(42%,130px)}
 }
-#contacts{display:grid; gap:10px}
+#contacts{display:grid; gap:10px; overflow-y:auto; overscroll-behavior:contain; touch-action:pan-y}
+#contacts .contact,#schoolList .gamecard{touch-action:pan-y}
 .contact{display:grid; grid-template-rows:minmax(0,1fr) auto; place-items:center; gap:2px; min-width:0; min-height:0; padding:0; --fr:var(--f-glass)}
 .face{
   width:var(--face,80px); height:var(--face,80px); display:grid; place-items:center; overflow:hidden; flex:none; line-height:1;
@@ -5480,7 +5481,7 @@ function tapInScroll(el, fn, {throttle=110,bump=true} = {}){
   el.addEventListener('pointermove', e => { if (down && e.pointerId === down.id && Math.hypot(e.clientX-down.x, e.clientY-down.y) > 14) down = null; });
   el.addEventListener('pointerup', e => { if(down && e.pointerId===down.id){ const d=down;down=null;if(Math.hypot(e.clientX-d.x,e.clientY-d.y)<=14)fire(e); } });
   el.addEventListener('pointercancel', () => down = null);
-  el.closest('.sheet, .pgrid, .gamelist')?.addEventListener('scroll',()=>down=null,{passive:true});
+  el.closest('.sheet, .pgrid, .gamelist, #contacts')?.addEventListener('scroll',()=>down=null,{passive:true});
   keyboardTap(el,fire);
 }
 /* Instruments: tap a bar or key, or slide a finger across them (works with many fingers at once). */
@@ -5639,8 +5640,8 @@ function buildContacts(){
     const f = document.createElement('span'); f.className = 'face'; faceHTML(f, c);
     const n = document.createElement('span'); n.className = 'nm'; n.textContent = c.n;
     b.append(f, n);
-    tap(b, () => { FX.pop(); dial(c); });
     box.appendChild(b);
+    tapInScroll(b, () => { FX.pop(); dial(c); });
   });
   fitContacts();
 }
@@ -5654,17 +5655,18 @@ function fitContacts(){
   probe.style.width = 'max-content'; probe.style.whiteSpace = 'nowrap';
   const wordWidth = Math.min(W, Math.max(...labels.flatMap(el => el.textContent.split(/\s+/).map(word => { probe.textContent = word; return probe.offsetWidth; }))));
   probe.style.whiteSpace = 'normal';
-  let best = {cols:1, rows:n, size:-Infinity};
+  let best = {cols:1, rows:n, size:-Infinity, labelHeight:32}, wholeWords = null;
   for (let cols=1; cols<=n; cols++){
     const rows = Math.ceil(n/cols), w = (W - gap*(cols-1))/cols, h = (H - gap*(rows-1))/rows;
-    if (w < wordWidth) continue;
     probe.style.width = Math.max(1, w - 4) + 'px';
     const labelHeight = Math.max(...labels.map(el => { probe.textContent = el.textContent; return probe.offsetHeight; }));
     const size = Math.min(w - 18, h - 26 - labelHeight);
-    if (size > best.size) best = {cols, rows, size};
+    if (size > best.size) best = {cols, rows, size, labelHeight};
+    if (w >= wordWidth && size >= 0 && (!wholeWords || size > wholeWords.size)) wholeWords = {cols, rows, size, labelHeight};
   }
   probe.remove();
-  box.style.gridTemplateColumns = `repeat(${best.cols},1fr)`; box.style.gridTemplateRows = `repeat(${best.rows},minmax(0,1fr))`;
+  if (wholeWords) best = wholeWords;
+  box.style.gridTemplateColumns = `repeat(${best.cols},1fr)`; box.style.gridTemplateRows = `repeat(${best.rows},minmax(${Math.ceil(best.labelHeight + 50)}px,1fr))`;
   box.style.setProperty('--face', Math.round(clamp(best.size * .92, 24, 150)) + 'px');
 }
 document.fonts?.ready.then(fitContacts);
@@ -9576,7 +9578,7 @@ tap($('#readySkip'), () => { FX.pop(); readyDone(); });
 
 /* ---------- Toddler-proofing ---------- */
 ['gesturestart','gesturechange','gestureend','contextmenu','selectstart','dragstart'].forEach(t => document.addEventListener(t, e => e.preventDefault()));
-const inScroll = e => e.target && e.target.closest && e.target.closest('.pgrid, .sheet');
+const inScroll = e => e.target && e.target.closest && e.target.closest('.pgrid, .sheet, .gamelist, #contacts');
 document.addEventListener('touchmove', e => { if (!inScroll(e)) e.preventDefault(); }, {passive:false});
 let lastTouch = 0;
 document.addEventListener('touchend', e => { const now = Date.now(); if (now - lastTouch < 350 && !inScroll(e)) e.preventDefault(); lastTouch = now; }, {passive:false});

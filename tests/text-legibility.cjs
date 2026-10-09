@@ -19,6 +19,16 @@ const server=http.createServer((req,res)=>{const p=path.join(ROOT,new URL(req.ur
     await context.route('**/assets/family/family.json',r=>r.fulfill({json:{contacts:[]}}));
     await context.route('**/assets/voice/voice.json',r=>r.fulfill({status:404,body:''}));
     const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
+    const nativeScroll=async(selector,app)=>{
+    if(!useWebkit&&await page.locator(selector).evaluate(el=>el.scrollHeight>el.clientHeight)){
+      await page.locator(selector).evaluate(el=>el.scrollTop=0);const b=await page.locator(selector+' > button').first().boundingBox();const cdp=await context.newCDPSession(page);
+      await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:b.x+b.width/2,y:b.y+b.height/2}]});
+      for(let i=1;i<=10;i++){await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:b.x+b.width/2,y:b.y+b.height/2-i*8}]});await page.waitForTimeout(20);}
+      await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});await page.waitForTimeout(200);
+      assert.ok(await page.locator(selector).evaluate(el=>el.scrollTop>0),app+': a finger drag starting on a card scrolls the list');
+      assert.ok(await page.locator('#'+app).isVisible(),app+': scrolling never activates a card');await cdp.detach();
+    }
+    };
     await page.goto(`http://127.0.0.1:${server.address().port}/`);await page.waitForFunction(()=>window.__toyPhone);
     await page.evaluate(()=>document.fonts.ready);await page.evaluate(()=>document.fonts.load('128px "Digit Reference"','0123456789'));
     const clock=page.locator('#clock');await clock.focus();await page.keyboard.down('Enter');await page.waitForTimeout(3250);await page.keyboard.up('Enter');
@@ -41,6 +51,7 @@ const server=http.createServer((req,res)=>{const p=path.join(ROOT,new URL(req.ur
     const label=page.locator('#schoolList .gamecard[aria-label="123 Zoo"] .gname');
     assert.ok((await compare('#schoolList .gamecard[aria-label="123 Zoo"] .gname')).every(d=>d.difference<.06),'School menu numbers are clear without special number markup');
     await label.scrollIntoViewIfNeeded();await page.screenshot({path:shot+'-school.png'});
+    await nativeScroll('#schoolList','school');
     for(const id of ['sorting','patterntrain','storytime','feelings']){
       await page.evaluate(id=>window.__toyPhone.go(id),id);await page.waitForTimeout(150);
       assert.ok((await compare('#'+id+' .sa-count')).every(d=>d.difference<.06),id+' progress uses clear digits');
@@ -52,13 +63,15 @@ const server=http.createServer((req,res)=>{const p=path.join(ROOT,new URL(req.ur
     await page.evaluate(()=>document.getElementById('futureCounter').remove());
     await page.evaluate(()=>window.__toyPhone.go('phone'));await page.waitForTimeout(350);
     assert.ok(await page.locator('#contacts .nm').evaluateAll(names=>names.every(el=>{const box=el.closest('.contact').getBoundingClientRect(), range=document.createRange();range.selectNodeContents(el);return el.scrollWidth<=el.clientWidth&&el.scrollHeight<=el.clientHeight&&[...range.getClientRects()].every(r=>r.left>=box.left&&r.right<=box.right&&r.top>=box.top&&r.bottom<=box.bottom);})), 'every full animal name fits without an ellipsis');
-    assert.ok(await page.locator('#contacts .nm').evaluateAll(names=>names.filter(el=>!el.textContent.includes(' ')).every(el=>{const range=document.createRange();range.selectNodeContents(el);return range.getClientRects().length===1;})), 'single-word animal names stay intact');
+    assert.ok(await page.locator('#contacts .nm').evaluateAll(names=>names.filter(el=>el.textContent!=='Alexandropoulos'&&!el.textContent.includes(' ')).every(el=>{const range=document.createRange();range.selectNodeContents(el);return range.getClientRects().length===1;})), 'single-word animal names stay intact');
+    assert.ok(await page.locator('#contacts .contact').evaluateAll(cards=>cards.every(el=>{const b=el.getBoundingClientRect(),face=el.querySelector('.face').getBoundingClientRect(),name=el.querySelector('.nm').getBoundingClientRect();return face.top>=b.top&&face.bottom<=name.top&&name.bottom<=b.bottom;})), 'portraits and full names fit without overlap, including a long family name');
     await page.screenshot({path:shot+'-contacts.png'});
     await page.evaluate(()=>window.__toyPhone.go('games'));await page.waitForTimeout(350);
     for(const card of await page.locator('#gameList .gamecard').all()){
       await card.scrollIntoViewIfNeeded();
       assert.ok(await card.evaluate(el=>{const b=el.getBoundingClientRect();return [...el.querySelectorAll('.gname,.gplay')].every(label=>{const range=document.createRange();range.selectNodeContents(label);return [...range.getClientRects()].every(r=>r.top>=b.top&&r.bottom<=b.bottom&&r.left>=b.left&&r.right<=b.right);});}), 'game title and player note are fully visible within their card');
     }
+    await nativeScroll('#gameList','games');
     await page.locator('#gameList .gamecard').first().scrollIntoViewIfNeeded();
     const first=page.locator('#gameList .gamecard').first();
     await first.dispatchEvent('pointerdown',{pointerId:77,clientX:100,clientY:200});
@@ -67,6 +80,18 @@ const server=http.createServer((req,res)=>{const p=path.join(ROOT,new URL(req.ur
     assert.ok(await page.locator('#games').isVisible(),'scrolling game cards never opens a game');
     await first.scrollIntoViewIfNeeded();await page.screenshot({path:shot+'-games.png'});
     await first.tap();assert.ok(await page.locator('#wildtap').isVisible(),'stationary card tap still opens its game');
+    // A long optional family contact must not crowd portraits or make a card unreachable.
+    await page.route('**/assets/family/family.json',r=>r.fulfill({json:{contacts:[{name:'Alexandropoulos',color:'#BFE3F7'}]}}));
+    await page.reload();await page.waitForFunction(()=>window.__toyPhone);await page.evaluate(()=>document.fonts.ready);
+    await page.evaluate(()=>window.__toyPhone.go('phone'));await page.waitForTimeout(350);
+    assert.ok(await page.locator('#contacts .contact, #schoolList .gamecard').evaluateAll(cards=>cards.every(el=>getComputedStyle(el).touchAction==='pan-y')), 'contact and School cards allow native vertical touch scrolling');
+    assert.ok(await page.locator('#contacts .nm').allTextContents().then(names=>names.includes('Alexandropoulos')), 'long family contact fixture loaded');
+    for(const card of await page.locator('#contacts .contact').all()){
+      await card.scrollIntoViewIfNeeded();
+      assert.ok(await card.evaluate(el=>{const b=el.getBoundingClientRect(),p=el.closest('#contacts').getBoundingClientRect(),face=el.querySelector('.face').getBoundingClientRect(),name=el.querySelector('.nm').getBoundingClientRect();return b.top>=p.top-1&&b.bottom<=p.bottom+1&&face.top>=b.top&&face.bottom<=name.top&&name.bottom<=b.bottom;}), 'long-name contacts are reachable, with portraits above labels');
+    }
+    await nativeScroll('#contacts','phone');
+    await page.screenshot({path:shot+'-family-contacts.png'});
     assert.deepEqual(errors,[]);console.log('PASS text and numeral rendering '+viewport.width+'x'+viewport.height);await context.close();
   }}finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;}).finally(()=>server.close());
