@@ -17,9 +17,12 @@ const server=http.createServer((req,res)=>{
  if(file===path.join(root,'index.html'))res.end(html);else fs.createReadStream(file).pipe(res);
 });
 (async()=>{
- await new Promise(r=>server.listen(0,'127.0.0.1',r));const browser=await(wk?webkit:chromium).launch();
+ await new Promise(r=>server.listen(0,'127.0.0.1',r));let browser=null;
  try{
  for(const [label,width,height] of [['portrait',390,844],['landscape',844,390],['safari-bars',390,664]]){
+  // A fresh browser for each layout: the pixel checks allocate a lot, and WebKit's browser died in the third layout
+  // when all three shared one (PR #17: "Target page, context or browser has been closed").
+  browser=await(wk?webkit:chromium).launch();
   const context=await browser.newContext({viewport:{width,height},hasTouch:true,isMobile:true});
   await context.route('https://fonts.googleapis.com/**',r=>r.fulfill({contentType:'text/css',body:''}));await context.route('https://fonts.gstatic.com/**',r=>r.abort());
   await context.addInitScript(()=>localStorage.setItem('toyphone.settings',JSON.stringify({incoming:false,camera:'pretend',look:'drag',tilt:'touch'})));
@@ -90,8 +93,8 @@ const server=http.createServer((req,res)=>{
   photo=await page.evaluate(()=>window.__cameraProbe.photo());
   assert.ok(photo&&photo.id!==oldId&&photo.names.includes('hippo'),label+': shutter captures and names the popped-out hippo');
   console.log('ok '+label+': actual shutter distinguishes hidden and popped-out hippo');
-  assert.equal(errors.length,0,label+': no script errors');await context.close();
+  assert.equal(errors.length,0,label+': no script errors');await context.close();await browser.close();browser=null;
  }
  console.log('Camera peek checks passed ('+(wk?'webkit':'chromium')+').');
- }finally{await browser.close();server.close();}
+ }finally{if(browser)await browser.close();server.close();}
 })().catch(e=>{console.error(e);server.close();process.exitCode=1;});

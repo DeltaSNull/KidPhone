@@ -30,7 +30,16 @@ const check = (condition, message) => { assert.ok(condition, message); console.l
     // tests/pages.cjs). Waiting for the downloads to finish took long enough to outlast the 30-second PIN cooldown.
     // Without voice.json the toy speaks as it does from a file:// page, and nothing is downloading when a test reloads.
     await context.route('**/assets/voice/voice.json', r => r.fulfill({status:404, body:''}));
-    const reload = () => page.reload();
+    // WebKit has hung waiting for a reload's "load" event, always the one right after the background/foreground check
+    // below (PR #14's run #76, PR #17's first run and its re-run). The toy is ready once its script has run (every
+    // caller then waits for window.__toyPhone), so a reload waits for the new page to commit; a late "load" is only
+    // logged, with the page's state, to show what WebKit was still waiting for.
+    const reload = async () => {
+      await page.reload({waitUntil:'commit'});
+      await page.waitForLoadState('load', {timeout:10000}).catch(async () => console.log('note: the reloaded page had not fired "load" after 10 s',
+        JSON.stringify(await page.evaluate(() => ({ready:document.readyState, toy:!!window.__toyPhone,
+          sheets:[...document.styleSheets].map(s => s.href).filter(Boolean)})).catch(e => e.message))));
+    };
     await page.addInitScript(() => {
       // Only seed once; reload assertions must exercise persisted application writes.
       if (!localStorage.getItem('toyphone.settings')) localStorage.setItem('toyphone.settings', JSON.stringify({incoming:false, camera:'pretend', look:'drag', silent:false}));
@@ -156,6 +165,9 @@ const check = (condition, message) => { assert.ok(condition, message); console.l
     await page.evaluate(() => { delete document.visibilityState; document.dispatchEvent(new Event('visibilitychange')); });
     check(await page.evaluate(() => document.visibilityState) === 'visible', 'foreground restores native visibility');
     check(!(await visible('#settings')), 'foreground return keeps settings locked');
+    // A child's next touch, as on a phone: it rebuilds the sound the background parked (a suspended AudioContext),
+    // so the reload below starts from the same audio state as every other reload here.
+    await tap('#homeBtn');
     await reload(); await page.waitForFunction(() => window.__toyPhone);
     await hold();
     for (let i=0; i<5; i++) await pin('1111');

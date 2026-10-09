@@ -1110,7 +1110,8 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img:not(.px){image-rendering
 .sa-scene{position:relative; min-width:0; min-height:0; display:flex; align-items:center; justify-content:center; gap:4%; container-type:size}
 .sa-scene .px{width:100%; height:100%; display:block}
 .sa-big{width:min(52cqw, 78cqh); height:min(52cqw, 78cqh)} .sa-big.sa-wide{width:min(56cqw, 98cqh); height:auto} .sa-big.sa-card{width:min(40cqw, 62cqh); height:min(40cqw, 62cqh)}
-.sa-duck{width:min(34cqw, 52cqh); height:min(34cqw, 52cqh); flex:none}
+.sa-duck{width:min(34cqw, 52cqh); height:min(34cqw, 52cqh); flex:none} .sa-duck .px,.sa-away .px{transform:scaleX(-1)}   /* the friend looks at the story */
+.sa-mid{width:min(25cqw, 44cqh); height:min(25cqw, 44cqh); flex:none} .sa-mid.sa-up{width:min(13cqw, 22cqh); height:min(13cqw, 22cqh); align-self:flex-start; margin:4cqh 6cqw 0}
 .sa-think{width:min(22cqw, 34cqh); height:min(22cqw, 34cqh); display:grid; place-items:center; font-size:min(16cqw, 26cqh); line-height:1; color:#7A5A3A; --fr:var(--f-paper)}
 .sa-train{display:flex; align-items:center; justify-content:center; gap:1.5%; width:100%}
 .sa-engine{flex:1.2; max-width:14%; transform:scaleX(-1)} .sa-engine .px{width:100%; height:auto}
@@ -9649,7 +9650,9 @@ try{ if ('serviceWorker' in navigator && location.protocol === 'https:' && !/cla
      (first the same shape, then the same color), the classic card-sorting step for this age.
    - Pattern Train: what comes next in a colour, animal, size or three-part pattern; afterwards, make your own train.
    - Story Time: a three-page story read aloud (Duck plants a seed), then questions about it and its order.
-   - Feelings Friends: name a friend's feeling from the face (happy, sad, mad, scared) and pick what helps. */
+   - Feelings Friends: a two-page story about a friend, read aloud like Story Time, then "How does Duck feel?" (happy,
+     sad, mad, scared). The friend's face isn't shown until it's answered, so it's worked out from what happened, not
+     matched; then pick what helps. One of two stories per feeling each play, each about a different friend. */
 function saShape(color = 'red', kind = 'square', size = 'big'){
   const FILL = {red:'#E95252', blue:'#428BDD', yellow:'#F3C447', green:'#70B968'};
   const FORMS = {
@@ -9673,6 +9676,25 @@ function saGarden(kind){
   return pixelPicture(40, 32, [['M0 0h40v32H0z', '#A5DCEB'], ['M0 25h40v7H0z', '#917057'], ...plant], 'px', {seed:'a seed in the soil', water:'watering the seed', sprout:'a sprout in the sun'}[kind]);
 }
 const saBreath = () => pixelPicture(32, 32, [['M4 9h14v3H4z M2 15h22v3H2z M4 21h14v3H4z M22 7h4v4h3v8h-3v4h-4v-3h3v-2h-3v-4h3v-2h-3z', '#5BA8F0']], 'px', 'a big breath');
+/* the Feelings Friends story props that aren't sprites already ('' for any other name) */
+function saProp(kind){
+  const INK = '#493B3A', ball = (x, y, rx, ry) => `M${x - rx} ${y}a${rx} ${ry} 0 1 0 ${rx*2} 0a${rx} ${ry} 0 1 0 ${-rx*2} 0z`;
+  const PAPER = [['M4 3h24v26H4z', '#FFFDF5', '#8A7A66'], [ball(11, 10, 4, 4), '#F3C447'], ['M5 21h22v7H5z', '#70B968'], ['M20 15h2v6h-2z', '#40894B'], ['M19 12h4v3h-4z', '#E95252']];
+  const P = {
+    cake:[['M2 27h28v3H2z', '#D9D2C5', '#8A7A66'], ['M5 18h22v9H5z', '#F6A9C0', '#7A3B4F'], ['M9 12h14v6H9z', '#FFF3E0', '#7A3B4F'],
+      ['M8 21h2v2H8z M15 23h2v2h-2z M22 21h2v2h-2z', '#E95252'], ['M12 6h2v6h-2z M18 6h2v6h-2z', '#5BA8F0'], ['M12 2h2v3h-2z M18 2h2v3h-2z', '#F3C447']],
+    tower:[['M10 24h12v7H10z', '#E95252', INK], ['M10 17h12v7H10z', '#428BDD', INK], ['M10 10h12v7H10z', '#F3C447', INK], ['M10 3h12v7H10z', '#70B968', INK]],
+    fallen:[['M1 24h12v7H1z', '#428BDD', INK], ['m16 21 11 3-2 7-11-3z', '#E95252', INK], ['m25 7 6 6-6 6-6-6z', '#F3C447', INK], ['m6 6 9 3-3 7-9-3z', '#70B968', INK]],
+    balloon:[[ball(16, 12, 9, 10), '#E95252', '#7A2B2B'], [ball(12, 8, 2, 3), '#F7A0A0'], ['M14 22h4l-2 2z', '#E95252', '#7A2B2B'], ['M16 24h1v2h-1z M15 26h1v2h-1z M16 28h1v4h-1z', '#6B5A4A']],
+    storm:[[ball(10, 15, 6, 5) + ball(17, 11, 8, 7) + ball(24, 15, 6, 5) + 'M8 14h18v6H8z', '#8C93A3'], ['M7 18h20v2H7z', '#6E7484'],
+      ['M16 19h6l-3 4h3l-7 8 2-6h-3z', '#F3C447', '#9A6A10'], ['M5 23h1v3H5z M9 25h1v3H9z M25 23h1v3h-1z M28 26h1v3h-1z', '#5BA8F0']],
+    pond:[[ball(15, 23, 14, 7), '#5BA8F0', '#2F5E9E'], ['M8 21h5v1H8z M17 25h6v1h-6z', '#A5DCEB'], ['M26 8h2v14h-2z M29 12h1v10h-1z', '#40894B'], ['M25 5h3v6h-3z', '#7A5230']],
+    drawing:PAPER,
+    scribble:[...PAPER, ['m6 7 5 6 4-7 4 9 3-8 4 8m-20 3 4 5 4-6 4 7 4-6 3 5', null, '#2B2B2B', 2]]
+  };
+  return P[kind] ? pixelPicture(32, 32, P[kind], 'px', {cake:'a birthday cake', tower:'a block tower', fallen:'fallen blocks', balloon:'a red balloon', storm:'a thunder cloud',
+    pond:'a pond', drawing:'a drawing', scribble:'a scribbled drawing'}[kind]) : '';
+}
 
 const SchoolAdventures = (() => {
   const TITLE = {sorting:'Sorting Station', patterntrain:'Pattern Train', storytime:'Story Time', feelings:'Feelings Friends'};
@@ -9690,7 +9712,8 @@ const SchoolAdventures = (() => {
       together:'Together: clap, stomp, clap, stomp. What comes next?'},
     storytime:{pages:['Duck plants a seed.', 'Duck gives it water.', 'Look! A little sprout!'],
       end:'The end!', together:'Together: plant a seed in a cup, or tell the story with your hands: plant, water, grow!'},
-    feelings:{face:'Look at the face!', gentle:'Be gentle. Try again!', end:'Every feeling is okay!', together:'Together: make happy, sad, mad and scared faces in a mirror. What helps you feel better?'}
+    feelings:{gentle:'Be gentle. Try again!', end:'Every feeling is okay!',
+      together:'Together: stop in a story or at the park and ask, "How does that friend feel? What would help?"'}
   };
   const STORY_ASK = [
     {ask:'What did Duck plant?', yes:'Yes! A seed!', hint:0, right:'seed', wrong:['ball', 'egg']},
@@ -9699,16 +9722,29 @@ const SchoolAdventures = (() => {
     {ask:'What happened first?', yes:'Yes! First, the seed!', hint:0, right:'seed', wrong:['water', 'sprout'], order:true},
     {ask:'What happened last?', yes:'Yes! Last, the sprout!', hint:2, right:'sprout', wrong:['seed', 'water'], order:true}
   ];
-  const FRIENDS = [
-    {pet:'duck', name:'Duck', feel:'sad', why:"Duck's friend went home.", help:'hug', helpYes:'A hug can help!'},
-    {pet:'owl', name:'Owl', feel:'mad', why:"Owl's blocks fell down.", help:'breath', helpYes:'A big breath can help!'},
-    {pet:'cat', name:'Cat', feel:'scared', why:'Cat hears a big boom.', help:'grownup', helpYes:'A grown-up can help!'},
-    {pet:'dog', name:'Puppy', feel:'happy', why:'Puppy got a new ball!'}
-  ];
-  const FEELINGS = ['happy', 'sad', 'mad', 'scared'];
-  const feelAsk = f => `${f.why} How does ${f.name} feel?`, feelYes = f => `Yes! ${f.name} feels ${f.feel}!`, helpAsk = f => `What can help ${f.name}?`;
+  /* Feelings Friends: two stories per feeling, each about its own friend, in two pages of [line, what's beside the
+     friend]. Situations this age can read: a present, a party; a friend leaving, a lost balloon; a tower knocked down,
+     a picture scribbled on; thunder, a crocodile. Props: a sprite, a saProp, or "frog away" (turned to leave) /
+     "balloon up" (small, high). */
+  const STORIES = {
+    happy:[{pet:'dog', name:'Puppy', pages:[['Puppy gets a present!', ['gift']], ["It's a new ball!", ['ball']]]},
+      {pet:'frog', name:'Frog', pages:[["It's Frog's birthday!", ['cake']], ['Friends come to play!', ['chick', 'duck']]]}],
+    sad:[{pet:'duck', name:'Duck', pages:[['Duck and Frog play ball.', ['ball', 'frog']], ['Frog has to go home.', ['frog away', 'home']]]},
+      {pet:'chick', name:'Chick', pages:[['Chick has a red balloon.', ['balloon']], ['Oh no! It floats away!', ['balloon up']]]}],
+    mad:[{pet:'owl', name:'Owl', pages:[['Owl builds a tall tower.', ['tower']], ['Chick knocks it down!', ['fallen', 'chick']]]},
+      {pet:'monkey', name:'Monkey', pages:[['Monkey draws a picture.', ['drawing']], ['Frog scribbles all over it!', ['scribble', 'frog']]]}],
+    scared:[{pet:'cat', name:'Cat', pages:[['Cat plays in the sun.', ['sun']], ['Boom! Loud thunder!', ['storm']]]},
+      {pet:'penguin', name:'Penguin', pages:[['Penguin swims in the pond.', ['pond']], ['A big crocodile swims up!', ['crocodile']]]}]
+  };
+  const FEELINGS = Object.keys(STORIES), ALL_STORIES = FEELINGS.flatMap(feel => STORIES[feel].map(s => ({...s, feel})));
+  const feelAsk = s => `How does ${s.name} feel?`, feelYes = s => `Yes! ${s.name} feels ${s.feel}!`, helpAsk = s => `What can help ${s.name}?`;
+  const HELP_FOR = {sad:'hug', mad:'breath', scared:'grownup'}, HELP_YES = {hug:'A hug can help!', breath:'A big breath can help!', grownup:'A grown-up can help!'};
   const HELP = {hug:() => ART.heart, breath:saBreath, grownup:() => ART.contacts, take:() => ART.hand};
   const HELP_LABEL = {hug:'a hug', breath:'a big breath', grownup:'a grown-up', take:'take the toy'};
+  const prop = k => { const [name, how] = k.split(' '); return {art:saProp(name) || schoolPic(name), how}; };
+  /* the friend on the left, turned to face the story; one thing beside it is big, two are smaller */
+  const storyScene = (s, things) => () => `<span class="sa-duck">${ART[s.pet]}</span>` + things.map(prop).map(({art, how}) =>
+    `<span class="${things.length === 1 && !how ? 'sa-big' : 'sa-mid'}${how ? ' sa-' + how : ''}">${art}</span>`).join('');
 
   /* each round: what the scene shows, what's asked, the right key, the choices {key, art, label}, the hint and the yes */
   const tok = t => ({key:`${t.size}-${t.color}-${t.kind}`, art:saShape(t.color, t.kind, t.size), label:`${t.size === 'small' ? 'small ' : ''}${t.color} ${t.kind}`});
@@ -9746,12 +9782,15 @@ const SchoolAdventures = (() => {
       return [...pages, ...STORY_ASK.map(q => ({scene:() => `<span class="sa-duck">${ART.duck}</span><span class="sa-think">?</span>`, ask:q.ask, right:q.right,
         choices:[q.right, ...q.wrong].map(thing), yes:q.yes, hint:SAY.storytime.pages[q.hint], order:q.order}))];
     }
-    const faces = f => [f.feel, ...shuffle(FEELINGS.filter(x => x !== f.feel)).slice(0, 2)].map(k => ({key:k, art:saFace(k), label:k}));
-    const scene = f => () => `<span class="sa-duck">${ART[f.pet]}</span><span class="sa-big sa-card">${saFace(f.feel)}</span>`;
-    return shuffle(FRIENDS).flatMap(f => [
-      {scene:scene(f), ask:feelAsk(f), right:f.feel, choices:faces(f), yes:feelYes(f), hint:SAY.feelings.face},
-      ...(f.help ? [{scene:() => `<span class="sa-duck">${ART[f.pet]}</span><span class="sa-think">?</span>`, ask:helpAsk(f), right:f.help,
-        choices:[f.help, 'take'].map(k => ({key:k, art:HELP[k](), label:HELP_LABEL[k]})), yes:f.helpYes, hint:SAY.feelings.gentle}] : [])
+    const told = shuffle(FEELINGS.map(feel => ({...pick(STORIES[feel]), feel})));   // one story per feeling, in a fresh order
+    const faces = s => [s.feel, ...shuffle(FEELINGS.filter(x => x !== s.feel)).slice(0, 2)].map(k => ({key:k, art:saFace(k), label:k}));
+    const wondering = s => () => `<span class="sa-duck">${ART[s.pet]}</span><span class="sa-think">?</span>`;   // the face stays hidden until it's named
+    const feeling = s => () => `<span class="sa-duck">${ART[s.pet]}</span><span class="sa-big sa-card">${saFace(s.feel)}</span>`;
+    return told.flatMap(s => [
+      ...s.pages.map(([line, things]) => ({page:true, line, scene:storyScene(s, things)})),
+      {scene:wondering(s), reveal:feeling(s), ask:feelAsk(s), right:s.feel, choices:faces(s), yes:feelYes(s), hint:s.pages[1][0]},
+      ...(HELP_FOR[s.feel] ? [{scene:feeling(s), ask:helpAsk(s), right:HELP_FOR[s.feel],
+        choices:[HELP_FOR[s.feel], 'take'].map(k => ({key:k, art:HELP[k](), label:HELP_LABEL[k]})), yes:HELP_YES[HELP_FOR[s.feel]], hint:SAY.feelings.gentle}] : [])
     ]);
   }
 
@@ -9787,6 +9826,7 @@ const SchoolAdventures = (() => {
       return;
     }
     busy = true; solved++; b.classList.add('yes'); FX.pop(); stars(); speak(r.yes);
+    if (r.reveal){ e.scene.innerHTML = r.reveal(); retrigger(e.scene.lastElementChild, 'hop'); }   // Feelings: now the face shows
     if (r.train) $$('.sa-car', e.scene).forEach((c, i) => later(() => { retrigger(c, 'hop'); tone(392 + i*66, 392 + i*66, .09, 'square', .07); }, 120*i));
     later(() => FX.cheer(), 250);
     later(next, lineMs(r.yes) + 700);
@@ -9840,7 +9880,8 @@ const SchoolAdventures = (() => {
       ...['same', 'color', 'shape', 'size', 'nowColor', 'nowShape'].map(k => SAY.sorting[k]), ...Object.values(SAY.sorting.yes), ...Object.values(SAY.sorting.hint), SAY.sorting.end,
       SAY.patterntrain.ask, SAY.patterntrain.yes, SAY.patterntrain.hint, SAY.patterntrain.end, SAY.patterntrain.free,
       ...SAY.storytime.pages, SAY.storytime.end, ...STORY_ASK.flatMap(q => [q.ask, q.yes]),
-      ...FRIENDS.flatMap(f => [feelAsk(f), feelYes(f), ...(f.help ? [helpAsk(f), f.helpYes] : [])]), SAY.feelings.face, SAY.feelings.gentle, SAY.feelings.end
+      ...ALL_STORIES.flatMap(s => [...s.pages.map(p => p[0]), feelAsk(s), feelYes(s), ...(HELP_FOR[s.feel] ? [helpAsk(s)] : [])]), ...Object.values(HELP_YES),
+      SAY.feelings.gentle, SAY.feelings.end
     ],
     state: () => {
       const r = id && rounds[step];

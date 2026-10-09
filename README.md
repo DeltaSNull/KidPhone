@@ -151,9 +151,13 @@ Guided Access. It's one self-contained `index.html` (vanilla JS, no build step),
   - *Story Time*: a three-page picture story read aloud ("Duck plants a seed. Duck gives it water. Look! A little
     sprout!"), then five picture questions: what Duck planted, what the seed needed, what grew, what happened first
     and last. A wrong picture gets the page read again.
-  - *Feelings Friends*: Duck, Owl, Cat and Puppy each feel something (sad, mad, scared, happy), shown on a face:
-    "Owl's blocks fell down. How does Owl feel?" Then, for the hard feelings, what helps: a hug, a big breath, a
-    grown-up (never "take the toy").
+  - *Feelings Friends*: a two-page picture story about a friend, read aloud like Story Time ("Owl builds a tall
+    tower." "Chick knocks it down!"), then "How does Owl feel?" with three faces to choose from (happy, sad, mad,
+    scared). The friend's face stays hidden until the feeling is named, so it's worked out from what happened rather
+    than matched; then the face appears. For the hard feelings, what helps comes next: a hug, a big breath, a
+    grown-up (never "take the toy"). There are two stories for each feeling, each about a different friend (a
+    present, a party; a friend going home, a balloon floating away; a tower knocked down, a picture scribbled on;
+    thunder, a crocodile), and each play tells one per feeling in a new order.
     These four work like the other School games: nothing to read, the question as a big picture and a short spoken
     line (the berry speaker repeats it), three framed picture answers in a new order every time, stars along the top,
     a gentle "uh-uh" and a hint for a wrong one and a glow after two, and the next round coming by itself after a

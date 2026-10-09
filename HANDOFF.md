@@ -7,7 +7,8 @@ on 2026-10-09 from a 6,400-word log; the old text is in git history.)
 
 ## Active batch
 
-- None claimed. Last: **R-20 — kid-friendly pass** (Claude, 2026-10-09, branch `claude/kid-friendly-pass`), see History.
+- None claimed. Last: **R-21 — Feelings Friends as stories** (Claude, 2026-10-09, branch `claude/feelings-stories`), see
+  History.
 - Next candidates, in order: physical checks with the family (R-04, G-04, T-09); Today's Adventure (P3-01, P3-07,
   P3-08); Toddler Play Together (P3-03); consistent game controls (I-06). Sound Safari (P3-05) waits on T-04.
 
@@ -22,6 +23,8 @@ on 2026-10-09 from a 6,400-word log; the old text is in git history.)
   every digit to an embedded Press Start 2P face, so nothing extra is needed for new numbers (R-19).
 - **Parent PIN is optional, off by default** (P1-14). Restrictions work without it; Settings says a child can learn the
   clock hold when School only or Custom is on without a PIN.
+- **Feelings Friends must not show the feeling before it's asked** (it became a matching game): a short story first,
+  the face only after the answer (R-21).
 - **Star Flight's long animal-food journey came from the owner's feedback** (PR #4: 8/10/12 foods per animal, six
   animals). Don't shorten it without asking; family testing (G-04) decides.
 - **Standing approval:** the owner allows publishing, merging and deploying changes that pass CI ("Always allow",
@@ -64,6 +67,11 @@ on 2026-10-09 from a 6,400-word log; the old text is in git history.)
 - WebKit can't run in either model's container; CI is the WebKit check. Run the focused suites you touch plus the
   smoke test locally before pushing.
 - Tests should tap the way kids do (`page.touchscreen.tap`), not only keyboard Enter or synthetic clicks.
+- WebKit in CI has hung waiting for a reload's "load" event right after parent-controls' background/foreground check
+  (runs #76 and #87, twice each). That test now taps once after coming back (rebuilding the parked sound) and its
+  reloads wait for the page to commit and the toy to be ready; a late "load" is logged. Not reproducible here.
+  WebKit's browser also died once in camera-peek's third layout (heavy pixel checks in one shared browser); each
+  layout now gets its own browser.
 
 ## Open, not done
 
@@ -75,6 +83,9 @@ on 2026-10-09 from a 6,400-word log; the old text is in git history.)
   gradual extraction).
 
 ## History (newest first)
+
+- 2026-10-09 R-21 Feelings Friends as stories (Claude): a two-page story per friend (two per feeling, eight friends),
+  then "How does Owl feel?" with the face hidden until it's named. New props in `saProp()`.
 
 - 2026-10-09 R-20 kid-friendly pass (Claude): Sorting/Pattern Train/Story Time/Feelings rebuilt for pre-readers
   (pictures, short lines, three shuffled answers, varied rounds, stars, auto-advance), Sorting's exact match fixed,
