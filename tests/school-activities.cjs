@@ -1,7 +1,8 @@
 /* Sorting Station, Pattern Train, Story Time and Feelings Friends, played with real taps in three layouts:
    picture-only questions (nothing to read), three answers in a fresh order, Sorting's exact match drawn exactly the
    same, gentle misses with a glowing hint after two, stars and automatic next rounds, a full play to the end screen,
-   Pattern Train's free train, the speaker repeating without changing anything, leaving mid-cheer, and School only.
+   Pattern Train's free train, Feelings Friends telling each friend's story first and keeping the face hidden until
+   the feeling is named, the speaker repeating without changing anything, leaving mid-cheer, and School only.
    Run in Chromium, or with --webkit. */
 const assert = require('node:assert/strict');
 const { chromium, webkit } = require('playwright');
@@ -45,10 +46,13 @@ const IDS = ['sorting', 'patterntrain', 'storytime', 'feelings'];
       };
       const asking = id => page.waitForFunction(id => { const a = window.__toyPhone.adventure(); return a.id === id && a.phase === 'ask' && !a.busy; }, id, {timeout:20000});
       const moved = step => page.waitForFunction(step => { const a = window.__toyPhone.adventure(); return a.step !== step || a.phase === 'done'; }, step, {timeout:20000});
+      const ready = id => page.waitForFunction(id => { const a = window.__toyPhone.adventure(); return a.id === id && (a.phase === 'done' || (a.phase === 'ask' && !a.busy)); }, id, {timeout:20000});
+      const sceneFaces = () => page.locator('#feelings .sa-scene img[alt$=" face"]').evaluateAll(els => els.map(e => e.alt));
 
       for (const id of IDS){
         await go(id);
         check(await page.locator(`#${id}:visible`).count() === 1, `${tag} ${id}: opens in School only`);
+        if (id === 'feelings') check((await state()).phase === 'page' && (await sceneFaces()).length === 0, `${tag} feelings: a friend's story comes first, with no feeling face`);
         await asking(id);
         let st = await state();
         // nothing to read: the only text on a question screen is the "?" of a missing train car or a thought
@@ -74,18 +78,29 @@ const IDS = ['sorting', 'patterntrain', 'storytime', 'feelings'];
         check(st.solved === 0 && st.misses === 2 && await page.locator(`#${id} [data-choice="${st.right}"].hint`).count() === 1, `${tag} ${id}: two misses earn nothing and the right one glows`);
 
         // play to the end, tapping the right answers (one round only in the other layouts)
-        for (let n = 0, rounds = 0; n < 40 && (full || rounds < 1); n++){
-          st = await state();
+        const felt = [];
+        for (let rounds = 0; rounds < 20 && (full || rounds < 1); rounds++){
+          await ready(id); st = await state();
           if (st.phase === 'done') break;
-          if (st.phase !== 'ask' || st.busy){ await page.waitForTimeout(200); continue; }
+          const feel = id === 'feelings' && /^How does \w+ feel\?$/.test(st.ask);
           if (id === 'sorting' && /same one/.test(st.ask)){
             const same = await page.evaluate(() => { const a = window.__toyPhone.adventure(), s = document.querySelector('#sorting .sa-scene img'), c = document.querySelector(`#sorting [data-choice="${a.right}"] img`); return s.getAttribute('src') === c.getAttribute('src'); });
             check(same, `${tag} sorting: "the same one" is drawn exactly the same, size included`);
           }
-          await touch(`#${id} [data-choice="${st.right}"]`); rounds++;
+          if (feel){ felt.push(st); check((await sceneFaces()).length === 0, `${tag} feelings: "${st.ask}" is worked out from the story, the face isn't shown`); }
+          await touch(`#${id} [data-choice="${st.right}"]`);
           await page.waitForTimeout(150);
           check((await state()).solved === st.solved + 1, `${tag} ${id}: a right answer lights a star (${st.ask})`);
+          if (feel) check(JSON.stringify(await sceneFaces()) === JSON.stringify([`${st.right} face`]), `${tag} feelings: then ${st.right} face shows`);
           await moved(st.step);
+          const now = await state();
+          if (id === 'feelings' && now.phase !== 'done' && (/^What can help/.test(st.ask) || st.right === 'happy'))
+            check(now.phase === 'page', `${tag} feelings: the next friend's story is told before its question`);
+        }
+        if (full && id === 'feelings'){
+          const friends = felt.map(a => a.ask.split(' ')[2]);
+          check(felt.length === 4 && new Set(friends).size === 4 && new Set(felt.map(a => a.right)).size === 4,
+            `${tag} feelings: four friends, one story for each feeling (${friends.join(', ')})`);
         }
         st = await state();
         if (!full){ await touch(`#${id} .sc-back`); await page.waitForTimeout(250); continue; }
