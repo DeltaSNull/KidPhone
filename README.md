@@ -1,7 +1,5 @@
 # KidPhone
 
-Expansion in review: optional quantity/color/size deliveries, longer Ball Trail and Star Flight journeys, pretend friend missions, cooperative Dino/Paint options, and four new School activities: Sorting Station, Pattern Train, Story Time and Feelings Friends. Follow HANDOFF.md for verification and publication status.
-
 **Play it:** https://deltasnull.github.io/KidPhone/
 
 A pretend phone for a 1.5-year-old and a 3.5-year-old, made to run on Dad's iPhone in Safari under
@@ -9,8 +7,10 @@ Guided Access. It's one self-contained `index.html` (vanilla JS, no build step),
 
 - **Phone**: animal and dinosaur contacts, a keypad with real touch-tones, and outgoing calls (ringback, then the
   animal answers, makes its call and chats every ~6 seconds until hang-up). Animals also call in every
-  1–3 minutes while the kids are on the home screen. It can never place a real call: there are no `tel:` links,
-  and phone-number detection is turned off.
+  1–3 minutes while the kids are on the home screen. During a call, the waving-hand button starts a little hello game:
+  the animal asks the child to say hello, then wave, then say bye bye, each answered with one big picture button
+  (a smile, a hand, a heart; the berry speaker repeats the animal). It can never place a real call: there are no `tel:`
+  links, and phone-number detection is turned off.
 - **Camera**: a pretend safari camera, a pixel-art world (savanna, jungle, dino valley) that goes all the way round.
   **Move the phone to look around** (see [Look around](#look-around)): turn to see the rest of the world, tip the phone
   up for the sky and down for the ground. Dragging works too, and is all there is where the phone shares no motion.
@@ -57,14 +57,17 @@ Guided Access. It's one self-contained `index.html` (vanilla JS, no build step),
     leaf, triceratops and fern, stegosaurus and fern, pterodactyl and fish.
   - *Dino Buddies* (1 or 2 players): the split-screen game for both boys. Every tap on either half flies a treat into one
     shared egg. With 1 player, one big dino fills the screen and the egg needs fewer treats (16 instead of 24).
-    The hatched family is remembered between visits.
+    The hatched family is remembered between visits. Two picture discs at the top: the berry speaker repeats the goal,
+    and the two-kids disc turns on taking turns (each side lights up when it's that child's turn).
   - *Paint Pals* (1 or 2 players): split screen again, with a coloring page of an animal on each half. Rubbing a finger over it
     paints it in its real colors, each half with its own notes on one shared scale, so two kids painting at once still
     sounds like music. Tapping beside the picture flings a blob of paint onto it, so the little one can tap instead of
     rub. When a picture is nearly painted it finishes itself and the animal calls out. When both are done, the two
     animals dance and call to each other, go up on the shelf in the middle (remembered between visits), and a new pair
     arrives: lion and giraffe, puppy and kitty, monkey and parrot, cow and chick, T. rex and long neck, and seven more.
-    With 1 player, one big coloring page fills the screen and the same animals come one at a time.
+    With 1 player, one big coloring page fills the screen and the same animals come one at a time. Picture discs beside
+    the pages (in the wood strip sideways): the berry speaker, a circle (an idea: paint in circles) and the picture
+    frame, which opens the finished pictures (the brush goes back to painting).
 
 - **School**: learning games, made for a home-school morning. Letters are drawn in a school-print pixel alphabet (circles
   and sticks, the way children learn to write them: one-story a and g, a crossed t, a tailed q), each letter always in
@@ -136,7 +139,25 @@ Guided Access. It's one self-contained `index.html` (vanilla JS, no build step),
     then under the tree/next to the box in a mirrored garden. The speaker replays the instruction. Wrong objects and
     destinations get gentle feedback and hints after two tries. Nine stars show route progress, followed by a present
     and a play button for another route. No carrier animal sits beside the pickup. Objects: apple, banana, present,
-    star, egg and ball. Nothing is saved as learning evidence; quantities and attributes remain future work.
+    star, egg and ball. After the route, the balls button starts harder deliveries: how many, which color, which size
+    ("Put two red balls next to the box!"), taking one back with the yellow arrow and checking with the green tick.
+    Nothing is saved as learning evidence.
+  - *Sorting Station*: "Find the same one!", then one the same color, the same shape, the same size, and a rule switch
+    at the end: the same picture sorted first by shape, then by color ("Now find one the same color!"). Shapes are
+    squares, circles and triangles in four colors, big or small, different each play.
+  - *Pattern Train*: a bus pulls five wagons and a glowing "?" wagon: "What comes next?" Color patterns (AB, AAB, ABC),
+    an animal pattern and a big-small pattern, new each play. A right answer makes the wagons bounce in a little tune.
+    Afterwards the kids can make their own train from colors and a duck.
+  - *Story Time*: a three-page picture story read aloud ("Duck plants a seed. Duck gives it water. Look! A little
+    sprout!"), then five picture questions: what Duck planted, what the seed needed, what grew, what happened first
+    and last. A wrong picture gets the page read again.
+  - *Feelings Friends*: Duck, Owl, Cat and Puppy each feel something (sad, mad, scared, happy), shown on a face:
+    "Owl's blocks fell down. How does Owl feel?" Then, for the hard feelings, what helps: a hug, a big breath, a
+    grown-up (never "take the toy").
+    These four work like the other School games: nothing to read, the question as a big picture and a short spoken
+    line (the berry speaker repeats it), three framed picture answers in a new order every time, stars along the top,
+    a gentle "uh-uh" and a hint for a wrong one and a glow after two, and the next round coming by itself after a
+    cheer. The end screen has play again and one idea for doing it together away from the phone.
   - Parents get a page in settings: every Letter Path letter with its stars (tap one to hear its sound and lesson
     line, see its words and how to say the sound), In order or All open, and starting the path over; and ABC Snack's
     stage and the letters it has seen the child know, with a way to fix it at big letters, little letters or sounds.
@@ -482,6 +503,11 @@ npm run test:parents # parent PIN, restrictions, camera/call shutdown, and offli
 npm run test:delivery # object/location choices, nine-stop route, mirrored garden, and cleanup
 npm run test:parents:webkit # the same policy checks in WebKit (live camera tested in Chromium)
 npm run test:pages # the published site, served from a /KidPhone/ subfolder like GitHub Pages
+node tests/school-activities.cjs # Sorting, Pattern Train, Story Time, Feelings: real taps, no words on screen, fresh order, hints, stars, end screens
+node tests/text-legibility.cjs   # clear digits everywhere, readable settings text
+node tests/social-play.cjs       # call hello game, Dino turns, Paint Pals extras and interruptions
+# also: refinement, play-refinement, audio-return, phone-game-review, camera-peek, break-preview, delivery-expanded
+# (each takes --webkit; CI runs them all in Chromium and WebKit)
 npm run sprites    # draws every sprite on screenshots/sprites.png
 npm run icons      # after editing the appIcon sprite
 npm run artifact   # writes dist/artifact.html
