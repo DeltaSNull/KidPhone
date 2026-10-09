@@ -55,6 +55,7 @@ jobs:
           from pathlib import Path
           source = Path('tests/text-legibility.cjs').read_text()
           source = source.replace("const ROOT=path.resolve(__dirname,'..')","const ROOT=process.cwd()")
+          source = source.replace("viewport,hasTouch:true,isMobile:true","viewport,hasTouch:true,isMobile:true,serviceWorkers:'block'")
           source = source.replace("`http://127.0.0.1:${server.address().port}/`","'https://deltasnull.github.io/KidPhone/'")
           assert "'https://deltasnull.github.io/KidPhone/'" in source
           Path('/tmp/verify-live-legibility.cjs').write_text(source)
