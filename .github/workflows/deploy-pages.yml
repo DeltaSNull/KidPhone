@@ -77,6 +77,9 @@ jobs:
       - name: Install ${{ matrix.engine }}
         run: npx playwright install --with-deps ${{ matrix.engine }}
 
+      - name: Text and number legibility
+        run: node tests/text-legibility.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
+
       - name: Parent controls (Chromium)
         if: matrix.engine == 'chromium'
         run: npm run test:parents
