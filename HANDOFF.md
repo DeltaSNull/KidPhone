@@ -67,6 +67,9 @@ on 2026-10-09 from a 6,400-word log; the old text is in git history.)
 - WebKit can't run in either model's container; CI is the WebKit check. Run the focused suites you touch plus the
   smoke test locally before pushing.
 - Tests should tap the way kids do (`page.touchscreen.tap`), not only keyboard Enter or synthetic clicks.
+- WebKit in CI has hung waiting for a reload's "load" event right after parent-controls' background/foreground check
+  (runs #76 and #87, twice each). That test now taps once after coming back (rebuilding the parked sound) and its
+  reloads wait for the page to commit and the toy to be ready; a late "load" is logged. Not reproducible here.
 
 ## Open, not done
 
