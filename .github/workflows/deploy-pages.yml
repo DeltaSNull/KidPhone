@@ -1,184 +1,69 @@
-# Test every change to main (and every PR), then publish the toy phone to GitHub Pages.
-# The deployed site is plain HTML/CSS/JavaScript; all test jobs must pass before deployment.
-name: Test and deploy GitHub Pages
-
+name: Verify live legibility release
 on:
   push:
-    branches: [main]
-    paths-ignore: ['README.md', 'screenshots/**']
-  pull_request:
-    branches: [main]
-    paths-ignore: ['README.md', 'screenshots/**']
-  workflow_dispatch:
-
+    branches: [codex/live-legibility-verification]
 permissions:
   contents: read
-
-concurrency:
-  group: pages-${{ github.ref }}
-  cancel-in-progress: true
-
 jobs:
-  chromium-smoke:
-    name: Chromium smoke (${{ matrix.viewport }})
+  live:
+    name: Live files and legibility
     runs-on: ubuntu-latest
-    timeout-minutes: 25
-    strategy:
-      fail-fast: false
-      matrix:
-        viewport: [portrait, landscape, safari-bars]
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
-
       - run: npm ci
-
-      - name: Install Chromium
-        run: npx playwright install --with-deps chromium
-
-      - name: Run ${{ matrix.viewport }} smoke suite
-        run: ONLY=${{ matrix.viewport }} npm test
-
-      - name: Upload smoke-test screenshots on failure
-        if: failure()
+      - run: npx playwright install --with-deps chromium
+      - name: Wait for deployment and compare public files
+        run: |
+          python - <<'PY'
+          import hashlib, json, pathlib, time, urllib.request
+          root = pathlib.Path.cwd()
+          base = 'https://deltasnull.github.io/KidPhone/'
+          expected = (root/'index.html').read_bytes()
+          def get(path):
+              request = urllib.request.Request(base+path, headers={'Cache-Control':'no-cache'})
+              with urllib.request.urlopen(request, timeout=30) as response:
+                  assert response.status == 200
+                  return response.read()
+          for attempt in range(60):
+              try:
+                  if get('index.html') == expected:
+                      break
+              except Exception as error:
+                  print(type(error).__name__, flush=True)
+              print('Waiting for tested legibility release to appear on the public site', flush=True)
+              time.sleep(30)
+          else:
+              raise AssertionError('Tested release did not appear within 30 minutes')
+          for path in ['index.html','sw.js','manifest.webmanifest','assets/voice/voice.json']:
+              assert get(path) == (root/path).read_bytes(), 'live file differs: '+path
+          manifest = json.loads(get('assets/voice/voice.json'))
+          assert len(manifest['clips']) == 2330
+          clips = sorted({clip[0] for clip in manifest['clips'].values()})
+          for clip in [clips[0],clips[len(clips)//2],clips[-1]]:
+              assert get('assets/voice/'+clip) == (root/'assets/voice'/clip).read_bytes()
+          print('PASS live HTML, worker, app/voice manifests and sampled recordings match tested release', flush=True)
+          print('Live HTML SHA256:',hashlib.sha256(expected).hexdigest(),flush=True)
+          PY
+      - name: Run portrait, landscape and short-phone legibility on the public site
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          source = Path('tests/text-legibility.cjs').read_text()
+          source = source.replace("const ROOT=path.resolve(__dirname,'..')","const ROOT=process.cwd()")
+          source = source.replace("`http://127.0.0.1:${server.address().port}/`","'https://deltasnull.github.io/KidPhone/'")
+          assert "'https://deltasnull.github.io/KidPhone/'" in source
+          Path('/tmp/verify-live-legibility.cjs').write_text(source)
+          PY
+          NODE_PATH="$GITHUB_WORKSPACE/node_modules" node /tmp/verify-live-legibility.cjs
+      - name: Save live verification screenshots
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: smoke-${{ matrix.viewport }}-${{ github.run_id }}
-          path: tests/screenshots/
-          if-no-files-found: ignore
+          name: live-legibility
+          path: tests/screenshots/legibility-*.png
           retention-days: 7
-
-  pages:
-    name: Pages/offline (${{ matrix.engine }})
-    runs-on: ubuntu-latest
-    timeout-minutes: 25
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - engine: chromium
-            command: npm run test:pages
-          - engine: webkit
-            command: npm run test:pages:webkit
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-
-      - run: npm ci
-
-      - name: Install ${{ matrix.engine }}
-        run: npx playwright install --with-deps ${{ matrix.engine }}
-
-      - name: Text and number legibility
-        run: node tests/text-legibility.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
-
-      - name: Parent controls (Chromium)
-        if: matrix.engine == 'chromium'
-        run: npm run test:parents
-
-      - name: Parent controls (WebKit)
-        if: matrix.engine == 'webkit'
-        run: npm run test:parents:webkit
-
-      - name: Play-time preview
-        run: node tests/break-preview.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
-
-      - name: Run Pages/offline checks
-        run: ${{ matrix.command }}
-
-      - name: Motion games
-        run: node tests/motion-games.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
-
-      - name: Expanded Delivery and School activities
-        run: |
-          node tests/delivery-expanded.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
-          node tests/school-activities.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
-
-      - name: Cooperative play and interruption recovery
-        run: |
-          node tests/social-play.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
-          node tests/social-lifecycle.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
-
-      - name: Interaction refinement
-        run: node tests/refinement.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
-
-      - name: Learning controls and photo navigation
-        run: node tests/play-refinement.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
-
-      - name: Audio return and piano
-        run: node tests/audio-return.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
-
-      - name: Phone layout and game navigation
-        run: node tests/phone-game-review.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
-
-      - name: Pretend-camera hide and pop out
-        run: node tests/camera-peek.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
-
-      - name: Animal Delivery
-        run: node tests/delivery.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
-
-
-  webkit-smoke:
-    name: WebKit iPhone smoke
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-
-      - run: npm ci
-
-      - name: Install WebKit
-        run: npx playwright install --with-deps webkit
-
-      - run: npm run test:webkit
-
-  deploy:
-    name: Deploy
-    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
-    needs: [chromium-smoke, pages, webkit-smoke]
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    concurrency:
-      group: pages-deploy
-      cancel-in-progress: false
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Gather the site
-        run: |
-          mkdir -p _site/assets
-          cp index.html manifest.webmanifest sw.js _site/
-          cp -R icons _site/icons
-          # Real animal recordings. Private family voices/photos are deliberately not published.
-          cp -R assets/sounds _site/assets/sounds
-          # Pre-recorded narrator and animal voices.
-          cp -R assets/voice _site/assets/voice
-          ls -R _site
-
-      - uses: actions/configure-pages@v5
-
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: _site
-
-      - id: deployment
-        uses: actions/deploy-pages@v4
