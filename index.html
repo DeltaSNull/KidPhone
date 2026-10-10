@@ -5409,7 +5409,8 @@ async function loadVoiceBank(){
    and can save everything. (Fetched, not decoded: decoding waits until a line is said.) */
 function warmVoices(){
   if (!VB.map || VB.warmed || location.protocol === 'file:') return; VB.warmed = true;
-  OFFLINE.save(false, true);
+  // only with the service worker installed: without it nothing would serve the saved files offline
+  try{ navigator.serviceWorker.getRegistration().then(r => { if (r && r.active) OFFLINE.save(false, true); }, () => {}); }catch(e){}
 }
 /* who: a speaker id, an animal contact, or nothing (a number is an old pitch value) = the narrator */
 const whoId = who => typeof who === 'string' ? who : who && typeof who === 'object' && who.id && !who.family ? who.id : 'n';
