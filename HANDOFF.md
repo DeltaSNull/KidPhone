@@ -78,12 +78,18 @@ on 2026-10-09 from a 6,400-word log; the old text is in git history.)
 
 - Physical checks: real iPhone (Safari and home screen, Guided Access, sound after sleep, tilt grip) and a family
   playtest of the newer games (R-04, G-04, T-09). Nothing in the browser tests proves a child can use it.
-- The first-time voice warm-up downloads every narrator clip (about 17 MB); warming only the apps that are switched on
-  would save data.
 - Much of the newer code is packed into long single lines; reformat a module when you next change it (T-01 also wants
   gradual extraction).
 
 ## History (newest first)
+
+- 2026-10-10 R-28 offline readiness (Claude): `OFFLINE` saves files straight into sw.js's cache (`toy-phone-v3`;
+  the two names must match, tests/offline-ready.cjs checks): the page, voice.json, sounds and the voice clips of
+  each switched-on part (`areaLines()` groups every narrator line by part; Phone adds the animals' voices), four at
+  a time, three tries each. The warm-up after the first tap now saves only the switched-on parts (was every
+  narrator clip), and only once the service worker is active (no Cache Storage writes in tests or plain copies). Settings → Offline: progress, Try again, Save everything, and "Ready offline" only after every file
+  is found in the cache with the service worker installed. Escape now closes Settings from anywhere (focus could
+  drop out when a button disabled itself).
 
 - 2026-10-10 R-27 stories and feelings (Claude): Story Time's shelf has two mode buttons ("?" = questions, the
   default; grown-up and child = read together, `mode`, not saved). Reading together, pages are read and wait for

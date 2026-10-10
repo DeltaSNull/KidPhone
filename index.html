@@ -1552,6 +1552,10 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img:not(.px){image-rendering
           <span class="vhint">Animal sounds, crunches and cheers in the School games. The lesson voice always speaks, so a question the child has to listen to never goes silent.</span></div>
         <div class="srow"><span>Voice</span><span class="vhint">Where the talking voice speaks. Animal sounds and music always play (in School, as set above).</span></div>
         <div class="vlist" id="voiceList"></div>
+        <div class="srow" id="offlineRow"><span>Offline</span>
+          <span class="vhint" id="offlineNote" role="status" aria-live="polite">Checking what's saved on this phone…</span>
+          <div class="seg"><button class="sbtn" id="offlineGet">Save for offline</button><button class="sbtn" id="offlineAll">Save everything</button></div>
+          <span class="vhint">The voice and sounds of the parts that are switched on in App access download by themselves after the first tap; Save everything adds the rest (about 17 MB). Ready offline appears only once every file has been checked on this phone.</span></div>
         <div class="srow" id="settingsTools"><span id="photoCount">Photos</span><button class="sbtn danger" id="clearBtn">Clear photos</button></div>
         <div class="confirm" id="confirmClear" hidden>
           <span>Delete every photo?</span>
@@ -5400,14 +5404,13 @@ async function loadVoiceBank(){
     if (VB.map){ setSession(); if (unlocked) setTimeout(warmVoices, 3000); }
   }catch(e){}
 }
-/* After the first touch, quietly fetch the narrator's clips a few at a time: lines are then ready the moment they're
-   needed, and the offline cache keeps them. (Fetched, not decoded: decoding waits until a line is said.) */
+/* After the first touch, quietly save the clips of the parts of the toy that are switched on (a few at a time, with
+   retries): lines are then ready the moment they're needed, also offline. Settings shows how far it got, checks it,
+   and can save everything. (Fetched, not decoded: decoding waits until a line is said.) */
 function warmVoices(){
   if (!VB.map || VB.warmed || location.protocol === 'file:') return; VB.warmed = true;
-  const files = [...new Set(Object.entries(VB.map).filter(([k]) => k.startsWith('n|')).map(([, v]) => v[0]))];
-  let i = 0;
-  const next = () => { if (i >= files.length) return; fetch('assets/voice/' + files[i++]).then(r => r.arrayBuffer()).catch(() => {}).then(() => setTimeout(next, 40)); };
-  for (let n = 0; n < 3; n++) next();
+  // only with the service worker installed: without it nothing would serve the saved files offline
+  try{ navigator.serviceWorker.getRegistration().then(r => { if (r && r.active) OFFLINE.save(false, true); }, () => {}); }catch(e){}
 }
 /* who: a speaker id, an animal contact, or nothing (a number is an old pitch value) = the narrator */
 const whoId = who => typeof who === 'string' ? who : who && typeof who === 'object' && who.id && !who.family ? who.id : 'n';
@@ -9651,6 +9654,79 @@ const PLAY = (() => {
     lines: () => [SAY.soon, SAY.done]
   };
 })();
+/* ---------- Offline readiness (parent settings) ----------
+   What the toy needs with no network: its page, the voice list, the sounds and the voice clips of each part that is
+   switched on (all of them with Save everything). Files are saved straight into the service worker's cache (so it
+   serves them offline) a few at a time, each tried up to three times; then every one is looked up in the cache, and
+   only if all are there, and the service worker is installed, does Settings say "Ready offline". */
+const OFFLINE = (() => {
+  const CACHE = 'toy-phone-v3';   // the cache in sw.js (keep the two names the same; tests/offline-ready.cjs checks)
+  const PARTS = {school:'School', games:'Games', camera:'Camera', photos:'Photos', music:'Music', phone:'Phone'};
+  let st = {phase:'idle', done:0, total:0, failed:[], missing:null, worker:null, all:false, checked:0}, job = null;
+  const supported = () => { try{ return 'caches' in window && 'serviceWorker' in navigator && isSecureContext && location.protocol !== 'file:' && !/claude\.ai|claudeusercontent/.test(location.hostname); }catch(e){ return false; } };
+  const parts = all => Object.keys(PARTS).filter(k => all || appAllowed(k));
+  function files(all){
+    const set = new Set(['./', 'index.html', 'manifest.webmanifest', 'icons/icon-180.png', 'assets/voice/voice.json', 'assets/sounds/sounds.json',
+      ...Object.values(SOUND_FILES).filter(u => !/^(data:|blob:|https?:|\/)/.test(u))]);
+    if (VB.map){
+      const L = areaLines(), want = parts(all);
+      ['home', ...want].forEach(a => (L[a] || []).forEach(t => { const ss = sentences(t); [ss.join(' '), ...ss].forEach(x => { const v = VB.map['n|' + x]; if (v) set.add('assets/voice/' + v[0]); }); }));
+      if (want.includes('phone')) Object.entries(VB.map).forEach(([k, v]) => { if (!k.startsWith('n|')) set.add('assets/voice/' + v[0]); });   // the animals' own voices
+    }
+    return [...set];
+  }
+  const worker = async () => { try{ const r = await navigator.serviceWorker.getRegistration(); return !!(r && (r.active || r.waiting || r.installing)); }catch(e){ return false; } };
+  async function check(all = st.all){
+    if (!supported()) return render();
+    if (st.phase !== 'saving'){ st.missing = null; render(); }   // ("Checking…" until every file has been looked up)
+    const list = files(all), cache = await caches.open(CACHE);
+    const hits = await Promise.all(list.map(u => cache.match(u).then(Boolean, () => false)));
+    st.missing = list.filter((u, i) => !hits[i]); st.checked = list.length; st.total = list.length; st.worker = await worker(); st.all = all;
+    if (st.phase !== 'saving') st.phase = 'checked';
+    render(); return st.missing.length === 0 && st.worker;
+  }
+  async function get(cache, url){
+    for (let n = 0; n < 3; n++){
+      try{ const r = await fetch(url, {cache:'no-cache'}); if (r.ok){ await cache.put(url, r); return true; } }catch(e){}
+      await new Promise(go => setTimeout(go, 600 * (n + 1)));
+    }
+    return false;
+  }
+  /* save what's missing (all: every part, not just the switched-on ones), quiet: the automatic first download */
+  function save(all, quiet = false){
+    if (!supported() || job) return job;
+    job = (async () => {
+      try{
+        await check(all || st.all);
+        const todo = st.missing.slice(), cache = await caches.open(CACHE); st.phase = 'saving'; st.done = st.total - todo.length; st.failed = []; render();
+        let i = 0;
+        const lane = async () => { while (i < todo.length){ const u = todo[i++]; if (await get(cache, u)) st.done++; else st.failed.push(u); if (st.done % 20 === 0) render(); } };
+        await Promise.all(Array.from({length:quiet ? 2 : 4}, lane));
+        st.phase = 'checked'; await check(st.all);
+      } finally { job = null; render(); }
+    })();
+    return job;
+  }
+  function render(){
+    const note = $('#offlineNote'); if (!note) return;
+    const n = x => `<b class="n">${x.toLocaleString('en-US')}</b>`, which = st.all ? 'everything' : parts(false).map(k => PARTS[k]).join(', ').replace(/, ([^,]*)$/, ' and $1');
+    let html;
+    if (!supported()) html = 'This copy can\'t save itself for offline use. Open the toy from its web address in Safari and add it to the Home Screen.';
+    else if (st.phase === 'saving') html = `Saving for offline: ${n(st.done)} of ${n(st.total)} files…`;
+    else if (st.missing === null) html = 'Checking what\'s saved on this phone…';
+    else if (st.failed.length && st.missing.length) html = `Not ready offline: ${n(st.missing.length)} file${st.missing.length === 1 ? '' : 's'} couldn't download (no connection?). Tap Try again.`;
+    else if (st.missing.length) html = `Not ready offline yet: ${n(st.total - st.missing.length)} of ${n(st.total)} files saved for ${which}.`;
+    else if (!st.worker) html = 'All files are saved, but the offline helper isn\'t installed yet. Open the toy once more while online.';
+    else html = `Ready offline: ${which} (${n(st.checked)} files checked on this phone).`;
+    note.innerHTML = html;
+    const get1 = $('#offlineGet'), all1 = $('#offlineAll');
+    get1.textContent = st.failed.length && st.missing && st.missing.length ? 'Try again' : 'Save for offline';
+    get1.disabled = all1.disabled = !supported() || st.phase === 'saving';
+  }
+  tapInScroll($('#offlineGet'), () => { FX.pop(); save(st.all); });
+  tapInScroll($('#offlineAll'), () => { FX.pop(); save(true); });
+  return {save, check, render, state: () => ({...st, failed:st.failed.length, missing:st.missing && st.missing.length, supported:supported(), busy:!!job, files:all => files(all)})};
+})();
 const volSeg = $('#volSeg');
 ['Quiet','Soft','Medium','Loud'].forEach((l, i) => { const b = document.createElement('button'); b.className = 'sbtn'; b.textContent = l; b.dataset.vol = i; volSeg.appendChild(b); });
 /* one checkbox per place the voice can talk; a scroll that starts on a row doesn't flip it */
@@ -9677,7 +9753,7 @@ function renderSettings(){
 }
 function sizeSettings(){ $('#settings .sheet').style.scrollPaddingTop=($('#settings .shead').offsetHeight+8)+'px'; }
 let countAtOpen=settings.count;
-function openSettings(){ PLAY.cancelPreview(); countAtOpen=settings.count; renderAccess(); hush(); $('#confirmClear').hidden = true; $('#confirmPath').hidden = true; renderSettings(); pickVoice(); showSound(); shield(true); $('#settings').hidden = false; sizeSettings(); $('#settings .sheet').scrollTop=0; $('#doneBtn').focus({preventScroll:true}); FX.cheer(); }
+function openSettings(){ PLAY.cancelPreview(); countAtOpen=settings.count; renderAccess(); hush(); OFFLINE.render(); OFFLINE.check(); $('#confirmClear').hidden = true; $('#confirmPath').hidden = true; renderSettings(); pickVoice(); showSound(); shield(true); $('#settings').hidden = false; sizeSettings(); $('#settings .sheet').scrollTop=0; $('#doneBtn').focus({preventScroll:true}); FX.cheer(); }
 /* is the sound engine running? (the animals, drums and ringtones all come from it; the voice doesn't) */
 function showSound(){
   const n = $('#soundNote'); if (!n) return;
@@ -9692,8 +9768,10 @@ $$('[data-settings-jump]').forEach(b=>tapInScroll(b,()=>{
   const sheet=$('#settings .sheet'), target=$('#'+b.dataset.settingsJump), header=$('#settings .shead');
   sheet.scrollTop += target.getBoundingClientRect().top-header.getBoundingClientRect().bottom-8;
 }));
+// Escape closes Settings even when focus has dropped out of it (a button that disables itself, like Save for offline)
+document.addEventListener('keydown',e=>{ if(e.key==='Escape' && !$('#settings').hidden && !e.defaultPrevented){e.preventDefault();closeSettings();} });
 $('#settings').addEventListener('keydown',e=>{
-  if(e.key==='Escape'){e.preventDefault();closeSettings();return;}
+  if(e.key==='Escape')return;
   if(e.key!=='Tab')return;
   const bs=$$('button', $('#settings')).filter(b=>!b.disabled&&b.getClientRects().length),i=bs.indexOf(document.activeElement);
   if(e.shiftKey && i<=0){e.preventDefault();bs.at(-1)?.focus();}
@@ -10156,19 +10234,25 @@ window.claude?.hot?.snapshot?.(() => ({ app: current, scene: cam.scene }));
 const start = (data) => { if (data && data.scene && SCENES[data.scene]) cam.scene = data.scene; go(data?.app || accessHome()); };
 window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? {});
 
-function voiceLines(){
-  const N = [
-    "Hi buddy! It's your phone!", ...Object.values(APP_SAY), 'Who do you want to call?', 'Press the numbers!', ...NUMWORD.map(w => w + '!'),
-    ...ANIMALS.flatMap(c => ['Calling ' + sp(c) + '!', sp(c) + ' is calling you! Ring ring!']), ...BYES,   // (a family contact with no goodbye clip gets the narrator's)
-    ...Object.values(SCENES).flatMap(sc => [sc.n + '!', ...sc.animals.flatMap(a => [anA(a.n), 'You got a picture of ' + article(a.n) + '!',
+/* every narrator line, by the part of the toy that says it (Settings saves the parts that are switched on for offline
+   use first; "home" is always needed) */
+function areaLines(){
+  return {
+    home:["Hi buddy! It's your phone!", ...Object.values(APP_SAY), 'Hello! This is how loud I am.', ...PLAY.lines()],
+    phone:['Who do you want to call?', 'Press the numbers!', ...NUMWORD.map(w => w + '!'),
+      ...ANIMALS.flatMap(c => ['Calling ' + sp(c) + '!', sp(c) + ' is calling you! Ring ring!']), ...BYES],   // (a family contact with no goodbye clip gets the narrator's)
+    camera:[...Object.values(SCENES).flatMap(sc => [sc.n + '!', ...sc.animals.flatMap(a => [anA(a.n), 'You got a picture of ' + article(a.n) + '!',
       ...(a.hidden ? ['Can you find the hiding ' + a.n + '?', 'You found the ' + a.n + '!', 'Wow! You found the hiding ' + a.n + '!'] : [])])]),
-    'You got a picture!', ...CLICKS, ...PRETTY, 'Zoom in!', 'Zoom out!', 'Take a picture first!', 'Your pictures!', 'Look at all your pictures!',
-    'No pictures yet! Tap the camera to take some!', 'All your pictures!',
-    ...Object.values(CAM_SAY), ...Object.values(MODE_SAY), 'Move the phone to look all around!', ...COSTUMES.map(c => `You're ${article(COSTUME_NAME[c])}!`), ...LOOK_ORDER.slice(1).map(k => LOOKS[k].say),
-    ...Object.values(MUSIC_SAY), ...SONGS.map(x => x.n + '!'), 'Yay! Great dancing!', 'Stop!', 'Hello! This is how loud I am.',
-    ...WildTap.lines(), ...DinoBuddies.lines(), ...SnackTime.lines(), ...PaintPals.lines(), ...MotionGames.lines(),
-    SCHOOL_SAY.school, ...LetterPath.lines(), ...AbcZoo.lines(), ...AbcSnack.lines(), ...NumZoo.lines(), ...NumSnack.lines(), ...Delivery.lines(), ...DinoPicnic.lines(), ...SchoolAdventures.lines(), ...PLAY.lines()
-  ];
+      'You got a picture!', ...CLICKS, ...PRETTY, 'Zoom in!', 'Zoom out!', 'Take a picture first!',
+      ...Object.values(CAM_SAY), ...Object.values(MODE_SAY), 'Move the phone to look all around!', ...COSTUMES.map(c => `You're ${article(COSTUME_NAME[c])}!`), ...LOOK_ORDER.slice(1).map(k => LOOKS[k].say)],
+    photos:['Your pictures!', 'Look at all your pictures!', 'No pictures yet! Tap the camera to take some!', 'All your pictures!'],
+    music:[...Object.values(MUSIC_SAY), ...SONGS.map(x => x.n + '!'), 'Yay! Great dancing!', 'Stop!'],
+    games:[...WildTap.lines(), ...DinoBuddies.lines(), ...SnackTime.lines(), ...PaintPals.lines(), ...MotionGames.lines()],
+    school:[SCHOOL_SAY.school, ...LetterPath.lines(), ...AbcZoo.lines(), ...AbcSnack.lines(), ...NumZoo.lines(), ...NumSnack.lines(), ...Delivery.lines(), ...DinoPicnic.lines(), ...SchoolAdventures.lines()]
+  };
+}
+function voiceLines(){
+  const N = Object.values(areaLines()).flat();
   /* the narrator records whole lines and their sentences (for lines put together at play time); animals record whole lines */
   const out = new Map(), put1 = (who, x) => out.set(who + '|' + x, {who, s:x});
   N.forEach(t => { const ss = sentences(t); put1('n', ss.join(' ')); ss.forEach(x => put1('n', x)); });
@@ -10211,7 +10295,7 @@ async function renderMix(events, secs = 2, vol = settings.vol){
     if (!t) now.forEach(play); else off.suspend(Math.round(t*44100/128)*128/44100).then(() => { now.forEach(play); off.resume(); }); });
   return Array.from((await off.startRendering()).getChannelData(0));
 }
-window.__toyPhone = { motionGames: () => MotionGames.state(), renderPad, renderMix, voiceFile: line => (VB.map && VB.map['n|' + line] || [])[0] || null, pads: () => ({drum:DRUMS.length, xylo:XYLO.length, piano:PIANO.length}), adventure: () => SchoolAdventures.state(), adventurePlan: k => SchoolAdventures.plan(k), adventureJump: k => SchoolAdventures.jump(k), go, renderFx, speakable, voiceLines, lineMs,
+window.__toyPhone = { motionGames: () => MotionGames.state(), renderPad, renderMix, voiceFile: line => (VB.map && VB.map['n|' + line] || [])[0] || null, pads: () => ({drum:DRUMS.length, xylo:XYLO.length, piano:PIANO.length}), adventure: () => SchoolAdventures.state(), offline: () => OFFLINE.state(), offlineSave: all => OFFLINE.save(all), offlineCheck: all => OFFLINE.check(all), adventurePlan: k => SchoolAdventures.plan(k), adventureJump: k => SchoolAdventures.jump(k), go, renderFx, speakable, voiceLines, lineMs,
   voice: () => ({loaded: !!VB.map, clips: VB.map ? Object.keys(VB.map).length : 0, played: VB.played, fallbacks: VB.fallbacks.slice(), log: VB.log.slice(), last: VB.last,
     speaking: speaking(), sources: VB.srcs.length, waiting: !!lineWait}),
   recorded: () => Object.keys(REC), trims: FX_TRIM,
