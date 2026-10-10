@@ -13,6 +13,7 @@
     "test:ci": "npm test && npm run test:pages && npm run test:webkit && npm run test:pages:webkit && npm run test:parents && npm run test:parents:webkit && npm run test:motion && npm run test:motion:webkit && npm run test:delivery && npm run test:delivery:webkit && npm run test:refinement && npm run test:refinement:webkit && npm run test:play-refinement && npm run test:play-refinement:webkit && npm run test:audio-return && npm run test:audio-return:webkit && npm run test:phone-game-review && npm run test:phone-game-review:webkit && npm run test:camera-peek && npm run test:camera-peek:webkit && npm run test:break-preview && npm run test:break-preview:webkit",
     "test:expanded-delivery": "node tests/delivery-expanded.cjs",
     "test:school-activities": "node tests/school-activities.cjs",
+    "test:story-narration": "node tests/story-narration.cjs",
     "test:social-play": "node tests/social-play.cjs && node tests/social-lifecycle.cjs",
     "test:parents": "node tests/parent-controls.cjs",
     "test:parents:webkit": "node tests/parent-controls.cjs --webkit",

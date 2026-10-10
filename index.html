@@ -5018,12 +5018,14 @@ function audio(){
   if (document.visibilityState === 'visible' && ctx.state !== 'running' && ctx.state !== 'closed'){ try{ ctx.resume().catch(()=>{}); }catch(e){} }
   return ctx;
 }
-/* true (and the sound kept for later) when the engine isn't making sound right now */
-function hold(fn){
+/* true (and the sound kept for later) when the engine isn't making sound right now. A held sound plays if the engine
+   starts within 0.9 s; keep = until it starts (a story line that something waits on: it checks itself whether it's
+   still wanted) */
+function hold(fn, keep = false){
   if (document.visibilityState !== 'visible') return true;   // never queue background sounds for a later tap
   const c = audio(); if (!c) return true;
   if (c.state === 'running' || (window.OfflineAudioContext && c instanceof OfflineAudioContext)) return false;
-  held.push([performance.now(), fn]); if (held.length > 16) held.shift();
+  held.push([keep ? Infinity : performance.now(), fn]); if (held.length > 16) held.shift();
   return true;
 }
 function playHeld(){ const now = performance.now(), list = held.filter(([t]) => now - t < 900); held = []; list.forEach(([, fn]) => { try{ fn(); }catch(e){} }); }
@@ -5345,13 +5347,15 @@ function speakable(text){
   SAY_AS.forEach(([re, w]) => { t = t.replace(re, m => m[0] === m[0].toUpperCase() ? w[0].toUpperCase() + w.slice(1) : w); });
   return t.replace(/([a-z])\1{2,}/gi, '$1$1');
 }
-function speakNow(text, pitch, vol){
+function speakNow(text, pitch, vol, w){
   try{
     speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(speakable(text));
     if (voice){ u.voice = voice; u.lang = voice.lang; }
     u.rate = .9; u.pitch = pitch || 1.15; u.volume = vol ?? Math.min(1, VOLS[settings.vol] + .3);
-    u.onend = u.onerror = () => { if (ctx && ctx.state !== 'running' && ctx.state !== 'closed') try{ ctx.resume().catch(() => {}); }catch(e){} };
+    const t0 = performance.now();   // (an "end" at once means nothing was said: no voice on this device)
+    u.onend = u.onerror = ev => { if (ctx && ctx.state !== 'running' && ctx.state !== 'closed') try{ ctx.resume().catch(() => {}); }catch(e){}
+      if (ev.type === 'end' && performance.now() - t0 > 300) lineHeard(w); };   // (otherwise the wait runs out the line's length: see speakOr)
     speechSynthesis.speak(u);
   }catch(e){}
 }
@@ -5433,40 +5437,60 @@ function voiceOut(phone){
   return phone ? ch.phone : ch.direct;
 }
 function stopVoice(){ VB.seq++; VB.srcs.forEach(x => { try{ x.stop(); }catch(e){} }); VB.srcs = []; VB.until = 0; }
-function playLine(clips, who, text){
-  const seq = ++VB.seq;
+/* Waiting for a line to be over (a story page turns once its line has been heard): say(text, who, area, then) runs
+   then() once, when the voice has finished, judged by the sound itself: the last clip ending, or the phone's voice
+   saying it's done. A line that can't be heard waits about as long as it would have taken; a clip still loading waits
+   for it (up to 8 s, then the phone's voice); a line held for a stopped engine waits for the next tap. A line that cuts
+   in passes the wait on (it ends when that one does); hush() cancels it, so then() never runs for a line that was
+   stopped. Timers here are a backstop in case an end is never reported. */
+let lineWait = null;   // {fn, timer}
+function endWait(){ if (lineWait){ clearTimeout(lineWait.timer); lineWait = null; } }
+function lineHeard(w){ if (w && w === lineWait){ endWait(); w.fn(); } }
+function waitFor(w, ms){ if (w && w === lineWait){ clearTimeout(w.timer); w.timer = setTimeout(() => lineHeard(w), ms); } }
+/* a line with no clip to play: the phone's own voice (not in playback mode, where it would silence the effects) */
+function speakOr(text, who, w){
+  const speech = !playback(); if (speech) speakNow(text, pitchOf(who), undefined, w);
+  waitFor(w, talkMs(normLine(text)) + (speech ? 2500 : 0));
+}
+function playLine(clips, who, text, w){
+  const seq = ++VB.seq; let started = false;
+  const slow = w && setTimeout(() => { if (seq === VB.seq && !started){ VB.seq++; speakOr(text, who, w); } }, 8000);   // a clip that won't arrive
   Promise.all(clips.list.map(x => voiceBuf(x[0]))).then(bufs => {
     if (seq !== VB.seq) return;   // a newer line, or hush, took over
     const go = () => {
       if (seq !== VB.seq) return;
+      started = true; clearTimeout(slow);
       const c = ctx, phone = !!(call && call.c && whoId(who) === call.c.id && clips.id !== 'n');
-      const out = voiceOut(phone); let t = c.currentTime + .03;
-      bufs.forEach(b => { const x = c.createBufferSource(); x.buffer = b; x.connect(out); x.start(t); VB.srcs.push(x); x.onended = () => { VB.srcs = VB.srcs.filter(y => y !== x); }; t += b.duration + VOICE_GAP; });
+      const out = voiceOut(phone); let t = c.currentTime + .03, x = null;
+      bufs.forEach(b => { x = c.createBufferSource(); x.buffer = b; x.connect(out); x.start(t); VB.srcs.push(x); const me = x; x.onended = () => { VB.srcs = VB.srcs.filter(y => y !== me); }; t += b.duration + VOICE_GAP; });
+      if (w && x){ const end = x.onended; x.onended = () => { end(); if (seq === VB.seq) lineHeard(w); }; waitFor(w, (t - c.currentTime)*1000 + 1500); }
       VB.until = performance.now() + (t - c.currentTime)*1000; VB.played++; VB.last = {id:clips.id, phone, text:normLine(text)};
     };
-    if (!hold(go)) go();
-  }).catch(() => { if (seq === VB.seq && !playback()) speakNow(text, pitchOf(who)); });   // a clip didn't load (offline before it was ever fetched)
+    if (!hold(go, !!w)) go(); else clearTimeout(slow);   // (held: it plays when the engine starts, on the next tap)
+  }).catch(() => { if (seq === VB.seq){ clearTimeout(slow); w ? speakOr(text, who, w) : !playback() && speakNow(text, pitchOf(who)); } });   // a clip didn't load (offline before it was ever fetched)
 }
 const pitchOf = who => typeof who === 'number' && who ? who : who && who.p ? who.p : 1.15;
 function speakLine(text, who){
   if(document.visibilityState!=='visible')return;
   stopVoice(); try{ speechSynthesis.cancel(); }catch(e){}
   VB.log.push(normLine(text)); if (VB.log.length > 300) VB.log.shift();
-  const clips = lineClips(text, who);
-  if (clips) return playLine(clips, who, text);
+  const clips = lineClips(text, who), w = lineWait;
+  if (clips) return playLine(clips, who, text, w);
   if (VB.map && VB.fallbacks.length < 50) VB.fallbacks.push(normLine(text));
-  if (!playback()) speakNow(text, pitchOf(who));   // (in playback mode the speech voice would silence the sound effects)
+  if (w) speakOr(text, who, w); else if (!playback()) speakNow(text, pitchOf(who));   // (in playback mode the speech voice would silence the sound effects)
 }
 let sayTimer = 0;
-/* area: which settings checkbox this line belongs to (none = always, like the parent's Test sound). who: see whoId */
-function say(text, who, area){
-  if (!voiceOn(area)) return;
-  if (!speechReady){ pending = [text, who]; return; }
+/* area: which settings checkbox this line belongs to (none = always, like the parent's Test sound). who: see whoId.
+   then: run once the line is over (see lineWait) */
+function say(text, who, area, then){
+  if (then){ endWait(); lineWait = {fn:then, timer:0}; }
+  if (!voiceOn(area)){ if (then) waitFor(lineWait, lineMs(text, who)); return; }
+  if (!speechReady){ pending = [text, who]; if (then) waitFor(lineWait, lineMs(text, who) + 1500); return; }   // (the first tap plays it)
   clearTimeout(sayTimer);
   const wait = Math.min(1500, fxEnd - performance.now());   // a sound is still playing: talk right after it
   if (wait > 40) sayTimer = setTimeout(() => speakLine(text, who), wait + 120); else speakLine(text, who);
 }
-function hush(){ pending = null; clearTimeout(sayTimer); stopVoice(); try{ speechSynthesis.cancel(); }catch(e){} }
+function hush(){ pending = null; clearTimeout(sayTimer); endWait(); stopVoice(); try{ speechSynthesis.cancel(); }catch(e){} }
 const speaking = () => { if (performance.now() < VB.until) return true; try{ return speechSynthesis.speaking; }catch(e){ return false; } };
 const talkMs = text => 900 + text.length * 68;   // rough speaking time at rate .9
 
@@ -5573,6 +5597,9 @@ function popWord(host, w){ let el = host.querySelector('.word'); if (!el){ el = 
 const screenTimers = new Set();
 function later(fn, ms){ const id = setTimeout(() => { screenTimers.delete(id); fn(); }, ms); screenTimers.add(id); return id; }
 function clearLater(){ screenTimers.forEach(clearTimeout); screenTimers.clear(); }
+function unLater(id){ clearTimeout(id); screenTimers.delete(id); }
+/* run when the toy is back in front of the child after Settings or the background (both silence the voice) */
+const resumeHooks = [];
 
 /* ---------- Status bar: real time, full battery, full bars ---------- */
 $('#sicons').innerHTML = ICON.signal + ICON.battery;
@@ -9634,7 +9661,7 @@ function showSound(){
       : ' It follows the ring/silent switch: if it\'s quiet, flip the switch to ring.')
     + (rebuilds ? ` (Restarted ${rebuilds} time${rebuilds > 1 ? 's' : ''}.)` : '');
 }
-function closeSettings(){ const refreshCount=!$('#settings').hidden && countAtOpen!==settings.count && ['numsnack','dinopicnic'].includes(current); const opened=!$('#settings').hidden||!$('#parentGate').hidden;cancelGate(); $('#settings').hidden = true; if(refreshCount)go(current); if (current === 'letterpath') LetterPath.refresh(); if(opened && document.visibilityState==='visible')clock.focus({preventScroll:true}); }
+function closeSettings(){ const refreshCount=!$('#settings').hidden && countAtOpen!==settings.count && ['numsnack','dinopicnic'].includes(current); const opened=!$('#settings').hidden||!$('#parentGate').hidden;cancelGate(); $('#settings').hidden = true; if(refreshCount)go(current); if (current === 'letterpath') LetterPath.refresh(); if(opened && document.visibilityState==='visible'){clock.focus({preventScroll:true}); if(!refreshCount)resumeHooks.forEach(f => f());} }
 $$('[data-settings-jump]').forEach(b=>tapInScroll(b,()=>{
   const sheet=$('#settings .sheet'), target=$('#'+b.dataset.settingsJump), header=$('#settings .shead');
   sheet.scrollTop += target.getBoundingClientRect().top-header.getBoundingClientRect().bottom-8;
@@ -9897,10 +9924,24 @@ const SchoolAdventures = (() => {
   }
 
   const els = {};
-  let id = null, rounds = [], step = 0, misses = 0, busy = false, phase = 'ask', solved = 0, cars = [], book = null;
+  let id = null, rounds = [], step = 0, misses = 0, busy = false, phase = 'ask', solved = 0, cars = [], book = null, turnT = 0;
   const asks = () => rounds.filter(r => !r.page).length;
   const cur = () => rounds[step];
   const speak = s => { hush(); say(s, 0, 'school'); };
+  /* say a line, then move on a moment after it has been heard (not after a guess at its length: a slow clip, a replay
+     or a line cut short by Settings or the background must not turn the page early). Only if still on that step. */
+  function sayThenNext(text, pause){
+    const k = id, s = step; unLater(turnT); turnT = 0; hush();
+    say(text, 0, 'school', () => { if (id === k && step === s && document.visibilityState === 'visible') turnT = later(() => { turnT = 0; next(); }, pause); });
+  }
+  /* a story page: read it, then turn the page by itself. The picture and the speaker both read it again from the start,
+     and the page waits for that reading too. */
+  function readPage(intro = ''){ const r = cur(); if (r && r.page && phase === 'page') sayThenNext(intro + r.line, 900); }
+  /* Settings or the background silenced the voice: read the page again, or go on if a round was already answered */
+  function resume(){
+    if (!id || document.visibilityState !== 'visible' || turnT) return;
+    if (phase === 'page') readPage(); else if (phase === 'ask' && busy) next();
+  }
   const uhuh = () => { tone(392, 370, .15, 'triangle', .13); tone(330, 300, .22, 'triangle', .13, .19); };
   function stars(){ els[id].stars.innerHTML = Array.from({length:asks()}, (_, i) => `<span class="${i < solved ? 'on' : ''}">${ART.star}</span>`).join('');
     els[id].stars.setAttribute('aria-label', `${solved} of ${asks()} stars`); }
@@ -9908,10 +9949,7 @@ const SchoolAdventures = (() => {
     const e = els[id], r = cur(), intro = step === 0 ? (book ? BOOKS.find(b => b.key === book).title : TITLE[id]) + '! ' : '';   // the first line says which game or story it is
     e.finish.hidden = true; e.scene.hidden = e.choices.hidden = false; e.replay.hidden = false; if (e.shelf){ e.shelf.hidden = true; backTo(e, 'shelf'); }
     e.scene.innerHTML = r.scene(); e.scene.setAttribute('aria-label', r.page ? r.line : r.ask); e.choices.innerHTML = ''; misses = 0; busy = false; stars();
-    if (r.page){   // a story page: read it, then turn the page by itself (tap the picture to hear it again)
-      phase = 'page'; e.choices.hidden = true; speak(intro + r.line);
-      later(next, lineMs(intro + r.line) + 900); return;
-    }
+    if (r.page){ phase = 'page'; e.choices.hidden = true; readPage(intro); return; }
     phase = 'ask';
     shuffle(r.choices).forEach(c => {
       const b = document.createElement('button'); b.className = 'sa-choice'; b.dataset.choice = c.key; b.setAttribute('aria-label', c.label);
@@ -9934,11 +9972,10 @@ const SchoolAdventures = (() => {
       if (misses >= 2) e.choices.querySelector(`[data-choice="${r.right}"]`)?.classList.add('hint');
       return;
     }
-    busy = true; solved++; b.classList.add('yes'); FX.pop(); stars(); speak(r.yes);
+    busy = true; solved++; b.classList.add('yes'); FX.pop(); stars(); sayThenNext(r.yes, 700);
     if (r.reveal){ e.scene.innerHTML = r.reveal(); retrigger(e.scene.lastElementChild, 'hop'); }   // Feelings: now the face shows
     if (r.train) $$('.sa-car', e.scene).forEach((c, i) => later(() => { retrigger(c, 'hop'); tone(392 + i*66, 392 + i*66, .09, 'square', .07); }, 120*i));
     later(() => FX.cheer(), 250);
-    later(next, lineMs(r.yes) + 700);
   }
   function next(){
     if (!id) return;
@@ -9963,11 +10000,11 @@ const SchoolAdventures = (() => {
     e.choices.querySelector('.sa-choice')?.classList.add('sa-free');
     speak(SAY.patterntrain.free);
   }
-  function start(){ rounds = makeRounds(id); step = 0; solved = 0; cars = []; show(); }
+  function start(){ unLater(turnT); turnT = 0; rounds = makeRounds(id); step = 0; solved = 0; cars = []; show(); }
   /* the top-left button: School, or (inside a story) back to the shelf */
   function backTo(e, where){ const b = $('.sc-back', e.root); b.innerHTML = where === 'shelf' ? ICON.left : ICON.grid; b.setAttribute('aria-label', where === 'shelf' ? 'Stories' : 'School'); }
   function shelf(first){
-    const e = els[id]; phase = 'shelf'; book = null; rounds = []; step = 0; solved = 0; busy = false;
+    const e = els[id]; unLater(turnT); turnT = 0; phase = 'shelf'; book = null; rounds = []; step = 0; solved = 0; busy = false;
     e.scene.hidden = e.choices.hidden = e.finish.hidden = true; e.shelf.hidden = false; e.replay.hidden = false;
     e.stars.innerHTML = ''; e.stars.removeAttribute('aria-label'); backTo(e, 'school');
     speak(first ? TITLE.storytime + '! ' + SAY.storytime.pick : SAY.storytime.pick);
@@ -9983,23 +10020,27 @@ const SchoolAdventures = (() => {
     $('#apps').append(s);
     const e = els[k] = {root:s, stars:$('.sa-stars', s), scene:$('.sa-scene', s), choices:$('.sa-choices', s), finish:$('.sa-finish', s), replay:$('.lesson-replay', s), shelf:$('.sa-shelf', s)};
     $('.sc-back', s).innerHTML = ICON.grid; tap($('.sc-back', s), () => { FX.boop(); if (id === k && e.shelf && phase !== 'shelf'){ clearLater(); shelf(); } else go('school'); });
-    put(e.replay, ART.ear); tap(e.replay, () => { const r = cur(); if (id === k && r && phase === 'ask') speak(r.ask); else if (id === k && phase === 'shelf') speak(SAY.storytime.pick); }, {throttle:1200});
+    // the speaker says what's on screen again: the page, the question (not once it's answered: the next round is coming), or the shelf
+    put(e.replay, ART.ear); tap(e.replay, () => { if (id !== k) return; const r = cur(); if (phase === 'page') readPage(); else if (r && phase === 'ask' && !busy) speak(r.ask); else if (phase === 'shelf') speak(SAY.storytime.pick); }, {throttle:700});
     if (e.shelf) BOOKS.forEach(b => {   // a cover for each story: its friend and its last page
       const c = document.createElement('button'); c.className = 'sa-book'; c.dataset.book = b.key; c.setAttribute('aria-label', b.title);
       c.innerHTML = `<span class="sa-book-pet">${ART[b.pet]}</span><span class="sa-book-pic">${saCard(b.cover)}</span>`; e.shelf.appendChild(c);
       tap(c, () => { if (id !== k || phase !== 'shelf') return; FX.pop(); book = b.key; start(); });
     });
     put($('.sa-more', s), schoolPic('book')); tap($('.sa-more', s), () => { if (id === k) shelf(); });
-    tap(e.scene, () => { const r = cur(); if (id === k && phase === 'page' && r) speak(r.line); }, {bump:false});
+    tap(e.scene, () => { if (id === k && phase === 'page') readPage(); }, {bump:false, throttle:700});
     put($('.sa-again', s), ART.play); tap($('.sa-again', s), () => { if (id === k) start(); });
     put($('.sa-train-own', s), schoolPic('bus')); tap($('.sa-train-own', s), () => { if (id === k) freeTrain(); });
     if (k === 'patterntrain' && window.ResizeObserver) new ResizeObserver(() => { const r = cur(); if (id === k && r && r.actual && phase === 'ask') carSize(e); }).observe(e.scene);
     const paint = BG.grad(BACK[k]); bgFor.set(s, paint); if (bgWatch) bgWatch.observe(s);
   });
+  // in the background nothing moves on (the voice is already hushed); back in front, the story picks up again
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState !== 'visible'){ unLater(turnT); turnT = 0; } else resume(); });
+  resumeHooks.push(resume);
 
   return {
     enter(k){ id = k; book = null; paintBG(els[k].root, bgFor.get(els[k].root), true); if (els[k].shelf) shelf(true); else start(); },
-    leave(){ id = null; },
+    leave(){ id = null; unLater(turnT); turnT = 0; },
     lines: () => [
       ...Object.values(TITLE).map(t => t + '!'),
       ...['same', 'color', 'shape', 'size', 'nowColor', 'nowShape'].map(k => SAY.sorting[k]), ...Object.values(SAY.sorting.yes), ...Object.values(SAY.sorting.hint), SAY.sorting.end,
@@ -10012,7 +10053,7 @@ const SchoolAdventures = (() => {
       const r = id && rounds[step];
       return {id, step, phase, solved, total:asks(), busy, misses, cars:cars.length, book,
         books:id && phase === 'shelf' ? $$('.sa-book', els[id].shelf).map(b => b.dataset.book) : [],
-        ask:r && !r.page ? r.ask : null, right:r && !r.page ? r.right : null,
+        ask:r && !r.page ? r.ask : null, right:r && !r.page ? r.right : null, line:r && r.page ? r.line : null, turning:!!turnT,
         choices:id ? $$('.sa-choice', els[id].choices).map(b => b.dataset.choice) : []};
     }
   };
@@ -10067,7 +10108,8 @@ async function renderPad(kind, i, secs=2){
   return Array.from((await off.startRendering()).getChannelData(0));
 }
 window.__toyPhone = { motionGames: () => MotionGames.state(), renderPad, pads: () => ({drum:DRUMS.length, xylo:XYLO.length, piano:PIANO.length}), adventure: () => SchoolAdventures.state(), go, renderFx, speakable, voiceLines, lineMs,
-  voice: () => ({loaded: !!VB.map, clips: VB.map ? Object.keys(VB.map).length : 0, played: VB.played, fallbacks: VB.fallbacks.slice(), log: VB.log.slice(), last: VB.last}),
+  voice: () => ({loaded: !!VB.map, clips: VB.map ? Object.keys(VB.map).length : 0, played: VB.played, fallbacks: VB.fallbacks.slice(), log: VB.log.slice(), last: VB.last,
+    speaking: speaking(), sources: VB.srcs.length, waiting: !!lineWait}),
   recorded: () => Object.keys(REC), trims: FX_TRIM,
   voiceMissing: () => voiceLines().filter(l => !(VB.map && VB.map[l.who + '|' + l.s])).map(l => l.who + '|' + l.s),
   panorama: (k, w=1600) => Promise.resolve().then(() => { const cv = document.createElement('canvas'); cv.width = w; cv.height = Math.round(w * WH / WW); renderScene(cv.getContext('2d'), SCENES[k], 0, 0, w / WW, cv.width, cv.height, 3, true); return cv.toDataURL('image/png'); }), dino: () => ({fill:DinoBuddies.fill(), family:DinoBuddies.family()}), snack: () => SnackTime.state(), paint: () => PaintPals.state(), fx: () => Object.keys(FX), ringIn: () => maybeRing(true), sound: () => ({state: ctx ? ctx.state : 'none', rebuilds, held: held.length}),

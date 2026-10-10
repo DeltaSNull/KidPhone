@@ -7,7 +7,9 @@ on 2026-10-09 from a 6,400-word log; the old text is in git history.)
 
 ## Active batch
 
-- None claimed. Last: **R-23 — consistency pass** (Claude, 2026-10-09, branch `claude/consistency-pass`), see History.
+- **Claude, 2026-10-10: usability and reliability pass after PR #19 (owner's request), R-24 to R-30**, one PR per
+  batch: R-24 story narration and replay (`claude/story-narration`), then accessibility/legibility, learning
+  shortcuts and size/audio verification, read-together stories and flexible Feelings, offline readiness, navigation.
 - Next candidates, in order: physical checks with the family (R-04, G-04, T-09); Today's Adventure (P3-01, P3-07,
   P3-08); Toddler Play Together (P3-03); consistent game controls (I-06). Sound Safari (P3-05) waits on T-04.
 
@@ -82,6 +84,12 @@ on 2026-10-09 from a 6,400-word log; the old text is in git history.)
   gradual extraction).
 
 ## History (newest first)
+
+- 2026-10-10 R-24 story narration and replay (Claude): a story page turns a moment after its line has been heard,
+  judged by the sound (`say(text, who, area, then)`: the last clip's end, the phone voice's end, a slow clip waited
+  for up to 8 s, a line held for a stopped engine kept for the next tap); the speaker and the picture both re-read
+  the current page and the page waits; leaving, Settings and the background stop it, and coming back re-reads the
+  page or moves on from an answered round. New tests/story-narration.cjs (CI, Chromium and WebKit).
 
 - 2026-10-09 R-23 consistency pass (Claude): drums and animal piano leveled for a phone speaker through the compressor
   (`renderPad` test hook; smoke checks the spread); Sorting's target on an answer-sized card and a one-shape "same size"

@@ -157,7 +157,11 @@ Guided Access. It's one self-contained `index.html` (vanilla JS, no build step),
     Tapping one reads its three picture pages aloud, then asks picture questions about it, including what happened
     first and last; a wrong picture gets the page read again. *Duck's Garden* (Duck plants a seed, waters it from a
     pail, a sprout comes up), *Owl and the Egg* (an egg in a nest cracks and a chick comes out) and *Frog's Rainy Day*
-    (gray clouds, rain, a rainbow). The back arrow returns to the shelf, and so does the book button at the end.
+    (gray clouds, rain, a rainbow). A page turns by itself a moment after its line has been heard (the toy waits for
+    the voice itself, so a slow download never cuts a page short); the berry speaker or a tap on the picture reads the
+    page again from the start, and the page waits for that reading. Leaving, the background or Settings stop the
+    story where it is; back in front, the page is read again before it turns. The back arrow returns to the shelf,
+    and so does the book button at the end.
     New stories are a few lines of data in `BOOKS` plus their pictures in `STORY_CARDS`.
   - *Feelings Friends*: a two-page picture story about a friend, read aloud like Story Time ("Owl builds a tall
     tower." "Chick knocks it down!"), then "How does Owl feel?" with three faces to choose from (happy, sad, mad,
@@ -517,6 +521,7 @@ npm run test:delivery # object/location choices, nine-stop route, mirrored garde
 npm run test:parents:webkit # the same policy checks in WebKit (live camera tested in Chromium)
 npm run test:pages # the published site, served from a /KidPhone/ subfolder like GitHub Pages
 node tests/school-activities.cjs # Sorting, Pattern Train, Story Time, Feelings: real taps, no words on screen, fresh order, hints, stars, end screens
+node tests/story-narration.cjs   # story pages turn after the voice ends; replay early/late, mashing, a slow clip, back, Home, background
 node tests/text-legibility.cjs   # clear digits everywhere, readable settings text
 node tests/social-play.cjs       # call hello game, Dino turns, Paint Pals extras and interruptions
 # also: refinement, play-refinement, audio-return, phone-game-review, camera-peek, break-preview, delivery-expanded
