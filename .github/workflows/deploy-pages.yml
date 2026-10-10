@@ -94,7 +94,9 @@ jobs:
         run: node tests/break-preview.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
 
       - name: Run Pages/offline checks
-        run: ${{ matrix.command }}
+        run: |
+          ${{ matrix.command }}
+          node tests/offline-ready.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
 
       - name: Motion games
         run: node tests/motion-games.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}

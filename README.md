@@ -271,8 +271,11 @@ games, and every animal on the phone has its own voice:
   3 kHz) and levelled by how loud that speaker plays it: every character comes out at the same loudness, 3 dB over the
   animal calls. Clips play through the same sound engine as the animals, so they follow the volume setting and never
   cut them off.
-- **Offline**: clips are small MP3s (`assets/voice/`, about 6 MB in all), fetched in the background after the first
-  tap and kept by the offline cache.
+- **Offline**: clips are small MP3s (`assets/voice/`, about 17 MB in all). After the first tap, the clips of the parts
+  of the toy switched on in App access download in the background (a few at a time, each tried three times) into the
+  offline cache. **Settings → Offline** says how far it got, offers **Try again** for files that didn't come through,
+  **Save everything** for the rest, and says **Ready offline** only after looking up every needed file in the cache
+  (with the service worker installed).
 - **Family names** (a contact you add) have no recording, so those lines use the phone's own voice when the silent
   switch setting is off, and are skipped when it's on (the phone's voice would silence the sound effects).
 
@@ -380,7 +383,8 @@ Every picture is pixel art placed one pixel at a time: no emoji, no vector drawi
 
    Every link in the page is relative, so it works at a domain's root or in a subfolder like `/KidPhone/`.
 2. On the iPhone, open the URL in Safari, then **Share → Add to Home Screen**. Opened from that icon, it runs full screen
-   with no Safari bars, and it keeps working offline once loaded (the service worker caches it).
+   with no Safari bars, and it keeps working offline once loaded (the service worker caches it). Before a trip, open
+   Settings and check that **Offline** says **Ready offline** (or tap Save everything while on Wi-Fi).
 3. **Guided Access**: Settings → Accessibility → Guided Access → on, and set a passcode. Open Toy Phone, then
    triple-click the side button to start. Triple-click and enter the passcode to leave.
 4. **Silent switch**: with the parent setting *Sound when the phone is on silent* on (the default), the toy plays even
@@ -538,6 +542,7 @@ node tests/accessibility.cjs     # parent entry for assistive tech, dialog focus
 node tests/learning-rounds.cjs   # Pattern Train/Sorting: no shortcut answers over 300 plays, gentle order with demonstrations, drawn sizes in 3 layouts and after rotating
 node tests/audio-mix.cjs         # modelled: pads, rapid taps, overlaps, voice with effects at all 4 volumes: no clipping, balance (not a substitute for listening on the phone)
 node tests/stories-together.cjs  # Story Time read-together (pages wait for the arrow, no questions) and Feelings' reactions and two right helps
+node tests/offline-ready.cjs     # Settings' offline status: switched-on apps first, retries and Try again, Save everything, verified before "Ready offline"
 node tests/social-play.cjs       # call hello game, Dino turns, Paint Pals extras and interruptions
 # also: refinement, play-refinement, audio-return, phone-game-review, camera-peek, break-preview, delivery-expanded
 # (each takes --webkit; CI runs them all in Chromium and WebKit)
