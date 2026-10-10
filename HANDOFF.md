@@ -103,7 +103,7 @@ on 2026-10-09 from a 6,400-word log; the old text is in git history.)
   the two names must match, tests/offline-ready.cjs checks): the page, voice.json, sounds and the voice clips of
   each switched-on part (`areaLines()` groups every narrator line by part; Phone adds the animals' voices), four at
   a time, three tries each. The warm-up after the first tap now saves only the switched-on parts (was every
-  narrator clip). Settings → Offline: progress, Try again, Save everything, and "Ready offline" only after every file
+  narrator clip), and only once the service worker is active (no Cache Storage writes in tests or plain copies). Settings → Offline: progress, Try again, Save everything, and "Ready offline" only after every file
   is found in the cache with the service worker installed. Escape now closes Settings from anywhere (focus could
   drop out when a button disabled itself).
 

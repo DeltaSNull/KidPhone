@@ -278,8 +278,8 @@ games, and every animal on the phone has its own voice:
   3 kHz) and levelled by how loud that speaker plays it: every character comes out at the same loudness, 3 dB over the
   animal calls. Clips play through the same sound engine as the animals, so they follow the volume setting and never
   cut them off.
-- **Offline**: clips are small MP3s (`assets/voice/`, about 17 MB in all). After the first tap, the clips of the parts
-  of the toy switched on in App access download in the background (a few at a time, each tried three times) into the
+- **Offline**: clips are small MP3s (`assets/voice/`, about 17 MB in all). After the first tap (with the offline helper,
+  the service worker, installed), the clips of the parts of the toy switched on in App access download in the background (a few at a time, each tried three times) into the
   offline cache. **Settings → Offline** says how far it got, offers **Try again** for files that didn't come through,
   **Save everything** for the rest, and says **Ready offline** only after looking up every needed file in the cache
   (with the service worker installed).
