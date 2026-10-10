@@ -85,6 +85,12 @@ on 2026-10-09 from a 6,400-word log; the old text is in git history.)
 
 ## History (newest first)
 
+- 2026-10-10 R-27 stories and feelings (Claude): Story Time's shelf has two mode buttons ("?" = questions, the
+  default; grown-up and child = read together, `mode`, not saved). Reading together, pages are read and wait for
+  the grown-up's arrows (`.sa-turns`), each with a written idea (`talk` in `BOOKS`), no questions. Feelings: every
+  second page states the friend's own reaction; the help round accepts two kind answers (`rights`, `HELP_FOR` lists),
+  "Duck can ask for a hug!" instead of assuming one. New tests/stories-together.cjs.
+
 - 2026-10-10 R-26 learning shortcuts and verification (Claude): Pattern Train's size train asked for "small" every
   time with two big decoys; now two answers (same shape and color, one of each size) and either size can be next.
   Trains are 4 or 5 cars long; the order is AB colors, AB animals, AB sizes, AAB, ABC, each new kind after a
@@ -93,7 +99,10 @@ on 2026-10-09 from a 6,400-word log; the old text is in git history.)
   cards keep the three-card width (`.sa-sized`) so the drawn shapes still match the picture. The size train's squares
   nearly fill their wagons (`saShape(..., full)`). Xylophone taper made geometric (`.3 * .91 ** i`; the top bars
   were ~3 dB louder on a phone speaker). New test hooks `adventurePlan`, `adventureJump`, `renderMix`, `voiceFile`;
-  new tests/learning-rounds.cjs and tests/audio-mix.cjs (modelled; physical listening is still R-04).
+  new tests/learning-rounds.cjs and tests/audio-mix.cjs (modelled; physical listening is still R-04). Follow-up
+  (PR #23, after CI showed run-to-run variance): the output got a safety curve after the compressor (`squash()` now
+  returns `{in, out}`: linear to 0.85, never past 0.94), since eight quick claps at Loud could peak at 0.99; the
+  test's spread limits match the smoke test's (some pads have a random noise layer).
 
 - 2026-10-10 R-25 accessibility and legibility (Claude): the status bar is no longer `aria-hidden` (only its icons);
   the clock is "Parent settings: hold for 3 seconds" (the hold is still the gate); `shield()` makes the screen inert
