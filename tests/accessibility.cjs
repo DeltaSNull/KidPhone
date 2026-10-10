@@ -60,6 +60,9 @@ function auditDigits(){
       await context.route('https://fonts.googleapis.com/**', r => r.fulfill({contentType:'text/css', body:FONTS}));
       await context.route('https://fonts.gstatic.com/**', r => r.abort());
       await context.route('**/assets/family/family.json', r => r.fulfill({json:{contacts:[]}}));
+      // no recorded voice (these checks don't need it): WebKit reports every clip download a reload cuts off as an
+      // "access control checks" page error, as in tests/parent-controls.cjs
+      await context.route('**/assets/voice/voice.json', r => r.fulfill({status:404, body:''}));
       await context.addInitScript(s => {
         if (!sessionStorage.getItem('seeded')){ sessionStorage.setItem('seeded', '1');
           localStorage.setItem('toyphone.settings', JSON.stringify(s));
@@ -121,7 +124,8 @@ function auditDigits(){
 
       // the PIN screen
       await page.evaluate(() => localStorage.setItem('toyphone.access', JSON.stringify({mode:'full', pin:{salt:'00', hash:'none'}, pinEnabled:true})));
-      await page.reload(); await page.waitForFunction(() => window.__toyPhone); await page.evaluate(() => document.fonts.ready);
+      await page.reload(); await page.waitForFunction(() => window.__toyPhone);
+      await page.evaluate(() => document.fonts.ready); await page.evaluate(() => document.fonts.load('128px "Digit Reference"', '0123456789'));   // (the reference again: WebKit drops it on reload)
       await holdClock(); await page.locator('#parentGate').waitFor({state:'visible'});
       check((await inertOutside()).every(Boolean) && await page.evaluate(() => document.activeElement.id) === 'pinCancel', `${tag}: the PIN screen opens with focus inside and the rest inert`);
       await page.keyboard.press('2'); await page.keyboard.press('8');
