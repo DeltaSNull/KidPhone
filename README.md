@@ -149,10 +149,15 @@ Guided Access. It's one self-contained `index.html` (vanilla JS, no build step),
     at the end: the same picture sorted first by shape, then by color ("Now find one the same color!"). Shapes are
     squares, circles and triangles in four colors, big or small, different each play. The picture to match sits on a
     card exactly the size of the answer cards, so big and small look the same there as in the answers; "the same
-    size" shows one shape three times (the same-color one is the wrong size).
-  - *Pattern Train*: a bus pulls five wagons and a glowing "?" wagon: "What comes next?" Color patterns (AB, AAB, ABC),
-    an animal pattern and a big-small pattern, new each play. A right answer makes the wagons bounce in a little tune.
-    Afterwards the kids can make their own train from colors and a duck.
+    size" shows the same shape twice, one big and one small (two answers, so the answer is never just the odd one
+    out), and the one in the picture's color is the wrong size.
+  - *Pattern Train*: a bus pulls four or five wagons and a glowing "?" wagon: "What comes next?" It gets harder
+    gently: first a whole demonstration train goes by, each wagon hopping with its own note ("Watch the train!"), then
+    "Now you!" with a two-wagon pattern in colors, then animals, then big and small (two answers, and either size can
+    be next); then a two-and-one pattern and a three-wagon pattern, each after its own demonstration ("A new train!
+    Watch!"). The train is four or five wagons long, so the "?" falls on a different part of the pattern each play.
+    A right answer makes the wagons bounce in a little tune. Afterwards the kids can make their own train from colors
+    and a duck.
   - *Story Time*: opens on a shelf of stories, each cover a friend and the story's last picture ("Pick a story!").
     Tapping one reads its three picture pages aloud, then asks picture questions about it, including what happened
     first and last; a wrong picture gets the page read again. *Duck's Garden* (Duck plants a seed, waters it from a
@@ -524,6 +529,8 @@ node tests/school-activities.cjs # Sorting, Pattern Train, Story Time, Feelings:
 node tests/story-narration.cjs   # story pages turn after the voice ends; replay early/late, mashing, a slow clip, back, Home, background
 node tests/text-legibility.cjs   # clear digits everywhere, readable settings text
 node tests/accessibility.cjs     # parent entry for assistive tech, dialog focus, every number's font/size/clipping, reduced motion
+node tests/learning-rounds.cjs   # Pattern Train/Sorting: no shortcut answers over 300 plays, gentle order with demonstrations, drawn sizes in 3 layouts and after rotating
+node tests/audio-mix.cjs         # modelled: pads, rapid taps, overlaps, voice with effects at all 4 volumes: no clipping, balance (not a substitute for listening on the phone)
 node tests/social-play.cjs       # call hello game, Dino turns, Paint Pals extras and interruptions
 # also: refinement, play-refinement, audio-return, phone-game-review, camera-peek, break-preview, delivery-expanded
 # (each takes --webkit; CI runs them all in Chromium and WebKit)
