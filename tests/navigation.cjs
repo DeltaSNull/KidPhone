@@ -45,7 +45,8 @@ const ACTIVITIES = ['wildtap', 'dinobuddies', 'snacktime', 'paintpals', 'balltra
         for (const m of ['createOscillator', 'createBufferSource']){ const f = AC.prototype[m]; AC.prototype[m] = function(){ window.__snd++; return f.call(this); }; }
       });
       const page = await context.newPage(), errors = [];
-      page.on('pageerror', e => errors.push(e.message));
+      // (WebKit reports a clip download that a reload cuts off as an "access control checks" error; the toy catches it)
+      page.on('pageerror', e => { if (!/assets\/voice\/\w+\.mp3 due to access control checks/.test(e.message)) errors.push(e.message); });
       await page.goto(`http://127.0.0.1:${server.address().port}/`); await page.waitForFunction(() => window.__toyPhone && window.__toyPhone.voice().loaded);
       const touch = async selector => { const box = await page.locator(selector).first().boundingBox(); await page.touchscreen.tap(box.x + box.width/2, box.y + box.height/2); };
       const box = sel => page.locator(sel).evaluateAll(els => els.filter(e => e.getClientRects().length && getComputedStyle(e).visibility !== 'hidden').map(e => { const r = e.getBoundingClientRect(); return {l:r.left, t:r.top, r:r.right, b:r.bottom, w:r.width, h:r.height}; }));
