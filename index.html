@@ -1137,12 +1137,20 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img:not(.px){image-rendering
 .sa-end-art{width:min(40vmin, 160px); height:min(40vmin, 160px)} .sa-end-art .px{width:100%; height:100%}
 .sa-end-btns{display:flex; gap:18px}
 .sa-together{font-family:var(--reading); font-weight:600; font-size:15px; line-height:1.35; color:#5A4A3E; max-width:28em; margin:0 8px}
+/* Story Time: the shelf's two ways to read (top, between the back and speaker buttons), and the grown-up's page arrows */
+.sa-modes{grid-row:1; grid-column:1 / -1; align-self:center; justify-self:center; display:flex; gap:10px; z-index:4}
+.sa-mode{width:60px; height:60px} .sa-mode.on{--disc:var(--d-sun)} .sa-mode .px{width:62%; height:62%; margin:0}
+.sa-mode-q{font-size:30px; line-height:1; color:#7A5A3A; margin-top:-4px}
+.sa-turns{display:flex; align-items:center; justify-content:space-between; gap:10px; min-height:0}
+.sa-turns .round{width:76px; height:76px} .sa-turns .sa-next .px,.sa-turns .sa-prev .px{width:46%; height:46%}
+.sa-talk{flex:1; margin:0; text-align:center; font-family:var(--reading); font-weight:600; font-size:15px; line-height:1.35; color:#5A4A3E}
 @media (orientation:landscape){
   .app.sa{grid-template-rows:64px minmax(0,1fr); grid-template-columns:minmax(0,1fr) clamp(120px, 20vw, 170px); padding:4px 10px 8px}
   .sa-stars{grid-column:1 / -1} .sa-scene{grid-row:2; grid-column:1}
   .sa-choices{grid-row:2; grid-column:2; flex-direction:column} .sa-choice{height:auto; flex:1; min-height:0}
   .sa-target{flex:none; width:clamp(120px, 20vw, 170px); height:calc((100% - 20px)/3)}
   .sa-finish{grid-column:1 / -1}
+  .sa-turns{grid-row:2; grid-column:2; flex-direction:column; justify-content:center}
   .sa-shelf{grid-column:1 / -1; grid-template-columns:repeat(3, minmax(0, 1fr)); grid-auto-rows:auto; max-height:none}
   .sa-book{flex-direction:column; gap:4%} .sa-book-pet{height:auto; width:38%} .sa-book-pic{height:auto; width:min(92%, 34vh)}
 }
@@ -9832,9 +9840,9 @@ const SchoolAdventures = (() => {
     patterntrain:{ask:'What comes next?', yes:'Yes! The pattern goes on!', hint:'Look at the train again!', end:'Choo choo! What a train!', free:'Make your own train!',
       watch:'Watch the train!', newRule:'A new train! Watch!', now:'Now you! What comes next?',
       together:'Together: clap, stomp, clap, stomp. What comes next?'},
-    storytime:{pick:'Pick a story!', end:'The end!'},
+    storytime:{pick:'Pick a story!', end:'The end!', questions:'Stories and questions!', together:'Read together!'},
     feelings:{gentle:'Be gentle. Try again!', end:'Every feeling is okay!',
-      together:'Together: stop in a story or at the park and ask, "How does that friend feel? What would help?"'}
+      together:'Together: stop in a story or at the park and ask, "How does that friend feel? How can you tell? What would help?" Friends can feel different ways about the same thing.'}
   };
   /* Story Time's shelf. Each story: a friend, a cover (its last page), three pages of [line, picture], then questions
      (hint: the page whose line answers it; the wrong answers are other pictures). Add a story here and to
@@ -9846,12 +9854,14 @@ const SchoolAdventures = (() => {
         {ask:'What grew?', yes:'Yes! A sprout!', hint:2, right:'sprout', wrong:['egg', 'star']},
         {ask:'What happened first?', yes:'Yes! First, the seed!', hint:0, right:'seed', wrong:['water', 'sprout']},
         {ask:'What happened last?', yes:'Yes! Last, the sprout!', hint:2, right:'sprout', wrong:['seed', 'water']}],
+      talk:['What is Duck holding? Where do seeds go?', 'Pretend to pour the water together!', 'Can you grow tall like a sprout? Stretch up!'],
       together:'Together: plant a seed in a cup, or tell the story with your hands: plant, water, grow!'},
     {key:'egg', title:'Owl and the Egg', pet:'owl', cover:'hatch', pages:[['Owl finds an egg in a nest.', 'nest'], ['Crack, crack! The egg wiggles.', 'crack'], ['Hello, little Chick!', 'hatch']],
       ask:[{ask:'What did Owl find?', yes:'Yes! An egg!', hint:0, right:'egg', wrong:['ball', 'apple']},
         {ask:'Who came out of the egg?', yes:'Yes! A little chick!', hint:2, right:'chick', wrong:['dog', 'cat']},
         {ask:'What happened first?', yes:'Yes! First, the egg in the nest!', hint:0, right:'nest', wrong:['crack', 'hatch']},
         {ask:'What happened last?', yes:'Yes! Last, the chick!', hint:2, right:'hatch', wrong:['nest', 'crack']}],
+      talk:['Who do you think is inside the egg?', 'Say "crack, crack" and wiggle like the egg!', 'What does a baby chick say? Peep, peep!'],
       together:'Together: what other babies come out of eggs? Ducks, turtles, even dinosaurs!'},
     {key:'rain', title:"Frog's Rainy Day", pet:'frog', cover:'rainbow', pages:[['Frog sees gray clouds.', 'clouds'], ['Drip, drop! Frog splashes in the rain.', 'rain'], ['Look, Frog! A rainbow!', 'rainbow']],
       ask:[{ask:'What fell from the clouds?', yes:'Yes! Rain!', hint:1, right:'rain', wrong:['apple', 'star']},
@@ -9859,6 +9869,7 @@ const SchoolAdventures = (() => {
         {ask:'What came after the rain?', yes:'Yes! A rainbow!', hint:2, right:'rainbow', wrong:['moon', 'ball']},
         {ask:'What happened first?', yes:'Yes! First, the clouds!', hint:0, right:'clouds', wrong:['rain', 'rainbow']},
         {ask:'What happened last?', yes:'Yes! Last, the rainbow!', hint:2, right:'rainbow', wrong:['clouds', 'rain']}],
+      talk:['What color are the clouds? What might happen next?', 'Make the rain sounds together: drip, drop, splash!', 'Point to each color in the rainbow and name it.'],
       together:'Together: look out the window. What is the weather today?'}
   ];
   const storyPic = k => STORY_CARDS[k] ? saCard(k) : schoolPic(k);
@@ -9866,21 +9877,26 @@ const SchoolAdventures = (() => {
      friend]. Situations this age can read: a present, a party; a friend leaving, a lost balloon; a tower knocked down,
      a picture scribbled on; thunder, a crocodile. Props: a sprite, a saProp, or "frog away" (turned to leave) /
      "balloon up" (small, high). */
+  /* The second page says how this friend reacts (tears, stomping, hiding), so the feeling is worked out from this friend,
+     not from the event alone: another friend might feel differently about the same thing. */
   const STORIES = {
-    happy:[{pet:'dog', name:'Puppy', pages:[['Puppy gets a present!', ['gift']], ["It's a new ball!", ['ball']]]},
-      {pet:'frog', name:'Frog', pages:[["It's Frog's birthday!", ['cake']], ['Friends come to play!', ['chick', 'duck']]]}],
-    sad:[{pet:'duck', name:'Duck', pages:[['Duck and Frog play ball.', ['ball', 'frog']], ['Frog has to go home.', ['frog away', 'home']]]},
-      {pet:'chick', name:'Chick', pages:[['Chick has a red balloon.', ['balloon']], ['Oh no! It floats away!', ['balloon up']]]}],
-    mad:[{pet:'owl', name:'Owl', pages:[['Owl builds a tall tower.', ['tower']], ['Chick knocks it down!', ['fallen', 'chick']]]},
-      {pet:'monkey', name:'Monkey', pages:[['Monkey draws a picture.', ['drawing']], ['Frog scribbles all over it!', ['scribble', 'frog']]]}],
-    scared:[{pet:'cat', name:'Cat', pages:[['Cat plays in the sun.', ['sun']], ['Boom! Loud thunder!', ['storm']]]},
-      {pet:'penguin', name:'Penguin', pages:[['Penguin swims in the pond.', ['pond']], ['A big crocodile swims up!', ['crocodile']]]}]
+    happy:[{pet:'dog', name:'Puppy', pages:[['Puppy gets a present!', ['gift']], ["It's a new ball! Puppy wags and wags!", ['ball']]]},
+      {pet:'frog', name:'Frog', pages:[["It's Frog's birthday!", ['cake']], ['Friends come to play! Frog jumps up and down!', ['chick', 'duck']]]}],
+    sad:[{pet:'duck', name:'Duck', pages:[['Duck and Frog play ball.', ['ball', 'frog']], ["Frog has to go home. Duck's eyes fill with tears.", ['frog away', 'home']]]},
+      {pet:'chick', name:'Chick', pages:[['Chick has a red balloon.', ['balloon']], ['Oh no! It floats away! Chick starts to cry.', ['balloon up']]]}],
+    mad:[{pet:'owl', name:'Owl', pages:[['Owl builds a tall tower.', ['tower']], ['Chick knocks it down! Owl stomps and stomps!', ['fallen', 'chick']]]},
+      {pet:'monkey', name:'Monkey', pages:[['Monkey draws a picture.', ['drawing']], ['Frog scribbles all over it! Monkey shouts, Hey!', ['scribble', 'frog']]]}],
+    scared:[{pet:'cat', name:'Cat', pages:[['Cat plays in the sun.', ['sun']], ['Boom! Loud thunder! Cat hides and shakes.', ['storm']]]},
+      {pet:'penguin', name:'Penguin', pages:[['Penguin swims in the pond.', ['pond']], ['A big crocodile swims up! Penguin swims away fast!', ['crocodile']]]}]
   };
   const FEELINGS = Object.keys(STORIES), ALL_STORIES = FEELINGS.flatMap(feel => STORIES[feel].map(s => ({...s, feel})));
   const feelAsk = s => `How does ${s.name} feel?`, feelYes = s => `Yes! ${s.name} feels ${s.feel}!`, helpAsk = s => `What can help ${s.name}?`;
-  const HELP_FOR = {sad:'hug', mad:'breath', scared:'grownup'}, HELP_YES = {hug:'A hug can help!', breath:'A big breath can help!', grownup:'A grown-up can help!'};
+  /* what can help: two kind choices are both right (different friends like different things; a hug is asked for, not
+     assumed), and grabbing a toy never is */
+  const HELP_FOR = {sad:['hug', 'grownup'], mad:['breath', 'grownup'], scared:['grownup', 'hug']};
+  const helpYes = (s, k) => ({hug:`${s.name} can ask for a hug!`, breath:'A big breath can help!', grownup:'A grown-up can help!'})[k];
   const HELP = {hug:() => ART.heart, breath:() => schoolPic('blow'), grownup:() => schoolPic('grownup'), take:() => schoolPic('grab')};
-  const HELP_LABEL = {hug:'a hug', breath:'a big breath', grownup:'a grown-up', take:'grab the toy'};
+  const HELP_LABEL = {hug:'ask for a hug', breath:'a big breath', grownup:'a grown-up', take:'grab the toy'};
   const prop = k => { const [name, how] = k.split(' '); return {art:saProp(name) || schoolPic(name), how}; };
   /* the friend on the left, turned to face the story; one thing beside it is big, two are smaller */
   const storyScene = (s, things) => () => `<span class="sa-duck">${ART[s.pet]}</span>` + things.map(prop).map(({art, how}) =>
@@ -9938,7 +9954,9 @@ const SchoolAdventures = (() => {
     }
     if (id === 'storytime'){
       const b = BOOKS.find(x => x.key === book), friend = `<span class="sa-duck">${ART[b.pet]}</span>`;
-      return [...b.pages.map(([line, pic]) => ({page:true, line, scene:() => `${friend}<span class="sa-big sa-wide">${saCard(pic)}</span>`})),
+      const pages = b.pages.map(([line, pic], i) => ({page:true, line, talk:b.talk && b.talk[i], scene:() => `${friend}<span class="sa-big sa-wide">${saCard(pic)}</span>`}));
+      if (mode === 'together') return pages;   // read together: no questions; a grown-up turns the pages
+      return [...pages,
         ...b.ask.map(q => ({scene:() => `${friend}<span class="sa-think">?</span>`, ask:q.ask, right:q.right, yes:q.yes, hint:b.pages[q.hint][0],
           choices:[q.right, ...q.wrong].map(k => ({key:k, label:k, art:storyPic(k)}))}))];
     }
@@ -9949,13 +9967,15 @@ const SchoolAdventures = (() => {
     return told.flatMap(s => [
       ...s.pages.map(([line, things]) => ({page:true, line, scene:storyScene(s, things)})),
       {scene:wondering(s), reveal:feeling(s), ask:feelAsk(s), right:s.feel, choices:faces(s), yes:feelYes(s), hint:s.pages[1][0]},
-      ...(HELP_FOR[s.feel] ? [{scene:feeling(s), ask:helpAsk(s), right:HELP_FOR[s.feel],
-        choices:[HELP_FOR[s.feel], 'take'].map(k => ({key:k, art:HELP[k](), label:HELP_LABEL[k]})), yes:HELP_YES[HELP_FOR[s.feel]], hint:SAY.feelings.gentle}] : [])
+      ...(HELP_FOR[s.feel] ? [{scene:feeling(s), ask:helpAsk(s), right:HELP_FOR[s.feel][0], rights:HELP_FOR[s.feel],
+        choices:[...HELP_FOR[s.feel], 'take'].map(k => ({key:k, art:HELP[k](), label:HELP_LABEL[k]})), yes:helpYes(s, HELP_FOR[s.feel][0]), yesFor:k => helpYes(s, k), hint:SAY.feelings.gentle}] : [])
     ]);
   }
 
   const els = {};
   let id = null, rounds = [], step = 0, misses = 0, busy = false, phase = 'ask', solved = 0, cars = [], book = null, turnT = 0;
+  let mode = 'questions';   // Story Time: 'questions' (pages turn by themselves, then questions) or 'together' (a grown-up turns them); not saved
+  const reading = () => id === 'storytime' && mode === 'together';
   const asks = () => rounds.filter(r => !r.page).length;
   const cur = () => rounds[step];
   const speak = s => { hush(); say(s, 0, 'school'); };
@@ -9972,6 +9992,7 @@ const SchoolAdventures = (() => {
     const r = cur(); if (!r || !r.page || phase !== 'page') return;
     hops.forEach(unLater); hops = [];
     if (r.demo) $$('.sa-car', els[id].scene).forEach((c, i) => hops.push(later(() => { retrigger(c, 'hop'); tone(r.notes[i], r.notes[i], .14, 'square', .08); }, 350 + 380*i)));
+    if (reading()){ speak(intro + r.line); return; }   // read together: the page waits for the grown-up's arrow
     sayThenNext(intro + r.line, r.demo ? 1500 : 900);
   }
   /* Settings or the background silenced the voice: read the page again, or go on if a round was already answered */
@@ -9986,7 +10007,10 @@ const SchoolAdventures = (() => {
     const e = els[id], r = cur(), intro = step === 0 ? (book ? BOOKS.find(b => b.key === book).title : TITLE[id]) + '! ' : '';   // the first line says which game or story it is
     e.finish.hidden = true; e.scene.hidden = e.choices.hidden = false; e.replay.hidden = false; if (e.shelf){ e.shelf.hidden = true; backTo(e, 'shelf'); }
     e.scene.innerHTML = r.scene(); e.scene.setAttribute('aria-label', r.page ? r.line : r.ask); e.choices.innerHTML = ''; e.choices.classList.toggle('sa-sized', !!r.sized); misses = 0; busy = false; stars();
-    if (r.page){ phase = 'page'; e.choices.hidden = true; readPage(intro); return; }
+    if (e.turns){ e.turns.hidden = !reading(); e.modes.hidden = true; }
+    if (r.page){ phase = 'page'; e.choices.hidden = true;
+      if (e.turns){ $('.sa-talk', e.turns).textContent = reading() && r.talk ? r.talk : ''; $('.sa-prev', e.turns).style.visibility = step ? '' : 'hidden'; }
+      readPage(intro); return; }
     phase = 'ask';
     shuffle(r.choices).forEach(c => {
       const b = document.createElement('button'); b.className = 'sa-choice'; b.dataset.choice = c.key; b.setAttribute('aria-label', c.label);
@@ -10004,12 +10028,13 @@ const SchoolAdventures = (() => {
   function answer(key, b){
     const e = els[id], r = cur();
     if (busy || phase !== 'ask' || !r) return;
-    if (key !== r.right){
+    const rights = r.rights || [r.right];
+    if (!rights.includes(key)){
       misses++; uhuh(); retrigger(b, 'wig'); speak(r.hint);
-      if (misses >= 2) e.choices.querySelector(`[data-choice="${r.right}"]`)?.classList.add('hint');
+      if (misses >= 2) rights.forEach(k => e.choices.querySelector(`[data-choice="${k}"]`)?.classList.add('hint'));
       return;
     }
-    busy = true; solved++; b.classList.add('yes'); FX.pop(); stars(); sayThenNext(r.yes, 700);
+    busy = true; solved++; b.classList.add('yes'); FX.pop(); stars(); sayThenNext(r.yesFor ? r.yesFor(key) : r.yes, 700);
     if (r.reveal){ e.scene.innerHTML = r.reveal(); retrigger(e.scene.lastElementChild, 'hop'); }   // Feelings: now the face shows
     if (r.train) $$('.sa-car', e.scene).forEach((c, i) => later(() => { retrigger(c, 'hop'); tone(392 + i*66, 392 + i*66, .09, 'square', .07); }, 120*i));
     later(() => FX.cheer(), 250);
@@ -10019,7 +10044,7 @@ const SchoolAdventures = (() => {
     step++;
     if (step < rounds.length){ show(); return; }
     const e = els[id]; phase = 'done';
-    e.scene.hidden = e.choices.hidden = true; e.replay.hidden = true; e.finish.hidden = false;
+    e.scene.hidden = e.choices.hidden = true; e.replay.hidden = true; e.finish.hidden = false; if (e.turns) e.turns.hidden = true;
     $('.sa-train-own', e.finish).hidden = id !== 'patterntrain'; $('.sa-more', e.finish).hidden = id !== 'storytime';
     $('.sa-together', e.finish).textContent = book ? BOOKS.find(b => b.key === book).together : SAY[id].together;
     retrigger($('.sa-end-art', e.finish), 'hop'); FX.cheer(); speak(SAY[id].end);
@@ -10039,23 +10064,34 @@ const SchoolAdventures = (() => {
   }
   function start(){ unLater(turnT); turnT = 0; rounds = makeRounds(id); step = 0; solved = 0; cars = []; show(); }
   /* the top-left button: School, or (inside a story) back to the shelf */
+  function markMode(e){ $$('.sa-mode', e.modes).forEach(b => { const on = b.dataset.mode === mode; b.classList.toggle('on', on); b.setAttribute('aria-pressed', String(on)); }); }
   function backTo(e, where){ const b = $('.sc-back', e.root); b.innerHTML = where === 'shelf' ? ICON.left : ICON.grid; b.setAttribute('aria-label', where === 'shelf' ? 'Stories' : 'School'); }
   function shelf(first){
     const e = els[id]; unLater(turnT); turnT = 0; phase = 'shelf'; book = null; rounds = []; step = 0; solved = 0; busy = false;
     e.scene.hidden = e.choices.hidden = e.finish.hidden = true; e.shelf.hidden = false; e.replay.hidden = false;
     e.stars.innerHTML = ''; e.stars.removeAttribute('aria-label'); backTo(e, 'school');
+    e.turns.hidden = true; e.modes.hidden = false; markMode(e);
     speak(first ? TITLE.storytime + '! ' + SAY.storytime.pick : SAY.storytime.pick);
   }
 
   Object.keys(TITLE).forEach(k => {
     const s = document.createElement('section'); s.className = 'app sa'; s.id = k; s.hidden = true; s.setAttribute('aria-label', TITLE[k]);
     s.innerHTML = `<button class="sc-back" aria-label="School"></button><div class="sa-stars"></div><button class="round lesson-replay" aria-label="Say it again"></button>
-      <div class="sa-scene" role="img"></div><div class="sa-choices"></div>${k === 'storytime' ? '<div class="sa-shelf" hidden></div>' : ''}
+      <div class="sa-scene" role="img"></div><div class="sa-choices"></div>${k === 'storytime' ? `<div class="sa-shelf" hidden></div>
+        <div class="sa-modes" hidden><button class="round sa-mode" data-mode="questions" aria-label="Stories and questions"><span class="sa-mode-q">?</span></button><button class="round sa-mode" data-mode="together" aria-label="Read together"></button></div>
+        <div class="sa-turns" hidden><button class="round sa-prev" aria-label="Page back"></button><p class="sa-talk"></p><button class="round go sa-next" aria-label="Next page"></button></div>` : ''}
       <div class="sa-finish" hidden><div class="art sa-end-art">${k === 'feelings' ? saFace('happy') : ART.star}</div>
         <div class="sa-end-btns"><button class="round go sa-again" aria-label="Play again"></button><button class="round sa-train-own" aria-label="Make your own train"></button><button class="round sa-more" aria-label="More stories"></button></div>
         <p class="sa-together">${SAY[k].together || ''}</p></div>`;
     $('#apps').append(s);
-    const e = els[k] = {root:s, stars:$('.sa-stars', s), scene:$('.sa-scene', s), choices:$('.sa-choices', s), finish:$('.sa-finish', s), replay:$('.lesson-replay', s), shelf:$('.sa-shelf', s)};
+    const e = els[k] = {root:s, stars:$('.sa-stars', s), scene:$('.sa-scene', s), choices:$('.sa-choices', s), finish:$('.sa-finish', s), replay:$('.lesson-replay', s), shelf:$('.sa-shelf', s), modes:$('.sa-modes', s), turns:$('.sa-turns', s)};
+    if (e.modes){   // the shelf's two ways to read: with questions (on its own), or together (a grown-up turns the pages)
+      put($('[data-mode="together"]', s), schoolPic('grownup'));
+      $$('.sa-mode', s).forEach(b => tap(b, () => { if (id !== k || phase !== 'shelf') return; mode = b.dataset.mode; markMode(e); FX.pop(); speak(SAY.storytime[mode]); }));
+      put($('.sa-prev', s), ICON.left); put($('.sa-next', s), ICON.right);
+      tap($('.sa-next', s), () => { if (id === k && phase === 'page' && reading()) next(); });
+      tap($('.sa-prev', s), () => { if (id === k && phase === 'page' && reading() && step > 0){ step--; show(); } });
+    }
     $('.sc-back', s).innerHTML = ICON.grid; tap($('.sc-back', s), () => { FX.boop(); if (id === k && e.shelf && phase !== 'shelf'){ clearLater(); shelf(); } else go('school'); });
     // the speaker says what's on screen again: the page, the question (not once it's answered: the next round is coming), or the shelf
     put(e.replay, ART.ear); tap(e.replay, () => { if (id !== k) return; const r = cur(); if (phase === 'page') readPage(); else if (r && phase === 'ask' && !busy) speak(r.ask); else if (phase === 'shelf') speak(SAY.storytime.pick); }, {throttle:700});
@@ -10085,15 +10121,15 @@ const SchoolAdventures = (() => {
       ...Object.values(TITLE).map(t => t + '!'),
       ...['same', 'color', 'shape', 'size', 'nowColor', 'nowShape'].map(k => SAY.sorting[k]), ...Object.values(SAY.sorting.yes), ...Object.values(SAY.sorting.hint), SAY.sorting.end,
       SAY.patterntrain.ask, SAY.patterntrain.yes, SAY.patterntrain.hint, SAY.patterntrain.end, SAY.patterntrain.free, SAY.patterntrain.watch, SAY.patterntrain.newRule, SAY.patterntrain.now,
-      SAY.storytime.pick, SAY.storytime.end, ...BOOKS.flatMap(b => [b.title + '!', ...b.pages.map(p => p[0]), ...b.ask.flatMap(q => [q.ask, q.yes])]),
-      ...ALL_STORIES.flatMap(s => [...s.pages.map(p => p[0]), feelAsk(s), feelYes(s), ...(HELP_FOR[s.feel] ? [helpAsk(s)] : [])]), ...Object.values(HELP_YES),
+      SAY.storytime.pick, SAY.storytime.end, SAY.storytime.questions, SAY.storytime.together, ...BOOKS.flatMap(b => [b.title + '!', ...b.pages.map(p => p[0]), ...b.ask.flatMap(q => [q.ask, q.yes])]),
+      ...ALL_STORIES.flatMap(s => [...s.pages.map(p => p[0]), feelAsk(s), feelYes(s), ...(HELP_FOR[s.feel] ? [helpAsk(s), ...HELP_FOR[s.feel].map(k => helpYes(s, k))] : [])]),
       SAY.feelings.gentle, SAY.feelings.end
     ],
     state: () => {
       const r = id && rounds[step];
       return {id, step, phase, solved, total:asks(), busy, misses, cars:cars.length, book,
         books:id && phase === 'shelf' ? $$('.sa-book', els[id].shelf).map(b => b.dataset.book) : [],
-        ask:r && !r.page ? r.ask : null, right:r && !r.page ? r.right : null, line:r && r.page ? r.line : null, turning:!!turnT,
+        ask:r && !r.page ? r.ask : null, right:r && !r.page ? r.right : null, rights:r && !r.page ? (r.rights || [r.right]) : [], line:r && r.page ? r.line : null, turning:!!turnT, mode,
         choices:id ? $$('.sa-choice', els[id].choices).map(b => b.dataset.choice) : []};
     }
   };

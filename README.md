@@ -166,13 +166,19 @@ Guided Access. It's one self-contained `index.html` (vanilla JS, no build step),
     the voice itself, so a slow download never cuts a page short); the berry speaker or a tap on the picture reads the
     page again from the start, and the page waits for that reading. Leaving, the background or Settings stop the
     story where it is; back in front, the page is read again before it turns. The back arrow returns to the shelf,
-    and so does the book button at the end.
+    and so does the book button at the end. Two buttons at the top of the shelf choose how to read: the "?" (stories
+    and questions, as above, the default) or the grown-up and child (**read together**): each page is read and then
+    waits for a grown-up's green arrow (a back arrow returns a page), with no questions; the speaker or the picture
+    reads it again, and each page shows a short idea for the grown-up ("Make the rain sounds together: drip, drop,
+    splash!"). The choice isn't saved.
     New stories are a few lines of data in `BOOKS` plus their pictures in `STORY_CARDS`.
   - *Feelings Friends*: a two-page picture story about a friend, read aloud like Story Time ("Owl builds a tall
-    tower." "Chick knocks it down!"), then "How does Owl feel?" with three faces to choose from (happy, sad, mad,
-    scared). The friend's face stays hidden until the feeling is named, so it's worked out from what happened rather
-    than matched; then the face appears. For the hard feelings, what helps comes next: a hug (a heart), a big breath
-    (a face blowing a pinwheel), a grown-up (a grown-up holding a child's hand), never grabbing the toy (a hand snatching a teddy). There are two
+    tower." "Chick knocks it down! Owl stomps and stomps!"), then "How does Owl feel?" with three faces to choose from
+    (happy, sad, mad, scared). The second page always says how this friend reacts (tears, stomping, hiding), so the
+    feeling comes from the friend, not from the event alone: another friend might feel differently. The friend's face stays hidden until the feeling is named, so it's worked out from what happened rather
+    than matched; then the face appears. For the hard feelings, what helps comes next, with two kind answers that are both
+    right and one that never is: asking for a hug (a heart: "Duck can ask for a hug!"), a big breath (a face blowing a
+    pinwheel) or a grown-up (a grown-up holding a child's hand), but never grabbing the toy (a hand snatching a teddy). There are two
     stories for each feeling, each about a different friend (a present, a party; a friend going home, a balloon
     floating away; a tower knocked down, a picture scribbled on; thunder, a crocodile), and each play tells one per
     feeling in a new order. These four work like the other School games: nothing to read, the question as a big
@@ -531,6 +537,7 @@ node tests/text-legibility.cjs   # clear digits everywhere, readable settings te
 node tests/accessibility.cjs     # parent entry for assistive tech, dialog focus, every number's font/size/clipping, reduced motion
 node tests/learning-rounds.cjs   # Pattern Train/Sorting: no shortcut answers over 300 plays, gentle order with demonstrations, drawn sizes in 3 layouts and after rotating
 node tests/audio-mix.cjs         # modelled: pads, rapid taps, overlaps, voice with effects at all 4 volumes: no clipping, balance (not a substitute for listening on the phone)
+node tests/stories-together.cjs  # Story Time read-together (pages wait for the arrow, no questions) and Feelings' reactions and two right helps
 node tests/social-play.cjs       # call hello game, Dino turns, Paint Pals extras and interruptions
 # also: refinement, play-refinement, audio-return, phone-game-review, camera-peek, break-preview, delivery-expanded
 # (each takes --webkit; CI runs them all in Chromium and WebKit)

@@ -85,6 +85,12 @@ on 2026-10-09 from a 6,400-word log; the old text is in git history.)
 
 ## History (newest first)
 
+- 2026-10-10 R-27 stories and feelings (Claude): Story Time's shelf has two mode buttons ("?" = questions, the
+  default; grown-up and child = read together, `mode`, not saved). Reading together, pages are read and wait for
+  the grown-up's arrows (`.sa-turns`), each with a written idea (`talk` in `BOOKS`), no questions. Feelings: every
+  second page states the friend's own reaction; the help round accepts two kind answers (`rights`, `HELP_FOR` lists),
+  "Duck can ask for a hug!" instead of assuming one. New tests/stories-together.cjs.
+
 - 2026-10-10 R-26 learning shortcuts and verification (Claude): Pattern Train's size train asked for "small" every
   time with two big decoys; now two answers (same shape and color, one of each size) and either size can be next.
   Trains are 4 or 5 cars long; the order is AB colors, AB animals, AB sizes, AAB, ABC, each new kind after a

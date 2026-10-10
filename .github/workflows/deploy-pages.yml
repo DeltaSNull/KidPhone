@@ -104,6 +104,7 @@ jobs:
           node tests/delivery-expanded.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
           node tests/school-activities.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
           node tests/story-narration.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
+          node tests/stories-together.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
           node tests/learning-rounds.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
 
       - name: Cooperative play and interruption recovery
