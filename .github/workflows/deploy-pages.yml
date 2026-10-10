@@ -126,7 +126,9 @@ jobs:
           node tests/audio-mix.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
 
       - name: Phone layout and game navigation
-        run: node tests/phone-game-review.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
+        run: |
+          node tests/phone-game-review.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
+          node tests/navigation.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
 
       - name: Pretend-camera hide and pop out
         run: node tests/camera-peek.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
