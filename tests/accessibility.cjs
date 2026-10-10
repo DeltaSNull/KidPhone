@@ -60,6 +60,9 @@ function auditDigits(){
       await context.route('https://fonts.googleapis.com/**', r => r.fulfill({contentType:'text/css', body:FONTS}));
       await context.route('https://fonts.gstatic.com/**', r => r.abort());
       await context.route('**/assets/family/family.json', r => r.fulfill({json:{contacts:[]}}));
+      // no recorded voice (these checks don't need it): WebKit reports every clip download a reload cuts off as an
+      // "access control checks" page error, as in tests/parent-controls.cjs
+      await context.route('**/assets/voice/voice.json', r => r.fulfill({status:404, body:''}));
       await context.addInitScript(s => {
         if (!sessionStorage.getItem('seeded')){ sessionStorage.setItem('seeded', '1');
           localStorage.setItem('toyphone.settings', JSON.stringify(s));
