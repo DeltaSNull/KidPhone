@@ -381,7 +381,7 @@ top of the screen, which would leave a status-bar-high strip empty at the bottom
 
 ## Parent settings
 
-Hold the clock in the top-left corner for **3 seconds**. If **Parent PIN** is On, enter it to open settings. A quick tap only wiggles the clock.
+Hold the clock in the top-left corner for **3 seconds**. If **Parent PIN** is On, enter it to open settings. A quick tap only wiggles the clock. With a keyboard, focus the clock and hold Enter or Space; with VoiceOver it's announced as "Parent settings: hold for 3 seconds" (double-tap and hold). While Settings or the PIN screen is open, the rest of the screen is out of reach, Escape closes it and focus returns to the clock; the PIN screen tells a screen reader how many digits are in. With **Reduce Motion** on, animations play once and flying snacks and treats jump straight to where they go.
 
 ### App access and parent PIN
 
@@ -523,6 +523,7 @@ npm run test:pages # the published site, served from a /KidPhone/ subfolder like
 node tests/school-activities.cjs # Sorting, Pattern Train, Story Time, Feelings: real taps, no words on screen, fresh order, hints, stars, end screens
 node tests/story-narration.cjs   # story pages turn after the voice ends; replay early/late, mashing, a slow clip, back, Home, background
 node tests/text-legibility.cjs   # clear digits everywhere, readable settings text
+node tests/accessibility.cjs     # parent entry for assistive tech, dialog focus, every number's font/size/clipping, reduced motion
 node tests/social-play.cjs       # call hello game, Dino turns, Paint Pals extras and interruptions
 # also: refinement, play-refinement, audio-return, phone-game-review, camera-peek, break-preview, delivery-expanded
 # (each takes --webkit; CI runs them all in Chromium and WebKit)

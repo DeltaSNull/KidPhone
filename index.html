@@ -377,7 +377,7 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img:not(.px){image-rendering
 .cmode.on{border-style:solid; border-color:transparent; border-width:6px 6px 9px; border-image:var(--t-sun) 6 6 9 fill / 6px 6px 9px stretch}
 .cmode .px{width:32px; height:32px; margin-top:-2px}
 .czooms{position:absolute; left:50%; bottom:12px; translate:-50% 0; z-index:3; display:flex; align-items:center; gap:6px}
-.czoom{width:60px; height:60px; display:grid; place-items:center; padding-top:3px; font-family:var(--digits); font-size:13px; color:#FFFDF6;
+.czoom{width:60px; height:60px; display:grid; place-items:center; padding-top:3px; font-family:var(--digits); font-weight:400; font-size:13px; color:#FFFDF6;
   background:var(--d-dark) center/100% 100% no-repeat; transition:transform .2s}
 .czoom.on{background-image:var(--d-sun); color:var(--ink); transform:scale(1.12)}
 .lenses{position:relative; min-height:102px; overflow:hidden; touch-action:none; --lb:64px; --lg:18px;
@@ -414,7 +414,7 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img:not(.px){image-rendering
 .pempty{flex:1; display:grid; place-items:center}
 .bigcam{width:min(52vw,40vh,200px); aspect-ratio:1; display:grid; place-items:center; animation:breathe 1.6s steps(4) infinite}
 .bigcam .px{width:100%; height:100%}
-#vCount{position:absolute; bottom:8px; right:8px; z-index:3; padding:6px 8px; font-family:var(--digits); font-size:14px; color:var(--ink); background:#FFF6D2; pointer-events:none}
+#vCount{position:absolute; bottom:8px; right:8px; z-index:3; padding:6px 8px; font-family:var(--digits); font-weight:400; font-size:14px; color:var(--ink); background:#FFF6D2; pointer-events:none}   /* (one weight only: a faked bold smears the digits) */
 .viewer{position:absolute; inset:0; z-index:4; display:grid; gap:var(--gap); padding:var(--gap);
   grid-template-columns:auto minmax(0,1fr) auto; grid-template-rows:minmax(0,1fr) auto; grid-template-areas:"stage stage stage" "prev grid next";
   background:#FFEDAE}
@@ -1072,6 +1072,8 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img:not(.px){image-rendering
 .sbtn.on{--fr:var(--f-sun)}
 .sbtn.danger{--fr:var(--f-stop); color:#fff}
 .sbtn.done{--fr:var(--f-go); color:#fff; padding:0 16px}
+.sbtn.danger,.sbtn.done{text-shadow:1px 0 0 var(--ink),-1px 0 0 var(--ink),0 1px 0 var(--ink),0 -1px 0 var(--ink),0 2px 0 var(--ink)}   /* white alone on the green is 2.4:1 */
+.sr{position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap}   /* for screen readers only */
 .sbtn:disabled{opacity:.45}
 .vhint{flex-basis:100%; font-weight:500; font-size:14px; color:#6A5848; line-height:1.3}
 .vlist{display:grid; gap:4px; padding:0 0 8px}
@@ -1095,7 +1097,7 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img:not(.px){image-rendering
 .ring{position:absolute; width:24px; height:24px; margin:-12px 0 0 -12px; border:3px solid #fff; pointer-events:none; z-index:55; animation:ring .45s steps(5) forwards}
 @keyframes ring{to{transform:scale(4); opacity:0}}
 
-@media (prefers-reduced-motion:reduce){ *{animation-duration:.01ms!important; transition-duration:.01ms!important} .wt-bub{animation-duration:var(--dur)!important} }
+@media (prefers-reduced-motion:reduce){ *{animation-duration:.01ms!important; animation-iteration-count:1!important; transition-duration:.01ms!important} .wt-bub{animation-duration:var(--dur)!important} }
 /* ---------- School: Sorting Station, Pattern Train, Story Time, Feelings Friends ----------
    Like the other School games: the School button, the stars and the berry speaker along the top, the question as a big
    picture, and three framed picture answers below it (beside it in landscape). Nothing to read. */
@@ -1150,9 +1152,9 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img:not(.px){image-rendering
 <body>
 <div id="device">
   <div id="screen">
-    <div id="status" aria-hidden="true">
-      <div id="clock"><span id="clockTxt">9:41</span><span class="hold"></span></div>
-      <div class="sicons"><span id="breakIc" hidden></span><span class="sicons" id="sicons"></span></div>
+    <div id="status">
+      <div id="clock"><span id="clockTxt" aria-hidden="true">9:41</span><span class="hold"></span></div>
+      <div class="sicons" aria-hidden="true"><span id="breakIc" hidden></span><span class="sicons" id="sicons"></span></div>
     </div>
 
     <div id="apps">
@@ -1475,7 +1477,7 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img:not(.px){image-rendering
       <div class="sheet">
         <div class="shead"><h2 id="pinTitle">Parent PIN</h2><button class="sbtn" id="pinCancel">Cancel</button></div>
         <p class="note" id="pinMessage" aria-live="polite"></p>
-        <div id="pinDots" aria-label="PIN entry"></div>
+        <div id="pinDots" aria-hidden="true"></div><p class="sr" id="pinSaid" aria-live="polite"></p>
         <div class="pin-grid" id="pinKeys"></div>
         <p class="note">Forgot your PIN? Recovery instructions are in the repository README under Parent settings.</p>
       </div>
@@ -1573,6 +1575,9 @@ const shuffle = a => { const b = a.slice(); for (let i=b.length-1;i>0;i--){ cons
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 function put(el, art){ el.classList.add('art'); el.innerHTML = art; }
 function retrigger(el, cls){ el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); }
+/* a moving picture (a snack flying to an animal): instant when the phone asks for reduced motion, like the CSS ones */
+const calm = () => { try{ return matchMedia('(prefers-reduced-motion: reduce)').matches; }catch(e){ return false; } };
+function fly(el, frames, o){ return el.animate(frames, calm() ? {...o, duration:1} : o); }
 
 /* Added to an iPhone's home screen, the toy runs with the status bar drawn over its top. iOS then lays the page out as
    if the status bar still took its own space, yet draws it from the top of the screen, so a status-bar-high strip at
@@ -7602,7 +7607,7 @@ const AbcSnack = (() => {
     const mx = (x0 + x1)/2, my = Math.min(y0, y1) - 60;
     const t = document.createElement('div'); t.className = 'st-bite art'; t.innerHTML = `<span class="as-cookie" style="width:64px">${glyphImg(small() ? L.toLowerCase() : L, plain ? INK : undefined)}</span>`;
     root.appendChild(t); FX.swoosh();
-    t.animate([{transform:`translate(${x0-32}px,${y0-32}px) scale(1)`}, {transform:`translate(${mx-32}px,${my-32}px) scale(1.2)`, offset:.5}, {transform:`translate(${x1-32}px,${y1-32}px) scale(.35)`}],
+    fly(t, [{transform:`translate(${x0-32}px,${y0-32}px) scale(1)`}, {transform:`translate(${mx-32}px,${my-32}px) scale(1.2)`, offset:.5}, {transform:`translate(${x1-32}px,${y1-32}px) scale(.35)`}],
       {duration:650, easing:'ease-in-out', fill:'forwards'}).onfinish = () => { t.remove(); eat(s, L); };
   }
   function eat(s, L){
@@ -8037,7 +8042,7 @@ const NumSnack = (() => {
     const i = got++, cell = cells[i], a = root.getBoundingClientRect(), from = basket.getBoundingClientRect(), to = cell.getBoundingClientRect();
     const t = document.createElement('div'); t.className = 'st-bite art'; t.innerHTML = pic(cur.f); root.appendChild(t);
     const x0 = from.left - a.left + from.width/2 - 32, y0 = from.top - a.top + from.height/2 - 32, x1 = to.left - a.left + to.width/2 - 32, y1 = to.top - a.top + to.height/2 - 32;
-    t.animate([{transform:`translate(${x0}px,${y0}px) scale(.9)`}, {transform:`translate(${(x0 + x1)/2}px,${Math.min(y0, y1) - 50}px) scale(1.1)`, offset:.5}, {transform:`translate(${x1}px,${y1}px) scale(.8)`}],
+    fly(t, [{transform:`translate(${x0}px,${y0}px) scale(.9)`}, {transform:`translate(${(x0 + x1)/2}px,${Math.min(y0, y1) - 50}px) scale(1.1)`, offset:.5}, {transform:`translate(${x1}px,${y1}px) scale(.8)`}],
       {duration:420, easing:'ease-in-out', fill:'forwards'}).onfinish = () => {
         t.remove(); if (i < got && cur){ cell.innerHTML = `<span class="art">${pic(cur.f)}</span><span class="nz-badge">${numImg(i + 1)}</span>`; retrigger(cell, 'in'); }   // (unless it was taken back meanwhile)
       };
@@ -8050,7 +8055,7 @@ const NumSnack = (() => {
     const i = --got, cell = cells[i], a = root.getBoundingClientRect(), from = cell.getBoundingClientRect(), to = basket.getBoundingClientRect();
     cell.innerHTML = ''; syncTools();
     const t = document.createElement('div'); t.className = 'st-bite art'; t.innerHTML = pic(cur.f); root.appendChild(t);
-    t.animate([{transform:`translate(${from.left - a.left + from.width/2 - 32}px,${from.top - a.top + from.height/2 - 32}px) scale(.8)`}, {transform:`translate(${to.left - a.left + to.width/2 - 32}px,${to.top - a.top + to.height/2 - 32}px) scale(.9)`}],
+    fly(t, [{transform:`translate(${from.left - a.left + from.width/2 - 32}px,${from.top - a.top + from.height/2 - 32}px) scale(.8)`}, {transform:`translate(${to.left - a.left + to.width/2 - 32}px,${to.top - a.top + to.height/2 - 32}px) scale(.9)`}],
       {duration:380, easing:'ease-in-out', fill:'forwards'}).onfinish = () => t.remove();
     FX.swoosh(); hush(); if (got) say(countWord(got), 0, 'school');
   }
@@ -8069,7 +8074,7 @@ const NumSnack = (() => {
     const s = cur, a = root.getBoundingClientRect(), ar = animalEl.getBoundingClientRect(), x1 = ar.left - a.left + ar.width*s.m[0] - 32, y1 = ar.top - a.top + ar.height*s.m[1] - 32;
     think.classList.remove('on'); FX.swoosh();
     cells.filter(c => c.children.length).forEach((c, i) => { const r = c.getBoundingClientRect(), t = document.createElement('div'); t.className = 'st-bite art'; t.innerHTML = pic(s.f); root.appendChild(t); c.innerHTML = '';
-      t.animate([{transform:`translate(${r.left - a.left + r.width/2 - 32}px,${r.top - a.top + r.height/2 - 32}px) scale(.8)`}, {transform:`translate(${x1}px,${y1}px) scale(.3)`}],
+      fly(t, [{transform:`translate(${r.left - a.left + r.width/2 - 32}px,${r.top - a.top + r.height/2 - 32}px) scale(.8)`}, {transform:`translate(${x1}px,${y1}px) scale(.3)`}],
         {duration:550, delay:i*60, easing:'ease-in', fill:'forwards'}).onfinish = () => t.remove(); });
     later(() => {
       act('chomp'); const end = s.x === 'munch' ? FX.munch(0) : call(s, FX.crunch(0) + .05);
@@ -8226,7 +8231,7 @@ const Delivery = (() => {
     const x0=r.left-a.left+r.width/2-size/2,y0=r.top-a.top+r.height/2-size/2,x1=w.left-a.left+w.width*px/100-size/2,y1=w.top-a.top+w.height*py/100-size/2;
     const f=document.createElement('div'); f.className='ad-float'; f.style.width=f.style.height=size+'px'; f.innerHTML=pic(cur.k); root.appendChild(f);
     const turn=epoch;
-    f.animate([{transform:`translate(${x0}px,${y0}px)`},{transform:`translate(${x1}px,${y1}px)`}],{duration:420,easing:'ease-in-out',fill:'forwards'}).onfinish=()=>{
+    fly(f, [{transform:`translate(${x0}px,${y0}px)`},{transform:`translate(${x1}px,${y1}px)`}],{duration:420,easing:'ease-in-out',fill:'forwards'}).onfinish=()=>{
       f.remove(); if(turn!==epoch || current!=='delivery')return;
       const it=document.createElement('div'); it.className='ad-item'+(k==='inBox'?' in':''); it.innerHTML=pic(cur.k);
       it.style.left=px+'%'; it.style.top=py+'%'; world.appendChild(it);
@@ -8322,7 +8327,7 @@ const DinoPicnic = (() => {
     const a = root.getBoundingClientRect(), r = fromEl.getBoundingClientRect(), s = 56;
     const t = document.createElement('div'); t.className = 'st-bite art'; t.innerHTML = pic(cur.f); root.appendChild(t);
     const x0 = r.left - a.left + r.width/2 - s/2, y0 = r.top - a.top + r.height/2 - s/2, x1 = toRect.left - a.left + toRect.width/2 - s/2, y1 = toRect.top - a.top + toRect.height/2 - s/2;
-    t.animate([{transform:`translate(${x0}px,${y0}px) scale(.9)`}, {transform:`translate(${(x0 + x1)/2}px,${Math.min(y0, y1) - 40}px)`, offset:.5}, {transform:`translate(${x1}px,${y1}px) scale(.8)`}],
+    fly(t, [{transform:`translate(${x0}px,${y0}px) scale(.9)`}, {transform:`translate(${(x0 + x1)/2}px,${Math.min(y0, y1) - 40}px)`, offset:.5}, {transform:`translate(${x1}px,${y1}px) scale(.8)`}],
       {duration:400, easing:'ease-in-out', fill:'forwards'}).onfinish = () => { t.remove(); done && done(); };
   }
   function slotRect(i){ const r = plate.getBoundingClientRect(), [x, y] = slots[i]; return {left:r.left + r.width*x/100 - 20, top:r.top + r.height*y/100 - 20, width:40, height:40}; }
@@ -8993,7 +8998,7 @@ const DinoBuddies = (() => {
     root.appendChild(t);
     const [nx, ny] = centerOf(eggEl);
     const mx = (x + nx)/2 + (Math.random() - .5)*80, my = Math.min(y, ny) - 40;
-    const anim = t.animate([
+    const anim = fly(t, [
       {transform:`translate(${x-28}px,${y-28}px) scale(.2)`},
       {transform:`translate(${x-28}px,${y-48}px) scale(1.25)`, offset:.22},
       {transform:`translate(${mx-28}px,${my-28}px) scale(.9)`, offset:.6},
@@ -9125,7 +9130,7 @@ const SnackTime = (() => {
     const mx = (x0 + x1)/2, my = Math.min(y0, y1) - 60;
     const t = document.createElement('div'); t.className = 'st-bite art'; t.innerHTML = pic(s.food);
     root.appendChild(t); FX.swoosh();
-    t.animate([
+    fly(t, [
       {transform:`translate(${x0-32}px,${y0-32}px) scale(1)`},
       {transform:`translate(${mx-32}px,${my-32}px) scale(1.2)`, offset:.5},
       {transform:`translate(${x1-32}px,${y1-32}px) scale(.35)`}
@@ -9310,7 +9315,7 @@ const PaintPals = (() => {
     const x = e.clientX - a.left, y = e.clientY - a.top, mx = (x + tx)/2, my = Math.min(y, ty) - 50;
     const d = document.createElement('div'); d.className = 'pp-drop'; d.style.background = `rgb(${page.col[k*4]},${page.col[k*4 + 1]},${page.col[k*4 + 2]})`;
     root.appendChild(d); noise(.12, 'bandpass', 1800, 900, .1);
-    d.animate([
+    fly(d, [
       {transform:`translate(${x-10}px,${y-10}px) scale(.5)`},
       {transform:`translate(${mx-10}px,${my-10}px) scale(1.3)`, offset:.5},
       {transform:`translate(${tx-10}px,${ty-10}px) scale(1)`}
@@ -9417,7 +9422,7 @@ function startClockHold(e){
   holdT = setTimeout(() => { clearHold(); requestSettings(); }, 3000);
 }
 clock.addEventListener('pointerdown',startClockHold);
-clock.setAttribute('role','button');clock.setAttribute('aria-label','Time; hold to open parent settings');clock.tabIndex=0;
+clock.setAttribute('role','button');clock.setAttribute('aria-label','Parent settings: hold for 3 seconds');clock.setAttribute('aria-haspopup','dialog');clock.tabIndex=0;   // (VoiceOver: double-tap and hold)
 clock.addEventListener('keydown',e=>{if(!e.repeat && (e.key==='Enter'||e.key===' '))startClockHold(e);});
 clock.addEventListener('keyup',e=>{if(e.key==='Enter'||e.key===' ')clearHold();});
 clock.addEventListener('blur',clearHold);
@@ -9428,11 +9433,14 @@ async function pinHash(pin, salt){
   const bytes = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(salt + ':' + pin));
   return Array.from(new Uint8Array(bytes), b => b.toString(16).padStart(2, '0')).join('');
 }
-function paintPin(){ $('#pinDots').textContent = '*'.repeat(gateDigits.length) + '_'.repeat(4 - gateDigits.length); }
+function paintPin(){ $('#pinDots').textContent = '*'.repeat(gateDigits.length) + '_'.repeat(4 - gateDigits.length); $('#pinSaid').textContent = `${gateDigits.length} of 4 digits entered`; }
+/* while a parent dialog is open, nothing else on the screen can be reached (keyboard, VoiceOver, a stray tap); the Home
+   button, like a phone's own, still closes it */
+function shield(on){ [...$('#screen').children].forEach(el => { if (el.id !== 'settings' && el.id !== 'parentGate') el.inert = on; }); }
 function cancelGate(){ gateEpoch++; gateBusy = false; gateDigits = gateFirst = ''; gateAfter = null; $('#parentGate').hidden = true; }
 function openGate(mode, after){
   cancelGate(); gateMode = mode; gateAfter = after || null;
-  $('#settings').hidden = true; hush(); $('#parentGate').hidden = false;
+  $('#settings').hidden = true; hush(); shield(true); $('#parentGate').hidden = false;
   $('#pinTitle').textContent = mode === 'unlock' ? 'Parent PIN' : 'Set parent PIN';
   $('#pinMessage').textContent = mode === 'unlock' ? 'Enter your four-digit PIN.' : 'Choose a four-digit PIN. You will enter it twice.';
   paintPin(); $('#pinCancel').focus();
@@ -9475,7 +9483,7 @@ async function enterPinDigit(d){
   b.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); press(); } });
   $('#pinKeys').appendChild(b);
 });
-function dismissGate(){ const setup = gateMode !== 'unlock'; cancelGate(); if (setup) openSettings(); }
+function dismissGate(){ if (gateMode !== 'unlock'){ cancelGate(); openSettings(); } else closeSettings(); }   // (closing gives the focus back to the clock)
 tap($('#pinCancel'), dismissGate);
 $('#pinCancel').addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); dismissGate(); } });
 $('#parentGate').addEventListener('keydown', e => {
@@ -9651,7 +9659,7 @@ function renderSettings(){
 }
 function sizeSettings(){ $('#settings .sheet').style.scrollPaddingTop=($('#settings .shead').offsetHeight+8)+'px'; }
 let countAtOpen=settings.count;
-function openSettings(){ PLAY.cancelPreview(); countAtOpen=settings.count; renderAccess(); hush(); $('#confirmClear').hidden = true; $('#confirmPath').hidden = true; renderSettings(); pickVoice(); showSound(); $('#settings').hidden = false; sizeSettings(); $('#settings .sheet').scrollTop=0; $('#doneBtn').focus({preventScroll:true}); FX.cheer(); }
+function openSettings(){ PLAY.cancelPreview(); countAtOpen=settings.count; renderAccess(); hush(); $('#confirmClear').hidden = true; $('#confirmPath').hidden = true; renderSettings(); pickVoice(); showSound(); shield(true); $('#settings').hidden = false; sizeSettings(); $('#settings .sheet').scrollTop=0; $('#doneBtn').focus({preventScroll:true}); FX.cheer(); }
 /* is the sound engine running? (the animals, drums and ringtones all come from it; the voice doesn't) */
 function showSound(){
   const n = $('#soundNote'); if (!n) return;
@@ -9661,7 +9669,7 @@ function showSound(){
       : ' It follows the ring/silent switch: if it\'s quiet, flip the switch to ring.')
     + (rebuilds ? ` (Restarted ${rebuilds} time${rebuilds > 1 ? 's' : ''}.)` : '');
 }
-function closeSettings(){ const refreshCount=!$('#settings').hidden && countAtOpen!==settings.count && ['numsnack','dinopicnic'].includes(current); const opened=!$('#settings').hidden||!$('#parentGate').hidden;cancelGate(); $('#settings').hidden = true; if(refreshCount)go(current); if (current === 'letterpath') LetterPath.refresh(); if(opened && document.visibilityState==='visible'){clock.focus({preventScroll:true}); if(!refreshCount)resumeHooks.forEach(f => f());} }
+function closeSettings(){ const refreshCount=!$('#settings').hidden && countAtOpen!==settings.count && ['numsnack','dinopicnic'].includes(current); const opened=!$('#settings').hidden||!$('#parentGate').hidden;cancelGate(); $('#settings').hidden = true; shield(false); if(refreshCount)go(current); if (current === 'letterpath') LetterPath.refresh(); if(opened && document.visibilityState==='visible'){clock.focus({preventScroll:true}); if(!refreshCount)resumeHooks.forEach(f => f());} }
 $$('[data-settings-jump]').forEach(b=>tapInScroll(b,()=>{
   const sheet=$('#settings .sheet'), target=$('#'+b.dataset.settingsJump), header=$('#settings .shead');
   sheet.scrollTop += target.getBoundingClientRect().top-header.getBoundingClientRect().bottom-8;

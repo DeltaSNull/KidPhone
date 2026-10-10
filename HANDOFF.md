@@ -85,6 +85,14 @@ on 2026-10-09 from a 6,400-word log; the old text is in git history.)
 
 ## History (newest first)
 
+- 2026-10-10 R-25 accessibility and legibility (Claude): the status bar is no longer `aria-hidden` (only its icons);
+  the clock is "Parent settings: hold for 3 seconds" (the hold is still the gate); `shield()` makes the screen inert
+  behind Settings and the PIN screen (Home stays live, like a phone's button); cancelling the PIN returns focus to
+  the clock; the PIN screen announces "2 of 4 digits entered". Digit audit over every screen with numbers: one
+  real problem, the photo counter and camera zoom inherited bold and the one-weight 8-bit font was faked bold
+  (fixed with `font-weight:400`). White Done/Start/Delete labels (2.4:1 on green) got the ink outline. Reduced
+  motion: CSS loops play once, `fly()` makes the JavaScript snack/treat flights instant. New tests/accessibility.cjs.
+
 - 2026-10-10 R-24 story narration and replay (Claude): a story page turns a moment after its line has been heard,
   judged by the sound (`say(text, who, area, then)`: the last clip's end, the phone voice's end, a slow clip waited
   for up to 8 s, a line held for a stopped engine kept for the next tap); the speaker and the picture both re-read

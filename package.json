@@ -33,7 +33,8 @@
     "test:camera-peek:webkit": "node tests/camera-peek.cjs --webkit",
     "test:break-preview": "node tests/break-preview.cjs",
     "test:break-preview:webkit": "node tests/break-preview.cjs --webkit",
-    "test:legibility": "node tests/text-legibility.cjs"
+    "test:legibility": "node tests/text-legibility.cjs",
+    "test:accessibility": "node tests/accessibility.cjs"
   },
   "devDependencies": {
     "@fontsource/pixelify-sans": "5.3.0",
