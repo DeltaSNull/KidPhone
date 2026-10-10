@@ -99,7 +99,10 @@ on 2026-10-09 from a 6,400-word log; the old text is in git history.)
   cards keep the three-card width (`.sa-sized`) so the drawn shapes still match the picture. The size train's squares
   nearly fill their wagons (`saShape(..., full)`). Xylophone taper made geometric (`.3 * .91 ** i`; the top bars
   were ~3 dB louder on a phone speaker). New test hooks `adventurePlan`, `adventureJump`, `renderMix`, `voiceFile`;
-  new tests/learning-rounds.cjs and tests/audio-mix.cjs (modelled; physical listening is still R-04).
+  new tests/learning-rounds.cjs and tests/audio-mix.cjs (modelled; physical listening is still R-04). Follow-up
+  (PR #23, after CI showed run-to-run variance): the output got a safety curve after the compressor (`squash()` now
+  returns `{in, out}`: linear to 0.85, never past 0.94), since eight quick claps at Loud could peak at 0.99; the
+  test's spread limits match the smoke test's (some pads have a random noise layer).
 
 - 2026-10-10 R-25 accessibility and legibility (Claude): the status bar is no longer `aria-hidden` (only its icons);
   the clock is "Parent settings: hold for 3 seconds" (the hold is still the gate); `shield()` makes the screen inert

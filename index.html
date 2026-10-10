@@ -4995,7 +4995,16 @@ function saveAccess(next){
      the engine; one that won't restart is replaced with a new one. */
 const VOLS = [.25, .45, .7, 1];
 /* the master compressor (also used when the tests render a sound to measure it) */
-function squash(c){ const k = c.createDynamicsCompressor(); k.threshold.value = -16; k.knee.value = 10; k.ratio.value = 4; k.attack.value = .004; k.release.value = .25; return k; }
+/* (then a safety curve: the compressor's 4 ms attack lets a clap's first crack through, and eight quick claps at Loud
+   peaked at 0.99 in tests/audio-mix.cjs. The curve is exactly linear up to 0.85 and rounds off what's above, never
+   past 0.94, so it changes nothing else; no oversampling, whose filter would ring past the top again) */
+let edgeCurve = null;
+const edge = () => edgeCurve || (edgeCurve = Float32Array.from({length:4097}, (_, i) => { const x = i/2048 - 1, a = Math.abs(x); return Math.sign(x) * (a < .85 ? a : .85 + .1*Math.tanh((a - .85)/.1)); }));
+function squash(c){
+  const k = c.createDynamicsCompressor(); k.threshold.value = -16; k.knee.value = 10; k.ratio.value = 4; k.attack.value = .004; k.release.value = .25;
+  const ws = c.createWaveShaper(); ws.curve = edge();
+  k.connect(ws); return {in:k, out:ws};
+}
 /* Safari's audio session: "playback" plays through the silent switch. Only with the recorded voice loaded, since in that
    mode the phone's speech voice can't be used (a copy without clip files, like the artifact, stays "ambient" and speaks). */
 const playback = () => { try{ return !!(settings.silent && navigator.audioSession && VB.map); }catch(e){ return false; } };   // (VB comes later in the file)
@@ -5024,7 +5033,7 @@ function audio(){
       audioNeedsReset = document.visibilityState !== 'visible';
       const comp = squash(c);  // two kids mashing at once never clips
       master = c.createGain(); master.gain.value = VOLS[settings.vol];
-      master.connect(comp); comp.connect(c.destination);
+      master.connect(comp.in); comp.out.connect(c.destination);
       fx = c.createGain(); fx.gain.value = fxLv; fx.connect(master);   // sound effects and animal calls; the voice goes straight to master
       c.onstatechange = () => { if (c !== ctx) return; if (c.state === 'running'){ stuck = 0; playHeld(); } showSound(); };
     }catch(e){ ctx = null; return null; }
@@ -10178,7 +10187,7 @@ async function renderFx(name, secs=3, synthOnly=false){
 /* test hook: render one Music pad offline, through the toy's master compressor, so the tests can compare loudness */
 async function renderPad(kind, i, secs=2){
   const prev = [ctx, master, fx, OUT, noiseBuf], off = new OfflineAudioContext(1, 44100*secs, 44100), comp = squash(off);
-  ctx = off; master = off.createGain(); master.connect(comp); comp.connect(off.destination); fx = null; OUT = null;
+  ctx = off; master = off.createGain(); master.connect(comp.in); comp.out.connect(off.destination); fx = null; OUT = null;
   try{ if (kind === 'drum') DRUMS[i].s(); else if (kind === 'xylo') mallet(XYLO[i][0], barVol(i)); else playKey(PIANO[i]); }
   finally { [ctx, master, fx, OUT, noiseBuf] = prev; }
   return Array.from((await off.startRendering()).getChannelData(0));
@@ -10189,7 +10198,7 @@ async function renderPad(kind, i, secs=2){
 async function renderMix(events, secs = 2, vol = settings.vol){
   const off = new OfflineAudioContext(1, Math.round(44100*secs), 44100), comp = squash(off), clips = {};
   for (const e of events) if (e.voice && !clips[e.voice]) clips[e.voice] = await off.decodeAudioData(await (await fetch('assets/voice/' + e.voice)).arrayBuffer());
-  const out = off.createGain(); out.gain.value = VOLS[vol]; out.connect(comp); comp.connect(off.destination);
+  const out = off.createGain(); out.gain.value = VOLS[vol]; out.connect(comp.in); comp.out.connect(off.destination);
   const play = e => {
     const prev = [ctx, master, fx, OUT, noiseBuf]; [ctx, master, fx, OUT] = [off, out, null, null];
     try{
