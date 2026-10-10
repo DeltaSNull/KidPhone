@@ -662,7 +662,7 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img:not(.px){image-rendering
 .social-shelf #ppShelfPictures button{pointer-events:auto; border:3px solid #3B2B20; background:#FFF6E0; padding:4px}
 /* Paint Pals: the discs sit in the wood strip between the pictures, so they never cover a painting or the space beside
    it where a tap flings paint */
-.pp-mid .social-tools{position:static; flex:none; gap:6px} .pp-mid .social-tools .round{width:48px; height:48px}
+.pp-mid .social-tools{position:static; flex:none; gap:6px} .pp-mid .social-tools .round{width:56px; height:56px}   /* (56px: the same as the other games' tool buttons) */
 @media (orientation:landscape){ .pp-mid .social-tools{flex-direction:column} }
 #dbCue{font-family:var(--reading);font-size:14px;background:#FFF6E0;border-radius:6px;padding:4px;max-width:90px}
 #dbCue:empty{display:none}.db-side[data-turn="true"]{box-shadow:inset 0 0 0 7px #FFF6E0}
@@ -718,7 +718,11 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img:not(.px){image-rendering
 .app.st{display:grid; grid-template-rows:minmax(0,1fr) auto; overflow:hidden}
 @media (orientation:landscape){ .app.st{grid-template-rows:none; grid-template-columns:auto minmax(0,1fr)} .st-foods{order:-1} }
 .st-scene{position:relative; overflow:hidden; display:flex; flex-direction:column; gap:6px; padding:10px 12px 0; min-height:0; min-width:0}
-.st-fed{flex:none} .st-fed:empty{visibility:hidden}
+.st-fed{flex:none; margin:0 70px} .st-fed:empty{visibility:hidden}
+/* Games: the same corner button back to the Games menu as School's (two-player games: in their tool row, off both play
+   areas); the sticker rows leave room for it */
+.app.mg .mg-got{margin-left:72px} #wt-menu .wt-head{padding:0 72px; min-height:66px; display:flex; align-items:center; justify-content:center; flex:none}
+@media (orientation:landscape){ .app.mg .mg-got{margin:72px 0 0} }
 .st-stand{flex:1; position:relative; min-height:0; container-type:size}
 /* the animal and its thought bubble are sized in em, so both scale with the space they have */
 .st-spot{position:absolute; inset:0; font-size:clamp(80px, min(42vw, 22vh), 200px)}
@@ -1256,10 +1260,12 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img:not(.px){image-rendering
 
       <!-- GAMES: Ball Trail and Star Flight (one player: hold a finger where to go, or tip the phone) -->
       <section class="app mg" id="balltrail" hidden aria-label="Ball Trail">
+        <button class="sc-back game-back" aria-label="Games"></button>
         <div class="wt-stickers mg-got" aria-label="Stars found"></div>
         <div class="mg-field"><div class="mg-board" role="application" aria-label="Hold a finger where the ball should go"><div class="mg-world"></div><span class="mg-piece mg-me"></span></div></div>
       </section>
       <section class="app mg" id="starflight" hidden aria-label="Star Flight">
+        <button class="sc-back game-back" aria-label="Games"></button>
         <div class="wt-stickers mg-got" aria-label="Animal, food, difficulty and food collected"></div>
         <div class="mg-field"><div class="mg-board" role="application" aria-label="Steer the animal to its food"><div class="mg-world"></div><span class="mg-piece mg-me"></span></div></div>
       </section>
@@ -1367,6 +1373,7 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img:not(.px){image-rendering
       <!-- GAME: Wild Tap Safari -->
       <section class="app wt" id="wildtap" hidden aria-label="Wild Tap Safari">
         <section class="wt-screen" id="wt-menu">
+          <button class="sc-back game-back" aria-label="Games"></button>
           <div class="wt-head"><h1>Wild Tap</h1></div>
           <div class="wt-grid">
             <button class="wt-tile wt-safari" data-wt="safari" aria-label="Safari"><span class="wt-big art" data-art="lion"></span><span class="wt-lbl">Safari</span></button>
@@ -1408,7 +1415,7 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img:not(.px){image-rendering
 
       <!-- GAME: Dino Buddies (two kids, one egg) -->
       <section class="app db" id="dinobuddies" hidden aria-label="Dino Buddies">
-        <div class="social-tools"><button class="round" id="dbReplay" aria-label="Hear the goal again"></button><button class="round" id="dbTurns" aria-pressed="false" aria-label="Take turns"></button><span id="dbCue" aria-live="polite"></span></div>
+        <div class="social-tools"><button class="round game-back" aria-label="Games"></button><button class="round" id="dbReplay" aria-label="Hear the goal again"></button><button class="round" id="dbTurns" aria-pressed="false" aria-label="Take turns"></button><span id="dbCue" aria-live="polite"></span></div>
         <section class="db-side db-a" data-side="0" aria-label="Green side"><div class="db-dino"></div></section>
         <section class="db-mid" aria-label="Shared nest">
           <div class="db-nest"><div class="db-egg" id="dbEgg"></div><div class="db-baby" id="dbBaby"></div></div>
@@ -1419,6 +1426,7 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img:not(.px){image-rendering
 
       <!-- GAME: Snack Time (one player: give each hungry animal the food it is thinking of) -->
       <section class="app st" id="snacktime" hidden aria-label="Snack Time">
+        <button class="sc-back game-back" aria-label="Games"></button><button class="round lesson-replay" id="stReplay" aria-label="Say it again"></button>
         <div class="st-scene" id="stScene">
           <div class="wt-stickers st-fed" id="stFed" aria-label="Animals fed"></div>
           <div class="st-stand"><div class="st-spot">
@@ -1436,7 +1444,7 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img:not(.px){image-rendering
           <div class="pp-easel"><canvas class="pp-cv"></canvas><span class="pp-star" data-art="starBright"></span><span class="pp-hand" data-art="hand"></span></div>
         </section>
         <section class="pp-mid" aria-label="Paintings">
-          <div class="social-tools"><button class="round" id="ppReplay" aria-label="Hear the goal again"></button><button class="round" id="ppPrompt" aria-pressed="false" aria-label="Try a circle"></button><button class="round" id="ppShelf" aria-label="Pictures"></button></div>
+          <div class="social-tools"><button class="round game-back" aria-label="Games"></button><button class="round" id="ppReplay" aria-label="Hear the goal again"></button><button class="round" id="ppPrompt" aria-pressed="false" aria-label="Try a circle"></button><button class="round" id="ppShelf" aria-label="Pictures"></button></div>
           <span class="pp-brush" data-art="brush"></span>
           <div class="pp-gallery" id="ppGallery" aria-label="Finished paintings"></div>
         </section>
@@ -5059,6 +5067,14 @@ function wakeAudio(){
   const n = ctx; if (!n) return;
   try{ n.resume().then(() => { if (n === ctx && n.state === 'running'){ stuck = 0; playHeld(); } }).catch(() => {}); }catch(e){}
 }
+/* leaving a screen: the sounds it started (a cheer, a roar, a bubble pop) fade out within a moment instead of ringing on
+   into the next screen; the button's own boop, just played, still gets 0.15 s. New sounds go to a fresh bus. */
+function fadeFx(){
+  if (!ctx || !fx || fx.context !== ctx || (window.OfflineAudioContext && ctx instanceof OfflineAudioContext)) return;
+  const old = fx, c = ctx; fx = c.createGain(); fx.gain.value = fxLv; fx.connect(master);
+  try{ old.gain.setTargetAtTime(0, c.currentTime + .15, .05); }catch(e){ old.gain.value = 0; }
+  setTimeout(() => { try{ old.gain.cancelScheduledValues(0); old.gain.value = 0; old.disconnect(); }catch(e){} }, 400);   // (and off for sure, whatever the audio clock did)
+}
 /* where a sound goes: the current bus (a ringtone or song), or the sound effects' own level, then the main output */
 const dest = () => (OUT && OUT.context === ctx) ? OUT : (fx && fx.context === ctx) ? fx : master;
 /* the voice waits until sound effects finish, so it never talks over an animal (buses don't count: songs, ringtones;
@@ -5629,7 +5645,7 @@ const APP_SAY = {phone:'Phone! Who do you want to call?', camera:'Camera! Slide 
 function go(name, fromEl){
   if (!APPS.includes(name) || !appAllowed(name) || name === 'home') name = accessHome();
   if (PLAY.navigate()) name = accessHome();   // play time is up: leaving an activity ends the session
-  clearLater(); hush();
+  clearLater(); hush(); if (name !== current) fadeFx();
   leaveApp(current);
   current = name; syncFx();
   APPS.forEach(a => { $('#' + a).hidden = a !== name; });
@@ -7409,7 +7425,8 @@ SCHOOL.forEach(g => {
   $('#schoolList').appendChild(b);
   tapInScroll(b, () => { FX.pop(); retrigger(b, 'go'); go(g.id, b); }, {bump:false});
 });
-$$('.sc-back').forEach(b => { b.innerHTML = ICON.grid; tap(b, () => { FX.boop(); go('school'); }); });
+$$('.sc-back:not(.game-back)').forEach(b => { b.innerHTML = ICON.grid; tap(b, () => { FX.boop(); go('school'); }); });
+$$('.game-back').forEach(b => { put(b, ICON.grid); tap(b, () => { FX.boop(); go('games'); }); });   // every regular game: back to the Games menu
 const SCHOOL_SAY = {school:'School! What do you want to learn?', abczoo:'ABC Zoo! Tap a letter!', abcsnack:'ABC Snack! The animals want letter cookies!'};
 const cap = w => w[0].toUpperCase() + w.slice(1);
 const isFor = e => e.L === 'X' ? `X is in ${e.w}!` : `${e.L} is for ${e.w}!`;
@@ -8800,7 +8817,7 @@ const WildTap = (() => {
     if (name === 'bubbles'){ startBubbles(); say('Pop the bubbles!', 0, 'menus'); }
   }
   /* inside Wild Tap, the grid button goes back to its menu; the phone's big home button still goes home */
-  $$('#wildtap .wt-back').forEach(b => { b.innerHTML = ICON.grid; tap(b, () => { FX.boop(); show('menu'); }); });
+  $$('#wildtap .wt-back').forEach(b => { b.innerHTML = ICON.left; tap(b, () => { FX.boop(); show('menu'); }); });   // one step back (the grid icon means the Games menu)
   $$('#wildtap [data-wt]').forEach(b => tap(b, () => { FX.pop(); show(b.dataset.wt); }));
 
   function buildWorld(key){
@@ -9172,8 +9189,9 @@ const SnackTime = (() => {
   /* tap the animal for its call, or the bubble to hear what it wants */
   tap(animalEl, () => { const now = performance.now(); if (eating || !cur || now < quietUntil) return; act('hop'); quietUntil = now + call(cur)*1000; }, {bump:false});
   tap(think, () => { if (eating || !cur) return; FX.pop(); retrigger(think, 'wig'); hush(); wants(); }, {bump:false});
+  put($('#stReplay'), ART.ear); tap($('#stReplay'), () => { if (eating || !cur) return; retrigger(think, 'wig'); hush(); wants(); }, {throttle:700});   // the berry speaker, as in School
   return {
-    enter(){ say('Snack Time! The animals are hungry!', 0, 'menus'); cur = null; arrive(); },
+    enter(){ $('#stReplay').hidden = !voiceOn('names'); say('Snack Time! The animals are hungry!', 0, 'menus'); cur = null; arrive(); },   // (the speaker only where the wish is said: Animal names in Settings)
     leave(){ $$('.st-bite', root).forEach(t => { t.getAnimations().forEach(a => { a.onfinish = null; a.cancel(); }); t.remove(); }); cur = null; eating = true; },
     state: () => ({want: cur && !eating ? cur.food : null, animal: cur && cur.a, fed, choices: foodsEl.children.length}),
     lines: () => ['Snack Time! The animals are hungry!', 'Hooray! Five full tummies!', ...SNACKS.flatMap(s => [WANTS(s), YUM(s)])]
@@ -10285,7 +10303,7 @@ async function renderMix(events, secs = 2, vol = settings.vol){
     if (!t) now.forEach(play); else off.suspend(Math.round(t*44100/128)*128/44100).then(() => { now.forEach(play); off.resume(); }); });
   return Array.from((await off.startRendering()).getChannelData(0));
 }
-window.__toyPhone = { motionGames: () => MotionGames.state(), renderPad, renderMix, voiceFile: line => (VB.map && VB.map['n|' + line] || [])[0] || null, pads: () => ({drum:DRUMS.length, xylo:XYLO.length, piano:PIANO.length}), adventure: () => SchoolAdventures.state(), offline: () => OFFLINE.state(), offlineSave: all => OFFLINE.save(all), offlineCheck: all => OFFLINE.check(all), adventurePlan: k => SchoolAdventures.plan(k), adventureJump: k => SchoolAdventures.jump(k), go, renderFx, speakable, voiceLines, lineMs,
+window.__toyPhone = { motionGames: () => MotionGames.state(), renderPad, renderMix, voiceFile: line => (VB.map && VB.map['n|' + line] || [])[0] || null, pads: () => ({drum:DRUMS.length, xylo:XYLO.length, piano:PIANO.length}), adventure: () => SchoolAdventures.state(), timers: () => screenTimers.size, fxNode: () => fx, offline: () => OFFLINE.state(), offlineSave: all => OFFLINE.save(all), offlineCheck: all => OFFLINE.check(all), adventurePlan: k => SchoolAdventures.plan(k), adventureJump: k => SchoolAdventures.jump(k), go, renderFx, speakable, voiceLines, lineMs,
   voice: () => ({loaded: !!VB.map, clips: VB.map ? Object.keys(VB.map).length : 0, played: VB.played, fallbacks: VB.fallbacks.slice(), log: VB.log.slice(), last: VB.last,
     speaking: speaking(), sources: VB.srcs.length, waiting: !!lineWait}),
   recorded: () => Object.keys(REC), trims: FX_TRIM,

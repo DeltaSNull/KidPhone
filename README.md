@@ -44,9 +44,16 @@ Guided Access. It's one self-contained `index.html` (vanilla JS, no build step),
     Tilt works once a grown-up has allowed motion (the getting-ready card, or *Tilt games* in settings); the games never
     ask Safari themselves, so no question pops up during play. Tilt counts from how the phone is held when a round
     starts, and again whenever a finger lets go, so any comfortable grip works, and it turns with the screen. There are
-    no buttons or words on the kids' screen, no timer and nothing to lose. The animal faces the way it moves.
+    no words on the kids' screen, no timer and nothing to lose, and only the Games button in the corner, off the field.
+    The animal faces the way it moves.
   - *Wild Tap Safari* (1 player): Safari, Zoo and Dino sound boards, Find It, egg hatching and bubble popping.
-    Its grid button goes back to the Wild Tap menu.
+    Inside, an arrow steps back to the Wild Tap menu.
+  - **Getting around, the same everywhere**: every game has a Games button (the four-colored grid, top left, or in the
+    tool row of the two-player games, never on a play area) back to the Games menu, as every School game has its
+    School button; an arrow steps back one level (Wild Tap's screens, Story Time's shelf); the berry speaker says the
+    goal again wherever there is a spoken goal (Snack Time's appears when *Animal names* is on, since that's when it
+    talks); Home is always Home. Leaving a game stops it: its timers, voice and animations, and its sounds fade out
+    instead of ringing on into the next screen.
   - *Snack Time* (1 player): a hungry animal walks in, thinking of a food in a thought bubble. Tap that food on the picnic
     blanket and it flies into the animal's mouth: munching, the animal's call, hearts and a sticker, then the next animal
     walks in. Two foods to choose from at first, three after a few animals. A wrong food only gets a gentle head shake, and
@@ -543,6 +550,7 @@ node tests/learning-rounds.cjs   # Pattern Train/Sorting: no shortcut answers ov
 node tests/audio-mix.cjs         # modelled: pads, rapid taps, overlaps, voice with effects at all 4 volumes: no clipping, balance (not a substitute for listening on the phone)
 node tests/stories-together.cjs  # Story Time read-together (pages wait for the arrow, no questions) and Feelings' reactions and two right helps
 node tests/offline-ready.cjs     # Settings' offline status: switched-on apps first, retries and Try again, Save everything, verified before "Ready offline"
+node tests/navigation.cjs        # every game's Games button (on screen, off the play areas), replay buttons, and leaving 21 activities stops timers/voice/sound/animation
 node tests/social-play.cjs       # call hello game, Dino turns, Paint Pals extras and interruptions
 # also: refinement, play-refinement, audio-return, phone-game-review, camera-peek, break-preview, delivery-expanded
 # (each takes --webkit; CI runs them all in Chromium and WebKit)

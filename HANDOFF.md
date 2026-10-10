@@ -83,6 +83,13 @@ on 2026-10-09 from a 6,400-word log; the old text is in git history.)
 
 ## History (newest first)
 
+- 2026-10-10 R-29 navigation (Claude): a `.game-back` Games button in every regular game (top left like School's
+  `.sc-back`; in the tool row of Dino Buddies and Paint Pals so it's off both play areas; sticker rows make room);
+  Wild Tap's inner back is an arrow (grid = Games menu); Snack Time got the berry speaker (`#stReplay`, shown when
+  Animal names is on, since that's when it talks); Paint Pals' tool buttons 48 to 56 px. `go()` calls `fadeFx()`:
+  the old effects bus fades after 0.15 s and is cut at 0.4 s, new sounds get a fresh bus. New tests/navigation.cjs
+  (placement and leaving 21 activities: timers, voice, sounds, animations, animation frames, the faded bus).
+
 - 2026-10-10 R-28 offline readiness (Claude): `OFFLINE` saves files straight into sw.js's cache (`toy-phone-v3`;
   the two names must match, tests/offline-ready.cjs checks): the page, voice.json, sounds and the voice clips of
   each switched-on part (`areaLines()` groups every narrator line by part; Phone adds the animals' voices), four at
