@@ -60,7 +60,7 @@ const BOOKS = ['seed', 'egg', 'rain'];   // Story Time's shelf
         if (book){
           const sh = await state();
           check(sh.phase === 'shelf' && BOOKS.every(b => sh.books.includes(b)), `${tag} storytime: opens on a shelf of stories ${JSON.stringify(sh.books)}`);
-          check(/^\s*$/.test(await page.locator('#storytime').innerText()), `${tag} storytime: the shelf is pictures only`);
+          check(/^[\s?]*$/.test(await page.locator('#storytime').innerText()), `${tag} storytime: the shelf is pictures only (and the "?" of the questions button)`);
           const covers = await page.locator('#storytime .sa-book').evaluateAll(els => els.map(e => { const r = e.getBoundingClientRect(); return [r.left, r.top, r.right, r.bottom, r.width, r.height]; }));
           check(covers.every(([l, t, r, b, w, h]) => l >= 0 && t >= 0 && r <= viewport.width && b <= viewport.height && w >= 96 && h >= 96),
             `${tag} storytime: every cover is on screen and big enough ${JSON.stringify(covers.map(b => b.slice(4).map(Math.round)))}`);
