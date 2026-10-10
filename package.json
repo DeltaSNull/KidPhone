@@ -14,6 +14,8 @@
     "test:expanded-delivery": "node tests/delivery-expanded.cjs",
     "test:school-activities": "node tests/school-activities.cjs",
     "test:story-narration": "node tests/story-narration.cjs",
+    "test:learning-rounds": "node tests/learning-rounds.cjs",
+    "test:audio-mix": "node tests/audio-mix.cjs",
     "test:social-play": "node tests/social-play.cjs && node tests/social-lifecycle.cjs",
     "test:parents": "node tests/parent-controls.cjs",
     "test:parents:webkit": "node tests/parent-controls.cjs --webkit",

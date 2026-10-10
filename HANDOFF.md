@@ -85,6 +85,16 @@ on 2026-10-09 from a 6,400-word log; the old text is in git history.)
 
 ## History (newest first)
 
+- 2026-10-10 R-26 learning shortcuts and verification (Claude): Pattern Train's size train asked for "small" every
+  time with two big decoys; now two answers (same shape and color, one of each size) and either size can be next.
+  Trains are 4 or 5 cars long; the order is AB colors, AB animals, AB sizes, AAB, ABC, each new kind after a
+  demonstration train (`demoRound`: whole train, cars hop with notes; "Watch the train!", "A new train! Watch!",
+  "Now you! What comes next?"). Sorting's "same size" has two answers (it was the odd one out of three); its two
+  cards keep the three-card width (`.sa-sized`) so the drawn shapes still match the picture. The size train's squares
+  nearly fill their wagons (`saShape(..., full)`). Xylophone taper made geometric (`.3 * .91 ** i`; the top bars
+  were ~3 dB louder on a phone speaker). New test hooks `adventurePlan`, `adventureJump`, `renderMix`, `voiceFile`;
+  new tests/learning-rounds.cjs and tests/audio-mix.cjs (modelled; physical listening is still R-04).
+
 - 2026-10-10 R-25 accessibility and legibility (Claude): the status bar is no longer `aria-hidden` (only its icons);
   the clock is "Parent settings: hold for 3 seconds" (the hold is still the gate); `shield()` makes the screen inert
   behind Settings and the PIN screen (Home stays live, like a phone's button); cancelling the PIN returns focus to

@@ -1126,6 +1126,7 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img:not(.px){image-rendering
 .sa-choice{flex:1 1 0; min-width:0; height:clamp(96px, 17vh, 150px); display:flex; align-items:center; justify-content:center; padding:4px; --fr:var(--f-paper)}
 .sa-choice .sa-pic{display:block; height:100%; max-height:100%; max-width:100%; aspect-ratio:1} .sa-choice .sa-pic .px{width:100%; height:100%; display:block; object-fit:contain}   /* never stretched when the card isn't square */
 .sa-target{flex:none; width:calc((100% - 20px)/3); height:clamp(96px, 17vh, 150px); --fr:var(--f-cream)}   /* Sorting: one answer card's size */
+.sa-choices.sa-sized{justify-content:center} .sa-sized .sa-choice{flex:0 0 calc((100% - 20px)/3)}   /* "the same size" has two answers: still the size of the picture to match */
 .sa-choice.yes{--fr:var(--f-sun)} .sa-choice.hint{--fr:var(--f-lit); animation:st-hint 1.1s ease-in-out infinite} .sa-choice.wig{animation:wig .3s 2}
 .sa-finish{display:grid; justify-items:center; align-content:center; gap:14px; text-align:center; grid-row:2 / -1}
 /* Story Time's shelf: a big cover for each story (its friend and its last page), one under another */
@@ -8404,7 +8405,7 @@ function mallet(f, vol=.3, at=0){ synth({f, dur:1.2, vol, at}); synth({f:f*4, du
 /* xylophone: 8 bars on C-major pentatonic, so any mash sounds nice */
 const XYLO = [[523.25,'#F0524F'],[587.33,'#FF9F43'],[659.25,'#FFC83D'],[783.99,'#7CC96B'],[880,'#5CC9B5'],[1046.5,'#3D8FE0'],[1174.66,'#6F7BE0'],[1318.51,'#A46FD1']];
 XYLO.forEach(([f, c], i) => { const b = document.createElement('button'); b.className = 'bar'; b.dataset.i = i; b.setAttribute('aria-label', 'Bar ' + (i + 1)); b.style.setProperty('--c', c); b.style.setProperty('--fr', frameURL(c, dim(c, .6))); b.style.setProperty('--len', (100 - i*5.2) + '%'); $('#xylo').appendChild(b); });
-const barVol = i => .3 - i*.012;   // the high bars a little softer, so all eight sound about as loud on a phone
+const barVol = i => .3 * .91 ** i;   // each bar up a little softer (-0.8 dB), so all eight measure about as loud on a phone speaker
 playField($('#xylo'), '.bar', (b, e) => { const i = +b.dataset.i; mallet(XYLO[i][0], barVol(i)); retrigger(b, 'hit'); const [x, y] = relPt(e); flyNote(x, y); });
 
 /* drums: all six about as loud on a phone speaker (within ~2 dB through the master compressor; see the smoke test).
@@ -9771,19 +9772,22 @@ try{ if ('serviceWorker' in navigator && location.protocol === 'https:' && !/cla
    rounds, so the answer can't be learned by position. Nothing is stored about the child.
    - Sorting: find the same one, then one the same color / shape / size, ending with a rule switch on one picture
      (first the same shape, then the same color), the classic card-sorting step for this age.
-   - Pattern Train: what comes next in a colour, animal, size or three-part pattern; afterwards, make your own train.
+   - Pattern Train: what comes next, gently harder: a demonstration train before each new kind of pattern (two-car,
+     two-and-one, three-car), then colors, animals and sizes; afterwards, make your own train.
    - Story Time: a shelf of picture stories (a cover each: the friend and the last page); tap one to hear its three
      pages read aloud, then answer picture questions about it and its order. The back arrow returns to the shelf.
    - Feelings Friends: a two-page story about a friend, read aloud like Story Time, then "How does Duck feel?" (happy,
      sad, mad, scared). The friend's face isn't shown until it's answered, so it's worked out from what happened, not
      matched; then pick what helps. One of two stories per feeling each play, each about a different friend. */
-function saShape(color = 'red', kind = 'square', size = 'big'){
+function saShape(color = 'red', kind = 'square', size = 'big', full = false){
   const FILL = {red:'#E95252', blue:'#428BDD', yellow:'#F3C447', green:'#70B968'};
   const FORMS = {
     big:{square:'M7 7h18v18H7z', circle:'M11 5h10v3h4v4h3v8h-3v4h-4v3H11v-3H7v-4H4v-8h3V8h4z', triangle:'M14 4h4v5h3v5h3v5h3v8H5v-8h3v-5h3V9h3z'},
     small:{square:'M11 11h10v10H11z', circle:'M13 10h6v2h2v2h2v4h-2v2h-2v2h-6v-2h-2v-2H9v-4h2v-2h2z', triangle:'M15 11h2v3h2v3h2v4H11v-4h2v-3h2z'}
   };
-  return pixelPicture(32, 32, [[FORMS[size][kind], FILL[color], '#493B3A']], 'px', `${size === 'small' ? 'small ' : ''}${color} ${kind}`);
+  // full: squares that nearly fill the picture, for Pattern Train's small wagons (big 26 of 32, small 14)
+  const form = full && kind === 'square' ? {big:'M3 3h26v26H3z', small:'M9 9h14v14H9z'}[size] : FORMS[size][kind];
+  return pixelPicture(32, 32, [[form, FILL[color], '#493B3A']], 'px', `${size === 'small' ? 'small ' : ''}${color} ${kind}`);
 }
 function saFace(feeling){
   const mouth = {happy:'M9 19h3v3h8v-3h3v6H9z', sad:'M9 23h3v-3h8v3h3v3h-3v-3h-8v3H9z', mad:'M10 22h12v3H10z', scared:'M13 21h6v5h-6z'};
@@ -9826,6 +9830,7 @@ const SchoolAdventures = (() => {
       hint:{same:'Look closely!', color:'Look at the color!', shape:'Look at the shape!', size:'Look at the size!'},
       end:'You sorted them all!', together:'Together: sort socks or toys by color, then by size.'},
     patterntrain:{ask:'What comes next?', yes:'Yes! The pattern goes on!', hint:'Look at the train again!', end:'Choo choo! What a train!', free:'Make your own train!',
+      watch:'Watch the train!', newRule:'A new train! Watch!', now:'Now you! What comes next?',
       together:'Together: clap, stomp, clap, stomp. What comes next?'},
     storytime:{pick:'Pick a story!', end:'The end!'},
     feelings:{gentle:'Be gentle. Try again!', end:'Every feeling is okay!',
@@ -9888,30 +9893,48 @@ const SchoolAdventures = (() => {
     if (rule === 'same'){ right = {...t}; wrong = [{...t, color:other(COLORS, t.color)}, {...t, kind:other(KINDS, t.kind)}]; }
     if (rule === 'color'){ const k = other(KINDS, t.kind); right = {...t, kind:k}; wrong = [{...t, color:other(COLORS, t.color)}, {...t, color:other(COLORS, t.color), kind:other(KINDS, t.kind, k)}]; }
     if (rule === 'shape'){ const c = other(COLORS, t.color); right = {...t, color:c}; wrong = [{...t, kind:other(KINDS, t.kind)}, {...t, color:other(COLORS, t.color, c), kind:other(KINDS, t.kind)}]; }
-    // same size: all three the same shape, so size is what tells them apart; the same-color one is the wrong size
-    if (rule === 'size'){ const flip = t.size === 'big' ? 'small' : 'big'; right = {...t, color:other(COLORS, t.color)}; wrong = [{...t, size:flip}, {...t, size:flip, color:other(COLORS, t.color, right.color)}]; }
+    // same size: two answers of the same shape, one of each size (three would make the answer the odd one out, findable
+    // without looking at the picture); the one in the picture's color is the wrong size
+    if (rule === 'size'){ const flip = t.size === 'big' ? 'small' : 'big'; right = {...t, color:other(COLORS, t.color)}; wrong = [{...t, size:flip}]; }
+    const sized = rule === 'size';
     const ask = now ? SAY.sorting[rule === 'color' ? 'nowColor' : 'nowShape'] : SAY.sorting[rule];
     // the picture to match sits on a card exactly the size of the answer cards, so "the same size" looks the same size
-    return {scene:() => `<div class="sa-choice sa-target"><span class="sa-pic">${saShape(t.color, t.kind, t.size)}</span></div>`, ask, right:tok(right).key, choices:[tok(right), ...wrong.map(tok)],
+    return {scene:() => `<div class="sa-choice sa-target"><span class="sa-pic">${saShape(t.color, t.kind, t.size)}</span></div>`, ask, right:tok(right).key, choices:[tok(right), ...wrong.map(tok)], target:tok(t).key, sized,
       yes:SAY.sorting.yes[rule], hint:SAY.sorting.hint[rule]};
   }
-  const car = c => c.color ? saShape(c.color, c.kind || 'circle', c.size || 'big') : ART[c.pet];
+  const car = c => c.color ? saShape(c.color, c.kind || 'circle', c.size || 'big', !!c.kind) : ART[c.pet];
   const carKey = c => c.pet || `${c.size || 'big'}-${c.color}-${c.kind || 'circle'}`;
-  function trainRound(seq, answer, decoys, actual = false){
+  const trainScene = (seq, q) => () => `<div class="sa-train"><span class="sa-engine">${schoolPic('bus')}</span>${seq.map(c => `<span class="sa-car">${car(c)}</span>`).join('')}${q ? '<span class="sa-car sa-q">?</span>' : ''}</div>`;
+  /* a pattern train: the repeating unit laid out 4 or 5 cars long, so the "?" falls on a different part of the pattern
+     from play to play; the answers are the unit's own cars plus, for a two-car unit, one that isn't in it */
+  function trainRound(unit, extra, {actual = false, ask = SAY.patterntrain.ask} = {}){
+    const n = pick([4, 5]), seq = Array.from({length:n}, (_, i) => unit[i % unit.length]), answer = unit[n % unit.length];
     const choice = c => ({key:carKey(c), art:car(c), label:c.pet || `${c.size === 'small' ? 'small ' : ''}${c.color}`});
-    return {scene:() => `<div class="sa-train"><span class="sa-engine">${schoolPic('bus')}</span>${seq.map(c => `<span class="sa-car">${car(c)}</span>`).join('')}<span class="sa-car sa-q">?</span></div>`,
-      ask:SAY.patterntrain.ask, right:carKey(answer), choices:[choice(answer), ...decoys.map(choice)], yes:SAY.patterntrain.yes, hint:SAY.patterntrain.hint, train:true, actual};
+    const all = [...unit, ...extra].filter((c, i, a) => a.findIndex(d => carKey(d) === carKey(c)) === i);
+    return {scene:trainScene(seq, true), ask, right:carKey(answer), choices:all.map(choice), yes:SAY.patterntrain.yes, hint:SAY.patterntrain.hint, train:true, actual, seq:seq.map(carKey)};
   }
+  /* before a new kind of pattern: a whole train goes by, each car hopping with its own note, so the rule is seen and
+     heard once (in other colors, or another order, than the question that follows) */
+  const NOTE = {red:392, blue:494, yellow:587, green:698, big:330, small:660};
+  const demoRound = (unit, first) => ({page:true, demo:true, line:first ? SAY.patterntrain.watch : SAY.patterntrain.newRule,
+    scene:trainScene(Array.from({length:6}, (_, i) => unit[i % unit.length]), false), notes:Array.from({length:6}, (_, i) => NOTE[unit[i % unit.length].color])});
   function makeRounds(id){
     if (id === 'sorting'){
       const t = () => ({color:pick(COLORS), kind:pick(KINDS), size:'big'}), sw = t(), [first, then] = Math.random() < .5 ? ['shape', 'color'] : ['color', 'shape'];
       return [sortRound('same', t()), sortRound('color', t()), sortRound('shape', t()), sortRound('size', {...t(), size:pick(['big', 'small'])}), sortRound(first, sw), sortRound(then, sw, true)];
     }
+    /* Pattern Train, gently harder: see a two-car pattern, then try one in colors, animals and sizes; see a two-and-one
+       pattern, try one; see a three-car pattern, try one. The size train has two answers, one of each size, so the
+       answer is never just "the different one", and either size can be next. */
     if (id === 'patterntrain'){
-      const [a, b, c] = shuffle(COLORS).map(color => ({color})), [p, q, r] = shuffle(PETS).map(pet => ({pet})), [x, y, z] = shuffle(COLORS).map(color => ({color}));
-      const s = pick(COLORS), big = {color:s, kind:'square'}, small = {color:s, kind:'square', size:'small'};
-      return [trainRound([a, b, a, b, a], b, [a, c]), trainRound([p, q, p, q, p], q, [p, r]), trainRound([x, x, y, x, x], y, [x, z]),
-        trainRound([big, small, big, small, big], small, [big, {color:other(COLORS, s), kind:'square'}], true), trainRound([a, b, c, a, b], c, [a, b])];
+      const col = () => shuffle(COLORS).map(color => ({color}));
+      const [a, b, c] = col(), [d1, d2] = shuffle(COLORS.filter(k => k !== a.color && k !== b.color)).map(color => ({color}));
+      const [p, q, r] = shuffle(PETS).map(pet => ({pet}));
+      const s = pick(COLORS), sizes = shuffle([{color:s, kind:'square'}, {color:s, kind:'square', size:'small'}]);
+      const [x, y, z, w] = col(), [f, g, h, i] = col();   // (each demonstration uses the colors its question doesn't)
+      return [demoRound([d1, d2], true), trainRound([a, b], [c], {ask:SAY.patterntrain.now}), trainRound([p, q], [r]), trainRound(sizes, [], {actual:true}),
+        demoRound([z, z, w]), trainRound([x, x, y], [z], {ask:SAY.patterntrain.now}),
+        demoRound([i, h, g]), trainRound([f, g, h], [], {ask:SAY.patterntrain.now})];
     }
     if (id === 'storytime'){
       const b = BOOKS.find(x => x.key === book), friend = `<span class="sa-duck">${ART[b.pet]}</span>`;
@@ -9944,7 +9967,13 @@ const SchoolAdventures = (() => {
   }
   /* a story page: read it, then turn the page by itself. The picture and the speaker both read it again from the start,
      and the page waits for that reading too. */
-  function readPage(intro = ''){ const r = cur(); if (r && r.page && phase === 'page') sayThenNext(intro + r.line, 900); }
+  let hops = [];
+  function readPage(intro = ''){
+    const r = cur(); if (!r || !r.page || phase !== 'page') return;
+    hops.forEach(unLater); hops = [];
+    if (r.demo) $$('.sa-car', els[id].scene).forEach((c, i) => hops.push(later(() => { retrigger(c, 'hop'); tone(r.notes[i], r.notes[i], .14, 'square', .08); }, 350 + 380*i)));
+    sayThenNext(intro + r.line, r.demo ? 1500 : 900);
+  }
   /* Settings or the background silenced the voice: read the page again, or go on if a round was already answered */
   function resume(){
     if (!id || document.visibilityState !== 'visible' || turnT) return;
@@ -9956,7 +9985,7 @@ const SchoolAdventures = (() => {
   function show(){
     const e = els[id], r = cur(), intro = step === 0 ? (book ? BOOKS.find(b => b.key === book).title : TITLE[id]) + '! ' : '';   // the first line says which game or story it is
     e.finish.hidden = true; e.scene.hidden = e.choices.hidden = false; e.replay.hidden = false; if (e.shelf){ e.shelf.hidden = true; backTo(e, 'shelf'); }
-    e.scene.innerHTML = r.scene(); e.scene.setAttribute('aria-label', r.page ? r.line : r.ask); e.choices.innerHTML = ''; misses = 0; busy = false; stars();
+    e.scene.innerHTML = r.scene(); e.scene.setAttribute('aria-label', r.page ? r.line : r.ask); e.choices.innerHTML = ''; e.choices.classList.toggle('sa-sized', !!r.sized); misses = 0; busy = false; stars();
     if (r.page){ phase = 'page'; e.choices.hidden = true; readPage(intro); return; }
     phase = 'ask';
     shuffle(r.choices).forEach(c => {
@@ -10049,10 +10078,13 @@ const SchoolAdventures = (() => {
   return {
     enter(k){ id = k; book = null; paintBG(els[k].root, bgFor.get(els[k].root), true); if (els[k].shelf) shelf(true); else start(); },
     leave(){ id = null; unLater(turnT); turnT = 0; },
+    // (for the tests: a fresh set of rounds as data, to check many plays for shortcuts; and a jump to one round)
+    plan: k => makeRounds(k).map(r => ({page:!!r.page, demo:!!r.demo, line:r.line || null, ask:r.ask || null, right:r.right || null, seq:r.seq || null, target:r.target || null, actual:!!r.actual, choices:(r.choices || []).map(c => c.key)})),
+    jump(k){ if (!id || !rounds[k]) return; unLater(turnT); turnT = 0; hush(); step = k; show(); },
     lines: () => [
       ...Object.values(TITLE).map(t => t + '!'),
       ...['same', 'color', 'shape', 'size', 'nowColor', 'nowShape'].map(k => SAY.sorting[k]), ...Object.values(SAY.sorting.yes), ...Object.values(SAY.sorting.hint), SAY.sorting.end,
-      SAY.patterntrain.ask, SAY.patterntrain.yes, SAY.patterntrain.hint, SAY.patterntrain.end, SAY.patterntrain.free,
+      SAY.patterntrain.ask, SAY.patterntrain.yes, SAY.patterntrain.hint, SAY.patterntrain.end, SAY.patterntrain.free, SAY.patterntrain.watch, SAY.patterntrain.newRule, SAY.patterntrain.now,
       SAY.storytime.pick, SAY.storytime.end, ...BOOKS.flatMap(b => [b.title + '!', ...b.pages.map(p => p[0]), ...b.ask.flatMap(q => [q.ask, q.yes])]),
       ...ALL_STORIES.flatMap(s => [...s.pages.map(p => p[0]), feelAsk(s), feelYes(s), ...(HELP_FOR[s.feel] ? [helpAsk(s)] : [])]), ...Object.values(HELP_YES),
       SAY.feelings.gentle, SAY.feelings.end
@@ -10115,7 +10147,26 @@ async function renderPad(kind, i, secs=2){
   finally { [ctx, master, fx, OUT, noiseBuf] = prev; }
   return Array.from((await off.startRendering()).getChannelData(0));
 }
-window.__toyPhone = { motionGames: () => MotionGames.state(), renderPad, pads: () => ({drum:DRUMS.length, xylo:XYLO.length, piano:PIANO.length}), adventure: () => SchoolAdventures.state(), go, renderFx, speakable, voiceLines, lineMs,
+/* test hook: render a mix offline through the toy's own output (the volume setting's level, then the compressor): pads,
+   effects and narrator clips at given times, e.g. [{pad:'drum', i:0, at:0}, {fx:'cheer', at:.2}, {voice:'file.mp3', at:.3}],
+   to check clipping and balance at every volume */
+async function renderMix(events, secs = 2, vol = settings.vol){
+  const off = new OfflineAudioContext(1, Math.round(44100*secs), 44100), comp = squash(off), clips = {};
+  for (const e of events) if (e.voice && !clips[e.voice]) clips[e.voice] = await off.decodeAudioData(await (await fetch('assets/voice/' + e.voice)).arrayBuffer());
+  const out = off.createGain(); out.gain.value = VOLS[vol]; out.connect(comp); comp.connect(off.destination);
+  const play = e => {
+    const prev = [ctx, master, fx, OUT, noiseBuf]; [ctx, master, fx, OUT] = [off, out, null, null];
+    try{
+      if (e.pad === 'drum') DRUMS[e.i].s(); else if (e.pad === 'xylo') mallet(XYLO[e.i][0], barVol(e.i)); else if (e.pad === 'piano') playKey(PIANO[e.i]);
+      else if (e.fx) FX[e.fx](0);
+      else if (e.voice){ const x = off.createBufferSource(); x.buffer = clips[e.voice]; x.connect(voiceOut(false)); x.start(off.currentTime); }
+    } finally { [ctx, master, fx, OUT, noiseBuf] = prev; }
+  };
+  [...new Set(events.map(e => e.at || 0))].forEach(t => { const now = events.filter(e => (e.at || 0) === t);
+    if (!t) now.forEach(play); else off.suspend(Math.round(t*44100/128)*128/44100).then(() => { now.forEach(play); off.resume(); }); });
+  return Array.from((await off.startRendering()).getChannelData(0));
+}
+window.__toyPhone = { motionGames: () => MotionGames.state(), renderPad, renderMix, voiceFile: line => (VB.map && VB.map['n|' + line] || [])[0] || null, pads: () => ({drum:DRUMS.length, xylo:XYLO.length, piano:PIANO.length}), adventure: () => SchoolAdventures.state(), adventurePlan: k => SchoolAdventures.plan(k), adventureJump: k => SchoolAdventures.jump(k), go, renderFx, speakable, voiceLines, lineMs,
   voice: () => ({loaded: !!VB.map, clips: VB.map ? Object.keys(VB.map).length : 0, played: VB.played, fallbacks: VB.fallbacks.slice(), log: VB.log.slice(), last: VB.last,
     speaking: speaking(), sources: VB.srcs.length, waiting: !!lineWait}),
   recorded: () => Object.keys(REC), trims: FX_TRIM,
