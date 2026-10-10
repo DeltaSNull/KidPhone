@@ -121,7 +121,8 @@ function auditDigits(){
 
       // the PIN screen
       await page.evaluate(() => localStorage.setItem('toyphone.access', JSON.stringify({mode:'full', pin:{salt:'00', hash:'none'}, pinEnabled:true})));
-      await page.reload(); await page.waitForFunction(() => window.__toyPhone); await page.evaluate(() => document.fonts.ready);
+      await page.reload(); await page.waitForFunction(() => window.__toyPhone);
+      await page.evaluate(() => document.fonts.ready); await page.evaluate(() => document.fonts.load('128px "Digit Reference"', '0123456789'));   // (the reference again: WebKit drops it on reload)
       await holdClock(); await page.locator('#parentGate').waitFor({state:'visible'});
       check((await inertOutside()).every(Boolean) && await page.evaluate(() => document.activeElement.id) === 'pinCancel', `${tag}: the PIN screen opens with focus inside and the rest inert`);
       await page.keyboard.press('2'); await page.keyboard.press('8');
