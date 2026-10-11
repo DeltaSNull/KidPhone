@@ -7,11 +7,11 @@ on 2026-10-09 from a 6,400-word log; the old text is in git history.)
 
 ## Active batch
 
-- **Claude, 2026-10-10: usability and reliability pass after PR #19 (owner's request), R-24 to R-30**, one PR per
-  batch: R-24 story narration and replay (`claude/story-narration`), then accessibility/legibility, learning
-  shortcuts and size/audio verification, read-together stories and flexible Feelings, offline readiness, navigation.
-- Next candidates, in order: physical checks with the family (R-04, G-04, T-09); Today's Adventure (P3-01, P3-07,
-  P3-08); Toddler Play Together (P3-03); consistent game controls (I-06). Sound Safari (P3-05) waits on T-04.
+- None claimed after **R-24 to R-29** (Claude, 2026-10-10: the usability and reliability pass after PR #19, one PR per
+  batch; see History), each merged once CI passes in Chromium and WebKit.
+- Next candidates, in order: physical checks with the family (R-04, G-04, T-09: VoiceOver, flight mode, listening,
+  the corner Games button with a toddler); Today's Adventure (P3-01, P3-07, P3-08) and Toddler Play Together (P3-03),
+  both sketched in the roadmap. Sound Safari (P3-05) waits on T-04.
 
 ## Owner's decisions in effect
 
@@ -55,6 +55,14 @@ on 2026-10-09 from a 6,400-word log; the old text is in git history.)
   `python3 tools/voices/make_voices.py --model kokoro-fp32.onnx --voices voices.npz` (see tools/voices/README.md; it
   records only what's new and prunes unused clips). Then `window.__toyPhone.voiceMissing()` must be empty. Voice areas
   `school` and `find` always speak; the others follow Settings ("Opening apps" is off by default).
+- **Waiting on the voice:** anything that moves on after a line uses `say(text, who, area, then)` (then runs when the
+  voice has really finished; hush cancels it), not a guess from `lineMs`. Leaving goes through `go()`, which clears
+  `later()` timers, hushes and fades the screen's sounds (`fadeFx`).
+- **Controls:** School games have the School button (`.sc-back`), regular games the Games button (`.game-back`), both
+  the grid picture top left (tool row in two-player games); an arrow steps back one level; the berry speaker
+  (`.lesson-replay`) repeats a spoken goal.
+- **Offline:** `OFFLINE` saves into sw.js's cache by name (`toy-phone-v3`); renaming the cache in sw.js means renaming
+  it in index.html too (tests/offline-ready.cjs checks). New narrator lines belong in the right part of `areaLines()`.
 - **Motion:** only a grown-up's tap asks Safari (the getting-ready card, *Move the phone*, *Tilt and touch*, Done);
   games never call `requestPermission`.
 
@@ -63,8 +71,9 @@ on 2026-10-09 from a 6,400-word log; the old text is in git history.)
 - CI (`.github/workflows/deploy-pages.yml`) runs the smoke test in portrait, landscape and short-Safari layouts, the
   WebKit iPhone smoke, and two Pages/offline jobs (Chromium and WebKit) that also run: text-legibility,
   parent-controls, break-preview, motion-games, school-activities, delivery-expanded, social-play, social-lifecycle,
-  refinement, play-refinement, audio-return, phone-game-review, camera-peek and delivery. Main deploys only when all
-  pass.
+  refinement, play-refinement, audio-return, phone-game-review, camera-peek and delivery, plus (R-24 to R-29)
+  story-narration, accessibility, learning-rounds, audio-mix, stories-together, offline-ready and navigation. Main
+  deploys only when all pass. audio-mix is a model of a phone speaker, not a listening test.
 - WebKit can't run in either model's container; CI is the WebKit check. Run the focused suites you touch plus the
   smoke test locally before pushing.
 - Tests should tap the way kids do (`page.touchscreen.tap`), not only keyboard Enter or synthetic clicks.
@@ -82,6 +91,13 @@ on 2026-10-09 from a 6,400-word log; the old text is in git history.)
   gradual extraction).
 
 ## History (newest first)
+
+- 2026-10-10 R-29 navigation (Claude): a `.game-back` Games button in every regular game (top left like School's
+  `.sc-back`; in the tool row of Dino Buddies and Paint Pals so it's off both play areas; sticker rows make room);
+  Wild Tap's inner back is an arrow (grid = Games menu); Snack Time got the berry speaker (`#stReplay`, shown when
+  Animal names is on, since that's when it talks); Paint Pals' tool buttons 48 to 56 px. `go()` calls `fadeFx()`:
+  the old effects bus fades after 0.15 s and is cut at 0.4 s, new sounds get a fresh bus. New tests/navigation.cjs
+  (placement and leaving 21 activities: timers, voice, sounds, animations, animation frames, the faded bus).
 
 - 2026-10-10 R-28 offline readiness (Claude): `OFFLINE` saves files straight into sw.js's cache (`toy-phone-v3`;
   the two names must match, tests/offline-ready.cjs checks): the page, voice.json, sounds and the voice clips of
