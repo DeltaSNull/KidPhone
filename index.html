@@ -664,6 +664,9 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img:not(.px){image-rendering
    it where a tap flings paint */
 .pp-mid .social-tools{position:static; flex:none; gap:6px} .pp-mid .social-tools .round{width:56px; height:56px}   /* (56px: the same as the other games' tool buttons) */
 @media (orientation:landscape){ .pp-mid .social-tools{flex-direction:column} }
+/* Dino Buddies: the tools sit in the shared sand strip with the nest, so a kid tapping their own side never hits Games */
+.db-mid .social-tools{position:static; flex:none; gap:6px}
+@media (orientation:landscape){ .db-mid{gap:8px} .db-mid .social-tools{flex-wrap:wrap; max-width:124px} .db-mid .db-family{max-height:calc(100% - 262px)} }   /* (two by two in the narrow strip) */
 #dbCue{font-family:var(--reading);font-size:14px;background:#FFF6E0;border-radius:6px;padding:4px;max-width:90px}
 #dbCue:empty{display:none}.db-side[data-turn="true"]{box-shadow:inset 0 0 0 7px #FFF6E0}
 .db-side:focus-visible,.pp-side:focus-visible{outline:6px solid #FFF6E0;outline-offset:-9px}
@@ -746,7 +749,8 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img:not(.px){image-rendering
 .st-think.wig{animation:wig .3s 2}
 .st-want{font-size:.5em; line-height:1} .st-want .px{width:1.15em; height:1.15em; display:block}
 .st-foods{--fs:clamp(100px,18vh,150px); display:flex; justify-content:center; align-items:center; gap:14px; padding:12px 14px 16px; min-height:calc(var(--fs) + 28px)}
-@media (orientation:landscape){ .st-foods{--fs:clamp(88px,27vh,130px); flex-direction:column; padding:10px 10px 10px 14px; min-height:0; min-width:calc(var(--fs) + 24px)} }
+/* (landscape: the foods' column starts below the Games button in the corner, so a food is never under it) */
+@media (orientation:landscape){ .st-foods{--fs:clamp(88px,27vh,130px); flex-direction:column; gap:10px; padding:82px 10px 10px 14px; min-height:0; min-width:calc(var(--fs) + 24px)} }
 .st-food{flex:0 1 var(--fs); height:var(--fs); display:grid; place-items:center; animation:st-deal .45s cubic-bezier(.3,1.6,.5,1) backwards; --fr:var(--f-cream)}
 @media (orientation:landscape){ .st-food{width:var(--fs); height:auto; min-height:0; align-self:stretch} .st-foods.n2 .st-food{flex-basis:calc(var(--fs) * 1.1)} }
 .st-food .art{font-size:calc(var(--fs) * .5)}
@@ -1415,11 +1419,11 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img:not(.px){image-rendering
 
       <!-- GAME: Dino Buddies (two kids, one egg) -->
       <section class="app db" id="dinobuddies" hidden aria-label="Dino Buddies">
-        <div class="social-tools"><button class="round game-back" aria-label="Games"></button><button class="round" id="dbReplay" aria-label="Hear the goal again"></button><button class="round" id="dbTurns" aria-pressed="false" aria-label="Take turns"></button><span id="dbCue" aria-live="polite"></span></div>
         <section class="db-side db-a" data-side="0" aria-label="Green side"><div class="db-dino"></div></section>
         <section class="db-mid" aria-label="Shared nest">
           <div class="db-nest"><div class="db-egg" id="dbEgg"></div><div class="db-baby" id="dbBaby"></div></div>
           <div class="db-family" id="dbFamily" aria-label="Baby dinosaurs hatched"></div>
+          <div class="social-tools"><button class="round game-back" aria-label="Games"></button><button class="round" id="dbReplay" aria-label="Hear the goal again"></button><button class="round" id="dbTurns" aria-pressed="false" aria-label="Take turns"></button><span id="dbCue" aria-live="polite"></span></div>
         </section>
         <section class="db-side db-b" data-side="1" aria-label="Blue side"><div class="db-dino"></div></section>
       </section>

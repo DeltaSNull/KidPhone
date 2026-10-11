@@ -22,7 +22,7 @@ const server = http.createServer((req, res) => {
 });
 const check = (condition, message) => { assert.ok(condition, message); console.log('ok  ' + message); };
 // what the children play with in each game: the Games button must not sit on any of it
-const PLAY = {wildtap:'#wt-menu .wt-tile', snacktime:'#stFoods .st-food, #stAnimal, #stThink', dinobuddies:'.db-dino, #dbEgg', paintpals:'.pp-easel',
+const PLAY = {wildtap:'#wt-menu .wt-tile', snacktime:'#stFoods .st-food, #stAnimal, #stThink', dinobuddies:'.db-side, #dbEgg', paintpals:'.pp-easel',
   balltrail:'#balltrail .mg-board', starflight:'#starflight .mg-board'};
 const CONTROLS = '.round, .sc-back, .wt-back, .who-btn';
 const ACTIVITIES = ['wildtap', 'dinobuddies', 'snacktime', 'paintpals', 'balltrail', 'starflight', 'letterpath', 'abczoo', 'abcsnack', 'numzoo', 'numsnack', 'delivery', 'dinopicnic',
@@ -55,7 +55,7 @@ const ACTIVITIES = ['wildtap', 'dinobuddies', 'snacktime', 'paintpals', 'balltra
 
       // 1. the Games button in every regular game
       for (const g of Object.keys(PLAY)){
-        await page.evaluate(g => window.__toyPhone.go(g), g); await page.waitForTimeout(500);
+        await page.evaluate(g => window.__toyPhone.go(g), g); await page.waitForTimeout(g === 'snacktime' ? 1700 : 500);   // (Snack Time: once its foods are dealt)
         if (await page.locator(`#${g} .who-btn:visible`).count()){ await touch(`#${g} .who-btn:visible`); await page.waitForTimeout(400); }   // (two-player games ask how many first)
         const [back] = await box(`#${g} .game-back`), plays = await box(`#${g} ${PLAY[g].split(', ').join(`, #${g} `)}`.replace(`#${g} #${g}`, `#${g}`));
         const others = (await page.locator(`#${g} :is(${CONTROLS})`).evaluateAll(els => els.filter(e => !e.classList.contains('game-back') && e.getClientRects().length && getComputedStyle(e).visibility !== 'hidden').map(e => { const r = e.getBoundingClientRect(); return {l:r.left, t:r.top, r:r.right, b:r.bottom}; })));
