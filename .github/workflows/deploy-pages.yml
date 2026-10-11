@@ -55,7 +55,7 @@ jobs:
   pages:
     name: Pages/offline (${{ matrix.engine }})
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 50   # (the R-24 to R-29 suites took WebKit past 30)
     strategy:
       fail-fast: false
       matrix:
