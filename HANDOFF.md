@@ -7,8 +7,9 @@ on 2026-10-09 from a 6,400-word log; the old text is in git history.)
 
 ## Active batch
 
-- None claimed after **R-24 to R-29** (Claude, 2026-10-10: the usability and reliability pass after PR #19, one PR per
-  batch; see History), each merged once CI passes in Chromium and WebKit.
+- None claimed after **R-30** (Claude, 2026-10-11: Snack Time expanded at the family's request) and **R-24 to R-29**
+  (the usability and reliability pass after PR #19, one PR per batch; see History), each merged once CI passes in
+  Chromium and WebKit.
 - Next candidates, in order: physical checks with the family (R-04, G-04, T-09: VoiceOver, flight mode, listening,
   the corner Games button with a toddler); Today's Adventure (P3-01, P3-07, P3-08) and Toddler Play Together (P3-03),
   both sketched in the roadmap. Sound Safari (P3-05) waits on T-04.
@@ -92,6 +93,14 @@ on 2026-10-09 from a 6,400-word log; the old text is in git history.)
 
 ## History (newest first)
 
+- 2026-10-11 R-30 Snack Time (Claude, owner's request: "he really likes snack time", "the cat should be associated
+  with the milk like before"): the kitty wants milk again (R-23 had changed it to fish for accuracy; the family's
+  pick wins); whale, sloth, crab, leopard and owl join (36 animals, each with its mouth spot `m`); "two" rounds after
+  4 fed, about 1 in 3, only for foods whose `w` isn't "some ..." (`asked`/`need`, `bite()` for the first, "One more!");
+  every 10th fed a picnic parade (`parade()`: the ten sticker animals march across, `calm()` = a still row), every
+  other 5th the old party. Also on the R-29 branch: Dino Buddies' tool row moved into the sand strip (`.db-mid`) since
+  at 390x664 it sat over the green side and a kid's tap could leave the game; Snack Time's landscape foods start below
+  the Games button. New tests/snack-time.cjs (portrait, and landscape with Reduce Motion).
 - 2026-10-10 R-29 navigation (Claude): a `.game-back` Games button in every regular game (top left like School's
   `.sc-back`; in the tool row of Dino Buddies and Paint Pals so it's off both play areas; sticker rows make room);
   Wild Tap's inner back is an arrow (grid = Games menu); Snack Time got the berry speaker (`#stReplay`, shown when

@@ -748,6 +748,7 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img:not(.px){image-rendering
 .st-think.on{transform:scale(1)}
 .st-think.wig{animation:wig .3s 2}
 .st-want{font-size:.5em; line-height:1} .st-want .px{width:1.15em; height:1.15em; display:block}
+.st-want.two{display:flex; gap:.04em} .st-want.two .px{width:.78em; height:.78em}
 .st-foods{--fs:clamp(100px,18vh,150px); display:flex; justify-content:center; align-items:center; gap:14px; padding:12px 14px 16px; min-height:calc(var(--fs) + 28px)}
 /* (landscape: the foods' column starts below the Games button in the corner, so a food is never under it) */
 @media (orientation:landscape){ .st-foods{--fs:clamp(88px,27vh,130px); flex-direction:column; gap:10px; padding:82px 10px 10px 14px; min-height:0; min-width:calc(var(--fs) + 24px)} }
@@ -760,6 +761,13 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img:not(.px){image-rendering
 .st-food.off{opacity:.4}
 @keyframes st-hint{50%{transform:scale(1.07)}}
 @keyframes st-deal{from{transform:scale(0)}}
+/* the picnic parade every ten animals: they march along the bottom of the scene */
+.st-parade{position:absolute; left:0; right:0; bottom:3%; height:clamp(48px, 16%, 88px); pointer-events:none; z-index:5}
+.st-parade .s{position:absolute; left:0; bottom:0; height:100%; aspect-ratio:1}
+.st-parade .s .px{width:100%; height:100%; display:block; animation:st-march .34s ease-in-out infinite alternate}
+@keyframes st-march{to{transform:translateY(-12%) rotate(4deg)}}
+.st-parade.still{display:flex; justify-content:center; align-items:flex-end; flex-wrap:wrap; gap:4px; height:auto; max-height:60%}
+.st-parade.still .s{position:static; height:clamp(36px, 9vh, 64px)} .st-parade.still .s .px{animation:none}
 .st-bite{position:absolute; left:0; top:0; width:64px; height:64px; display:grid; place-items:center; font-size:56px; line-height:1; pointer-events:none; z-index:6; will-change:transform}
 
 /* ---------- School: learning games. Letters are a school-print pixel alphabet (see GLYPH) ---------- */
@@ -9112,7 +9120,7 @@ const SnackTime = (() => {
     {a:'eagle', n:'eagle', food:'fish', w:'a fish', fp:'fish', x:'screech', m:[.12,.55]},
     {a:'gorilla', n:'gorilla', food:'orange', w:'an orange', fp:'oranges', x:'thump', m:[.45,.45]},
     {a:'butterfly', n:'butterfly', food:'flower', w:'a flower', fp:'flowers', x:'flutter', m:[.5,.35]},
-    {a:'cat', n:'kitty', food:'fish', w:'a fish', fp:'fish', x:'meow', m:[.33,.4]},   // (not milk: cats shouldn't drink it)
+    {a:'cat', n:'kitty', food:'milk', w:'some milk', fp:'milk', x:'meow', m:[.33,.4]},   // (the family's pick: the kitty and her milk, as in the picture books)
     {a:'duck', n:'duck', food:'peas', w:'some peas', fp:'peas', x:'quack', m:[.08,.36]},
     {a:'kangaroo', n:'kangaroo', food:'carrot', w:'a carrot', fp:'carrots', x:'boing', m:[.12,.36]},
     {a:'octopus', n:'octopus', food:'shrimp', w:'a shrimp', fp:'shrimp', x:'splash', m:[.5,.5]},
@@ -9122,26 +9130,38 @@ const SnackTime = (() => {
     {a:'longneck', n:'long neck', food:'leaf', w:'a leaf', fp:'leaves', x:'bellow', m:[.07,.2]},
     {a:'trike', n:'triceratops', food:'fern', w:'a fern', fp:'ferns', x:'huff', m:[.08,.55]},
     {a:'stego', n:'stegosaurus', food:'fern', w:'a fern', fp:'ferns', x:'stego', m:[.06,.73]},
-    {a:'ptero', n:'pterodactyl', food:'fish', w:'a fish', fp:'fish', x:'screech', m:[.42,.3]}
+    {a:'ptero', n:'pterodactyl', food:'fish', w:'a fish', fp:'fish', x:'screech', m:[.42,.3]},
+    {a:'whale', n:'whale', food:'shrimp', w:'a shrimp', fp:'shrimp', x:'splash', m:[.16,.63]},
+    {a:'sloth', n:'sloth', food:'leaf', w:'a leaf', fp:'leaves', x:'yawn', m:[.48,.47]},
+    {a:'crab', n:'crab', food:'fish', w:'a fish', fp:'fish', x:'snap', m:[.5,.7]},
+    {a:'leopard', n:'leopard', food:'meat', w:'some meat', fp:'meat', x:'growl', m:[.24,.64]},
+    {a:'owl', n:'owl', food:'fly', w:'a fly', fp:'flies', x:'hoot', m:[.5,.53]}
   ];
   const FOOD = Object.fromEntries(SNACKS.map(s => [s.food, s.w.replace(/^(an?|some) /, '')]));
   const pic = f => ART[f] || schoolPic(f);   // (the newer foods are little pictures drawn with the School ones)
-  const WANTS = s => `The ${s.n} wants ${s.w}!`, YUM = s => `Yum! The ${s.n} loves ${s.fp}!`;
+  const WANTS = s => `The ${s.n} wants ${s.w}!`, TWO = s => `The ${s.n} wants two ${s.fp}!`, YUM = s => `Yum! The ${s.n} loves ${s.fp}!`;
+  const MORE = 'One more!', PARADE = 'Picnic parade! Ten full tummies!';
+  const countable = s => !/^some /.test(s.w);   // "two" only for foods you can count: two bananas, never two milk
   const root = $('#snacktime'), scene = $('#stScene'), animalEl = $('#stAnimal'), think = $('#stThink'), wantEl = $('#stWant'), foodsEl = $('#stFoods'), fedEl = $('#stFed');
-  let cur = null, queue = [], fed = 0, misses = 0, eating = true, quietUntil = 0;
+  let cur = null, queue = [], fed = 0, misses = 0, eating = true, quietUntil = 0, asked = 1, need = 1;
   const steps = () => [0,.16,.32,.48,.64].forEach(d => tone(190, 150, .07, 'sine', .14, d));   // pitter-patter feet
   const uhuh = () => { tone(392, 370, .15, 'triangle', .13); tone(330, 300, .22, 'triangle', .13, .19); };   // a soft "nuh-uh", never a buzzer
   const yum = at => { tone(523, 784, .14, 'triangle', .14, at); tone(659, 1047, .2, 'triangle', .13, at + .13); return at + .35; };
   const call = (s, at = 0) => s.x ? FX[s.x](at) : yum(at);
   function act(cls){ animalEl.classList.remove('in', 'out', 'hop', 'nope', 'chomp'); void animalEl.offsetWidth; animalEl.classList.add(cls); }
   /* waits for the voice to finish a line (like the hello), so it never cuts one off */
-  const wants = (tries = 0) => { if (!cur || eating) return; if (speaking() && tries < 15){ later(() => wants(tries + 1), 300); return; } say(WANTS(cur), 0, 'names'); };
+  const wish = () => asked === 2 ? (need === 2 ? TWO(cur) : MORE) : WANTS(cur);
+  const wants = (tries = 0) => { if (!cur || eating) return; if (speaking() && tries < 15){ later(() => wants(tries + 1), 300); return; } say(wish(), 0, 'names'); };
+  /* the thought bubble shows the food once, or twice when the animal wants two */
+  const bubble = n => { put(wantEl, pic(cur.food).repeat(n)); wantEl.classList.toggle('two', n === 2); };
   function arrive(){
     const prev = cur;
     if (!queue.length) queue = shuffle(SNACKS).filter(s => s !== prev);
     cur = queue.shift(); misses = 0; eating = true;
+    // once a few animals are fed, about one in three asks for two of something countable ("Two, please!")
+    asked = need = fed >= 4 && countable(cur) && Math.random() < 1/3 ? 2 : 1;
     put(animalEl, ART[cur.a]); animalEl.setAttribute('aria-label', cur.n);
-    think.classList.remove('on'); put(wantEl, pic(cur.food));
+    think.classList.remove('on'); bubble(asked);
     foodsEl.innerHTML = '';
     act('in'); steps();
     later(() => { think.classList.add('on'); FX.pop(); deal(); eating = false; wants(); }, 950);
@@ -9165,7 +9185,8 @@ const SnackTime = (() => {
       if (misses >= 2) foodsEl.querySelector(`[data-food="${cur.food}"]`)?.classList.add('hint');
       return;
     }
-    eating = true; b.classList.remove('hint'); retrigger(b, 'yes'); FX.pop(); think.classList.remove('on');
+    const last = need === 1;
+    eating = true; b.classList.remove('hint'); retrigger(b, 'yes'); FX.pop(); if (last) think.classList.remove('on');
     $$('.st-food', foodsEl).forEach(o => { if (o !== b) o.classList.add('off'); });
     const s = cur, a = root.getBoundingClientRect(), fr = b.getBoundingClientRect(), ar = animalEl.getBoundingClientRect();
     const x0 = fr.left - a.left + fr.width/2, y0 = fr.top - a.top + fr.height/2, x1 = ar.left - a.left + ar.width*s.m[0], y1 = ar.top - a.top + ar.height*s.m[1];
@@ -9176,7 +9197,13 @@ const SnackTime = (() => {
       {transform:`translate(${x0-32}px,${y0-32}px) scale(1)`},
       {transform:`translate(${mx-32}px,${my-32}px) scale(1.2)`, offset:.5},
       {transform:`translate(${x1-32}px,${y1-32}px) scale(.35)`}
-    ], {duration:650, easing:'ease-in-out', fill:'forwards'}).onfinish = () => { t.remove(); eat(s); };
+    ], {duration:650, easing:'ease-in-out', fill:'forwards'}).onfinish = () => { t.remove(); last ? eat(s) : bite(s); };
+  }
+  /* the first of two: a happy chomp, one food left in the bubble, and "One more!" */
+  function bite(s){
+    if (cur !== s || current !== 'snacktime') return;
+    need = 1; misses = 0; act('chomp'); FX.crunch(0); bubble(1); retrigger(think, 'wig');
+    later(() => { $$('.st-food', foodsEl).forEach(o => o.classList.remove('off')); eating = false; hush(); say(MORE, 0, 'names'); }, 500);   // (the food stays lit: that one again)
   }
   function eat(s){
     if (cur !== s || current !== 'snacktime') return;
@@ -9185,10 +9212,12 @@ const SnackTime = (() => {
     fed++; addSticker(s);
     later(() => { act('hop'); hearts(); }, 700);
     say(YUM(s), 0, 'names');
-    const party = fed % 5 === 0, stay = end*1000 + (party ? 2000 : 500);
+    // every fifth animal a cheer; every tenth, all ten march past in a picnic parade
+    const big = fed % 10 === 0, party = !big && fed % 5 === 0, stay = end*1000 + (party ? 2000 : 500);
     if (party) later(celebrate, end*1000 + 100);
     later(() => { act('out'); steps(); }, stay);
-    later(arrive, stay + 850);
+    if (big) later(() => later(arrive, parade() + 300), stay + 850);
+    else later(arrive, stay + 850);
   }
   function hearts(){
     const [x, y] = rel(animalEl), r = animalEl.getBoundingClientRect();
@@ -9200,15 +9229,37 @@ const SnackTime = (() => {
     [...fedEl.children].forEach((sp, i) => later(() => retrigger(sp, 's'), i*70));
     say('Hooray! Five full tummies!', 0, 'names');
   }
+  /* the ten animals fed so far march across to a little tune; with reduced motion they stand in a row instead.
+     Returns how long it lasts (ms) */
+  function parade(){
+    const who = [...fedEl.children].map(sp => sp.innerHTML), row = document.createElement('div'), still = calm();
+    row.className = 'st-parade' + (still ? ' still' : ''); scene.appendChild(row); foodsEl.innerHTML = '';
+    FX.cheer(); say(PARADE, 0, 'names');
+    [523, 659, 784, 659, 523, 659, 784, 1047, 784, 659, 784, 1047].forEach((f, i) => tone(f, f, .16, 'triangle', .1, .5 + i*.32));   // a little march
+    [...fedEl.children].forEach((sp, i) => later(() => retrigger(sp, 's'), i*70));
+    const w = scene.getBoundingClientRect().width, h = row.getBoundingClientRect().height, speed = .2;   // px per ms; one animal's width apart
+    const gap = h*1.15/speed, walk = (w + h)/speed;
+    who.forEach((art, i) => {
+      const sp = document.createElement('span'); sp.className = 's'; sp.innerHTML = art; row.appendChild(sp);
+      if (still) return;
+      sp.style.transform = `translateX(${w}px)`;   // (right to left, the way the animals walk in)
+      fly(sp, [{transform:`translateX(${w}px)`}, {transform:`translateX(${-h}px)`}], {duration:walk, delay:i*gap, fill:'forwards'});
+    });
+    const long = still ? 3000 : walk + (who.length - 1)*gap;
+    if (still){ const [x, y] = rel(scene); confetti(x, y, 30); }
+    later(() => { row.getAnimations({subtree:true}).forEach(a => a.cancel()); row.remove(); }, long);
+    return long;
+  }
   /* tap the animal for its call, or the bubble to hear what it wants */
   tap(animalEl, () => { const now = performance.now(); if (eating || !cur || now < quietUntil) return; act('hop'); quietUntil = now + call(cur)*1000; }, {bump:false});
   tap(think, () => { if (eating || !cur) return; FX.pop(); retrigger(think, 'wig'); hush(); wants(); }, {bump:false});
   put($('#stReplay'), ART.ear); tap($('#stReplay'), () => { if (eating || !cur) return; retrigger(think, 'wig'); hush(); wants(); }, {throttle:700});   // the berry speaker, as in School
   return {
     enter(){ $('#stReplay').hidden = !voiceOn('names'); say('Snack Time! The animals are hungry!', 0, 'menus'); cur = null; arrive(); },   // (the speaker only where the wish is said: Animal names in Settings)
-    leave(){ $$('.st-bite', root).forEach(t => { t.getAnimations().forEach(a => { a.onfinish = null; a.cancel(); }); t.remove(); }); cur = null; eating = true; },
-    state: () => ({want: cur && !eating ? cur.food : null, animal: cur && cur.a, fed, choices: foodsEl.children.length}),
-    lines: () => ['Snack Time! The animals are hungry!', 'Hooray! Five full tummies!', ...SNACKS.flatMap(s => [WANTS(s), YUM(s)])]
+    leave(){ $$('.st-bite, .st-parade', root).forEach(t => { t.getAnimations({subtree:true}).forEach(a => { a.onfinish = null; a.cancel(); }); t.remove(); }); cur = null; eating = true; },
+    state: () => ({want: cur && !eating ? cur.food : null, animal: cur && cur.a, fed, choices: foodsEl.children.length, two: asked === 2, need,
+      parade: !!$('.st-parade', root), foods: Object.fromEntries(SNACKS.map(s => [s.a, s.food]))}),
+    lines: () => ['Snack Time! The animals are hungry!', 'Hooray! Five full tummies!', MORE, PARADE, ...SNACKS.flatMap(s => [WANTS(s), YUM(s), ...(countable(s) ? [TWO(s)] : [])])]
   };
 })();
 
