@@ -49,7 +49,14 @@ let allTwos = 0;
       const foods = (await ready()).foods;
       check(foods.cat === 'milk', `${tag}: the kitty wants milk again`);
       check(['whale', 'sloth', 'crab', 'leopard', 'owl'].every(a => foods[a]), `${tag}: the whale, sloth, crab, leopard and owl come too (${Object.keys(foods).length} animals)`);
-      const needed = ['The kitty wants some milk!', 'Yum! The kitty loves milk!', 'One more!', 'Picnic parade! Ten full tummies!', 'The owl wants two flies!', 'The whale wants a shrimp!'];
+      // the newest friends (R-32): drawn pictures, their own foods and calls
+      const NEW = {bunny:'carrot', mouse:'cheese', squirrel:'acorn', bear:'honey', pig:'pumpkin', hedgehog:'worm'};
+      const drawn = await page.evaluate(ks => ks.every(k => /^<img class="px"/.test(window.__toyPhone.pic(k))), [...Object.keys(NEW), ...Object.values(NEW)]);
+      const fx = await page.evaluate(() => window.__toyPhone.fx());
+      check(Object.entries(NEW).every(([a, f]) => foods[a] === f) && drawn && ['squeak', 'chitter', 'oink', 'sniff'].every(n => fx.includes(n)),
+        `${tag}: the bunny, mouse, squirrel, bear, pig and hedgehog come for carrots, cheese, acorns, honey, pumpkins and worms, with pictures and calls (${Object.keys(foods).length} animals)`);
+      const needed = ['The kitty wants some milk!', 'Yum! The kitty loves milk!', 'One more!', 'Picnic parade! Ten full tummies!', 'The owl wants two flies!', 'The whale wants a shrimp!',
+        'The mouse wants some cheese!', 'Yum! The bear loves honey!', 'The hedgehog wants two worms!', 'The squirrel wants an acorn!'];
       const missing = await page.evaluate(ls => ls.filter(l => !window.__toyPhone.voiceFile(l)), needed);
       check(missing.length === 0, `${tag}: the new lines are recorded ${missing.join(', ')}`);
 

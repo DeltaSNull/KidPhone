@@ -62,12 +62,13 @@ Guided Access. It's one self-contained `index.html` (vanilla JS, no build step),
     meal; only ever two of something you can count (two bananas, never two milk). Every fifth animal is a little party,
     and every tenth all ten march past in a picnic parade to a little tune (with Reduce Motion they stand in a row). The
     bubble shows the food, so the game works with the voice off (with Animal names on, it also says "The panda wants
-    some bamboo!"). 36 animals, each shuffled in once before any comes back: monkey and banana, penguin and fish, puppy and bone, panda and
+    some bamboo!"). 42 animals, each shuffled in once before any comes back: monkey and banana, penguin and fish, puppy and bone, panda and
     bamboo, giraffe and leaf, chick and corn, turtle and strawberry, parrot and blueberry, frog and fly, hippo and
     watermelon, cow and grass, lion and meat, tiger and meat, elephant and peanut, zebra and grass, rhino and apple,
     flamingo and shrimp, eagle and fish, gorilla and orange, butterfly and flower, kitty and milk (the family's pick), duck
     and peas, kangaroo and carrot, octopus and shrimp, lizard and fly, crocodile and fish, whale and shrimp, sloth and
-    leaf, crab and fish, leopard and meat, owl and fly, and the dinosaurs: T. rex and meat, long neck and
+    leaf, crab and fish, leopard and meat, owl and fly, bunny and carrot, mouse and cheese (squeak), squirrel and acorn
+    (chitter), bear and honey, pig and pumpkin (oink), hedgehog and worm (snuffle), and the dinosaurs: T. rex and meat, long neck and
     leaf, triceratops and fern, stegosaurus and fern, pterodactyl and fish.
   - *Dino Buddies* (1 or 2 players): the split-screen game for both boys. Every tap on either half flies a treat into one
     shared egg. With 1 player, one big dino fills the screen and the egg needs fewer treats (16 instead of 24).
@@ -154,7 +155,8 @@ Guided Access. It's one self-contained `index.html` (vanilla JS, no build step),
     showing the line-up once, then gets gently harder: piles three apart, then two, then one; tidy piles like dice
     first, then scattered ones, and one round where the smaller pile is spread out and the bigger one bunched up, so
     it's the number that counts, not how much room the pile takes. Never two the same number. Six stars, then an idea
-    for snack time at home. Ten of Snack Time's animals with foods you can count.
+    for snack time at home. Twenty of Snack Time's animals with foods you can count, the bunny, squirrel, pig and
+    hedgehog among them.
   - *Animal Delivery*: a nine-stop route for vocabulary and following directions. The voice says "Put the apple
     under the tree!" A single object starts the route; after three deliveries the child chooses the requested object
     from three parcels, then drags it or taps its destination. In the box/on the table come first, then under the table,

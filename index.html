@@ -5320,6 +5320,24 @@ const FX = {
   flick(at=0){ tone(1400,2400,.05,'sine',.15,at); tone(1400,2400,.05,'sine',.15,at+.1); return at + .15; },
   snap(at=0){ noise(.08,'highpass',2500,1800,.36,at); noise(.08,'highpass',2500,1800,.36,at+.17); return at + .25; },   // two jaw snaps
   peep(at=0){ [0,.15,.3].forEach(d => tone(2600,3300,.09,'sine',.16,at+d)); return at + .4; },
+  /* Snack Time's newer friends */
+  squeak(at=0){   // mouse: three tiny squeaks, up and down
+    [0,.13,.26].forEach((d, i) => vox({at:at+d, vol:.1, type:'triangle', f0:[[0,2600 + i*150],[.05,3400 + i*150],[.1,2900]], amp:[[0,0],[.02,1],[.1,0]], form:[{f:3200, q:3}]}));
+    return at + .4;
+  },
+  chitter(at=0){   // squirrel: a fast, scolding chatter
+    for (let i=0;i<9;i++) vox({at:at+i*.07, vol:.11, type:'square', f0:[[0,1500],[.03,1900]], amp:[[0,0],[.008,1],[.045,0]], form:[{f:2000, q:3}, {f:3800, q:4, g:.4}], noise:.3});
+    return at + .7;
+  },
+  oink(at=0){   // pig: two nasal grunts
+    [0,.32].forEach((d, i) => vox({at:at+d, vol:.6, f0:[[0, i ? 210 : 240],[.18, i ? 160 : 180]], amp:[[0,0],[.03,1],[.12,.8],[.22,0]], form:[{f:900, q:5}, {f:2100, q:6, g:.6}], rough:.5, roughHz:45, noise:.25}));
+    return at + .6;
+  },
+  sniff(at=0){   // hedgehog: little snuffles and a squeak
+    [0,.11,.22,.33].forEach(d => noise(.07,'bandpass',2600,1800,1,at+d));
+    vox({at:at+.48, vol:.29, type:'triangle', f0:[[0,2200],[.08,2800]], amp:[[0,0],[.02,1],[.1,0]], form:[{f:2600, q:3}]});
+    return at + .62;
+  },
   boing(at=0){ [0,.3,.6].forEach(d => { synth({f:340, f1:900, dur:.26, type:'triangle', vol:.26, at:at+d, vib:12, rel:.1}); tone(680,1800,.25,'sine',.06,at+d); }); return at + .85; },
   boom(at=0){   // volcano: the deep rumble, and the blast and crackle a phone speaker can play
     noise(1.6,'lowpass',320,60,.35,at); tone(60,30,1.4,'sine',.3,at);
@@ -7380,8 +7398,58 @@ const SCHOOL_PIX = {
   book:[P => { P.poly([[2, 8], [15, 6], [16, 8], [16, 28], [15, 27], [2, 29]], 'p').poly([[30, 8], [17, 6], [16, 8], [16, 28], [17, 27], [30, 29]], 'p').rect(16, 8, 1, 20, 'd');
     for (let i=0;i<5;i++) P.line(5, 11 + i*3.5, 13, 10 + i*3.5, 'l').line(19, 10 + i*3.5, 27, 11 + i*3.5, 'l');
     P.rect(1, 29, 30, 2, 'c'); P.outline('o'); },
-    {p:'#FFFDF5', d:'#C9B89A', l:'#9FB7D8', c:'#E95252', o:'#5A4A3E'}]
+    {p:'#FFFDF5', d:'#C9B89A', l:'#9FB7D8', c:'#E95252', o:'#5A4A3E'}],
+  /* Snack Time's newer friends (side on, facing left like the other animals) and their foods */
+  bunny:[P => { P.shape(13, 7, -.25, 8, (u, v) => (u/2.1)**2 + (v/6.5)**2 <= 1, 'b').shape(17, 7.5, .2, 8, (u, v) => (u/2.1)**2 + (v/6.5)**2 <= 1, 'b');
+    P.shape(13, 7.5, -.25, 7, (u, v) => (u/.9)**2 + (v/4.8)**2 <= 1, 'p');
+    P.ell(19.5, 22, 9, 8, 'b').ell(10.5, 16, 6.5, 5.8, 'b').ell(28.5, 21, 2.6, 2.6, 'w').ell(13, 29, 4.5, 1.8, 'b').ell(23, 29.5, 4, 1.6, 'b');
+    P.shade('b', 'd', 'l', 2); P.ell(14, 24, 4, 4.5, 'w');
+    P.rect(7, 14, 2, 2, 'k').set(7, 14, 'g').ell(4.6, 17.2, 1.2, 1, 'p').set(9, 18, 'r').set(10, 18, 'r'); P.outline('o'); },
+    {b:'#C9A27A', d:'#9E7A55', l:'#E3C49E', w:'#FFF8EC', p:'#FF9EAE', r:'#FF8A8A', k:'#1E1410', g:'#FFFFFF', o:'#4A2E1A'}],
+  mouse:[P => { P.tube(26, 24, 31, 19, 28, 12, 1, .8, 'p');
+    P.ell(18, 22, 9.5, 6.5, 'b').ell(9.5, 20.5, 5.5, 4.8, 'b').poly([[2, 21.5], [8, 16.5], [8.5, 25]], 'b').ell(13, 13.5, 4.6, 4.6, 'b');
+    P.shade('b', 'd', 'l', 2); P.ell(13, 13.8, 2.9, 2.9, 'p'); P.rect(11, 27, 4, 2, 'p').rect(21, 27, 4, 2, 'p');
+    P.rect(7, 18, 2, 2, 'k').set(7, 18, 'g').ell(2.4, 21.6, 1.2, 1.1, 'r'); P.line(4, 23, 1, 25, 'd').line(5, 23, 3, 26, 'd'); P.outline('o'); },
+    {b:'#A9A9B4', d:'#7E7E8C', l:'#CFCFD8', p:'#FFAFC0', r:'#F27A93', k:'#1E1410', g:'#FFFFFF', o:'#3A3A48'}],
+  squirrel:[P => { P.tube(21, 28, 30.5, 17, 21, 5, 4.8, 4, 't'); P.shade('t', 'T', 'L', 2);
+    P.ell(15, 21, 7, 8, 'b').ell(10, 11.5, 5.8, 5.2, 'b').poly([[11, 7], [14, 1.5], [15, 8]], 'b').ell(14, 29, 4.5, 2, 'b');
+    P.shade('b', 'd', 'l', 2); P.ell(12, 22, 3.5, 5, 'c'); P.ell(8.5, 21, 2.2, 1.8, 'b');
+    P.rect(7, 10, 2, 2, 'k').set(7, 10, 'g').ell(4.4, 12.6, 1, .9, 'k').set(9, 14, 'r'); P.outline('o'); },
+    {b:'#C8743A', d:'#9A5224', l:'#E59A5E', t:'#D4844A', T:'#A35C2A', L:'#EDB27E', c:'#F7DDBA', r:'#FF8A7A', k:'#1E1410', g:'#FFFFFF', o:'#4A2412'}],
+  bear:[P => { P.rect(14, 21, 4, 7, 'B').rect(28, 21, 3, 7, 'B'); P.ell(19.5, 18, 11.5, 8, 'b').rect(8, 21, 5, 8, 'b').rect(22, 21, 5, 8, 'b');
+    P.ell(8.5, 14, 6.5, 6, 'b').ell(10.5, 8.5, 2.6, 2.6, 'b'); P.shade('b', 'd', 'l', 2); P.ell(10.5, 8.7, 1.2, 1.2, 'd');
+    P.ell(3.8, 16.5, 3.2, 2.6, 'c'); P.ell(1.6, 15.6, 1.3, 1.1, 'k'); P.rect(7, 12, 2, 2, 'k').set(7, 12, 'g'); P.outline('o'); },
+    {b:'#9A6438', B:'#7A4C28', d:'#704422', l:'#B88052', c:'#D9B48A', k:'#1E1410', g:'#FFFFFF', o:'#3A2010'}],
+  pig:[P => { P.tube(29, 16, 32, 12, 29, 11, .8, .8, 'b'); P.ell(18.5, 19, 11.5, 8, 'b').rect(10, 23, 3, 6, 'b').rect(14, 24, 3, 5, 'b').rect(22, 24, 3, 5, 'b').rect(26, 23, 3, 6, 'b');
+    P.ell(8.5, 17, 6.5, 6, 'b').poly([[7, 9], [13, 8], [12, 14]], 'b'); P.shade('b', 'd', 'l', 2); P.poly([[8.5, 10], [11.5, 9.5], [11, 12.5]], 'r');
+    P.ell(2.8, 18.5, 2.4, 2.9, 'r'); P.set(2, 17, 'k').set(2, 19, 'k'); P.rect(7, 15, 2, 2, 'k').set(7, 15, 'g').set(6, 21, 'R').set(7, 22, 'R'); P.outline('o'); },
+    {b:'#FFB3C1', d:'#E8899C', l:'#FFD3DC', r:'#F4899E', R:'#C9566E', k:'#1E1410', g:'#FFFFFF', o:'#7A3242'}],
+  hedgehog:[P => { for (let i=0;i<=12;i++){ const a = Math.PI*(1.05 + i*.075), x = 18 + Math.cos(a)*11, y = 22 + Math.sin(a)*8.5;
+      P.poly([[x - 2.2*Math.sin(a), y + 2.2*Math.cos(a)], [x + 4*Math.cos(a), y + 4*Math.sin(a)], [x + 2.2*Math.sin(a), y - 2.2*Math.cos(a)]], i % 2 ? 's' : 'S'); }
+    P.ell(18, 22, 11, 8, 's'); P.shade('s', 'S', 'l', 2); P.speck('s', 'S', 60, 7);
+    P.ell(9, 23, 6, 5, 'f').poly([[1.5, 24], [7, 19.5], [7.5, 27.5]], 'f').rect(10, 28, 3, 2, 'f').rect(21, 28, 3, 2, 'f'); P.shade('f', 'F', null, 1);
+    P.ell(2, 24, 1.3, 1.2, 'k').rect(7, 21, 2, 2, 'k').set(7, 21, 'g').set(9, 25, 'r'); P.outline('o'); },
+    {s:'#8A6A4E', S:'#5E4430', l:'#B08E6E', f:'#F2D7B0', F:'#D2B08A', r:'#FF8A7A', k:'#1E1410', g:'#FFFFFF', o:'#3A2614'}],
+  cheese:[P => { P.poly([[3, 15], [28, 8], [29, 15]], 'l').poly([[3, 15], [29, 15], [29, 26], [3, 26]], 'y'); P.shade('y', 'Y', null, 1);
+    P.ell(9, 20, 2.2, 2, 'Y').ell(17, 22.5, 1.6, 1.5, 'Y').ell(23, 19, 2.4, 2.2, 'Y').ell(13, 13.5, 1.6, .8, 'Y').ell(22, 11.5, 1.4, .7, 'Y'); P.outline('o'); },
+    {y:'#FFD54A', Y:'#E0A92A', l:'#FFE68A', o:'#8A5A12'}],
+  acorn:[P => { P.rect(15, 2, 2, 5, 'b'); P.ell(16, 19.5, 7.5, 9.5, 'n'); P.shade('n', 'N', 'l', 2); P.ell(16, 10.5, 10, 5, 'c'); P.shade('c', 'C', null, 1);
+    for (let x=9;x<=23;x+=3) P.line(x, 7, x - 2, 14, 'C'); P.set(13, 18, 'w').set(13, 19, 'w'); P.outline('o'); },
+    {n:'#D9A05B', N:'#B27A38', l:'#F0C488', c:'#8A5A30', C:'#64401E', b:'#64401E', w:'#FFF2D6', o:'#3A2410'}],
+  honey:[P => { P.ell(16, 20, 11, 9.5, 'p'); P.shade('p', 'P', 'l', 2); P.rect(8, 8, 16, 4, 'p').ell(16, 8, 8, 2, 'h');
+    P.rect(7, 11, 18, 3, 'r'); P.ell(12, 13, 2, 3.5, 'h').ell(19, 14, 1.6, 4.5, 'h').ell(19, 18.5, 1.6, 1.6, 'h'); P.shade('r', 'R', null, 1);
+    P.rect(11, 18, 10, 6, 'w'); P.ell(16, 21, 2.4, 1.8, 'h'); P.outline('o'); },
+    {p:'#C97A3A', P:'#9A5424', l:'#E39A5A', r:'#7A4420', R:'#5A3014', h:'#FFC83D', w:'#FFF1C8', o:'#4A2410'}],
+  pumpkin:[P => { P.ell(16, 19, 13, 10, 'r'); P.ell(10, 19, 6.5, 9.5, 'r').ell(22, 19, 6.5, 9.5, 'r'); P.shade('r', 'R', 'l', 2);
+    P.tube(16, 11, 15, 16, 16, 28, .5, .5, 'R').tube(10, 12, 7, 19, 10, 27, .4, .4, 'R').tube(22, 12, 25, 19, 22, 27, .4, .4, 'R');
+    P.tube(15, 10, 15, 6, 18, 4, 1.4, 1.1, 'g'); P.shape(21, 8, .4, 6, (u, v) => (u/4)**2 + (v/1.8)**2 <= 1, 'G'); P.outline('o'); },
+    {r:'#FF8A2E', R:'#D2601A', l:'#FFB066', g:'#5E8A2E', G:'#7CC05A', o:'#5A2A0C'}],
+  worm:[P => { P.tube(4, 25, 10, 12, 17, 21, 2.8, 2.8, 'p').tube(17, 21, 23, 30, 27, 15, 2.8, 3, 'p'); P.shade('p', 'P', 'l', 1);
+    [[7, 18], [10, 15], [14, 16], [19, 24], [22, 25]].forEach(([x, y]) => P.set(x, y, 'P').set(x + 1, y, 'P'));
+    P.rect(26, 13, 1, 2, 'k').rect(29, 13, 1, 2, 'k').set(26, 17, 'k').rect(27, 18, 2, 1, 'k').set(29, 17, 'k'); P.outline('o'); },
+    {p:'#FF9EB5', P:'#E06E8C', l:'#FFC6D4', k:'#3A1A24', o:'#7A2E44'}]
 };
+const animalPic = a => ART[a] || schoolPic(a);   // (the first animals are sprites; Snack Time's newer friends are drawn like the School pictures)
 const schoolPic = name => SCHOOL_PIX[name] ? once('sp' + name, () => { const P = new Pix(32, 32), [draw, pal] = SCHOOL_PIX[name]; draw(P); return `<img class="px" src="${pxURL(P.canvas(pal), 4).slice(5, -2)}" alt="" draggable="false">`; }) : ART[name];
 /* Story Time's pictures, 40x32 scenes drawn like the School sprites: the things in them are outlined, then the sky
    fills the rest. A nest, a garden bed and two clouds are shared by the pages of their story. */
@@ -9153,7 +9221,13 @@ const SnackTime = (() => {
     {a:'sloth', n:'sloth', food:'leaf', w:'a leaf', fp:'leaves', x:'yawn', m:[.48,.47]},
     {a:'crab', n:'crab', food:'fish', w:'a fish', fp:'fish', x:'snap', m:[.5,.7]},
     {a:'leopard', n:'leopard', food:'meat', w:'some meat', fp:'meat', x:'growl', m:[.24,.64]},
-    {a:'owl', n:'owl', food:'fly', w:'a fly', fp:'flies', x:'hoot', m:[.5,.53]}
+    {a:'owl', n:'owl', food:'fly', w:'a fly', fp:'flies', x:'hoot', m:[.5,.53]},
+    {a:'bunny', n:'bunny', food:'carrot', w:'a carrot', fp:'carrots', x:'', m:[.19,.56]},
+    {a:'mouse', n:'mouse', food:'cheese', w:'some cheese', fp:'cheese', x:'squeak', m:[.13,.7]},
+    {a:'squirrel', n:'squirrel', food:'acorn', w:'an acorn', fp:'acorns', x:'chitter', m:[.19,.44]},
+    {a:'bear', n:'bear', food:'honey', w:'some honey', fp:'honey', x:'growl', m:[.13,.56]},
+    {a:'pig', n:'pig', food:'pumpkin', w:'a pumpkin', fp:'pumpkins', x:'oink', m:[.16,.67]},
+    {a:'hedgehog', n:'hedgehog', food:'worm', w:'a worm', fp:'worms', x:'sniff', m:[.13,.8]}
   ];
   const FOOD = Object.fromEntries(SNACKS.map(s => [s.food, s.w.replace(/^(an?|some) /, '')]));
   const pic = f => ART[f] || schoolPic(f);   // (the newer foods are little pictures drawn with the School ones)
@@ -9178,7 +9252,7 @@ const SnackTime = (() => {
     cur = queue.shift(); misses = 0; eating = true;
     // once a few animals are fed, about one in three asks for two of something countable ("Two, please!")
     asked = need = fed >= 4 && countable(cur) && Math.random() < 1/3 ? 2 : 1;
-    put(animalEl, ART[cur.a]); animalEl.setAttribute('aria-label', cur.n);
+    put(animalEl, animalPic(cur.a)); animalEl.setAttribute('aria-label', cur.n);
     think.classList.remove('on'); bubble(asked);
     foodsEl.innerHTML = '';
     act('in'); steps();
@@ -9241,7 +9315,7 @@ const SnackTime = (() => {
     const [x, y] = rel(animalEl), r = animalEl.getBoundingClientRect();
     for (let i=0;i<5;i++) later(() => flyNote(x + (Math.random() - .5)*r.width*.7, y - r.height*.3, rnd([ART.heart, ART.heart, ART.heartYellow, ART.heartGreen])), i*110);
   }
-  function addSticker(s){ if (fedEl.children.length >= 10) fedEl.innerHTML = ''; const sp = document.createElement('span'); sp.className = 's art'; sp.innerHTML = ART[s.a]; fedEl.appendChild(sp); }
+  function addSticker(s){ if (fedEl.children.length >= 10) fedEl.innerHTML = ''; const sp = document.createElement('span'); sp.className = 's art'; sp.innerHTML = animalPic(s.a); fedEl.appendChild(sp); }
   function celebrate(){
     FX.cheer(); const [x, y] = rel(scene); confetti(x, y, 44);
     [...fedEl.children].forEach((sp, i) => later(() => retrigger(sp, 's'), i*70));
@@ -10122,7 +10196,10 @@ const SchoolAdventures = (() => {
   const PALS = [{a:'monkey', n:'monkey', food:'banana', fp:'bananas'}, {a:'dog', n:'puppy', food:'bone', fp:'bones'}, {a:'turtle', n:'turtle', food:'strawberry', fp:'strawberries'},
     {a:'parrot', n:'parrot', food:'blueberry', fp:'blueberries'}, {a:'elephant', n:'elephant', food:'peanut', fp:'peanuts'}, {a:'rhino', n:'rhino', food:'apple', fp:'apples'},
     {a:'gorilla', n:'gorilla', food:'orange', fp:'oranges'}, {a:'kangaroo', n:'kangaroo', food:'carrot', fp:'carrots'}, {a:'penguin', n:'penguin', food:'fish', fp:'fish'},
-    {a:'frog', n:'frog', food:'fly', fp:'flies'}];   // (Snack Time's animals and the foods they love, ones you can count)
+    {a:'frog', n:'frog', food:'fly', fp:'flies'}, {a:'giraffe', n:'giraffe', food:'leaf', fp:'leaves'}, {a:'butterfly', n:'butterfly', food:'flower', fp:'flowers'},
+    {a:'flamingo', n:'flamingo', food:'shrimp', fp:'shrimp'}, {a:'owl', n:'owl', food:'fly', fp:'flies'}, {a:'crocodile', n:'crocodile', food:'fish', fp:'fish'},
+    {a:'trike', n:'triceratops', food:'fern', fp:'ferns'}, {a:'bunny', n:'bunny', food:'carrot', fp:'carrots'}, {a:'squirrel', n:'squirrel', food:'acorn', fp:'acorns'},
+    {a:'pig', n:'pig', food:'pumpkin', fp:'pumpkins'}, {a:'hedgehog', n:'hedgehog', food:'worm', fp:'worms'}];   // (Snack Time's animals and the foods they love, ones you can count)
   const moreYes = p => `Yes! The ${p.n} has more!`, moreWatch = p => `Watch! Let's line them up. The ${p.n} has more!`;
   /* where each snack sits in its pile (centers, in % of a square), drawn 22% wide: like dice, bunched up, spread out, or
      scattered at random without touching */
@@ -10136,17 +10213,17 @@ const SchoolAdventures = (() => {
       if (at.length === n) return at;
     }
   }
-  const pile = (p, n, at) => `<span class="ml-pal">${ART[p.a]}</span><span class="ml-pile"><span class="ml-sq">${at.map(([x, y]) =>
+  const pile = (p, n, at) => `<span class="ml-pal">${animalPic(p.a)}</span><span class="ml-pile"><span class="ml-sq">${at.map(([x, y]) =>
     `<span class="ml-item" style="left:${(x - 11).toFixed(1)}%;top:${(y - 11).toFixed(1)}%">${schoolPic(p.food)}</span>`).join('')}</span></span>`;
   /* the line-up: each animal's snacks in a row, one under one, the pairs popping in together; the extra ones glow */
   const lineRows = (sides) => () => { const max = Math.max(...sides.map(s => s.n)), few = Math.min(...sides.map(s => s.n));
-    return `<div class="ml-rows" style="--cols:${max + 1}">${sides.map(s => `<span class="ml-who">${ART[s.p.a]}</span>` + Array.from({length:max}, (_, i) => i < s.n
+    return `<div class="ml-rows" style="--cols:${max + 1}">${sides.map(s => `<span class="ml-who">${animalPic(s.p.a)}</span>` + Array.from({length:max}, (_, i) => i < s.n
       ? `<span class="ml-cell${i >= few ? ' ml-extra' : ''}" style="--d:${(.15 + i*.2).toFixed(2)}s">${schoolPic(s.p.food)}</span>` : '<span class="ml-gap"></span>').join('')).join('')}</div>`; };
   /* one question: [few, many] snacks; lay is 'tidy', 'scatter' or 'trick' (the smaller pile spread out, the bigger bunched) */
   function moreRound([few, many], lay, [pa, pb]){
     const sides = shuffle([{p:pa, n:few, at:lay === 'trick' ? SPREAD[few] : lay === 'tidy' ? DICE[few] : scatter(few)},
       {p:pb, n:many, at:lay === 'trick' ? BUNCH[many] : lay === 'tidy' ? DICE[many] : scatter(many)}]);   // which side has more: either
-    return {scene:() => `<span class="sa-duck">${ART[sides[0].p.a]}</span><span class="sa-think">?</span><span class="sa-duck ml-b">${ART[sides[1].p.a]}</span>`,
+    return {scene:() => `<span class="sa-duck">${animalPic(sides[0].p.a)}</span><span class="sa-think">?</span><span class="sa-duck ml-b">${animalPic(sides[1].p.a)}</span>`,
       ask:SAY.moresnacks.ask, right:pb.a, yes:moreYes(pb), hint:SAY.moresnacks.hint, keep:true, rows:lineRows(sides), lay, counts:sides.map(s => s.n),
       choices:sides.map(s => ({key:s.p.a, art:pile(s.p, s.n, s.at), label:`the ${s.p.n}, ${s.n} ${s.n === 1 ? s.p.food : s.p.fp}`, pile:true}))};
   }
@@ -10438,7 +10515,7 @@ async function renderMix(events, secs = 2, vol = settings.vol){
     if (!t) now.forEach(play); else off.suspend(Math.round(t*44100/128)*128/44100).then(() => { now.forEach(play); off.resume(); }); });
   return Array.from((await off.startRendering()).getChannelData(0));
 }
-window.__toyPhone = { motionGames: () => MotionGames.state(), renderPad, renderMix, voiceFile: line => (VB.map && VB.map['n|' + line] || [])[0] || null, pads: () => ({drum:DRUMS.length, xylo:XYLO.length, piano:PIANO.length}), adventure: () => SchoolAdventures.state(), timers: () => screenTimers.size, fxNode: () => fx, offline: () => OFFLINE.state(), offlineSave: all => OFFLINE.save(all), offlineCheck: all => OFFLINE.check(all), adventurePlan: k => SchoolAdventures.plan(k), adventureJump: k => SchoolAdventures.jump(k), go, renderFx, speakable, voiceLines, lineMs,
+window.__toyPhone = { motionGames: () => MotionGames.state(), pic: n => ART[n] || schoolPic(n), renderPad, renderMix, voiceFile: line => (VB.map && VB.map['n|' + line] || [])[0] || null, pads: () => ({drum:DRUMS.length, xylo:XYLO.length, piano:PIANO.length}), adventure: () => SchoolAdventures.state(), timers: () => screenTimers.size, fxNode: () => fx, offline: () => OFFLINE.state(), offlineSave: all => OFFLINE.save(all), offlineCheck: all => OFFLINE.check(all), adventurePlan: k => SchoolAdventures.plan(k), adventureJump: k => SchoolAdventures.jump(k), go, renderFx, speakable, voiceLines, lineMs,
   voice: () => ({loaded: !!VB.map, clips: VB.map ? Object.keys(VB.map).length : 0, played: VB.played, fallbacks: VB.fallbacks.slice(), log: VB.log.slice(), last: VB.last,
     speaking: speaking(), sources: VB.srcs.length, waiting: !!lineWait}),
   recorded: () => Object.keys(REC), trims: FX_TRIM,

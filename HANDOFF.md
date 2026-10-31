@@ -7,7 +7,7 @@ on 2026-10-09 from a 6,400-word log; the old text is in git history.)
 
 ## Active batch
 
-- None claimed after **R-31** (Claude, 2026-10-31: More Snacks, a School math game, at the owner's request), **R-30**
+- None claimed after **R-32** (Claude, 2026-10-31: more animals and foods for the snack games), **R-31** (Claude, 2026-10-31: More Snacks, a School math game, at the owner's request), **R-30**
   (Claude, 2026-10-11: Snack Time expanded at the family's request) and **R-24 to R-29**
   (the usability and reliability pass after PR #19, one PR per batch; see History), each merged once CI passes in
   Chromium and WebKit.
@@ -94,6 +94,12 @@ on 2026-10-09 from a 6,400-word log; the old text is in git history.)
 
 ## History (newest first)
 
+- 2026-10-31 R-32 snack friends (Claude, owner: "add more animals and food to the snacks game"): six new animals,
+  drawn with `Pix` shapes in `SCHOOL_PIX` (bunny, mouse, squirrel, bear, pig, hedgehog; side on, facing left) and five
+  new foods (cheese, acorn, honey, pumpkin, worm). `animalPic(a)` = `ART[a] || schoolPic(a)`: use it wherever an
+  animal from Snack Time is drawn. New calls `FX.squeak/chitter/oink/sniff`, levelled to the others on the phone-speaker
+  model (in the smoke test's list). Snack Time 36 to 42 animals; More Snacks 10 to 20 pals (the new countable ones plus
+  giraffe, butterfly, flamingo, owl, crocodile, triceratops). `__toyPhone.pic(name)` for tests.
 - 2026-10-31 R-31 More Snacks (Claude, owner: "one extra game in School, focused on math for a 3.5-year-old"):
   quantity comparison, the gap P4-05 named. A SchoolAdventures activity (`moresnacks`): `PALS` (10 Snack Time animals
   with countable foods), `moreRound([few, many], lay, pals)` with piles laid out from `DICE`/`BUNCH`/`SPREAD` or

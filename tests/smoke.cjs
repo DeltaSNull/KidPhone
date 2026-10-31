@@ -214,7 +214,7 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   let before = await osc();
   if (await visible('.friend')) { await tapAll('.friend'); check(await osc() > before, 'home friends make sounds'); }
   if (name === 'portrait') {
-    const calls = ['roar','bigroar','trumpet','munch','neigh','ooh','bray','hippo','bellow','huff','stego','screech','snort','growl','squawk','honk','thump','ribbit','hoot','yawn','moo','woof','meow','quack'];
+    const calls = ['roar','bigroar','trumpet','munch','neigh','ooh','bray','hippo','bellow','huff','stego','screech','snort','growl','squawk','honk','thump','ribbit','hoot','yawn','moo','woof','meow','quack','squeak','chitter','oink','sniff'];
     const bad = [];
     for (const n of calls) {
       const r = await page.evaluate(n => window.__toyPhone.renderFx(n, 3, true).then(r => { let p = 0; for (const v of r.data) p = Math.max(p, Math.abs(v)); return { p, len: r.len }; }), n);

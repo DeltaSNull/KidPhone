@@ -67,6 +67,8 @@ const NAME = {dog:'puppy'};   // (what the narrator calls an animal, where it is
         const left = all.filter(r => r.choices[0] === r.right).length / all.length;
         check(left > .44 && left < .56, `the answer is on the left ${(left*100).toFixed(0)}% of the time`);
         check(plays.every(p => p.every(r => r.choices[0] !== r.choices[1])), 'two different animals each time');
+        const pals = new Set(all.flatMap(r => r.choices));
+        check(pals.size === 20 && ['bunny', 'squirrel', 'pig', 'hedgehog', 'giraffe', 'trike'].every(a => pals.has(a)), `twenty animals take turns, the newest friends among them (${pals.size})`);
       }
 
       // play it through with real taps: one wrong tap and one second wrong tap along the way
@@ -108,7 +110,8 @@ const NAME = {dog:'puppy'};   // (what the narrator calls an animal, where it is
       check((await state()).solved === 6 && await page.locator('#moresnacks .sa-finish').isVisible(), `${tag}: six stars, then the end`);
 
       if (viewport.width === 390){
-        const needed = ['More Snacks!', 'Who has more snacks?', "Let's line them up!", 'You found who has more!', 'Yes! The puppy has more!', 'Watch! Let\'s line them up. The frog has more!'];
+        const needed = ['More Snacks!', 'Who has more snacks?', "Let's line them up!", 'You found who has more!', 'Yes! The puppy has more!', 'Watch! Let\'s line them up. The frog has more!',
+          'Yes! The hedgehog has more!', 'Watch! Let\'s line them up. The triceratops has more!'];
         const missing = await page.evaluate(ls => ls.filter(l => !window.__toyPhone.voiceFile(l)), needed);
         check(missing.length === 0, `the lines are recorded ${missing.join(', ')}`);
       }
