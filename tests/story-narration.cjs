@@ -32,9 +32,14 @@ const WEBKIT = process.argv.includes('--webkit');
       const context = await browser.newContext({viewport, hasTouch:true, isMobile:true});
       await context.route('https://fonts.googleapis.com/**', r => r.fulfill({contentType:'text/css', body:''}));
       await context.route('**/assets/family/family.json', r => r.fulfill({json:{contacts:[]}}));
-      // a slow network for some clips: their requests are held back until the test lets them through
+      // a slow network for some clips: their requests are held back until the test lets them through, then answered from
+      // disk (WebKit can fail a request resumed after a long hold, which the toy rightly treats as a clip that won't come)
       let slow = null; const held = [];
-      await context.route('**/assets/voice/*.mp3', async r => { if (slow && slow(r.request().url())){ await new Promise(go => held.push(go)); } await r.continue(); });
+      await context.route('**/assets/voice/*.mp3', async r => {
+        if (!slow || !slow(r.request().url())) return r.continue();
+        await new Promise(go => held.push(go));
+        await r.fulfill({path:path.join(ROOT, new URL(r.request().url()).pathname), contentType:'audio/mpeg'});
+      });
       await context.addInitScript(() => {
         localStorage.setItem('toyphone.settings', JSON.stringify({incoming:false, camera:'pretend', look:'drag', tilt:'off'}));
         localStorage.setItem('toyphone.access', JSON.stringify({mode:'school'}));
@@ -129,7 +134,8 @@ const WEBKIT = process.argv.includes('--webkit');
         slow = null; held.splice(0).forEach(go => go());
         await turned(0);
         samples = await rec(t0); quiet = quietBeforeTurn(samples, 0);
-        check(quiet !== null && quiet >= 650 && samples.some(r => r.played > samples[0].played), `${tag}: once it arrives the line plays, then the page turns (${quiet && Math.round(quiet)} ms of quiet)`);
+        const v5 = await voice(), why = `talking in ${samples.filter(r => r.speaking).length} samples, ${samples.at(-1).played - samples[0].played} played, phone voice for ${JSON.stringify(v5.fallbacks.slice(-2))}, errors ${JSON.stringify(errors)}`;
+        check(quiet !== null && quiet >= 650 && samples.some(r => r.played > samples[0].played), `${tag}: once it arrives the line plays, then the page turns (${quiet && Math.round(quiet)} ms of quiet; ${why})`);
       }
 
       // 6. the back arrow mid-page: the shelf, and nothing more of the story
