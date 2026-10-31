@@ -147,6 +147,14 @@ Guided Access. It's one self-contained `index.html` (vanilla JS, no build step),
     tries rings on the plate show how many. One to three for the first three dinos, then up to five. T rex and
     drumsticks, long neck and leaves, triceratops and ferns, stegosaurus and ferns too, pterodactyl and fish. With
     *Help count* the rings are there from the start and the dino eats as soon as they're filled.
+  - *More Snacks* (early math, made for about age 3½): two animals, each with a little pile of its own snack, one to
+    five of them. "Who has more snacks?" Tap the animal with more. A wrong tap lines the two piles up, one next to one,
+    and the extra snacks glow ("Let's line them up!"), so the answer can be seen without counting; a second wrong tap
+    makes the right card glow. A right tap gets a star, "Yes! The puppy has more!", and the same line-up. It starts by
+    showing the line-up once, then gets gently harder: piles three apart, then two, then one; tidy piles like dice
+    first, then scattered ones, and one round where the smaller pile is spread out and the bigger one bunched up, so
+    it's the number that counts, not how much room the pile takes. Never two the same number. Six stars, then an idea
+    for snack time at home. Ten of Snack Time's animals with foods you can count.
   - *Animal Delivery*: a nine-stop route for vocabulary and following directions. The voice says "Put the apple
     under the tree!" A single object starts the route; after three deliveries the child chooses the requested object
     from three parcels, then drags it or taps its destination. In the box/on the table come first, then under the table,
@@ -547,6 +555,7 @@ npm run test:delivery # object/location choices, nine-stop route, mirrored garde
 npm run test:parents:webkit # the same policy checks in WebKit (live camera tested in Chromium)
 npm run test:pages # the published site, served from a /KidPhone/ subfolder like GitHub Pages
 node tests/school-activities.cjs # Sorting, Pattern Train, Story Time, Feelings: real taps, no words on screen, fresh order, hints, stars, end screens
+node tests/more-snacks.cjs       # More Snacks: 1-5 never equal, gentle steps, no left/right shortcut, piles drawn right, line-up on a miss, three sizes
 node tests/story-narration.cjs   # story pages turn after the voice ends; replay early/late, mashing, a slow clip, back, Home, background
 node tests/text-legibility.cjs   # clear digits everywhere, readable settings text
 node tests/accessibility.cjs     # parent entry for assistive tech, dialog focus, every number's font/size/clipping, reduced motion

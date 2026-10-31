@@ -52,7 +52,7 @@ const server=http.createServer((req,res)=>{const p=path.join(ROOT,new URL(req.ur
     assert.ok((await compare('#schoolList .gamecard[aria-label="123 Zoo"] .gname')).every(d=>d.difference<.06),'School menu numbers are clear without special number markup');
     await label.scrollIntoViewIfNeeded();await page.screenshot({path:shot+'-school.png'});
     await nativeScroll('#schoolList','school');
-    for(const id of ['sorting','patterntrain','storytime','feelings']){
+    for(const id of ['sorting','patterntrain','moresnacks','storytime','feelings']){
       await page.evaluate(id=>window.__toyPhone.go(id),id);await page.waitForTimeout(150);
       assert.ok(!/\d/.test(await page.locator('#'+id).innerText()),id+' shows progress as stars, with no numbers to read');
     }

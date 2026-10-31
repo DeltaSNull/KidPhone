@@ -26,7 +26,7 @@ const PLAY = {wildtap:'#wt-menu .wt-tile', snacktime:'#stFoods .st-food, #stAnim
   balltrail:'#balltrail .mg-board', starflight:'#starflight .mg-board'};
 const CONTROLS = '.round, .sc-back, .wt-back, .who-btn';
 const ACTIVITIES = ['wildtap', 'dinobuddies', 'snacktime', 'paintpals', 'balltrail', 'starflight', 'letterpath', 'abczoo', 'abcsnack', 'numzoo', 'numsnack', 'delivery', 'dinopicnic',
-  'sorting', 'patterntrain', 'storytime', 'feelings', 'phone', 'camera', 'photos', 'music'];
+  'sorting', 'patterntrain', 'moresnacks', 'storytime', 'feelings', 'phone', 'camera', 'photos', 'music'];
 
 (async () => {
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
