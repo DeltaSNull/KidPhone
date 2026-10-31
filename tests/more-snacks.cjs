@@ -52,7 +52,7 @@ let NAME = {};   // (what the narrator calls each animal: Snack Time's names, "p
       await page.locator('#schoolList .gamecard[aria-label="More Snacks"]').scrollIntoViewIfNeeded();
       await touch('#schoolList .gamecard[aria-label="More Snacks"]'); await page.waitForTimeout(500);
       let st = await state();
-      check(st.id === 'moresnacks' && st.phase === 'page' && /^Watch! Let's line them up\. The \w+ has more!$/.test(st.line) && await page.locator('#moresnacks .ml-rows .ml-extra').count() === 2,
+      check(st.id === 'moresnacks' && st.phase === 'page' && /^Watch! Let's line them up\. The [a-zA-Z ]+ has more!$/.test(st.line) && await page.locator('#moresnacks .ml-rows .ml-extra').count() === 2,
         `${tag}: it starts with a demonstration: one and three lined up, two extra ("${st.line}")`);
 
       if (viewport.width === 390){
