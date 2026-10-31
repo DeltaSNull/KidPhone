@@ -54,21 +54,32 @@ Guided Access. It's one self-contained `index.html` (vanilla JS, no build step),
     goal again wherever there is a spoken goal (Snack Time's appears when *Animal names* is on, since that's when it
     talks); Home is always Home. Leaving a game stops it: its timers, voice and animations, and its sounds fade out
     instead of ringing on into the next screen.
-  - *Snack Time* (1 player): a hungry animal walks in, thinking of a food in a thought bubble. Tap that food on the picnic
-    blanket and it flies into the animal's mouth: munching, the animal's call, hearts and a sticker, then the next animal
-    walks in. Two foods to choose from at first, three after a few animals. A wrong food only gets a gentle head shake, and
-    after two tries the right food glows, so there's no way to lose. Once a few animals are fed, about one in three asks
-    for two ("The eagle wants two fish!"): the bubble shows two, the first one is a bite and "One more!", the second the
-    meal; only ever two of something you can count (two bananas, never two milk). Every fifth animal is a little party,
-    and every tenth all ten march past in a picnic parade to a little tune (with Reduce Motion they stand in a row). The
-    bubble shows the food, so the game works with the voice off (with Animal names on, it also says "The panda wants
-    some bamboo!"). 36 animals, each shuffled in once before any comes back: monkey and banana, penguin and fish, puppy and bone, panda and
-    bamboo, giraffe and leaf, chick and corn, turtle and strawberry, parrot and blueberry, frog and fly, hippo and
-    watermelon, cow and grass, lion and meat, tiger and meat, elephant and peanut, zebra and grass, rhino and apple,
-    flamingo and shrimp, eagle and fish, gorilla and orange, butterfly and flower, kitty and milk (the family's pick), duck
-    and peas, kangaroo and carrot, octopus and shrimp, lizard and fly, crocodile and fish, whale and shrimp, sloth and
-    leaf, crab and fish, leopard and meat, owl and fly, and the dinosaurs: T. rex and meat, long neck and
-    leaf, triceratops and fern, stegosaurus and fern, pterodactyl and fish.
+  - *Snack Time* (1 player): a picnic journey through seven places, each with its own scenery and hungry animals. A
+    hungry animal walks in, thinking of a food in a thought bubble. Tap that food on the picnic blanket and it flies into
+    the animal's mouth: munching, the animal's call, hearts and a sticker, then the next animal walks in. Two foods to
+    choose from at first, three after a few animals, mostly from that place, never two that look alike. A wrong food only
+    gets a gentle head shake, and after two tries the right food glows, so there's no way to lose. Once a few animals are
+    fed, about one in three asks for two ("The goat wants two cabbages!"): the bubble shows two, the first one is a bite and
+    "One more!", the second the meal; only ever two of something you can count (never two milk). Every fifth animal is a
+    little party. When everyone at a place is fed, they all march past in a picnic parade ("Everyone on the farm is
+    full!"; with Reduce Motion they stand in a row), then a bus drives on to the next place ("Off to the forest!"). The map
+    button beside the Games button shows every place as a picture card ("Where shall we go?"); a star marks the places
+    finished this visit (nothing is saved). The bubble shows the food, so the game works with the voice off (with Animal
+    names on, it also says "The panda wants some bamboo!").
+    54 animals, every one with its own snack, none shared:
+    - Farm: cow and grass, pig and pumpkin, chick and corn, duck and peas, horse and oats, sheep and clover, goat and
+      cabbage, puppy and bone, kitty and milk (the family's pick).
+    - Forest: bear and honey, squirrel and acorn, fox and grapes, hedgehog and worm, owl and beetle, bunny and carrot,
+      mouse and cheese, beaver and stick, raccoon and cherries, koala and eucalyptus.
+    - Garden: bee and sunflower, butterfly and flower, snail and cucumber, turtle and strawberry, frog and fly, lizard and
+      cricket.
+    - Seaside: penguin and fish, whale and krill, crab and seaweed, octopus and clam, flamingo and shrimp, eagle and salmon.
+    - Jungle: monkey and banana, parrot and blueberry, toucan and mango, gorilla and orange, sloth and lettuce, panda and
+      bamboo, tiger and ribs, crocodile and sausage.
+    - Savanna: lion and steak, giraffe and leaf, zebra and hay, elephant and peanut, rhino and apple, hippo and
+      watermelon, leopard and meat, camel and dates, kangaroo and sweet potato.
+    - Dino Land: T. rex and ham, long neck and pinecone, triceratops and fern, stegosaurus and raspberry, pterodactyl and
+      squid, and a little dragon who wants a hot pepper.
   - *Dino Buddies* (1 or 2 players): the split-screen game for both boys. Every tap on either half flies a treat into one
     shared egg. With 1 player, one big dino fills the screen and the egg needs fewer treats (16 instead of 24).
     The hatched family is remembered between visits. In the sand strip by the nest, off both kids' sides: the Games
@@ -154,7 +165,7 @@ Guided Access. It's one self-contained `index.html` (vanilla JS, no build step),
     showing the line-up once, then gets gently harder: piles three apart, then two, then one; tidy piles like dice
     first, then scattered ones, and one round where the smaller pile is spread out and the bigger one bunched up, so
     it's the number that counts, not how much room the pile takes. Never two the same number. Six stars, then an idea
-    for snack time at home. Ten of Snack Time's animals with foods you can count.
+    for snack time at home. Snack Time's animals whose snacks you can count take turns (every snack its own).
   - *Animal Delivery*: a nine-stop route for vocabulary and following directions. The voice says "Put the apple
     under the tree!" A single object starts the route; after three deliveries the child chooses the requested object
     from three parcels, then drags it or taps its destination. In the box/on the table come first, then under the table,
@@ -564,7 +575,7 @@ node tests/audio-mix.cjs         # modelled: pads, rapid taps, overlaps, voice w
 node tests/stories-together.cjs  # Story Time read-together (pages wait for the arrow, no questions) and Feelings' reactions and two right helps
 node tests/offline-ready.cjs     # Settings' offline status: switched-on apps first, retries and Try again, Save everything, verified before "Ready offline"
 node tests/navigation.cjs        # every game's Games button (on screen, off the play areas), replay buttons, and leaving 21 activities stops timers/voice/sound/animation
-node tests/snack-time.cjs        # Snack Time: kitty and milk, the new animals, "two" rounds (only countable foods), the picnic parade (and Reduce Motion)
+node tests/snack-time.cjs        # Snack Time journey: 54 animals with 54 unique snacks, offers without look-alikes, "two" rounds, the farm parade and bus to the forest, the map (and Reduce Motion)
 node tests/social-play.cjs       # call hello game, Dino turns, Paint Pals extras and interruptions
 # also: refinement, play-refinement, audio-return, phone-game-review, camera-peek, break-preview, delivery-expanded
 # (each takes --webkit; CI runs them all in Chromium and WebKit)
