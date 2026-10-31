@@ -7,7 +7,8 @@ on 2026-10-09 from a 6,400-word log; the old text is in git history.)
 
 ## Active batch
 
-- None claimed after **R-30** (Claude, 2026-10-11: Snack Time expanded at the family's request) and **R-24 to R-29**
+- None claimed after **R-31** (Claude, 2026-10-31: More Snacks, a School math game, at the owner's request), **R-30**
+  (Claude, 2026-10-11: Snack Time expanded at the family's request) and **R-24 to R-29**
   (the usability and reliability pass after PR #19, one PR per batch; see History), each merged once CI passes in
   Chromium and WebKit.
 - Next candidates, in order: physical checks with the family (R-04, G-04, T-09: VoiceOver, flight mode, listening,
@@ -93,6 +94,12 @@ on 2026-10-09 from a 6,400-word log; the old text is in git history.)
 
 ## History (newest first)
 
+- 2026-10-31 R-31 More Snacks (Claude, owner: "one extra game in School, focused on math for a 3.5-year-old"):
+  quantity comparison, the gap P4-05 named. A SchoolAdventures activity (`moresnacks`): `PALS` (10 Snack Time animals
+  with countable foods), `moreRound([few, many], lay, pals)` with piles laid out from `DICE`/`BUNCH`/`SPREAD` or
+  `scatter()`, `keep` (choices in the picture's order), `rows` = the line-up (`lineRows`, `.ml-extra` glow, a note per
+  pair via `pairNotes`), shown on the first miss and on the right answer. Rounds: demonstration page, then gaps 3, 2,
+  2, 1, trick (smaller spread, bigger bunched), 1. New tests/more-snacks.cjs (300 plans; three sizes).
 - 2026-10-11 R-30 Snack Time (Claude, owner's request: "he really likes snack time", "the cat should be associated
   with the milk like before"): the kitty wants milk again (R-23 had changed it to fish for accuracy; the family's
   pick wins); whale, sloth, crab, leopard and owl join (36 animals, each with its mouth spot `m`); "two" rounds after

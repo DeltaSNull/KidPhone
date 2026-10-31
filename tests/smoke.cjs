@@ -692,8 +692,8 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   // --- SCHOOL: the Letter Path, ABC Zoo, ABC Snack
   const school = () => page.evaluate(() => window.__toyPhone.school());
   await tap('[data-app="school"]'); await sleep(600);
-  check(await page.locator('#schoolList .gamecard').count() === 11, 'School shows its learning games');
-  check((await page.$$eval('#schoolList .gamecard', bs => bs.map(b => b.getAttribute('aria-label')))).join() === 'ABC Zoo,123 Zoo,Letter Path,ABC Snack,123 Snack,Dino Picnic,Animal Delivery,Sorting Station,Pattern Train,Story Time,Feelings Friends', 'School preserves the original order and adds the four new activities');
+  check(await page.locator('#schoolList .gamecard').count() === 12, 'School shows its learning games');
+  check((await page.$$eval('#schoolList .gamecard', bs => bs.map(b => b.getAttribute('aria-label')))).join() === 'ABC Zoo,123 Zoo,Letter Path,ABC Snack,123 Snack,Dino Picnic,More Snacks,Animal Delivery,Sorting Station,Pattern Train,Story Time,Feelings Friends', 'School preserves the original order and adds the four new activities');
   for (const card of await page.locator('#schoolList .gamecard').all()) {
     await card.evaluate(b => b.scrollIntoView({block:'nearest',inline:'nearest',behavior:'instant'}));
     check(await card.evaluate(b => { const r=b.getBoundingClientRect(), p=b.closest('#schoolList').getBoundingClientRect(); return r.top>=p.top-1&&r.bottom<=p.bottom+1&&r.left>=p.left-1&&r.right<=p.right+1; }), `School menu: ${await card.getAttribute('aria-label')} is reachable by scrolling`);

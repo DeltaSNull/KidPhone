@@ -1120,7 +1120,7 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img:not(.px){image-rendering
 #schoolList{overflow-y:auto; overscroll-behavior:contain; touch-action:pan-y; grid-auto-rows:minmax(108px,1fr)}
 #schoolList .gamecard:last-child:nth-child(odd){grid-column:auto}
 @media (orientation:landscape){ #schoolList{grid-auto-rows:minmax(100px,1fr)} }
-.g-sorting{background:#FBD9BB} .g-pattern{background:#C9E8F5} .g-story{background:#D9EFC5} .g-feelings{background:#F7D5E1}
+.g-sorting{background:#FBD9BB} .g-pattern{background:#C9E8F5} .g-story{background:#D9EFC5} .g-feelings{background:#F7D5E1} .g-more{background:#FBE7A8}
 .app.sa{display:grid; grid-template-rows:72px minmax(0,1fr) auto; grid-template-columns:minmax(0,1fr); gap:8px; padding:6px 10px 12px; overflow:hidden}
 .sa .sc-back{top:6px} .sa .lesson-replay{top:6px}
 .sa-stars{align-self:center; justify-self:center; display:flex; flex-wrap:wrap; justify-content:center; gap:3px; max-width:calc(100% - 156px); pointer-events:none}
@@ -1160,6 +1160,23 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img:not(.px){image-rendering
 .sa-turns{display:flex; align-items:center; justify-content:space-between; gap:10px; min-height:0}
 .sa-turns .round{width:76px; height:76px} .sa-turns .sa-next .px,.sa-turns .sa-prev .px{width:46%; height:46%}
 .sa-talk{flex:1; margin:0; text-align:center; font-family:var(--reading); font-weight:600; font-size:15px; line-height:1.35; color:#5A4A3E}
+/* More Snacks: two tall cards, each an animal and its pile; the picture above (beside, in landscape) shows the line-up */
+#moresnacks .sa-choice{height:clamp(170px, 33vh, 300px)}
+.sa-choice .sa-pic.ml-card{aspect-ratio:auto; width:100%; display:flex; flex-direction:column; align-items:center; gap:2%}
+.ml-pal{height:30%; aspect-ratio:1; flex:none} .sa-choice:first-child .ml-pal .px{transform:scaleX(-1)}   /* facing as in the picture */
+.ml-pile{flex:1; width:100%; min-height:0; display:grid; place-items:center; container-type:size}
+.ml-sq{position:relative; width:min(100cqw, 100cqh); height:min(100cqw, 100cqh)}
+.sa-choice .ml-item{position:absolute; width:22%; height:22%} .sa-choice .ml-item .px{width:100%; height:100%}
+.sa-duck.ml-b .px{transform:none}   /* the two animals look at each other */
+.ml-rows{--c:min(calc(84cqw / var(--cols)), 34cqh); display:grid; grid-template-columns:repeat(var(--cols), var(--c)); grid-auto-rows:var(--c); gap:min(2cqw, 4cqh) min(1.4cqw, 3cqh); align-items:center; justify-content:center}
+.ml-who .px{transform:scaleX(-1)}
+.ml-cell{animation:ml-pop .3s cubic-bezier(.3,1.6,.5,1) backwards; animation-delay:var(--d)}
+.ml-extra{border-radius:8px; background:#FFF1A6; box-shadow:0 0 0 3px #F5C542; animation:ml-pop .3s cubic-bezier(.3,1.6,.5,1) backwards var(--d), hop .5s calc(var(--d) + .5s) 2}
+@keyframes ml-pop{from{transform:scale(0)}}
+@media (orientation:landscape){
+  #moresnacks.app.sa{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+  #moresnacks .sa-choices{flex-direction:row} #moresnacks .sa-choice{height:auto}
+}
 @media (orientation:landscape){
   .app.sa{grid-template-rows:64px minmax(0,1fr); grid-template-columns:minmax(0,1fr) clamp(120px, 20vw, 170px); padding:4px 10px 8px}
   .sa-stars{grid-column:1 / -1} .sa-scene{grid-row:2; grid-column:1}
@@ -4989,7 +5006,7 @@ const saveSettings = () => store.set('settings', settings);
 /* Access policy is separate from sound/game settings and applies to all navigation and device entry points. */
 const ACCESS_APPS = ['school','games','camera','photos','music','phone'];
 const ACCESS_GROUP = {wildtap:'games', dinobuddies:'games', snacktime:'games', paintpals:'games', balltrail:'games', starflight:'games',
-  letterpath:'school', abczoo:'school', abcsnack:'school', numzoo:'school', numsnack:'school', delivery:'school', dinopicnic:'school', sorting:'school', patterntrain:'school', storytime:'school', feelings:'school'};
+  letterpath:'school', abczoo:'school', abcsnack:'school', numzoo:'school', numsnack:'school', delivery:'school', dinopicnic:'school', sorting:'school', patterntrain:'school', moresnacks:'school', storytime:'school', feelings:'school'};
 const savedAccess = store.get('access', {}) || {};
 let access = {v:2, mode:['full','school','custom'].includes(savedAccess.mode) ? savedAccess.mode : 'full',
   apps:Object.fromEntries(ACCESS_APPS.map(k => [k, savedAccess.apps?.[k] !== false])),
@@ -5661,7 +5678,7 @@ function updateClock(){ const d = new Date(); $('#clockTxt').textContent = ((d.g
 updateClock(); setInterval(updateClock, 10000);
 
 /* ---------- Navigation ---------- */
-const APPS = ['home','phone','camera','photos','music','games','wildtap','dinobuddies','snacktime','paintpals','balltrail','starflight','school','letterpath','abczoo','abcsnack','numzoo','numsnack','delivery','dinopicnic','sorting','patterntrain','storytime','feelings'];
+const APPS = ['home','phone','camera','photos','music','games','wildtap','dinobuddies','snacktime','paintpals','balltrail','starflight','school','letterpath','abczoo','abcsnack','numzoo','numsnack','delivery','dinopicnic','sorting','patterntrain','moresnacks','storytime','feelings'];
 let current = 'home';
 const APP_SAY = {phone:'Phone! Who do you want to call?', camera:'Camera! Slide to look around. Then press the big button!', music:'Music! Let\'s play!', games:'Games! Pick a game!'};
 function go(name, fromEl){
@@ -5690,7 +5707,7 @@ function enterApp(name){
   if (name === 'dinobuddies') DinoBuddies.enter();
   if (name === 'snacktime') SnackTime.enter();
   if (name === 'paintpals') PaintPals.enter();
-  if (['sorting','patterntrain','storytime','feelings'].includes(name)) SchoolAdventures.enter(name);
+  if (['sorting','patterntrain','moresnacks','storytime','feelings'].includes(name)) SchoolAdventures.enter(name);
   if (name === 'school') say(SCHOOL_SAY.school, 0, 'menus');
   if (name === 'abczoo') AbcZoo.enter();
   if (name === 'abcsnack') AbcSnack.enter();
@@ -5701,7 +5718,7 @@ function enterApp(name){
   if (name === 'dinopicnic') DinoPicnic.enter();
 }
 function leaveApp(name){
-  if (['sorting','patterntrain','storytime','feelings'].includes(name)) SchoolAdventures.leave();
+  if (['sorting','patterntrain','moresnacks','storytime','feelings'].includes(name)) SchoolAdventures.leave();
   if (name === 'camera') stopCamera();
   if (name === 'music') stopSong();
   if (name === 'photos') closeViewer(true);
@@ -7435,6 +7452,7 @@ const SCHOOL = [
 
   {id:'numsnack', n:'123 Snack', note:'Count the snacks', cls:'g-numsnack', art:() => `<span class="art big">${ART.dog}</span><span class="art">${glyphImg('3')}</span>`},
   {id:'dinopicnic', n:'Dino Picnic', note:'Give the snacks', cls:'g-picnic', art:() => `<span class="art big">${ART.trex}</span><span class="art">${schoolPic('meat')}</span>`},
+  {id:'moresnacks', n:'More Snacks', note:'Who has more?', cls:'g-more', art:() => `<span class="art big">${ART.monkey}</span><span class="art">${ART.banana}</span><span class="art">${ART.banana}</span>`},
   {id:'delivery', n:'Animal Delivery', note:'In, on, under', cls:'g-deliv', art:() => `<span class="art big">${ART.kangaroo}</span><span class="art">${schoolPic('box')}</span>`},
   {id:'sorting', n:'Sorting Station', note:'Find what belongs', cls:'g-sorting', art:() => `<span class="art">${saShape('red','square')}</span><span class="art">${saShape('blue','circle')}</span><span class="art">${saShape('yellow','triangle')}</span>`},
   {id:'patterntrain', n:'Pattern Train', note:'What comes next?', cls:'g-pattern', art:() => `<span class="art">${saShape('red','circle')}</span><span class="art">${saShape('blue','circle')}</span><span class="art">${saShape('red','circle')}</span>`},
@@ -9986,8 +10004,8 @@ function saProp(kind){
 }
 
 const SchoolAdventures = (() => {
-  const TITLE = {sorting:'Sorting Station', patterntrain:'Pattern Train', storytime:'Story Time', feelings:'Feelings Friends'};
-  const BACK = {sorting:['#FFF1E4', '#FFE2C9', '#FBD3B0'], patterntrain:['#EAF7FF', '#D3EDFA', '#BCE2F4'], storytime:['#F0F9E4', '#E0F2CC', '#CDE8B2'], feelings:['#FFF0F5', '#FBDDE8', '#F5C9DA']};
+  const TITLE = {sorting:'Sorting Station', patterntrain:'Pattern Train', moresnacks:'More Snacks', storytime:'Story Time', feelings:'Feelings Friends'};
+  const BACK = {sorting:['#FFF1E4', '#FFE2C9', '#FBD3B0'], patterntrain:['#EAF7FF', '#D3EDFA', '#BCE2F4'], moresnacks:['#FFF9E6', '#FFF0C7', '#FBE4A6'], storytime:['#F0F9E4', '#E0F2CC', '#CDE8B2'], feelings:['#FFF0F5', '#FBDDE8', '#F5C9DA']};
   const COLORS = ['red', 'blue', 'yellow', 'green'], KINDS = ['square', 'circle', 'triangle'], PETS = ['duck', 'owl', 'cat', 'dog', 'frog', 'chick'];
   const pick = a => a[Math.floor(Math.random()*a.length)];
   const other = (a, ...not) => pick(a.filter(v => !not.includes(v)));
@@ -10000,6 +10018,8 @@ const SchoolAdventures = (() => {
     patterntrain:{ask:'What comes next?', yes:'Yes! The pattern goes on!', hint:'Look at the train again!', end:'Choo choo! What a train!', free:'Make your own train!',
       watch:'Watch the train!', newRule:'A new train! Watch!', now:'Now you! What comes next?',
       together:'Together: clap, stomp, clap, stomp. What comes next?'},
+    moresnacks:{ask:'Who has more snacks?', hint:"Let's line them up!", end:'You found who has more!',
+      together:'Together: at snack time, make two little piles. Which has more? Line them up to check, one next to one.'},
     storytime:{pick:'Pick a story!', end:'The end!', questions:'Stories and questions!', together:'Read together!'},
     feelings:{gentle:'Be gentle. Try again!', end:'Every feeling is okay!',
       together:'Together: stop in a story or at the park and ask, "How does that friend feel? How can you tell? What would help?" Friends can feel different ways about the same thing.'}
@@ -10094,7 +10114,50 @@ const SchoolAdventures = (() => {
   const NOTE = {red:392, blue:494, yellow:587, green:698, big:330, small:660};
   const demoRound = (unit, first) => ({page:true, demo:true, line:first ? SAY.patterntrain.watch : SAY.patterntrain.newRule,
     scene:trainScene(Array.from({length:6}, (_, i) => unit[i % unit.length]), false), notes:Array.from({length:6}, (_, i) => NOTE[unit[i % unit.length].color])});
+  /* More Snacks (early math, about age 3): two animals, each with a little pile of its own snack (1 to 5); who has more?
+     A wrong tap lines the two piles up, one next to one, so the extra ones stand out ("Let's line them up!"); a right
+     tap shows the same line-up as the reason. Gently harder in one play: a demonstration, then gaps of three, two and
+     one, tidy dice-like piles first, then scattered ones, and one round where the smaller pile is spread wide and the
+     bigger one bunched up, so it's the number that counts, not how much space the pile takes. Never two the same. */
+  const PALS = [{a:'monkey', n:'monkey', food:'banana', fp:'bananas'}, {a:'dog', n:'puppy', food:'bone', fp:'bones'}, {a:'turtle', n:'turtle', food:'strawberry', fp:'strawberries'},
+    {a:'parrot', n:'parrot', food:'blueberry', fp:'blueberries'}, {a:'elephant', n:'elephant', food:'peanut', fp:'peanuts'}, {a:'rhino', n:'rhino', food:'apple', fp:'apples'},
+    {a:'gorilla', n:'gorilla', food:'orange', fp:'oranges'}, {a:'kangaroo', n:'kangaroo', food:'carrot', fp:'carrots'}, {a:'penguin', n:'penguin', food:'fish', fp:'fish'},
+    {a:'frog', n:'frog', food:'fly', fp:'flies'}];   // (Snack Time's animals and the foods they love, ones you can count)
+  const moreYes = p => `Yes! The ${p.n} has more!`, moreWatch = p => `Watch! Let's line them up. The ${p.n} has more!`;
+  /* where each snack sits in its pile (centers, in % of a square), drawn 22% wide: like dice, bunched up, spread out, or
+     scattered at random without touching */
+  const DICE = {1:[[50, 50]], 2:[[28, 28], [72, 72]], 3:[[24, 24], [50, 50], [76, 76]], 4:[[28, 28], [72, 28], [28, 72], [72, 72]], 5:[[26, 26], [74, 26], [50, 50], [26, 74], [74, 74]]};
+  const BUNCH = {3:[[38.5, 38.5], [61.5, 38.5], [50, 61.5]], 4:[[38.5, 38.5], [61.5, 38.5], [38.5, 61.5], [61.5, 61.5]], 5:[[27, 38.5], [50, 38.5], [73, 38.5], [38.5, 61.5], [61.5, 61.5]]};
+  const SPREAD = {2:[[13, 18], [87, 82]], 3:[[13, 13], [87, 40], [32, 87]], 4:[[13, 13], [87, 13], [13, 87], [87, 87]]};
+  function scatter(n){
+    for (;;){   // (throw darts; start again if they won't fit)
+      const at = [];
+      for (let k = 0; k < 200 && at.length < n; k++){ const c = [13 + Math.random()*74, 13 + Math.random()*74]; if (at.every(d => Math.max(Math.abs(c[0] - d[0]), Math.abs(c[1] - d[1])) > 25)) at.push(c); }   // (never touching)
+      if (at.length === n) return at;
+    }
+  }
+  const pile = (p, n, at) => `<span class="ml-pal">${ART[p.a]}</span><span class="ml-pile"><span class="ml-sq">${at.map(([x, y]) =>
+    `<span class="ml-item" style="left:${(x - 11).toFixed(1)}%;top:${(y - 11).toFixed(1)}%">${schoolPic(p.food)}</span>`).join('')}</span></span>`;
+  /* the line-up: each animal's snacks in a row, one under one, the pairs popping in together; the extra ones glow */
+  const lineRows = (sides) => () => { const max = Math.max(...sides.map(s => s.n)), few = Math.min(...sides.map(s => s.n));
+    return `<div class="ml-rows" style="--cols:${max + 1}">${sides.map(s => `<span class="ml-who">${ART[s.p.a]}</span>` + Array.from({length:max}, (_, i) => i < s.n
+      ? `<span class="ml-cell${i >= few ? ' ml-extra' : ''}" style="--d:${(.15 + i*.2).toFixed(2)}s">${schoolPic(s.p.food)}</span>` : '<span class="ml-gap"></span>').join('')).join('')}</div>`; };
+  /* one question: [few, many] snacks; lay is 'tidy', 'scatter' or 'trick' (the smaller pile spread out, the bigger bunched) */
+  function moreRound([few, many], lay, [pa, pb]){
+    const sides = shuffle([{p:pa, n:few, at:lay === 'trick' ? SPREAD[few] : lay === 'tidy' ? DICE[few] : scatter(few)},
+      {p:pb, n:many, at:lay === 'trick' ? BUNCH[many] : lay === 'tidy' ? DICE[many] : scatter(many)}]);   // which side has more: either
+    return {scene:() => `<span class="sa-duck">${ART[sides[0].p.a]}</span><span class="sa-think">?</span><span class="sa-duck ml-b">${ART[sides[1].p.a]}</span>`,
+      ask:SAY.moresnacks.ask, right:pb.a, yes:moreYes(pb), hint:SAY.moresnacks.hint, keep:true, rows:lineRows(sides), lay, counts:sides.map(s => s.n),
+      choices:sides.map(s => ({key:s.p.a, art:pile(s.p, s.n, s.at), label:`the ${s.p.n}, ${s.n} ${s.n === 1 ? s.p.food : s.p.fp}`, pile:true}))};
+  }
   function makeRounds(id){
+    if (id === 'moresnacks'){
+      let pals = shuffle(PALS); const two = () => { if (pals.length < 2) pals = shuffle(PALS); return [pals.pop(), pals.pop()]; }, gap = g => pick([[1, 2], [2, 3], [3, 4], [4, 5]].map(([a]) => [a, a + g]).filter(([, b]) => b <= 5));
+      const [da, db] = two(), demo = shuffle([{p:da, n:1}, {p:db, n:3}]);
+      return [{page:true, line:moreWatch(db), scene:lineRows(demo), rows:true},
+        moreRound(gap(3), 'tidy', two()), moreRound(gap(2), 'tidy', two()), moreRound(gap(2), 'scatter', two()),
+        moreRound(gap(1), 'tidy', two()), moreRound(pick([[2, 3], [3, 4], [3, 5], [2, 4]]), 'trick', two()), moreRound(pick([[3, 4], [4, 5]]), 'scatter', two())];
+    }
     if (id === 'sorting'){
       const t = () => ({color:pick(COLORS), kind:pick(KINDS), size:'big'}), sw = t(), [first, then] = Math.random() < .5 ? ['shape', 'color'] : ['color', 'shape'];
       return [sortRound('same', t()), sortRound('color', t()), sortRound('shape', t()), sortRound('size', {...t(), size:pick(['big', 'small'])}), sortRound(first, sw), sortRound(then, sw, true)];
@@ -10168,17 +10231,20 @@ const SchoolAdventures = (() => {
     e.finish.hidden = true; e.scene.hidden = e.choices.hidden = false; e.replay.hidden = false; if (e.shelf){ e.shelf.hidden = true; backTo(e, 'shelf'); }
     e.scene.innerHTML = r.scene(); e.scene.setAttribute('aria-label', r.page ? r.line : r.ask); e.choices.innerHTML = ''; e.choices.classList.toggle('sa-sized', !!r.sized); misses = 0; busy = false; stars();
     if (e.turns){ e.turns.hidden = !reading(); e.modes.hidden = true; }
-    if (r.page){ phase = 'page'; e.choices.hidden = true;
+    if (r.page){ phase = 'page'; e.choices.hidden = true; if (r.rows) pairNotes(e);
       if (e.turns){ $('.sa-talk', e.turns).textContent = reading() && r.talk ? r.talk : ''; $('.sa-prev', e.turns).style.visibility = step ? '' : 'hidden'; }
       readPage(intro); return; }
     phase = 'ask';
-    shuffle(r.choices).forEach(c => {
+    (r.keep ? r.choices : shuffle(r.choices)).forEach(c => {   // (More Snacks: in the order of the animals in the picture)
       const b = document.createElement('button'); b.className = 'sa-choice'; b.dataset.choice = c.key; b.setAttribute('aria-label', c.label);
-      b.innerHTML = `<span class="sa-pic">${c.art}</span>`; e.choices.appendChild(b); tap(b, () => answer(c.key, b));
+      b.innerHTML = `<span class="sa-pic${c.pile ? ' ml-card' : ''}">${c.art}</span>`; e.choices.appendChild(b); tap(b, () => answer(c.key, b));
     });
     if (r.actual) requestAnimationFrame(() => carSize(e));
     speak(intro + r.ask);
   }
+  /* More Snacks' line-up: a note as each pair pops in, a higher one for each extra snack */
+  function pairNotes(e){ $$('.ml-cell', e.scene).forEach(c => { const i = +c.style.getPropertyValue('--d').slice(0, -1); later(() => tone(c.classList.contains('ml-extra') ? 784 : 523, c.classList.contains('ml-extra') ? 784 : 523, .1, 'triangle', .07), i*1000 + 120); }); }
+  function lineUp(e, r){ e.scene.innerHTML = r.rows(); e.scene.setAttribute('aria-label', 'The snacks lined up'); pairNotes(e); }
   /* Pattern Train's big-and-small train: the answers drawn at the train cars' size, so a small one looks small next to
      the train (in the bigger answer cards a small square was bigger than a big one on the train) */
   function carSize(e){
@@ -10191,11 +10257,13 @@ const SchoolAdventures = (() => {
     const rights = r.rights || [r.right];
     if (!rights.includes(key)){
       misses++; uhuh(); retrigger(b, 'wig'); speak(r.hint);
+      if (r.rows && misses === 1) lineUp(e, r);   // More Snacks: line them up to see
       if (misses >= 2) rights.forEach(k => e.choices.querySelector(`[data-choice="${k}"]`)?.classList.add('hint'));
       return;
     }
     busy = true; solved++; b.classList.add('yes'); FX.pop(); stars(); sayThenNext(r.yesFor ? r.yesFor(key) : r.yes, 700);
     if (r.reveal){ e.scene.innerHTML = r.reveal(); retrigger(e.scene.lastElementChild, 'hop'); }   // Feelings: now the face shows
+    if (r.rows && misses === 0) lineUp(e, r);   // More Snacks: and here's why (already lined up after a miss)
     if (r.train) $$('.sa-car', e.scene).forEach((c, i) => later(() => { retrigger(c, 'hop'); tone(392 + i*66, 392 + i*66, .09, 'square', .07); }, 120*i));
     later(() => FX.cheer(), 250);
   }
@@ -10240,7 +10308,7 @@ const SchoolAdventures = (() => {
       <div class="sa-scene" role="img"></div><div class="sa-choices"></div>${k === 'storytime' ? `<div class="sa-shelf" hidden></div>
         <div class="sa-modes" hidden><button class="round sa-mode" data-mode="questions" aria-label="Stories and questions"><span class="sa-mode-q">?</span></button><button class="round sa-mode" data-mode="together" aria-label="Read together"></button></div>
         <div class="sa-turns" hidden><button class="round sa-prev" aria-label="Page back"></button><p class="sa-talk"></p><button class="round go sa-next" aria-label="Next page"></button></div>` : ''}
-      <div class="sa-finish" hidden><div class="art sa-end-art">${k === 'feelings' ? saFace('happy') : ART.star}</div>
+      <div class="sa-finish" hidden><div class="art sa-end-art">${k === 'feelings' ? saFace('happy') : k === 'moresnacks' ? ART.monkey : ART.star}</div>
         <div class="sa-end-btns"><button class="round go sa-again" aria-label="Play again"></button><button class="round sa-train-own" aria-label="Make your own train"></button><button class="round sa-more" aria-label="More stories"></button></div>
         <p class="sa-together">${SAY[k].together || ''}</p></div>`;
     $('#apps').append(s);
@@ -10275,12 +10343,14 @@ const SchoolAdventures = (() => {
     enter(k){ id = k; book = null; paintBG(els[k].root, bgFor.get(els[k].root), true); if (els[k].shelf) shelf(true); else start(); },
     leave(){ id = null; unLater(turnT); turnT = 0; },
     // (for the tests: a fresh set of rounds as data, to check many plays for shortcuts; and a jump to one round)
-    plan: k => makeRounds(k).map(r => ({page:!!r.page, demo:!!r.demo, line:r.line || null, ask:r.ask || null, right:r.right || null, seq:r.seq || null, target:r.target || null, actual:!!r.actual, choices:(r.choices || []).map(c => c.key)})),
+    plan: k => makeRounds(k).map(r => ({page:!!r.page, demo:!!r.demo, line:r.line || null, ask:r.ask || null, right:r.right || null, seq:r.seq || null, target:r.target || null, actual:!!r.actual, choices:(r.choices || []).map(c => c.key),
+      counts:r.counts || null, lay:r.lay || null})),
     jump(k){ if (!id || !rounds[k]) return; unLater(turnT); turnT = 0; hush(); step = k; show(); },
     lines: () => [
       ...Object.values(TITLE).map(t => t + '!'),
       ...['same', 'color', 'shape', 'size', 'nowColor', 'nowShape'].map(k => SAY.sorting[k]), ...Object.values(SAY.sorting.yes), ...Object.values(SAY.sorting.hint), SAY.sorting.end,
       SAY.patterntrain.ask, SAY.patterntrain.yes, SAY.patterntrain.hint, SAY.patterntrain.end, SAY.patterntrain.free, SAY.patterntrain.watch, SAY.patterntrain.newRule, SAY.patterntrain.now,
+      SAY.moresnacks.ask, SAY.moresnacks.hint, SAY.moresnacks.end, ...PALS.flatMap(p => [moreYes(p), moreWatch(p)]),
       SAY.storytime.pick, SAY.storytime.end, SAY.storytime.questions, SAY.storytime.together, ...BOOKS.flatMap(b => [b.title + '!', ...b.pages.map(p => p[0]), ...b.ask.flatMap(q => [q.ask, q.yes])]),
       ...ALL_STORIES.flatMap(s => [...s.pages.map(p => p[0]), feelAsk(s), feelYes(s), ...(HELP_FOR[s.feel] ? [helpAsk(s), ...HELP_FOR[s.feel].map(k => helpYes(s, k))] : [])]),
       SAY.feelings.gentle, SAY.feelings.end
@@ -10289,7 +10359,7 @@ const SchoolAdventures = (() => {
       const r = id && rounds[step];
       return {id, step, phase, solved, total:asks(), busy, misses, cars:cars.length, book,
         books:id && phase === 'shelf' ? $$('.sa-book', els[id].shelf).map(b => b.dataset.book) : [],
-        ask:r && !r.page ? r.ask : null, right:r && !r.page ? r.right : null, rights:r && !r.page ? (r.rights || [r.right]) : [], line:r && r.page ? r.line : null, turning:!!turnT, mode,
+        ask:r && !r.page ? r.ask : null, right:r && !r.page ? r.right : null, counts:r && r.counts || null, lay:r && r.lay || null, rights:r && !r.page ? (r.rights || [r.right]) : [], line:r && r.page ? r.line : null, turning:!!turnT, mode,
         choices:id ? $$('.sa-choice', els[id].choices).map(b => b.dataset.choice) : []};
     }
   };
