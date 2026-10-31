@@ -721,7 +721,17 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img:not(.px){image-rendering
 .app.st{display:grid; grid-template-rows:minmax(0,1fr) auto; overflow:hidden}
 @media (orientation:landscape){ .app.st{grid-template-rows:none; grid-template-columns:auto minmax(0,1fr)} .st-foods{order:-1} }
 .st-scene{position:relative; overflow:hidden; display:flex; flex-direction:column; gap:6px; padding:10px 12px 0; min-height:0; min-width:0}
-.st-fed{flex:none; margin:0 70px} .st-fed:empty{visibility:hidden}
+.st-fed{flex:none; margin:0 70px 0 148px} .st-fed:empty{visibility:hidden} .st-fed.wt-stickers{font-size:22px; min-height:44px}   /* (room for the Games and map buttons) */
+/* the journey: a map button beside the Games button; the map is a card for each place, painted with its scenery */
+.st-mapbtn{position:absolute; left:80px; top:8px; z-index:5; width:64px; height:64px} .st-mapbtn .px{width:62%; height:62%}
+.st-map{position:absolute; inset:0; z-index:4; display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); grid-auto-rows:minmax(0, 1fr); gap:10px; padding:80px 12px 12px; background:#FFF6EC}
+.st-map[hidden]{display:none}
+@media (orientation:landscape){ .st-map{grid-template-columns:repeat(4, minmax(0, 1fr)); padding:76px 12px 10px} }
+.st-place{position:relative; min-height:0; min-width:0; border:4px solid #5A4A3E; box-shadow:inset 0 -5px 0 rgba(0,0,0,.14); background-color:#BDE8FA; display:flex; align-items:flex-end; justify-content:center; padding:0 0 4%}
+.st-place.here{border-color:#E8981E; box-shadow:0 0 0 4px #FFD23F, inset 0 -5px 0 rgba(0,0,0,.14)}
+.st-place-who{display:flex; justify-content:center; gap:6%; width:86%; pointer-events:none} .st-place-who .px{width:44%; height:auto; aspect-ratio:1; display:block}
+.st-place-star{position:absolute; top:6px; right:6px; width:34px; height:34px; pointer-events:none} .st-place-star .px{width:100%; height:100%}
+.st-bus{position:absolute; left:0; bottom:6%; width:clamp(90px, 34%, 170px); z-index:6; pointer-events:none} .st-bus .px{width:100%; height:auto; display:block}
 /* Games: the same corner button back to the Games menu as School's (two-player games: in their tool row, off both play
    areas); the sticker rows leave room for it */
 .app.mg .mg-got{margin-left:72px} #wt-menu .wt-head{padding:0 72px; min-height:66px; display:flex; align-items:center; justify-content:center; flex:none}
@@ -1455,7 +1465,8 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img:not(.px){image-rendering
 
       <!-- GAME: Snack Time (one player: give each hungry animal the food it is thinking of) -->
       <section class="app st" id="snacktime" hidden aria-label="Snack Time">
-        <button class="sc-back game-back" aria-label="Games"></button><button class="round lesson-replay" id="stReplay" aria-label="Say it again"></button>
+        <button class="sc-back game-back" aria-label="Games"></button><button class="round st-mapbtn" id="stMapBtn" aria-label="Map: pick a place"></button><button class="round lesson-replay" id="stReplay" aria-label="Say it again"></button>
+        <div class="st-map" id="stMap" hidden role="group" aria-label="Places to visit"></div>
         <div class="st-scene" id="stScene">
           <div class="wt-stickers st-fed" id="stFed" aria-label="Animals fed"></div>
           <div class="st-stand"><div class="st-spot">
@@ -4803,6 +4814,46 @@ function hillArt(w, h, top, cols, seed, span){
   return P.canvas(pal);
 }
 const stripes = (k, c) => (x, y) => ((x + y) % k < 2 && bay(x, y) < .5) ? c : null;
+/* the props of Snack Time's places, in art pixels (each 3 screen pixels), drawn once per size */
+const SCENERY = {
+  barn: h => once('barn' + h, () => { const w = Math.round(h*1.05), P = new Pix(w, h);
+    P.rect(2, h*.42, w - 4, h*.58, 'r').poly([[0, h*.46], [w/2, 0], [w, h*.46]], 'R'); P.shade('r', 'd', null, 1);
+    P.rect(w*.34, h*.6, w*.32, h*.4, 'w').rect(w*.38, h*.64, w*.24, h*.36, 'r'); P.line(w*.38, h*.64, w*.62, h - 1, 'w').line(w*.62, h*.64, w*.38, h - 1, 'w');
+    P.rect(w*.42, h*.26, w*.16, h*.12, 'w').rect(w*.45, h*.28, w*.1, h*.08, 'k'); P.outline('o');
+    return P.canvas({r:'#D9483A', d:'#B0362C', R:'#8E2A24', w:'#FFFDF6', k:'#5A3A2A', o:'#4A1410'}); }),
+  fence: (w, h, picket) => once('fence' + w + 'x' + h + picket, () => { const P = new Pix(w, h + 2);
+    for (let x=1;x<w;x+=picket ? 5 : 8){ P.rect(x, picket ? 1 : 0, 2, h + 1, 'w'); if (picket) P.set(x, 0, 'w').set(x + 1, 0, 'w'); }
+    P.rect(0, Math.round(h*.3), w, 1, 'w').rect(0, Math.round(h*.7), w, 1, 'w'); P.outline('o');
+    return P.canvas({w:'#FFFDF6', o:'#8A7A62'}); }),
+  pine: h => once('pine' + h, () => { const w = Math.round(h*.62), P = new Pix(w, h);
+    P.rect(w/2 - 1.5, h*.82, 3, h*.18, 't'); for (let i=0;i<3;i++) P.poly([[w*(.06 + i*.06), h*(.42 + i*.2)], [w/2, h*(.02 + i*.18)], [w*(.94 - i*.06), h*(.42 + i*.2)]].map(([x, y]) => [x, Math.min(y, h*.86)]), 'g');
+    P.shade('g', 'G', 'l', 1); P.outline('o'); return P.canvas({g:'#3E9A5A', G:'#2A7244', l:'#5EBA74', t:'#7A4E2A', o:'#1E4A2A'}); }),
+  roundTree: h => once('rtree' + h, () => { const w = Math.round(h*.8), P = new Pix(w, h);
+    P.rect(w/2 - 2, h*.55, 4, h*.45, 't'); P.ell(w*.5, h*.32, w*.42, h*.3, 'g').ell(w*.28, h*.45, w*.24, h*.18, 'g').ell(w*.72, h*.45, w*.24, h*.18, 'g');
+    P.shade('g', 'G', 'l', 2); P.speck('g', 'r', 10, 3); P.outline('o'); return P.canvas({g:'#5CB85A', G:'#3E8E42', l:'#86D46E', r:'#F05A4A', t:'#7A4E2A', o:'#1E4A1E'}); }),
+  palm: h => once('palm' + h, () => { const w = Math.round(h*.8), P = new Pix(w, h);
+    P.tube(w*.42, h, w*.3, h*.55, w*.5, h*.18, 2, 1.4, 't'); P.shade('t', 'T', null, 1);
+    [[-1, .2], [-1, .45], [1, .2], [1, .45], [0, 0]].forEach(([d, up]) => P.tube(w*.5, h*.18, w*(.5 + d*.25), h*(.02 + up*.1), w*(.5 + d*.48), h*(.18 + up*.35), 2.2, .6, 'g'));
+    P.shade('g', 'G', null, 1); P.outline('o'); return P.canvas({t:'#9A6A3E', T:'#6E4422', g:'#4EB05A', G:'#2E8040', o:'#1E3A1A'}); }),
+  acacia: h => once('acacia' + h, () => { const w = Math.round(h*1.6), P = new Pix(w, h);
+    P.tube(w*.48, h, w*.5, h*.6, w*.42, h*.32, 1.8, 1.2, 't').tube(w*.5, h*.6, w*.6, h*.45, w*.66, h*.3, 1.2, .9, 't');
+    P.ell(w*.5, h*.22, w*.46, h*.15, 'g').ell(w*.32, h*.24, w*.22, h*.1, 'g'); P.shade('g', 'G', 'l', 1); P.outline('o');
+    return P.canvas({t:'#6E4A2A', g:'#7AA84A', G:'#56803A', l:'#9CC864', o:'#2E3A1A'}); }),
+  volcano: h => once('volcano' + h, () => { const w = Math.round(h*1.3), P = new Pix(w, h);
+    P.poly([[0, h], [w*.36, h*.34], [w*.64, h*.34], [w, h]], 'b'); P.shade('b', 'B', 'l', 2); P.poly([[w*.36, h*.34], [w*.64, h*.34], [w*.6, h*.44], [w*.5, h*.4], [w*.42, h*.46]], 'r');
+    P.tube(w*.46, h*.38, w*.44, h*.55, w*.4, h*.7, 1.6, 1, 'r'); P.ell(w*.48, h*.2, w*.12, h*.1, 's').ell(w*.6, h*.1, w*.1, h*.08, 's'); P.outline('o');
+    return P.canvas({b:'#8A6A5A', B:'#6A4E42', l:'#A88A78', r:'#FF7A2E', s:'#E8E0E8', o:'#3A2A26'}); }),
+  fern: h => once('sfern' + h, () => { const w = Math.round(h*1.4), P = new Pix(w, h);
+    [-.8, -.35, 0, .35, .8].forEach(a => P.tube(w/2, h, w/2 + Math.sin(a)*w*.25, h*.4, w/2 + Math.sin(a)*w*.48, h*(.15 + Math.abs(a)*.3), 1.6, .6, 'g'));
+    P.shade('g', 'G', null, 1); P.outline('o'); return P.canvas({g:'#4E9A3E', G:'#2E6E2A', o:'#1E3A16'}); }),
+  vines: (w, h) => once('vines' + w + 'x' + h, () => { const P = new Pix(w, h);
+    for (let x=4;x<w;x+=Math.max(14, Math.round(w/7))){ const d = h*(.5 + .45*sr(x*1.7)); P.tube(x, 0, x + 4*sr(x), d*.5, x - 2, d, 1, .8, 'v');
+      for (let y=4;y<d;y+=6) P.ell(x + (y % 12 ? 3 : -3), y, 2.6, 1.6, 'g'); }
+    P.rect(0, 0, w, 3, 'g'); P.shade('g', 'G', null, 1); P.outline('o'); return P.canvas({v:'#5A8A3A', g:'#4EAA4E', G:'#2E7A36', o:'#1E3A1A'}); }),
+  flowers: (w, h, seed) => once('flowers' + w + 'x' + h, () => { const P = new Pix(w, h), cols = ['r', 'y', 'p', 'w'];
+    for (let i=0;i<w*h/90;i++){ const x = Math.floor(sr(seed + i*2.1)*w), y = Math.floor(sr(seed + i*4.7)*h), c = cols[i % 4]; P.set(x, y, c).set(x - 1, y, c).set(x + 1, y, c).set(x, y - 1, c).set(x, y + 1, 'k'); }
+    return P.canvas({r:'#F05A6A', y:'#FFD23F', p:'#C88AE8', w:'#FFFFFF', k:'#F2A81E'}); })
+};
 const BG = {
   device(w, h, el){ const p = new Paper(w, h).ramp(['#FF7A69', '#FF6F5E', '#F2604F']);
     p.dots((x, y) => { const d = Math.hypot(x/w*1.3, y/h*2.2); return d < .45 && bay(x, y) < (.45 - d)*1.6 ? '#FF9C8F' : null; });
@@ -4849,6 +4900,38 @@ const BG = {
     p.put(hillArt(w, h - g, x => 3 + 2.5*Math.sin(x*.05 + 2), ['#C2EBA6', '#A2D982', '#8ACC6C', '#77BE5B'], 11), 0, g);
     const s = sunArt(Math.max(6, Math.round(Math.min(w, h)*.06)));
     return p.put(s, w - s.width - 4, Math.max(18, h*.12)).put(cloudArt(.5), w*.04, Math.max(20, h*.18)); },
+  /* Snack Time's places, as backdrops: sky, hills and a few things that say where you are, all behind the animal */
+  place: k => (w, h) => {
+    const g = Math.floor(h*.6), P = SCENERY, sun = r => sunArt(Math.max(5, Math.round(Math.min(w, h)*r)));
+    const hills = (cols, a, f, ph, seed) => hillArt(w, h - g, x => a + a*.8*Math.sin(x*f + ph), cols, seed);
+    if (k === 'seaside'){
+      const p = new Paper(w, h).ramp(['#8CD3F5', '#B6E4F8', '#D9F3FF'], 0, g - 6).ramp(['#5BB8EB', '#3E9ADB', '#2F86C9'], g - 6, g + 8);
+      p.dots((x, y) => y >= g - 6 && y < g + 8 && (x*3 + y*7) % 23 === 0 ? '#BDE6FA' : null).ramp(['#F7DFA4', '#EFCD86', '#E6BD70'], g + 8, h);
+      p.dots((x, y) => y > g + 10 && sr(x*5.1 + y*3.3) < .012 ? '#FFF6E0' : y > g + 10 && sr(x*2.7 + y*8.9) < .006 ? '#F2A0A8' : null);
+      return p.put(sun(.06), w - sun(.06).width - 4, Math.max(14, h*.08)).put(cloudArt(.45), w*.06, h*.14).put(P.palm(Math.round(h*.42)), -2, g + 8 - Math.round(h*.42)); }
+    const sky = {farm:['#8FD3F5', '#B6E4F8', '#D6F2FF'], forest:['#A6DCEB', '#C6EBEF', '#E2F6F2'], garden:['#9FDCF7', '#BDE8FA', '#DCF4FF'],
+      jungle:['#9ADBC8', '#BDEBD6', '#DDF6E6'], savanna:['#8CCDEB', '#CDE9EE', '#FFE2B0'], dino:['#C8A6E6', '#E4C2EC', '#FFD6C2']}[k];
+    const ground = {farm:['#C2EBA6', '#A2D982', '#8ACC6C', '#77BE5B'], forest:['#A6CF86', '#86BC68', '#6CA852', '#5A9444'], garden:['#C8F0A6', '#A8E086', '#90D06E', '#7CC05A'],
+      jungle:['#86C46A', '#62A84E', '#4E9440', '#3E7E34'], savanna:['#F2D27A', '#E2BC5E', '#D2A64A', '#C0923C'], dino:['#B8C47A', '#9AAE5E', '#86984C', '#72843E']}[k];
+    const p = new Paper(w, h).ramp(sky, 0, g);
+    if (k === 'farm'){ p.put(sun(.06), w - sun(.06).width - 4, Math.max(16, h*.09)).put(cloudArt(.45), w*.3, h*.12);
+      const b = P.barn(Math.round(h*.3)); p.put(b, Math.round(w*.03), g + 4 - b.height).put(hills(ground, 3, .05, 2, 11), 0, g).put(P.fence(Math.round(w*.62), Math.max(6, Math.round(h*.05))), 0, g + 2); return p; }
+    if (k === 'forest'){ const t = Math.round(h*.46); p.put(cloudArt(.4), w*.42, h*.1);
+      [[-.04, .7], [.14, 1], [.3, .62], [.82, .8], [.94, .66]].forEach(([x, sz]) => { const c = P.pine(Math.round(t*sz)); p.put(c, Math.round(w*x), g + 6 - c.height); });
+      return p.put(hills(ground, 3, .06, 1, 13), 0, g); }
+    if (k === 'garden'){ p.put(sun(.055), w - sun(.055).width - 4, Math.max(16, h*.08)).put(cloudArt(.4), w*.08, h*.14);
+      const t = P.roundTree(Math.round(h*.36)); p.put(t, Math.round(w*.02), g + 4 - t.height).put(hills(ground, 2, .05, 3, 17), 0, g).put(P.fence(w, Math.max(7, Math.round(h*.06)), true), 0, g - Math.max(7, Math.round(h*.06)) + 3);
+      return p.put(P.flowers(w, h - g - 6, 23), 0, g + 6); }
+    if (k === 'jungle'){ const t = Math.round(h*.44);
+      [[-.06, .9], [.2, .7], [.86, .8]].forEach(([x, sz]) => { const c = P.palm(Math.round(t*sz)); p.put(c, Math.round(w*x), g + 4 - c.height); });
+      return p.put(hills(ground, 4, .07, 2, 19), 0, g).put(P.vines(w, Math.round(h*.22)), 0, 0); }
+    if (k === 'savanna'){ p.put(sun(.08), w - sun(.08).width - 6, Math.max(14, h*.07)).put(cloudArt(.38), w*.36, h*.13);
+      const a = P.acacia(Math.round(h*.3)); p.put(a, Math.round(w*.0), g + 6 - a.height); return p.put(hills(ground, 3, .04, 1, 21), 0, g); }
+    /* Dino Land */
+    const v = P.volcano(Math.round(h*.38)); p.put(v, Math.round(w*.04), g + 4 - v.height).put(cloudArt(.4), w*.55, h*.1).put(hills(ground, 3, .06, 2, 27), 0, g);
+    [[.02, 1], [.28, .7]].forEach(([x, sz]) => { const f = P.fern(Math.round(h*.16*sz)); p.put(f, Math.round(w*x), g + 6 - f.height); });
+    return p;
+  },
   picnic(w, h){ return new Paper(w, h).ramp(['#FFF6EC']).dots((x, y) => y < 2 ? (y ? '#E0574A' : '#B8382D') : gingham(x + 2, y - 2)); },
   ppSide(top, bottom, cols, seed){ return (w, h) => new Paper(w, h).ramp([top, bottom]).dots(splats(w, h, cols, seed, 7, .11)); },
   lawn(w, h){ return new Paper(w, h).ramp(['#A6DE8C', '#98D47C', '#8BCB6C']).dots((x, y) => (x >> 4) % 2 ? null : bay(x, y) < .22 ? '#B2E59A' : null).dots((x, y) => sr(x*3.7 + y*9.1) < .012 ? '#FFF3A0' : sr(x*8.3 + y*1.9) < .008 ? '#FFFFFF' : null); },
@@ -5332,6 +5415,31 @@ const FX = {
   oink(at=0){   // pig: two nasal grunts
     [0,.32].forEach((d, i) => vox({at:at+d, vol:.6, f0:[[0, i ? 210 : 240],[.18, i ? 160 : 180]], amp:[[0,0],[.03,1],[.12,.8],[.22,0]], form:[{f:900, q:5}, {f:2100, q:6, g:.6}], rough:.5, roughHz:45, noise:.25}));
     return at + .6;
+  },
+  baa(at=0){   // sheep: a wobbly "baa-aa"
+    return vox({at, vol:.34, f0:[[0,330],[.15,360],[.7,300]], amp:[[0,0],[.05,1],[.55,.8],[.75,0]], form:[{f:800, q:4}, {f:1800, q:5, g:.6}], vib:60, vibHz:9, rough:.3, roughHz:40, noise:.1});
+  },
+  maa(at=0){   // goat: a higher, bleating "maa-a-a"
+    return vox({at, vol:.26, f0:[[0,480],[.12,540],[.6,430]], amp:[[0,0],[.04,1],[.45,.8],[.62,0]], form:[{f:1000, q:4}, {f:2300, q:5, g:.6}], vib:90, vibHz:12, rough:.45, roughHz:60, noise:.15});
+  },
+  yip(at=0){   // fox: two quick yips
+    [0,.22].forEach(d => vox({at:at+d, vol:.4, f0:[[0,700],[.04,1150],[.14,800]], amp:[[0,0],[.02,1],[.15,0]], form:[{f:1300, q:4}, {f:2600, q:5, g:.5}], rough:.3, roughHz:70}));
+    return at + .45;
+  },
+  buzz(at=0){   // bee: a buzzing hum that comes and goes
+    return vox({at, vol:.39, type:'sawtooth', f0:[[0,210],[.3,240],[.7,200]], amp:[[0,0],[.08,1],[.3,.6],[.5,1],[.75,0]], form:[{f:1400, q:2}, {f:2800, q:3, g:.5}], vib:40, vibHz:28});
+  },
+  trill(at=0){   // raccoon: a chirring trill
+    for (let i=0;i<8;i++) vox({at:at+i*.06, vol:.24, type:'triangle', f0:[[0,900 + (i % 2)*120],[.04,1100]], amp:[[0,0],[.01,1],[.05,0]], form:[{f:1300, q:3}], noise:.2});
+    return at + .55;
+  },
+  grumble(at=0){   // camel: a long, gurgly grumble
+    return vox({at, vol:.7, f0:[[0,120],[.4,95],[.8,110]], amp:[[0,0],[.08,1],[.6,.9],[.85,0]], form:[{f:500, q:3}, {f:1100, q:4, g:.5}], rough:.8, roughHz:22, noise:.5});
+  },
+  fire(at=0){   // the little dragon: a small roar and a whoosh of pretend fire
+    vox({at, vol:.66, f0:[[0,260],[.25,200]], amp:[[0,0],[.04,1],[.3,0]], form:[{f:700, q:3}, {f:1600, q:4, g:.5}], rough:.6, roughHz:35, noise:.3});
+    noise(.55,'bandpass',900,2600,1.33,at+.25);
+    return at + .85;
   },
   sniff(at=0){   // hedgehog: little snuffles and a squeak
     [0,.11,.22,.33].forEach(d => noise(.07,'bandpass',2600,1800,1,at+d));
@@ -7447,7 +7555,166 @@ const SCHOOL_PIX = {
   worm:[P => { P.tube(4, 25, 10, 12, 17, 21, 2.8, 2.8, 'p').tube(17, 21, 23, 30, 27, 15, 2.8, 3, 'p'); P.shade('p', 'P', 'l', 1);
     [[7, 18], [10, 15], [14, 16], [19, 24], [22, 25]].forEach(([x, y]) => P.set(x, y, 'P').set(x + 1, y, 'P'));
     P.rect(26, 13, 1, 2, 'k').rect(29, 13, 1, 2, 'k').set(26, 17, 'k').rect(27, 18, 2, 1, 'k').set(29, 17, 'k'); P.outline('o'); },
-    {p:'#FF9EB5', P:'#E06E8C', l:'#FFC6D4', k:'#3A1A24', o:'#7A2E44'}]
+    {p:'#FF9EB5', P:'#E06E8C', l:'#FFC6D4', k:'#3A1A24', o:'#7A2E44'}],
+  /* every animal has its own snack: the meats, fish and plants that were shared now differ */
+  steak:[P => { P.ell(15, 17, 13, 9.5, 'f'); P.ell(15.5, 17, 11, 7.8, 'm'); P.shade('m', 'M', 'l', 2); P.ell(24, 13, 3, 2.5, 'w').ell(24, 13, 1.3, 1.1, 'f');
+    [[6, 14, 12, 22], [11, 11, 18, 23], [17, 11, 21, 18]].forEach(([a, b, c, d]) => P.line(a, b, c, d, 'M')); P.outline('o'); },
+    {f:'#FFE8D6', m:'#C9493A', M:'#93281E', l:'#E8735E', w:'#FFFDF6', o:'#5A1A12'}],
+  ribs:[P => { [8, 13, 18, 23].forEach(x => P.rect(x, 3, 3, 9, 'w').ell(x + 1.5, 3, 2.2, 2, 'w')); P.shade('w', 'W', null, 1);
+    P.ell(16.5, 19, 13, 9, 'm'); P.shade('m', 'M', 'l', 2); [9, 14, 19, 24].forEach(x => P.line(x, 13, x - 1, 26, 'M')); P.outline('o'); },
+    {w:'#FFFDF6', W:'#D9CDB6', m:'#B5562E', M:'#7E3418', l:'#D9804E', o:'#4A1A0C'}],
+  sausage:[P => { P.tube(4, 22, 14, 8, 28, 18, 4, 4, 's'); P.shade('s', 'S', 'l', 2); P.ell(3, 23.5, 1.4, 1.4, 'S').ell(29.5, 17.5, 1.4, 1.4, 'S'); P.outline('o'); },
+    {s:'#D9634A', S:'#A3402E', l:'#F29A80', o:'#5A1E12'}],
+  ham:[P => { P.rect(24, 4, 3, 9, 'w').ell(25.5, 4, 2.6, 2.2, 'w').ell(22, 5, 2.2, 2, 'w'); P.shade('w', 'W', null, 1);
+    P.ell(14, 20, 11.5, 10, 'h').ell(21, 13, 5, 5, 'h'); P.shade('h', 'H', 'l', 2);
+    for (let i=0;i<4;i++){ P.line(6 + i*4, 14, 14 + i*4, 28, 'H'); P.line(18 - i*4, 12, 8 - i*1, 26, 'H'); } P.outline('o'); },
+    {h:'#F28C8C', H:'#C95C5C', l:'#FFB8B0', w:'#FFFDF6', W:'#D9CDB6', o:'#5A1E1E'}],
+  salmon:[P => { P.poly([[25, 16], [31, 9], [31, 23]], 's'); P.ell(15, 16, 12, 6.5, 's'); P.shade('s', 'S', 'l', 2); P.rect(3, 16, 22, 4, 'b');
+    P.poly([[12, 10], [18, 6], [19, 11]], 'S'); P.ell(7, 14, 1.4, 1.4, 'k'); [[13, 13], [17, 12], [20, 14], [15, 11]].forEach(([x, y]) => P.set(x, y, 'S')); P.outline('o'); },
+    {s:'#F49A7A', S:'#C8644A', l:'#FFC2A8', b:'#E8E0E8', k:'#1E1410', o:'#5A2414'}],
+  pinecone:[P => { P.rect(15, 2, 2, 5, 'b'); P.shape(16, 18, 0, 14, (u, v) => (u/(9 - Math.max(0, v)*.25))**2 + (v/12)**2 <= 1, 'c'); P.shade('c', 'd', 'l', 2);
+    for (let r=0;r<6;r++) for (let c=-2;c<=2;c++){ const x = 16 + c*3.6 + (r % 2 ? 1.8 : 0), y = 9 + r*3.5; if (P.get(x, y + 1)) P.line(x - 1.6, y, x, y + 1.6, 'C').line(x, y + 1.6, x + 1.6, y, 'C'); }
+    P.outline('o'); },
+    {c:'#B07A42', C:'#4A2A10', d:'#8A5A2C', l:'#D49A60', b:'#5A3A1E', o:'#3A2410'}],
+  lettuce:[P => { [[-.55, 'G'], [.55, 'G'], [-.25, 'g'], [.25, 'g'], [0, 'l']].forEach(([a, c]) => P.shape(16 + a*12, 15, a, 16, (u, v) => (u/(5.2 + .7*Math.sin(v*1.4)))**2 + (v/12)**2 <= 1 && v < 11, c));
+    P.shade('g', 'D', null, 1).shade('G', 'D', null, 1); P.rect(13, 24, 6, 5, 'w'); P.line(16, 6, 16, 25, 'L').line(10, 9, 12, 22, 'L').line(22, 9, 20, 22, 'L'); P.outline('o'); },
+    {g:'#7ED050', G:'#5AAE3E', D:'#3E8A2A', l:'#A8E27A', L:'#D8F6B8', w:'#F2F8E0', o:'#245A16'}],
+  hay:[P => { P.rect(3, 10, 26, 17, 'h').ell(3, 18.5, 2.5, 8.5, 'h').ell(29, 18.5, 2.5, 8.5, 'h'); P.shade('h', 'H', 'l', 2);
+    for (let i=0;i<14;i++){ const x = 4 + sr(i*3.1)*24, y = 11 + sr(i*7.7)*14; P.line(x, y, x + 4, y + 1, 'H'); }
+    P.rect(9, 10, 2, 17, 'r').rect(21, 10, 2, 17, 'r'); P.line(2, 9, 5, 7, 'h').line(27, 8, 30, 10, 'h').line(15, 9, 17, 6, 'h'); P.outline('o'); },
+    {h:'#F2C94C', H:'#C99A26', l:'#FFE48A', r:'#B5562E', o:'#6A4A12'}],
+  raspberry:[P => { const at = []; for (let r=0;r<5;r++){ const n = [3, 4, 5, 4, 3][r]; for (let c=0;c<n;c++) at.push([16 + (c - (n - 1)/2)*3.8, 11 + r*3.7]); }
+    at.forEach(([x, y]) => P.ell(x, y, 2.3, 2.3, 'r')); at.forEach(([x, y]) => P.set(x - 1, y - 1, 'l')); P.outline('R');
+    P.poly([[10, 9], [16, 5], [22, 9], [16, 10.5]], 'g'); P.rect(15, 2, 2, 4, 'g'); P.shade('g', 'G', null, 1); P.outline('o'); },
+    {r:'#E8445C', R:'#A0243A', l:'#FF8A9C', g:'#5CC05A', G:'#3A8A3A', o:'#5A1424'}],
+  sweetpotato:[P => { P.shape(16, 17, -.35, 15, (u, v) => (u/13)**2 + (v/(5.6 - Math.abs(u)*.12))**2 <= 1, 'p'); P.shade('p', 'P', 'l', 2);
+    P.line(26, 10, 30, 7, 'P'); [[10, 16], [15, 15], [19, 19], [13, 20]].forEach(([x, y]) => P.set(x, y, 'P').set(x + 1, y, 'P')); P.outline('o'); },
+    {p:'#C0526E', P:'#8A3048', l:'#E87A92', o:'#4A1424'}],
+  cricket:[P => { P.line(9, 14, 2, 5, 'k').line(10, 13, 6, 3, 'k'); P.ell(18, 18, 9, 4.5, 'g').ell(9, 17, 4, 3.6, 'g'); P.shade('g', 'G', 'l', 1);
+    P.tube(20, 19, 27, 10, 29, 22, 1.4, 1, 'G').line(14, 21, 12, 26, 'G').line(18, 22, 18, 27, 'G'); P.ell(18, 16, 7, 2, 'w'); P.set(8, 16, 'k').set(8, 17, 'k'); P.outline('o'); },
+    {g:'#7CC04A', G:'#4E8A2A', l:'#A8E07A', w:'#B8E89A', k:'#1E2A14', o:'#1E3A10'}],
+  beetle:[P => { [[10, 20, 5, 26], [14, 22, 12, 28], [20, 22, 22, 28], [24, 20, 28, 25]].forEach(([a, b, c, d]) => P.line(a, b, c, d, 'k'));
+    P.ell(16, 19, 10, 8, 'b'); P.shade('b', 'B', 'l', 2); P.ell(7, 17, 4, 3.5, 'k').line(5, 14, 2, 10, 'k').line(6, 14, 5, 9, 'k');
+    P.line(17, 11, 17, 27, 'B'); P.ell(12, 15, 2, 1.4, 'w'); P.outline('o'); },
+    {b:'#3DA8C8', B:'#1E6E8A', l:'#7ED6EE', k:'#1E2430', w:'#D6F4FF', o:'#0E2A3A'}],
+  clam:[P => { P.shape(16, 26, 0, 16, (u, v) => v <= 0 && Math.hypot(u, v*1.15) <= 14, 'c'); P.rect(11, 25, 10, 4, 'c'); P.shade('c', 'C', 'l', 1);
+    for (let i=-3;i<=3;i++) P.line(16, 26, 16 + i*4, 26 - Math.sqrt(Math.max(0, 196 - (i*4)**2))/1.15, 'C'); P.ell(16, 27, 5, 2, 'p'); P.outline('o'); },
+    {c:'#F7D6C8', C:'#D49A8A', l:'#FFF0E8', p:'#F2A0A8', o:'#6A3A30'}],
+  seaweed:[P => { P.tube(9, 30, 4, 18, 10, 4, 2.2, 1.2, 'g').tube(17, 30, 22, 17, 15, 3, 2.4, 1.2, 'G').tube(24, 30, 29, 20, 25, 9, 2, 1, 'g'); P.shade('g', 'D', null, 1).shade('G', 'D', null, 1);
+    P.ell(16, 29, 10, 3, 'r'); P.shade('r', 'R', null, 1); P.outline('o'); },
+    {g:'#3DAA6A', G:'#2E8E58', D:'#1E6A40', r:'#9A9AA8', R:'#6E6E7E', o:'#14402A'}],
+  krill:[P => { [[10, 11, 1], [23, 14, -1], [15, 25, 1]].forEach(([x, y, d]) => { P.tube(x - 6*d, y - 1, x, y - 5, x + 5*d, y + 1, 2.3, 1.1, 'p');
+      P.poly([[x + 5*d, y + 1], [x + 8*d, y - 1], [x + 8*d, y + 4]], 'p'); for (let i=-3;i<=2;i+=2) P.line(x + i*d, y - 2, x + i*d - d, y + 1, 'P'); P.set(x - 6*d, y - 2, 'k').line(x - 7*d, y - 2, x - 10*d, y - 6, 'P'); });
+    P.shade('p', 'P', 'l', 1); P.outline('o'); },
+    {p:'#FF8A9A', P:'#D9576E', l:'#FFC0CA', k:'#1E1418', o:'#6A2232'}],
+  squid:[P => { P.poly([[16, 1], [25, 9], [21, 18], [11, 18], [7, 9]], 's'); P.ell(16, 16, 6, 4, 's'); [11, 14, 17, 20].forEach((x, i) => P.tube(x, 18, x + (i % 2 ? 2 : -2), 24, x + (i % 2 ? -1 : 1), 30, 1.3, .8, 's'));
+    P.shade('s', 'S', 'l', 2); P.rect(13, 13, 2, 2, 'k').rect(18, 13, 2, 2, 'k').set(13, 13, 'w').set(18, 13, 'w'); P.outline('o'); },
+    {s:'#E7A0D0', S:'#B86AA4', l:'#F8CFEA', k:'#2A1430', w:'#FFFFFF', o:'#5A2450'}],
+  oats:[P => { P.poly([[5, 14], [27, 14], [24, 29], [8, 29]], 'w'); P.shade('w', 'W', 'l', 1); P.rect(5, 18, 22, 2, 'B').rect(6, 24, 20, 2, 'B');
+    P.ell(16, 13, 11, 4.5, 'g'); for (let i=0;i<16;i++) P.set(7 + sr(i*2.3)*18, 10 + sr(i*4.1)*5, 'G'); P.outline('o'); },
+    {w:'#B07A42', W:'#7A4E26', l:'#D49A60', B:'#5A3A1E', g:'#F0D27A', G:'#C9A44A', o:'#3A2410'}],
+  clover:[P => { P.tube(16, 18, 17, 25, 21, 30, 1, 1, 'G'); [[-Math.PI/2, 0], [Math.PI/6, 0], [5*Math.PI/6, 0]].forEach(([a]) => {
+      const x = 16 + Math.cos(a)*6.5, y = 15 + Math.sin(a)*6.5; P.ell(x + Math.cos(a + Math.PI/2)*2.5, y + Math.sin(a + Math.PI/2)*2.5, 4.5, 4.5, 'g').ell(x - Math.cos(a + Math.PI/2)*2.5, y - Math.sin(a + Math.PI/2)*2.5, 4.5, 4.5, 'g'); });
+    P.shade('g', 'G', 'l', 2); P.outline('o'); },
+    {g:'#5CC05A', G:'#3A8A3A', l:'#9BE08A', o:'#1E4A1E'}],
+  cabbage:[P => { P.ell(16, 17, 13, 12, 'g'); P.shade('g', 'G', 'l', 2); P.ell(16, 15, 8, 7, 'L'); P.shade('L', 'g', null, 1);
+    P.tube(16, 28, 15, 18, 16, 8, .6, .6, 'w').tube(16, 22, 10, 18, 6, 14, .5, .5, 'w').tube(16, 22, 22, 18, 26, 14, .5, .5, 'w'); P.outline('o'); },
+    {g:'#8CCB6A', G:'#5A9A42', l:'#B8E89A', L:'#C8F0A8', w:'#E8F8D6', o:'#2A4A1A'}],
+  eucalyptus:[P => { P.tube(5, 29, 14, 18, 26, 4, 1, .7, 'b');
+    [[9, 22, -.9], [13, 17, .9], [17, 13, -.9], [21, 9, .9], [24, 5, -.5]].forEach(([x, y, a]) => P.shape(x + Math.cos(a - 1.2)*5, y + Math.sin(a - 1.2)*5, a - 1.2, 7, (u, v) => (u/6)**2 + (v/2.2)**2 <= 1, 'g'));
+    P.shade('g', 'G', 'l', 1); P.outline('o'); },
+    {g:'#8ABFA8', G:'#5A8A78', l:'#B8E0D0', b:'#8A5A3A', o:'#24402E'}],
+  grapes:[P => { P.rect(15, 2, 2, 6, 'b'); P.shape(22, 6, -.4, 7, (u, v) => (u/5.5)**2 + (v/2.6)**2 <= 1, 'g');
+    [[10, 10], [15, 10], [20, 10], [12.5, 14.5], [17.5, 14.5], [22, 14.5], [10, 19], [15, 19], [20, 19], [12.5, 23.5], [17.5, 23.5], [15, 28]].forEach(([x, y]) => P.ell(x, y, 2.9, 2.9, 'p'));
+    P.shade('p', 'P', 'l', 1); P.outline('o'); },
+    {p:'#9A5AC8', P:'#6A3290', l:'#C89AE8', g:'#5CC05A', b:'#6E4A2A', o:'#2E1440'}],
+  sunflower:[P => { P.tube(16, 18, 15, 25, 16, 31, 1.2, 1.2, 'g'); P.shape(21, 25, -.6, 6, (u, v) => (u/5)**2 + (v/2)**2 <= 1, 'g');
+    for (let i=0;i<12;i++){ const a = i*Math.PI/6; P.shape(16 + Math.cos(a)*8, 13 + Math.sin(a)*8, a, 6, (u, v) => (u/4.6)**2 + (v/2.2)**2 <= 1, 'y'); }
+    P.shade('y', 'Y', null, 1); P.ell(16, 13, 6, 6, 'c'); P.speck('c', 'C', 30, 4); P.outline('o'); },
+    {y:'#FFD23F', Y:'#E8A21E', c:'#7A4A22', C:'#5A3014', g:'#5CC05A', o:'#4A2A0C'}],
+  dates:[P => { [[10, 19, -.5], [17, 14, .2], [22, 21, .7]].forEach(([x, y, a]) => P.shape(x, y, a, 8, (u, v) => (u/7)**2 + (v/3.6)**2 <= 1, 'd'));
+    P.shade('d', 'D', 'l', 1); [[8, 18], [15, 13], [21, 21]].forEach(([x, y]) => P.line(x, y, x + 3, y + 1, 'D')); P.outline('o'); },
+    {d:'#9A5A2E', D:'#6A3418', l:'#C8844E', o:'#3A1A0A'}],
+  cherries:[P => { P.tube(11, 21, 13, 10, 19, 4, .6, .6, 'b').tube(22, 22, 21, 11, 19, 4, .6, .6, 'b'); P.shape(23, 5, .3, 7, (u, v) => (u/5)**2 + (v/2.3)**2 <= 1, 'g');
+    P.ell(10, 23, 5.5, 5.5, 'r').ell(22, 24, 5.5, 5.5, 'r'); P.shade('r', 'R', 'l', 2); P.set(8, 21, 'w').set(20, 22, 'w'); P.outline('o'); },
+    {r:'#E8344C', R:'#A81E34', l:'#FF7088', w:'#FFFFFF', b:'#5E8A2E', g:'#5CC05A', o:'#4A0A18'}],
+  cucumber:[P => { P.shape(16, 16, -.6, 16, (u, v) => (u/14)**2 + (v/4.8)**2 <= 1, 'g'); P.shade('g', 'G', 'l', 2);
+    for (let i=0;i<9;i++){ const t = -10 + i*2.6; P.set(16 + t*Math.cos(-.6) - 1, 16 + t*Math.sin(-.6) - 2 + (i % 2), 'L'); } P.ell(27, 8.5, 1.5, 1.5, 'G'); P.outline('o'); },
+    {g:'#4EA84A', G:'#2E7A30', l:'#7ED06A', L:'#B8F09A', o:'#14401A'}],
+  mango:[P => { P.shape(16, 18, .5, 14, (u, v) => (u/12)**2 + ((v + u*u*.012)/9)**2 <= 1, 'm'); P.shade('m', 'r', 'l', 3);
+    P.rect(15, 5, 2, 4, 'b'); P.shape(20, 6, -.3, 7, (u, v) => (u/5)**2 + (v/2.2)**2 <= 1, 'g'); P.set(11, 13, 'w').set(12, 12, 'w'); P.outline('o'); },
+    {m:'#FFB830', r:'#F05A3A', l:'#FFE070', g:'#5CC05A', b:'#6E4A2A', w:'#FFF6D0', o:'#6A2A10'}],
+  stick:[P => { P.tube(3, 26, 15, 18, 29, 6, 2, 1.4, 'b'); P.tube(15, 18, 16, 10, 12, 5, 1.1, .8, 'b'); P.shade('b', 'B', 'l', 1);
+    P.shape(10, 4, -.8, 6, (u, v) => (u/4.5)**2 + (v/2)**2 <= 1, 'g').shape(26, 14, .5, 6, (u, v) => (u/4.5)**2 + (v/2)**2 <= 1, 'g');
+    [[8, 24], [18, 15], [24, 10]].forEach(([x, y]) => P.set(x, y, 'B')); P.outline('o'); },
+    {b:'#9A6A3E', B:'#6A4222', l:'#C89A68', g:'#6CC04A', o:'#3A2410'}],
+  pepper:[P => { P.tube(9, 8, 8, 22, 22, 29, 4, 1.2, 'r'); P.shade('r', 'R', 'l', 2); P.ell(10, 7, 4.5, 2.5, 'g'); P.tube(10, 6, 11, 2, 15, 2, 1, .8, 'g');
+    P.set(7, 11, 'w').set(7, 12, 'w').set(7, 13, 'w'); P.outline('o'); },
+    {r:'#E8302E', R:'#A81A1A', l:'#FF6A5A', g:'#4EA84A', w:'#FFD0C8', o:'#4A0A0A'}],
+  map:[P => { P.poly([[3, 7], [11, 4], [11, 26], [3, 29]], 'a').poly([[11, 4], [21, 7], [21, 29], [11, 26]], 'b').poly([[21, 7], [29, 4], [29, 26], [21, 29]], 'a');
+    P.ell(7, 14, 3, 4, 'g').ell(25, 20, 3.5, 3, 'g').ell(16, 21, 3, 2.5, 'w'); [[6, 22], [9, 19], [12, 17], [15, 14], [18, 12], [21, 13]].forEach(([x, y]) => P.set(x, y, 'r'));
+    P.line(22, 10, 26, 14, 'r').line(26, 10, 22, 14, 'r'); P.outline('o'); },
+    {a:'#FFF1C8', b:'#F2DCA0', g:'#7CC05A', w:'#7EC8F0', r:'#E8443A', o:'#5A4A3E'}],
+  /* a dozen more friends for the journey */
+  horse:[P => { P.tube(28, 13, 32, 18, 30, 25, 2, 1.2, 'm'); P.rect(11, 20, 3, 10, 'b').rect(15, 21, 3, 9, 'B').rect(23, 20, 3, 10, 'b').rect(27, 21, 3, 9, 'B');
+    P.ell(20, 16, 10, 6.5, 'b'); P.poly([[9, 17], [6, 6], [12, 4], [15, 15]], 'b'); P.shape(6, 8, -.5, 8, (u, v) => (u/5.5)**2 + (v/3.2)**2 <= 1, 'b');
+    P.shade('b', 'd', 'l', 2); P.poly([[9, 3], [11, 1], [12, 5]], 'b'); P.tube(12, 3, 15, 8, 15, 15, 1.6, 1.4, 'm');
+    P.rect(11, 29, 3, 2, 'h').rect(23, 29, 3, 2, 'h'); P.rect(7, 6, 2, 2, 'k').set(7, 6, 'g').set(2, 10, 'k'); P.outline('o'); },
+    {b:'#B5733E', B:'#8E5428', d:'#8A5226', l:'#D49A62', m:'#4A2A16', h:'#2E1E14', k:'#1E1410', g:'#FFFFFF', o:'#3A1E0C'}],
+  sheep:[P => { P.rect(12, 22, 2, 8, 'k').rect(16, 23, 2, 7, 'k').rect(22, 22, 2, 8, 'k').rect(26, 23, 2, 7, 'k');
+    [[13, 15], [19, 13], [25, 15], [28, 20], [24, 23], [17, 23], [12, 21], [19, 18]].forEach(([x, y]) => P.ell(x, y, 5, 4.6, 'w')); P.shade('w', 'W', null, 2);
+    P.ell(7, 16, 4.5, 5, 'f').ell(10, 12, 2.6, 1.6, 'f'); P.shade('f', 'F', null, 1); P.ell(10, 11, 3, 2.4, 'w');
+    P.rect(5, 14, 2, 2, 'e').set(5, 14, 'g').set(3, 19, 'p'); P.outline('o'); },
+    {w:'#FFFDF6', W:'#D8D2C6', f:'#4A4048', F:'#2E262C', k:'#3A3036', e:'#FFFFFF', g:'#1E1410', p:'#FF9EAE', o:'#3A3036'}],
+  goat:[P => { P.rect(12, 21, 2, 9, 'b').rect(16, 22, 2, 8, 'B').rect(23, 21, 2, 9, 'b').rect(27, 22, 2, 8, 'B'); P.tube(28, 15, 31, 12, 30, 10, 1, .8, 'b');
+    P.ell(20, 17, 9.5, 6, 'b'); P.poly([[10, 18], [8, 10], [13, 9], [15, 15]], 'b'); P.shape(7, 11, -.6, 7, (u, v) => (u/5)**2 + (v/2.9)**2 <= 1, 'b');
+    P.shade('b', 'd', 'l', 2); P.tube(10, 7, 12, 2, 16, 3, .9, .7, 'h').poly([[11, 9], [16, 8], [13, 11]], 'd');
+    P.tube(5, 14, 4, 17, 5, 20, 1, .6, 'w'); P.rect(7, 9, 2, 2, 'k').set(7, 9, 'g'); P.rect(12, 29, 2, 2, 'h').rect(23, 29, 2, 2, 'h'); P.outline('o'); },
+    {b:'#ECE6DA', B:'#C9C0B0', d:'#BDB2A0', l:'#FFFDF6', w:'#FFFFFF', h:'#8A7A62', k:'#1E1410', g:'#FFFFFF', o:'#4A4232'}],
+  koala:[P => { P.ell(19, 22, 8.5, 8.5, 'b').ell(12, 29, 4, 2, 'b').ell(23, 29.5, 4, 1.8, 'b'); P.ell(12, 13, 7.5, 7, 'b');
+    P.ell(6.5, 7.5, 4.5, 4.5, 'b').ell(18, 6.5, 4.5, 4.5, 'b'); P.shade('b', 'd', 'l', 2); P.ell(6.5, 7.8, 2.6, 2.6, 'w').ell(18, 6.8, 2.6, 2.6, 'w');
+    P.ell(17, 23, 4, 5, 'c'); P.ell(8, 15, 2.4, 3.2, 'k'); P.rect(9, 11, 2, 2, 'k').set(9, 11, 'g').rect(14, 11, 2, 2, 'k').set(14, 11, 'g'); P.outline('o'); },
+    {b:'#9AA0A8', d:'#6E747E', l:'#C2C8CE', w:'#F2F2F2', c:'#E2E2E6', k:'#1E1E24', g:'#FFFFFF', o:'#2E3238'}],
+  fox:[P => { P.tube(26, 22, 32, 18, 29, 10, 3.4, 3, 'f'); P.ell(29, 10.5, 2.6, 2.6, 'w');
+    P.rect(11, 22, 2, 8, 'k').rect(15, 23, 2, 7, 'k').rect(21, 22, 2, 8, 'k').rect(25, 23, 2, 7, 'k');
+    P.ell(19, 19.5, 9, 5.5, 'f'); P.ell(9, 15, 5.5, 4.8, 'f').poly([[1.5, 17.5], [6, 13], [7, 19.5]], 'f').poly([[7, 12], [8, 4], [12, 11]], 'f').poly([[11, 11], [14, 4], [15, 12]], 'f');
+    P.shade('f', 'F', 'l', 2); P.poly([[8.5, 10], [9, 6.5], [10.5, 10]], 'e'); P.ell(9, 19, 4, 3, 'w').ell(14, 21, 3, 3, 'w');
+    P.ell(1.8, 17.5, 1.2, 1.1, 'k'); P.rect(7, 13, 2, 2, 'k').set(7, 13, 'g'); P.outline('o'); },
+    {f:'#FF8A2E', F:'#D2601A', l:'#FFB066', e:'#5A2A14', w:'#FFFDF6', k:'#2B1A12', g:'#FFFFFF', o:'#4A200C'}],
+  bee:[P => { P.ell(17, 18, 10.5, 8, 'y'); [12, 18, 24].forEach(x => P.each(x, 9, x + 1, 27, (i, j) => { if (P.get(i, j)) P.set(i, j, 'k'); }));
+    P.shade('y', 'Y', 'l', 1); P.poly([[27, 17], [31, 19], [27, 21]], 'k'); P.ell(6, 18, 4.5, 4.5, 'k'); P.line(5, 14, 3, 9, 'k').line(7, 14, 8, 9, 'k').set(3, 9, 'k').set(8, 9, 'k');
+    P.ell(14, 8, 5.5, 4.6, 'v').ell(21, 7.5, 5, 4.2, 'v'); P.shade('v', 'V', null, 1); P.rect(4, 17, 2, 2, 'w'); P.outline('o'); },
+    {y:'#FFD23F', Y:'#E8A21E', l:'#FFE88A', k:'#2A2420', v:'#DCF2FF', V:'#A8D4EE', w:'#FFFFFF', o:'#2A2420'}],
+  camel:[P => { P.rect(11, 20, 2, 10, 'b').rect(15, 20, 2, 10, 'B').rect(23, 20, 2, 10, 'b').rect(27, 20, 2, 10, 'B'); P.tube(29, 16, 31, 20, 30, 24, .9, .9, 'd');
+    P.ell(20, 17, 10, 5.5, 'b').ell(20, 11, 6, 5.5, 'b'); P.tube(11, 17, 6, 14, 7, 7, 2.4, 2, 'b'); P.shape(5, 6.5, -.2, 7, (u, v) => (u/4.8)**2 + (v/2.7)**2 <= 1, 'b');
+    P.shade('b', 'd', 'l', 2); P.rect(5, 5, 2, 2, 'k').set(5, 5, 'g').set(1, 7, 'k'); P.rect(11, 29, 2, 2, 'h').rect(23, 29, 2, 2, 'h'); P.outline('o'); },
+    {b:'#E0B070', B:'#C08E50', d:'#B88848', l:'#F2CC92', h:'#7A5A34', k:'#1E1410', g:'#FFFFFF', o:'#5A3A14'}],
+  raccoon:[P => { P.tube(25, 23, 31, 19, 29, 11, 3, 2.6, 't'); for (let i=0;i<4;i++) P.shape(26.5 + i*.6, 21 - i*3, .5, 4, (u, v) => Math.abs(v) < .9, 'k');
+    P.rect(11, 23, 2, 7, 'k').rect(15, 24, 2, 6, 'k').rect(21, 23, 2, 7, 'k').rect(25, 24, 2, 6, 'k');
+    P.ell(19, 20.5, 9, 5.8, 'b'); P.ell(9, 16, 5.6, 4.8, 'b').poly([[1.8, 18], [6, 14], [7, 20]], 'w').ell(8, 11.5, 2, 2.2, 'b').ell(13, 11.5, 2, 2.2, 'b');
+    P.shade('b', 'd', 'l', 2); P.ell(9, 15, 5, 1.8, 'k'); P.ell(9, 19, 3.5, 2, 'w'); P.ell(1.8, 18, 1.1, 1, 'k'); P.rect(7, 14, 2, 2, 'w').set(8, 15, 'k'); P.outline('o'); },
+    {b:'#8E8C94', d:'#64626C', l:'#B4B2BA', t:'#A6A4AC', w:'#F2F0F2', k:'#26242C', o:'#26242C'}],
+  snail:[P => { P.poly([[2, 26], [6, 21], [28, 24], [30, 28], [3, 28]], 'b'); P.ell(7, 21, 4, 4.5, 'b'); P.line(5, 17, 3, 10, 'b').line(8, 17, 9, 10, 'b'); P.shade('b', 'B', 'l', 1);
+    P.ell(3, 10, 1.4, 1.4, 'k').ell(9, 10, 1.4, 1.4, 'k'); P.ell(19, 16, 9.5, 9, 's'); P.shade('s', 'S', 'l', 2);
+    for (let a=0;a<12.5;a+=.12){ const r = 1 + a*.62; P.set(19 + Math.cos(a)*r, 16 + Math.sin(a)*r, 'S'); } P.set(6, 22, 'r'); P.outline('o'); },
+    {b:'#C8D07A', B:'#9AA24E', l:'#E2E89E', s:'#E89A4E', S:'#A85A22', k:'#1E1410', r:'#E06A5A', o:'#4A3214'}],
+  toucan:[P => { P.rect(17, 27, 2, 4, 'f').rect(21, 27, 2, 4, 'f'); P.ell(20, 17, 6.5, 10, 'k'); P.shade('k', 'K', null, 1); P.tube(21, 25, 24, 29, 27, 31, 2.2, 1.6, 'k');
+    P.ell(15, 15, 3.6, 5, 'w'); P.ell(17, 8, 5, 4.5, 'k'); P.ell(18.5, 7.5, 2, 2, 'e').set(18, 7, 'k');
+    P.shape(10, 9, .12, 10, (u, v) => u > -8 && u < 6 && Math.abs(v + u*u*.02 - .8) < 3.4 - (u + 8)*.04, 'y'); P.shape(10, 9, .12, 10, (u, v) => u < -4 && u > -8 && Math.abs(v + u*u*.02 - .8) < 3.6, 'r');
+    P.line(3, 10, 14, 10, 'Y'); P.outline('o'); },
+    {k:'#24242C', K:'#14141A', w:'#FFF6D0', e:'#5AB8F0', y:'#FFB830', Y:'#E07A1E', r:'#F05A3A', f:'#5AB8F0', o:'#0E0E12'}],
+  beaver:[P => { P.shape(28, 25, -.5, 8, (u, v) => (u/4.5)**2 + (v/2.6)**2 <= 1, 't'); for (let i=-3;i<=3;i+=2) P.line(28 + i, 22, 28 + i - 1, 28, 'T');
+    P.rect(11, 25, 4, 5, 'b').rect(20, 25, 4, 5, 'b'); P.ell(18, 20, 10, 7, 'b'); P.ell(9, 16, 6, 5.5, 'b').ell(12, 10.8, 1.8, 1.8, 'b');
+    P.shade('b', 'd', 'l', 2); P.ell(5, 18, 3.4, 2.6, 'c'); P.rect(4, 20, 2, 3, 'w').line(5, 20, 5, 22, 'W'); P.ell(2.6, 16.6, 1.4, 1.1, 'k');
+    P.rect(7, 13, 2, 2, 'k').set(7, 13, 'g'); P.outline('o'); },
+    {b:'#9A6438', d:'#704422', l:'#B88052', c:'#C99A6E', t:'#5A3A26', T:'#3A2414', w:'#FFF2C8', W:'#E8C26A', k:'#1E1410', g:'#FFFFFF', o:'#3A2010'}],
+  dragon:[P => { P.poly([[17, 13], [26, 2], [30, 8], [27, 14]], 'v'); P.poly([[19, 13], [24, 6], [26, 13]], 'V');
+    P.tube(26, 22, 31, 22, 30, 14, 2.2, 1, 'g'); P.poly([[29.5, 12], [32, 15], [28, 15]], 'v');
+    P.rect(12, 23, 3, 7, 'g').rect(22, 23, 3, 7, 'g'); P.ell(18.5, 20, 9, 6.5, 'g'); P.ell(8, 13, 5.5, 4.6, 'g').ell(3.5, 14.5, 3.4, 2.6, 'g');
+    P.poly([[8, 9], [10, 4], [11, 9]], 'h').poly([[11, 10], [14, 6], [14, 11]], 'h'); P.shade('g', 'G', 'l', 2);
+    P.ell(16, 22, 5.5, 4, 'y'); P.shade('y', 'Y', null, 1); [[19, 13], [22, 14], [25, 16]].forEach(([x, y]) => P.poly([[x - 1.5, y + 1], [x, y - 2], [x + 1.5, y + 1]], 'v'));
+    P.set(1.5, 13.5, 'k'); P.rect(7, 11, 2, 2, 'k').set(7, 11, 'w'); P.set(8, 15, 'p').set(9, 15, 'p'); P.outline('o'); },
+    {g:'#5CC05A', G:'#3A8A3A', l:'#9BE08A', y:'#FFE48A', Y:'#E8C04A', v:'#A86AD8', V:'#7A44A8', h:'#FFF2C8', k:'#1E1410', w:'#FFFFFF', p:'#FF8A8A', o:'#1E3A1E'}]
 };
 const animalPic = a => ART[a] || schoolPic(a);   // (the first animals are sprites; Snack Time's newer friends are drawn like the School pictures)
 const schoolPic = name => SCHOOL_PIX[name] ? once('sp' + name, () => { const P = new Pix(32, 32), [draw, pal] = SCHOOL_PIX[name]; draw(P); return `<img class="px" src="${pxURL(P.canvas(pal), 4).slice(5, -2)}" alt="" draggable="false">`; }) : ART[name];
@@ -9185,57 +9452,87 @@ const DinoBuddies = (() => {
 /* ---------- Snack Time (one player): an animal walks in thinking of a food; give it that food ----------
    No wrong answers stick: a wrong food gets a gentle head shake, and after two tries the right one glows. */
 const SnackTime = (() => {
-  const SNACKS = [   // m: where the mouth is, as a fraction of the picture
-    {a:'monkey', n:'monkey', food:'banana', w:'a banana', fp:'bananas', x:'ooh', m:[.47,.5]},
-    {a:'penguin', n:'penguin', food:'fish', w:'a fish', fp:'fish', x:'bray', m:[.27,.34]},
-    {a:'dog', n:'puppy', food:'bone', w:'a bone', fp:'bones', x:'woof', m:[.19,.56]},
-    {a:'panda', n:'panda', food:'bamboo', w:'some bamboo', fp:'bamboo', x:'', m:[.47,.49]},
-    {a:'giraffe', n:'giraffe', food:'leaf', w:'a leaf', fp:'leaves', x:'munch', m:[.1,.19]},
-    {a:'chick', n:'chick', food:'corn', w:'some corn', fp:'corn', x:'peep', m:[.11,.39]},
-    {a:'turtle', n:'turtle', food:'strawberry', w:'a strawberry', fp:'strawberries', x:'', m:[.1,.6]},
-    {a:'parrot', n:'parrot', food:'blueberry', w:'a blueberry', fp:'blueberries', x:'squawk', m:[.21,.4]},
-    {a:'frog', n:'frog', food:'fly', w:'a fly', fp:'flies', x:'ribbit', m:[.5,.6]},
-    {a:'hippo', n:'hippo', food:'watermelon', w:'some watermelon', fp:'watermelon', x:'hippo', m:[.1,.65]},
-    {a:'cow', n:'cow', food:'grass', w:'some grass', fp:'grass', x:'moo', m:[.21,.54]},
-    {a:'lion', n:'lion', food:'meat', w:'some meat', fp:'meat', x:'roar', m:[.28,.5]},
-    {a:'tiger', n:'tiger', food:'meat', w:'some meat', fp:'meat', x:'growl', m:[.27,.56]},
-    {a:'elephant', n:'elephant', food:'peanut', w:'a peanut', fp:'peanuts', x:'trumpet', m:[.18,.6]},
-    {a:'zebra', n:'zebra', food:'grass', w:'some grass', fp:'grass', x:'neigh', m:[.07,.38]},
-    {a:'rhino', n:'rhino', food:'apple', w:'an apple', fp:'apples', x:'snort', m:[.07,.6]},
-    {a:'flamingo', n:'flamingo', food:'shrimp', w:'a shrimp', fp:'shrimp', x:'honk', m:[.12,.2]},
-    {a:'eagle', n:'eagle', food:'fish', w:'a fish', fp:'fish', x:'screech', m:[.12,.55]},
-    {a:'gorilla', n:'gorilla', food:'orange', w:'an orange', fp:'oranges', x:'thump', m:[.45,.45]},
-    {a:'butterfly', n:'butterfly', food:'flower', w:'a flower', fp:'flowers', x:'flutter', m:[.5,.35]},
-    {a:'cat', n:'kitty', food:'milk', w:'some milk', fp:'milk', x:'meow', m:[.33,.4]},   // (the family's pick: the kitty and her milk, as in the picture books)
-    {a:'duck', n:'duck', food:'peas', w:'some peas', fp:'peas', x:'quack', m:[.08,.36]},
-    {a:'kangaroo', n:'kangaroo', food:'carrot', w:'a carrot', fp:'carrots', x:'boing', m:[.12,.36]},
-    {a:'octopus', n:'octopus', food:'shrimp', w:'a shrimp', fp:'shrimp', x:'splash', m:[.5,.5]},
-    {a:'lizard', n:'lizard', food:'fly', w:'a fly', fp:'flies', x:'flick', m:[.06,.58]},
-    {a:'crocodile', n:'crocodile', food:'fish', w:'a fish', fp:'fish', x:'snap', m:[.06,.78]},
-    {a:'trex', n:'T rex', food:'meat', w:'some meat', fp:'meat', x:'bigroar', m:[.15,.33]},
-    {a:'longneck', n:'long neck', food:'leaf', w:'a leaf', fp:'leaves', x:'bellow', m:[.07,.2]},
-    {a:'trike', n:'triceratops', food:'fern', w:'a fern', fp:'ferns', x:'huff', m:[.08,.55]},
-    {a:'stego', n:'stegosaurus', food:'fern', w:'a fern', fp:'ferns', x:'stego', m:[.06,.73]},
-    {a:'ptero', n:'pterodactyl', food:'fish', w:'a fish', fp:'fish', x:'screech', m:[.42,.3]},
-    {a:'whale', n:'whale', food:'shrimp', w:'a shrimp', fp:'shrimp', x:'splash', m:[.16,.63]},
-    {a:'sloth', n:'sloth', food:'leaf', w:'a leaf', fp:'leaves', x:'yawn', m:[.48,.47]},
-    {a:'crab', n:'crab', food:'fish', w:'a fish', fp:'fish', x:'snap', m:[.5,.7]},
-    {a:'leopard', n:'leopard', food:'meat', w:'some meat', fp:'meat', x:'growl', m:[.24,.64]},
-    {a:'owl', n:'owl', food:'fly', w:'a fly', fp:'flies', x:'hoot', m:[.5,.53]},
-    {a:'bunny', n:'bunny', food:'carrot', w:'a carrot', fp:'carrots', x:'', m:[.19,.56]},
-    {a:'mouse', n:'mouse', food:'cheese', w:'some cheese', fp:'cheese', x:'squeak', m:[.13,.7]},
-    {a:'squirrel', n:'squirrel', food:'acorn', w:'an acorn', fp:'acorns', x:'chitter', m:[.19,.44]},
-    {a:'bear', n:'bear', food:'honey', w:'some honey', fp:'honey', x:'growl', m:[.13,.56]},
-    {a:'pig', n:'pig', food:'pumpkin', w:'a pumpkin', fp:'pumpkins', x:'oink', m:[.16,.67]},
-    {a:'hedgehog', n:'hedgehog', food:'worm', w:'a worm', fp:'worms', x:'sniff', m:[.13,.8]}
+  /* a journey through seven places, each with its own hungry animals; every animal has its own snack, never shared.
+     in: how the narrator says "everyone here"; look: the place's scenery (see BG.place) */
+  const PLACES = [
+    {k:'farm', n:'the farm', in:'on the farm', title:'Farm'},
+    {k:'forest', n:'the forest', in:'in the forest', title:'Forest'},
+    {k:'garden', n:'the garden', in:'in the garden', title:'Garden'},
+    {k:'seaside', n:'the seaside', in:'at the seaside', title:'Seaside'},
+    {k:'jungle', n:'the jungle', in:'in the jungle', title:'Jungle'},
+    {k:'savanna', n:'the savanna', in:'on the savanna', title:'Savanna'},
+    {k:'dino', n:'Dino Land', in:'in Dino Land', title:'Dino Land'}
   ];
+  const SNACKS = [   // p: the place; m: where the mouth is, as a fraction of the picture
+    {p:'farm', a:'cow', n:'cow', food:'grass', w:'some grass', fp:'grass', x:'moo', m:[.21,.54]},
+    {p:'farm', a:'pig', n:'pig', food:'pumpkin', w:'a pumpkin', fp:'pumpkins', x:'oink', m:[.16,.67]},
+    {p:'farm', a:'chick', n:'chick', food:'corn', w:'some corn', fp:'corn', x:'peep', m:[.11,.39]},
+    {p:'farm', a:'duck', n:'duck', food:'peas', w:'some peas', fp:'peas', x:'quack', m:[.08,.36]},
+    {p:'farm', a:'horse', n:'horse', food:'oats', w:'some oats', fp:'oats', x:'neigh', m:[.08,.32]},
+    {p:'farm', a:'sheep', n:'sheep', food:'clover', w:'some clover', fp:'clover', x:'baa', m:[.12,.58]},
+    {p:'farm', a:'goat', n:'goat', food:'cabbage', w:'a cabbage', fp:'cabbages', x:'maa', m:[.1,.42]},
+    {p:'farm', a:'dog', n:'puppy', food:'bone', w:'a bone', fp:'bones', x:'woof', m:[.19,.56]},
+    {p:'farm', a:'cat', n:'kitty', food:'milk', w:'some milk', fp:'milk', x:'meow', m:[.33,.4]},   // (the family's pick: the kitty and her milk, as in the picture books)
+    {p:'forest', a:'bear', n:'bear', food:'honey', w:'some honey', fp:'honey', x:'growl', m:[.13,.56]},
+    {p:'forest', a:'squirrel', n:'squirrel', food:'acorn', w:'an acorn', fp:'acorns', x:'chitter', m:[.19,.44]},
+    {p:'forest', a:'fox', n:'fox', food:'grapes', w:'some grapes', fp:'grapes', x:'yip', m:[.12,.58]},
+    {p:'forest', a:'hedgehog', n:'hedgehog', food:'worm', w:'a worm', fp:'worms', x:'sniff', m:[.13,.8]},
+    {p:'forest', a:'owl', n:'owl', food:'beetle', w:'a beetle', fp:'beetles', x:'hoot', m:[.5,.53]},
+    {p:'forest', a:'bunny', n:'bunny', food:'carrot', w:'a carrot', fp:'carrots', x:'', m:[.19,.56]},
+    {p:'forest', a:'mouse', n:'mouse', food:'cheese', w:'some cheese', fp:'cheese', x:'squeak', m:[.13,.7]},
+    {p:'forest', a:'beaver', n:'beaver', food:'stick', w:'a stick', fp:'sticks', x:'splash', m:[.13,.6]},
+    {p:'forest', a:'raccoon', n:'raccoon', food:'cherries', w:'some cherries', fp:'cherries', x:'trill', m:[.08,.6]},
+    {p:'forest', a:'koala', n:'koala', food:'eucalyptus', w:'some eucalyptus', fp:'eucalyptus', x:'bellow', m:[.25,.56]},
+    {p:'garden', a:'bee', n:'bee', food:'sunflower', w:'a sunflower', fp:'sunflowers', x:'buzz', m:[.1,.62]},
+    {p:'garden', a:'butterfly', n:'butterfly', food:'flower', w:'a flower', fp:'flowers', x:'flutter', m:[.5,.35]},
+    {p:'garden', a:'snail', n:'snail', food:'cucumber', w:'a cucumber', fp:'cucumbers', x:'', m:[.13,.72]},
+    {p:'garden', a:'turtle', n:'turtle', food:'strawberry', w:'a strawberry', fp:'strawberries', x:'', m:[.1,.6]},
+    {p:'garden', a:'frog', n:'frog', food:'fly', w:'a fly', fp:'flies', x:'ribbit', m:[.5,.6]},
+    {p:'garden', a:'lizard', n:'lizard', food:'cricket', w:'a cricket', fp:'crickets', x:'flick', m:[.06,.58]},
+    {p:'seaside', a:'penguin', n:'penguin', food:'fish', w:'a fish', fp:'fish', x:'bray', m:[.27,.34]},
+    {p:'seaside', a:'whale', n:'whale', food:'krill', w:'some krill', fp:'krill', x:'splash', m:[.16,.63]},
+    {p:'seaside', a:'crab', n:'crab', food:'seaweed', w:'some seaweed', fp:'seaweed', x:'snap', m:[.5,.7]},
+    {p:'seaside', a:'octopus', n:'octopus', food:'clam', w:'a clam', fp:'clams', x:'splash', m:[.5,.5]},
+    {p:'seaside', a:'flamingo', n:'flamingo', food:'shrimp', w:'a shrimp', fp:'shrimp', x:'honk', m:[.12,.2]},
+    {p:'seaside', a:'eagle', n:'eagle', food:'salmon', w:'a salmon', fp:'salmon', x:'screech', m:[.12,.55]},
+    {p:'jungle', a:'monkey', n:'monkey', food:'banana', w:'a banana', fp:'bananas', x:'ooh', m:[.47,.5]},
+    {p:'jungle', a:'parrot', n:'parrot', food:'blueberry', w:'a blueberry', fp:'blueberries', x:'squawk', m:[.21,.4]},
+    {p:'jungle', a:'toucan', n:'toucan', food:'mango', w:'a mango', fp:'mangoes', x:'squawk', m:[.25,.31]},
+    {p:'jungle', a:'gorilla', n:'gorilla', food:'orange', w:'an orange', fp:'oranges', x:'thump', m:[.45,.45]},
+    {p:'jungle', a:'sloth', n:'sloth', food:'lettuce', w:'some lettuce', fp:'lettuce', x:'yawn', m:[.48,.47]},
+    {p:'jungle', a:'panda', n:'panda', food:'bamboo', w:'some bamboo', fp:'bamboo', x:'', m:[.47,.49]},
+    {p:'jungle', a:'tiger', n:'tiger', food:'ribs', w:'some ribs', fp:'ribs', x:'growl', m:[.27,.56]},
+    {p:'jungle', a:'crocodile', n:'crocodile', food:'sausage', w:'a sausage', fp:'sausages', x:'snap', m:[.06,.78]},
+    {p:'savanna', a:'lion', n:'lion', food:'steak', w:'a steak', fp:'steaks', x:'roar', m:[.28,.5]},
+    {p:'savanna', a:'giraffe', n:'giraffe', food:'leaf', w:'a leaf', fp:'leaves', x:'munch', m:[.1,.19]},
+    {p:'savanna', a:'zebra', n:'zebra', food:'hay', w:'some hay', fp:'hay', x:'neigh', m:[.07,.38]},
+    {p:'savanna', a:'elephant', n:'elephant', food:'peanut', w:'a peanut', fp:'peanuts', x:'trumpet', m:[.18,.6]},
+    {p:'savanna', a:'rhino', n:'rhino', food:'apple', w:'an apple', fp:'apples', x:'snort', m:[.07,.6]},
+    {p:'savanna', a:'hippo', n:'hippo', food:'watermelon', w:'some watermelon', fp:'watermelon', x:'hippo', m:[.1,.65]},
+    {p:'savanna', a:'leopard', n:'leopard', food:'meat', w:'some meat', fp:'meat', x:'growl', m:[.24,.64]},
+    {p:'savanna', a:'camel', n:'camel', food:'dates', w:'some dates', fp:'dates', x:'grumble', m:[.07,.25]},
+    {p:'savanna', a:'kangaroo', n:'kangaroo', food:'sweetpotato', w:'a sweet potato', fp:'sweet potatoes', x:'boing', m:[.12,.36]},
+    {p:'dino', a:'trex', n:'T rex', food:'ham', w:'a ham', fp:'hams', x:'bigroar', m:[.15,.33]},
+    {p:'dino', a:'longneck', n:'long neck', food:'pinecone', w:'a pinecone', fp:'pinecones', x:'bellow', m:[.07,.2]},
+    {p:'dino', a:'trike', n:'triceratops', food:'fern', w:'a fern', fp:'ferns', x:'huff', m:[.08,.55]},
+    {p:'dino', a:'stego', n:'stegosaurus', food:'raspberry', w:'a raspberry', fp:'raspberries', x:'stego', m:[.06,.73]},
+    {p:'dino', a:'ptero', n:'pterodactyl', food:'squid', w:'a squid', fp:'squid', x:'screech', m:[.42,.3]},
+    {p:'dino', a:'dragon', n:'little dragon', food:'pepper', w:'a hot pepper', fp:'hot peppers', x:'fire', m:[.1,.5]}
+  ];
+  /* foods that look alike are never offered together, so the choice is about the animal, not squinting */
+  const LOOKALIKE = [['strawberry', 'raspberry', 'cherries'], ['leaf', 'eucalyptus', 'lettuce', 'cabbage', 'clover', 'fern'], ['fish', 'salmon'], ['shrimp', 'krill'],
+    ['meat', 'ham', 'steak', 'ribs', 'sausage'], ['fly', 'cricket', 'beetle'], ['orange', 'mango', 'pumpkin'], ['peanut', 'acorn', 'dates', 'pinecone'], ['grass', 'hay', 'oats'], ['flower', 'sunflower']];
+  const alike = (f, g) => LOOKALIKE.some(gr => gr.includes(f) && gr.includes(g));
   const FOOD = Object.fromEntries(SNACKS.map(s => [s.food, s.w.replace(/^(an?|some) /, '')]));
   const pic = f => ART[f] || schoolPic(f);   // (the newer foods are little pictures drawn with the School ones)
   const WANTS = s => `The ${s.n} wants ${s.w}!`, TWO = s => `The ${s.n} wants two ${s.fp}!`, YUM = s => `Yum! The ${s.n} loves ${s.fp}!`;
-  const MORE = 'One more!', PARADE = 'Picnic parade! Ten full tummies!';
+  const MORE = 'One more!', WHERE = 'Where shall we go?';
+  const HELLO = pl => `Welcome to ${pl.n}!`, OFF = pl => `Off to ${pl.n}!`, FULL = pl => `Picnic parade! Everyone ${pl.in} is full!`;
   const countable = s => !/^some /.test(s.w);   // "two" only for foods you can count: two bananas, never two milk
-  const root = $('#snacktime'), scene = $('#stScene'), animalEl = $('#stAnimal'), think = $('#stThink'), wantEl = $('#stWant'), foodsEl = $('#stFoods'), fedEl = $('#stFed');
+  const here = pl => SNACKS.filter(s => s.p === pl.k);
+  const root = $('#snacktime'), scene = $('#stScene'), animalEl = $('#stAnimal'), think = $('#stThink'), wantEl = $('#stWant'), foodsEl = $('#stFoods'), fedEl = $('#stFed'), mapEl = $('#stMap');
   let cur = null, queue = [], fed = 0, misses = 0, eating = true, quietUntil = 0, asked = 1, need = 1;
+  let place = PLACES[0], visited = new Set(), started = false;   // (this visit only: nothing is saved)
   const steps = () => [0,.16,.32,.48,.64].forEach(d => tone(190, 150, .07, 'sine', .14, d));   // pitter-patter feet
   const uhuh = () => { tone(392, 370, .15, 'triangle', .13); tone(330, 300, .22, 'triangle', .13, .19); };   // a soft "nuh-uh", never a buzzer
   const yum = at => { tone(523, 784, .14, 'triangle', .14, at); tone(659, 1047, .2, 'triangle', .13, at + .13); return at + .35; };
@@ -9246,9 +9543,16 @@ const SnackTime = (() => {
   const wants = (tries = 0) => { if (!cur || eating) return; if (speaking() && tries < 15){ later(() => wants(tries + 1), 300); return; } say(wish(), 0, 'names'); };
   /* the thought bubble shows the food once, or twice when the animal wants two */
   const bubble = n => { put(wantEl, pic(cur.food).repeat(n)); wantEl.classList.toggle('two', n === 2); };
+  /* the scenery of a place, painted behind the animals */
+  function scenery(pl){ const fn = BG.place(pl.k); bgFor.set(scene, fn); paintBG(scene, fn, true); root.dataset.place = pl.k; }
+  /* arrive at a place: its scenery, a hello, and its animals one by one in a fresh order */
+  function visit(pl, first){
+    place = pl; queue = shuffle(here(pl)); cur = null; fedEl.innerHTML = ''; foodsEl.innerHTML = ''; think.classList.remove('on'); animalEl.innerHTML = '';
+    scenery(pl); say((first ? 'Snack Time! ' : '') + HELLO(pl), 0, first ? 'menus' : 'names');
+    later(arrive, first ? 600 : 1200);
+  }
   function arrive(){
-    const prev = cur;
-    if (!queue.length) queue = shuffle(SNACKS).filter(s => s !== prev);
+    if (!queue.length) return;
     cur = queue.shift(); misses = 0; eating = true;
     // once a few animals are fed, about one in three asks for two of something countable ("Two, please!")
     asked = need = fed >= 4 && countable(cur) && Math.random() < 1/3 ? 2 : 1;
@@ -9258,12 +9562,12 @@ const SnackTime = (() => {
     act('in'); steps();
     later(() => { think.classList.add('on'); FX.pop(); deal(); eating = false; wants(); }, 950);
   }
-  /* two foods to choose from at first, three once a few animals are fed */
+  /* two foods to choose from at first, three once a few animals are fed; this place's foods first, never look-alikes */
   function deal(){
-    const n = fed < 3 ? 2 : 3;
-    const picks = shuffle([cur.food, ...shuffle([...new Set(SNACKS.map(s => s.food))].filter(f => f !== cur.food)).slice(0, n - 1)]);
+    const n = fed < 3 ? 2 : 3, mine = here(place).map(s => s.food), all = SNACKS.map(s => s.food), picks = [cur.food];
+    for (const f of [...shuffle(mine), ...shuffle(all)]) if (picks.length < n && !picks.includes(f) && !picks.some(g => alike(f, g))) picks.push(f);
     foodsEl.innerHTML = ''; foodsEl.classList.toggle('n2', n === 2);
-    picks.forEach((f, i) => {
+    shuffle(picks).forEach((f, i) => {
       const b = document.createElement('button'); b.className = 'st-food'; b.dataset.food = f; b.setAttribute('aria-label', FOOD[f]);
       b.style.animationDelay = i*.07 + 's'; b.innerHTML = `<span class="art">${pic(f)}</span>`;
       tap(b, () => pick(b, f), {bump:false});
@@ -9304,29 +9608,29 @@ const SnackTime = (() => {
     fed++; addSticker(s);
     later(() => { act('hop'); hearts(); }, 700);
     say(YUM(s), 0, 'names');
-    // every fifth animal a cheer; every tenth, all ten march past in a picnic parade
-    const big = fed % 10 === 0, party = !big && fed % 5 === 0, stay = end*1000 + (party ? 2000 : 500);
+    // every fifth animal a cheer; when everyone here is fed, they all march past in a picnic parade, then on we go
+    const done = !queue.length, party = !done && fed % 5 === 0, stay = end*1000 + (party ? 2000 : 500);
     if (party) later(celebrate, end*1000 + 100);
     later(() => { act('out'); steps(); }, stay);
-    if (big) later(() => later(arrive, parade() + 300), stay + 850);
+    if (done) later(() => { visited.add(place.k); later(travel, parade() + 300); }, stay + 850);
     else later(arrive, stay + 850);
   }
   function hearts(){
     const [x, y] = rel(animalEl), r = animalEl.getBoundingClientRect();
     for (let i=0;i<5;i++) later(() => flyNote(x + (Math.random() - .5)*r.width*.7, y - r.height*.3, rnd([ART.heart, ART.heart, ART.heartYellow, ART.heartGreen])), i*110);
   }
-  function addSticker(s){ if (fedEl.children.length >= 10) fedEl.innerHTML = ''; const sp = document.createElement('span'); sp.className = 's art'; sp.innerHTML = animalPic(s.a); fedEl.appendChild(sp); }
+  function addSticker(s){ const sp = document.createElement('span'); sp.className = 's art'; sp.innerHTML = animalPic(s.a); fedEl.appendChild(sp); }
   function celebrate(){
     FX.cheer(); const [x, y] = rel(scene); confetti(x, y, 44);
     [...fedEl.children].forEach((sp, i) => later(() => retrigger(sp, 's'), i*70));
     say('Hooray! Five full tummies!', 0, 'names');
   }
-  /* the ten animals fed so far march across to a little tune; with reduced motion they stand in a row instead.
+  /* everyone fed here marches across to a little tune; with reduced motion they stand in a row instead.
      Returns how long it lasts (ms) */
   function parade(){
     const who = [...fedEl.children].map(sp => sp.innerHTML), row = document.createElement('div'), still = calm();
     row.className = 'st-parade' + (still ? ' still' : ''); scene.appendChild(row); foodsEl.innerHTML = '';
-    FX.cheer(); say(PARADE, 0, 'names');
+    FX.cheer(); say(FULL(place), 0, 'names');
     [523, 659, 784, 659, 523, 659, 784, 1047, 784, 659, 784, 1047].forEach((f, i) => tone(f, f, .16, 'triangle', .1, .5 + i*.32));   // a little march
     [...fedEl.children].forEach((sp, i) => later(() => retrigger(sp, 's'), i*70));
     const w = scene.getBoundingClientRect().width, h = row.getBoundingClientRect().height, speed = .2;   // px per ms; one animal's width apart
@@ -9342,16 +9646,48 @@ const SnackTime = (() => {
     later(() => { row.getAnimations({subtree:true}).forEach(a => a.cancel()); row.remove(); }, long);
     return long;
   }
+  /* on to the next place: the bus drives across (it's just there, with reduced motion), and the scenery changes */
+  function travel(to = PLACES[(PLACES.indexOf(place) + 1) % PLACES.length]){
+    const bus = document.createElement('div'), still = calm(), w = scene.getBoundingClientRect().width;
+    bus.className = 'st-bus art'; bus.innerHTML = ART.bus; scene.appendChild(bus); fedEl.innerHTML = '';
+    say(OFF(to), 0, 'names'); [0, .25, .5, .75, 1, 1.25].forEach(d => tone(150, 120, .18, 'square', .05, d));   // brrm brrm
+    const long = still ? 1200 : 2200;
+    if (!still) fly(bus, [{transform:`translateX(${w}px)`}, {transform:`translateX(${-w*.5}px)`}], {duration:long, easing:'ease-in-out', fill:'forwards'});
+    later(() => scenery(to), long*.55);
+    later(() => { bus.getAnimations().forEach(a => a.cancel()); bus.remove(); visit(to); }, long);
+  }
+  /* the map: every place as a picture card; a star on the ones already visited today */
+  function openMap(){
+    if (!mapEl.hidden) return;
+    clearLater(); hush(); $$('.st-bite, .st-parade, .st-bus', root).forEach(t => { t.getAnimations({subtree:true}).forEach(a => { a.onfinish = null; a.cancel(); }); t.remove(); });
+    cur = null; eating = true; queue = []; think.classList.remove('on'); foodsEl.innerHTML = '';
+    mapEl.innerHTML = ''; mapEl.hidden = false; root.classList.add('st-mapping');
+    PLACES.forEach(pl => {
+      const b = document.createElement('button'); b.className = 'st-place' + (pl === place ? ' here' : ''); b.dataset.place = pl.k; b.setAttribute('aria-label', pl.title);
+      b.innerHTML = `<span class="st-place-who">${here(pl).slice(0, 2).map(s => animalPic(s.a)).join('')}</span>${visited.has(pl.k) ? `<span class="st-place-star art">${ART.star}</span>` : ''}`;
+      mapEl.appendChild(b); paintBG(b, BG.place(pl.k), true);
+      tap(b, () => { if (mapEl.hidden) return; FX.pop(); closeMap(); visit(pl); }, {bump:false});
+    });
+    say(WHERE, 0, 'names');
+  }
+  function closeMap(){ mapEl.hidden = true; mapEl.innerHTML = ''; root.classList.remove('st-mapping'); }
   /* tap the animal for its call, or the bubble to hear what it wants */
   tap(animalEl, () => { const now = performance.now(); if (eating || !cur || now < quietUntil) return; act('hop'); quietUntil = now + call(cur)*1000; }, {bump:false});
   tap(think, () => { if (eating || !cur) return; FX.pop(); retrigger(think, 'wig'); hush(); wants(); }, {bump:false});
   put($('#stReplay'), ART.ear); tap($('#stReplay'), () => { if (eating || !cur) return; retrigger(think, 'wig'); hush(); wants(); }, {throttle:700});   // the berry speaker, as in School
+  put($('#stMapBtn'), schoolPic('map')); tap($('#stMapBtn'), () => { FX.boop(); openMap(); }, {throttle:700});
   return {
-    enter(){ $('#stReplay').hidden = !voiceOn('names'); say('Snack Time! The animals are hungry!', 0, 'menus'); cur = null; arrive(); },   // (the speaker only where the wish is said: Animal names in Settings)
-    leave(){ $$('.st-bite, .st-parade', root).forEach(t => { t.getAnimations({subtree:true}).forEach(a => { a.onfinish = null; a.cancel(); }); t.remove(); }); cur = null; eating = true; },
+    // (the speaker only where the wish is said: Animal names in Settings). The journey picks up where it was this visit.
+    enter(){ $('#stReplay').hidden = !voiceOn('names'); closeMap(); visit(place, true); },
+    leave(){ $$('.st-bite, .st-parade, .st-bus', root).forEach(t => { t.getAnimations({subtree:true}).forEach(a => { a.onfinish = null; a.cancel(); }); t.remove(); }); closeMap(); cur = null; eating = true; },
     state: () => ({want: cur && !eating ? cur.food : null, animal: cur && cur.a, fed, choices: foodsEl.children.length, two: asked === 2, need,
-      parade: !!$('.st-parade', root), foods: Object.fromEntries(SNACKS.map(s => [s.a, s.food]))}),
-    lines: () => ['Snack Time! The animals are hungry!', 'Hooray! Five full tummies!', MORE, PARADE, ...SNACKS.flatMap(s => [WANTS(s), YUM(s), ...(countable(s) ? [TWO(s)] : [])])]
+      parade: !!$('.st-parade', root), bus: !!$('.st-bus', root), place: place.k, left: queue.length + (cur ? 1 : 0), visited: [...visited], map: !mapEl.hidden,
+      places: PLACES.map(pl => ({k:pl.k, animals:here(pl).map(s => s.a)})), offered: $$('.st-food', foodsEl).map(b => b.dataset.food),
+      foods: Object.fromEntries(SNACKS.map(s => [s.a, s.food]))}),
+    // (More Snacks borrows the animals whose snacks can be counted)
+    pals: () => SNACKS.filter(countable).map(s => ({a:s.a, n:s.n, food:s.food, fp:s.fp})),
+    lines: () => ['Hooray! Five full tummies!', MORE, WHERE, ...PLACES.flatMap(pl => [HELLO(pl), 'Snack Time! ' + HELLO(pl), OFF(pl), FULL(pl)]),
+      ...SNACKS.flatMap(s => [WANTS(s), YUM(s), ...(countable(s) ? [TWO(s)] : [])])]
   };
 })();
 
@@ -10193,13 +10529,7 @@ const SchoolAdventures = (() => {
      tap shows the same line-up as the reason. Gently harder in one play: a demonstration, then gaps of three, two and
      one, tidy dice-like piles first, then scattered ones, and one round where the smaller pile is spread wide and the
      bigger one bunched up, so it's the number that counts, not how much space the pile takes. Never two the same. */
-  const PALS = [{a:'monkey', n:'monkey', food:'banana', fp:'bananas'}, {a:'dog', n:'puppy', food:'bone', fp:'bones'}, {a:'turtle', n:'turtle', food:'strawberry', fp:'strawberries'},
-    {a:'parrot', n:'parrot', food:'blueberry', fp:'blueberries'}, {a:'elephant', n:'elephant', food:'peanut', fp:'peanuts'}, {a:'rhino', n:'rhino', food:'apple', fp:'apples'},
-    {a:'gorilla', n:'gorilla', food:'orange', fp:'oranges'}, {a:'kangaroo', n:'kangaroo', food:'carrot', fp:'carrots'}, {a:'penguin', n:'penguin', food:'fish', fp:'fish'},
-    {a:'frog', n:'frog', food:'fly', fp:'flies'}, {a:'giraffe', n:'giraffe', food:'leaf', fp:'leaves'}, {a:'butterfly', n:'butterfly', food:'flower', fp:'flowers'},
-    {a:'flamingo', n:'flamingo', food:'shrimp', fp:'shrimp'}, {a:'owl', n:'owl', food:'fly', fp:'flies'}, {a:'crocodile', n:'crocodile', food:'fish', fp:'fish'},
-    {a:'trike', n:'triceratops', food:'fern', fp:'ferns'}, {a:'bunny', n:'bunny', food:'carrot', fp:'carrots'}, {a:'squirrel', n:'squirrel', food:'acorn', fp:'acorns'},
-    {a:'pig', n:'pig', food:'pumpkin', fp:'pumpkins'}, {a:'hedgehog', n:'hedgehog', food:'worm', fp:'worms'}];   // (Snack Time's animals and the foods they love, ones you can count)
+  const PALS = SnackTime.pals();   // (Snack Time's animals and the snacks they love, the ones you can count)
   const moreYes = p => `Yes! The ${p.n} has more!`, moreWatch = p => `Watch! Let's line them up. The ${p.n} has more!`;
   /* where each snack sits in its pile (centers, in % of a square), drawn 22% wide: like dice, bunched up, spread out, or
      scattered at random without touching */
@@ -10515,7 +10845,7 @@ async function renderMix(events, secs = 2, vol = settings.vol){
     if (!t) now.forEach(play); else off.suspend(Math.round(t*44100/128)*128/44100).then(() => { now.forEach(play); off.resume(); }); });
   return Array.from((await off.startRendering()).getChannelData(0));
 }
-window.__toyPhone = { motionGames: () => MotionGames.state(), pic: n => ART[n] || schoolPic(n), renderPad, renderMix, voiceFile: line => (VB.map && VB.map['n|' + line] || [])[0] || null, pads: () => ({drum:DRUMS.length, xylo:XYLO.length, piano:PIANO.length}), adventure: () => SchoolAdventures.state(), timers: () => screenTimers.size, fxNode: () => fx, offline: () => OFFLINE.state(), offlineSave: all => OFFLINE.save(all), offlineCheck: all => OFFLINE.check(all), adventurePlan: k => SchoolAdventures.plan(k), adventureJump: k => SchoolAdventures.jump(k), go, renderFx, speakable, voiceLines, lineMs,
+window.__toyPhone = { motionGames: () => MotionGames.state(), pic: n => ART[n] || schoolPic(n), snackPals: () => SnackTime.pals(), renderPad, renderMix, voiceFile: line => (VB.map && VB.map['n|' + line] || [])[0] || null, pads: () => ({drum:DRUMS.length, xylo:XYLO.length, piano:PIANO.length}), adventure: () => SchoolAdventures.state(), timers: () => screenTimers.size, fxNode: () => fx, offline: () => OFFLINE.state(), offlineSave: all => OFFLINE.save(all), offlineCheck: all => OFFLINE.check(all), adventurePlan: k => SchoolAdventures.plan(k), adventureJump: k => SchoolAdventures.jump(k), go, renderFx, speakable, voiceLines, lineMs,
   voice: () => ({loaded: !!VB.map, clips: VB.map ? Object.keys(VB.map).length : 0, played: VB.played, fallbacks: VB.fallbacks.slice(), log: VB.log.slice(), last: VB.last,
     speaking: speaking(), sources: VB.srcs.length, waiting: !!lineWait}),
   recorded: () => Object.keys(REC), trims: FX_TRIM,

@@ -25,7 +25,7 @@ const server = http.createServer((req, res) => {
   fs.createReadStream(file).pipe(res);
 });
 const check = (condition, message) => { assert.ok(condition, message); console.log('ok  ' + message); };
-const NAME = {dog:'puppy'};   // (what the narrator calls an animal, where it isn't the picture's name)
+let NAME = {};   // (what the narrator calls each animal: Snack Time's names, "puppy" for the dog)
 
 (async () => {
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
@@ -41,6 +41,7 @@ const NAME = {dog:'puppy'};   // (what the narrator calls an animal, where it is
       await page.goto(`http://127.0.0.1:${server.address().port}/`); await page.waitForFunction(() => window.__toyPhone && window.__toyPhone.voice().loaded);
       await page.touchscreen.tap(viewport.width/2, viewport.height/2); await page.waitForTimeout(300);
       const state = () => page.evaluate(() => window.__toyPhone.adventure());
+      NAME = Object.fromEntries((await page.evaluate(() => window.__toyPhone.snackPals())).map(p => [p.a, p.n]));
       const said = () => page.evaluate(() => window.__toyPhone.voice().log.map(l => typeof l === 'string' ? l : l.text));
       const touch = async selector => { const box = await page.locator(selector).first().boundingBox(); await page.touchscreen.tap(box.x + box.width/2, box.y + box.height/2); };
 
@@ -67,8 +68,9 @@ const NAME = {dog:'puppy'};   // (what the narrator calls an animal, where it is
         const left = all.filter(r => r.choices[0] === r.right).length / all.length;
         check(left > .44 && left < .56, `the answer is on the left ${(left*100).toFixed(0)}% of the time`);
         check(plays.every(p => p.every(r => r.choices[0] !== r.choices[1])), 'two different animals each time');
-        const pals = new Set(all.flatMap(r => r.choices));
-        check(pals.size === 20 && ['bunny', 'squirrel', 'pig', 'hedgehog', 'giraffe', 'trike'].every(a => pals.has(a)), `twenty animals take turns, the newest friends among them (${pals.size})`);
+        const pals = new Set(all.flatMap(r => r.choices)), countable = (await page.evaluate(() => window.__toyPhone.snackPals())).map(p => p.a);
+        check(pals.size === countable.length && countable.length >= 30 && ['bunny', 'squirrel', 'pig', 'hedgehog', 'goat', 'dragon'].every(a => pals.has(a)),
+          `Snack Time's animals with snacks you can count take turns (${pals.size}), the newest friends among them`);
       }
 
       // play it through with real taps: one wrong tap and one second wrong tap along the way
@@ -111,7 +113,7 @@ const NAME = {dog:'puppy'};   // (what the narrator calls an animal, where it is
 
       if (viewport.width === 390){
         const needed = ['More Snacks!', 'Who has more snacks?', "Let's line them up!", 'You found who has more!', 'Yes! The puppy has more!', 'Watch! Let\'s line them up. The frog has more!',
-          'Yes! The hedgehog has more!', 'Watch! Let\'s line them up. The triceratops has more!'];
+          'Yes! The hedgehog has more!', 'Watch! Let\'s line them up. The little dragon has more!'];
         const missing = await page.evaluate(ls => ls.filter(l => !window.__toyPhone.voiceFile(l)), needed);
         check(missing.length === 0, `the lines are recorded ${missing.join(', ')}`);
       }

@@ -7,7 +7,8 @@ on 2026-10-09 from a 6,400-word log; the old text is in git history.)
 
 ## Active batch
 
-- None claimed after **R-32** (Claude, 2026-10-31: more animals and foods for the snack games), **R-31** (Claude, 2026-10-31: More Snacks, a School math game, at the owner's request), **R-30**
+- None claimed after **R-32** (Claude, 2026-10-31: Snack Time as a whole game: 54 animals, 54 unique snacks, seven
+  places), **R-31** (Claude, 2026-10-31: More Snacks, a School math game, at the owner's request), **R-30**
   (Claude, 2026-10-11: Snack Time expanded at the family's request) and **R-24 to R-29**
   (the usability and reliability pass after PR #19, one PR per batch; see History), each merged once CI passes in
   Chromium and WebKit.
@@ -94,12 +95,17 @@ on 2026-10-09 from a 6,400-word log; the old text is in git history.)
 
 ## History (newest first)
 
-- 2026-10-31 R-32 snack friends (Claude, owner: "add more animals and food to the snacks game"): six new animals,
-  drawn with `Pix` shapes in `SCHOOL_PIX` (bunny, mouse, squirrel, bear, pig, hedgehog; side on, facing left) and five
-  new foods (cheese, acorn, honey, pumpkin, worm). `animalPic(a)` = `ART[a] || schoolPic(a)`: use it wherever an
-  animal from Snack Time is drawn. New calls `FX.squeak/chitter/oink/sniff`, levelled to the others on the phone-speaker
-  model (in the smoke test's list). Snack Time 36 to 42 animals; More Snacks 10 to 20 pals (the new countable ones plus
-  giraffe, butterfly, flamingo, owl, crocodile, triceratops). `__toyPhone.pic(name)` for tests.
+- 2026-10-31 R-32 Snack Time journey (Claude, owner: more animals and snacks, then "build this out as if it's an
+  entire game... a dozen more animals and even more snacks; don't reuse snacks"; chose Places to visit). 54 animals in
+  `PLACES` (farm 9, forest 10, garden 6, seaside 6, jungle 8, savanna 9, Dino Land 6), each `SNACKS` entry with its own
+  food (`p` = place). 18 new animals and 33 new foods drawn with `Pix` shapes in `SCHOOL_PIX` (side on, facing left);
+  `animalPic(a)` = `ART[a] || schoolPic(a)`. New calls (squeak, chitter, oink, sniff, baa, maa, yip, buzz, trill,
+  grumble, fire) levelled on the phone-speaker model, in the smoke list. `deal()` prefers the place's foods and skips
+  `LOOKALIKE` pairs. Journey: `visit()` paints `BG.place(k)` (props in `SCENERY`), the place's animals in a fresh order;
+  when all are fed, `parade()` then `travel()` (the bus) to the next; `openMap()` shows `#stMap` cards (session-only
+  `visited` stars; nothing saved). More Snacks takes `SnackTime.pals()` (countable snacks). Tests: snack-time (journey,
+  unique snacks, offers, map), more-snacks; `__toyPhone.pic/snackPals`.
+
 - 2026-10-31 R-31 More Snacks (Claude, owner: "one extra game in School, focused on math for a 3.5-year-old"):
   quantity comparison, the gap P4-05 named. A SchoolAdventures activity (`moresnacks`): `PALS` (10 Snack Time animals
   with countable foods), `moreRound([few, many], lay, pals)` with piles laid out from `DICE`/`BUNCH`/`SPREAD` or
