@@ -129,7 +129,7 @@ async function run(browser, base, name, viewport) {
   await home();
 
   await tap('[data-app="games"]');
-  check(await page.locator('#gameList .gamecard').count() === 6, 'Games shows all six games');
+  check(await page.locator('#gameList .gamecard').count() === 7, 'Games shows all seven games');
   await tap('.gamecard[aria-label="Wild Tap"]');
   check(await visible('#wt-menu'), 'Wild Tap opens');
   await home();

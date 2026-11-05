@@ -65,7 +65,7 @@ const check = (condition, message) => { assert.ok(condition, message); console.l
       check(asked >= 1, `${tag}: when the toy opens it checks for Safari's earlier yes to motion (no question without a tap)`);
       await go('games');
       const cards = await page.$$eval('#gameList .gamecard', cs => cs.map(c => c.getAttribute('aria-label')));
-      check(JSON.stringify(cards) === JSON.stringify(['Wild Tap', 'Snack Time', 'Dino Buddies', 'Paint Pals', 'Ball Trail', 'Star Flight']), `${tag}: the two tilt games come after the four the kids know ${JSON.stringify(cards)}`);
+      check(JSON.stringify(cards) === JSON.stringify(['Wild Tap', 'Match Up', 'Snack Time', 'Dino Buddies', 'Paint Pals', 'Ball Trail', 'Star Flight']), `${tag}: the two tilt games come after the five the kids know ${JSON.stringify(cards)}`);
 
       // --- Ball Trail
       await go('balltrail');

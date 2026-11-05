@@ -131,6 +131,7 @@ jobs:
           node tests/phone-game-review.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
           node tests/navigation.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
           node tests/snack-time.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
+          node tests/match-up.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
 
       - name: Pretend-camera hide and pop out
         run: node tests/camera-peek.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
