@@ -7,7 +7,7 @@ on 2026-10-09 from a 6,400-word log; the old text is in git history.)
 
 ## Active batch
 
-- None claimed after **R-33** (Claude, 2026-11-04: Match Up, a flip-two memory game: 3x3, 4x4, then 5x5), **R-32** (Claude, 2026-10-31: Snack Time as a whole game: 54 animals, 54 unique snacks, seven
+- None claimed after **R-34** (Claude, 2026-11-04: every Snack Time animal its own call), **R-33** (Claude, 2026-11-04: Match Up, a flip-two memory game: 3x3, 4x4, then 5x5), **R-32** (Claude, 2026-10-31: Snack Time as a whole game: 54 animals, 54 unique snacks, seven
   places), **R-31** (Claude, 2026-10-31: More Snacks, a School math game, at the owner's request), **R-30**
   (Claude, 2026-10-11: Snack Time expanded at the family's request) and **R-24 to R-29**
   (the usability and reliability pass after PR #19, one PR per batch; see History), each merged once CI passes in
@@ -94,6 +94,8 @@ on 2026-10-09 from a 6,400-word log; the old text is in git history.)
   gradual extraction).
 
 ## History (newest first)
+
+- 2026-11-04 R-34 unique calls (Claude, owner: "several animals make the same noise, like the horse and zebra"). New FX after `fire`: zebra, grunt (bear), rasp (leopard), slap (beaver), song (whale), bloop (octopus), clack (toucan), pinch (crab), caw (pterodactyl), snore (koala), hop (bunny), slurp (snail), knock (turtle), bamboo (panda); trims in `FX_TRIM`. A new Snack Time animal needs a call no other animal uses (snack-time checks `state().calls`).
 
 - 2026-11-04 R-33 Match Up (Claude, owner: a matching game for the 3½-year-old, flip two, 3x3 then 4x4 then 5x5). `MatchUp` module after `WildTap`; `#matchup` section; `POOL` = [picture, spoken name, FX call], each board picks its pairs from it (keep pictures and calls distinct when adding). Odd boards: the middle cell is `.mu-free` (star, always up). `flip()` / `cover()` / `win()`; a third tap covers a wrong pair at once. Faces are `.mu-face` frames turned with rotateY (5x5 uses thinner frames). Lines reuse existing clips only. Hooks `__toyPhone.match()` and `matchCall(a)`. Tests: match-up (new), navigation (leaving), smoke/webkit/motion-games (seven cards).
 
