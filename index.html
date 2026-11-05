@@ -5359,7 +5359,7 @@ const FX = {
     return FX.crunch(at + .85);
   },
   crunch(at=0){ [0,.26,.52].forEach(d => { noise(.07,'bandpass',3400,2000,.34,at+d); noise(.05,'bandpass',2200,1400,.26,at+d+.07); }); return at + .65; },
-  neigh(at=0){   // horse or zebra whinny: a high trilling squeal sliding down, then a soft nicker
+  neigh(at=0){   // horse whinny: a high trilling squeal sliding down, then a soft nicker
     vox({at, vol:.42, f0:[[0,820],[.12,1050],[.5,900],[.95,620],[1.25,430]], amp:[[0,0],[.06,1],[.75,.85],[1.3,0]],
       form:[{f:[[0,750],[1.3,560]], q:4}, {f:[[0,2100],[1.3,1500]], q:5, g:.6}, {f:3300, q:6, g:.25}],
       rough:.75, roughHz:11, vib:70, vibHz:11, noise:.18});
@@ -5407,7 +5407,7 @@ const FX = {
     [0,.3].forEach(d => noise(.22,'bandpass',800,350,.7,at+d));
     return vox({at:at+.62, vol:.45, f0:[[0,100],[.3,80]], amp:[[0,0],[.05,1],[.3,0]], form:[{f:450, q:3}], rough:.6, roughHz:28, noise:.5});
   },
-  growl(at=0){   // leopard or tiger: a rough "sawing" growl, in and out
+  growl(at=0){   // tiger: a rough growl, in and out
     [0,.36,.72].forEach((d, i) => vox({at:at+d, vol:.55, f0:[[0, i%2 ? 92 : 108],[.3, i%2 ? 78 : 92]], amp:[[0,0],[.06,1],[.3,0]], form:[{f:450, q:3}, {f:950, q:4, g:.5}], rough:.75, roughHz:28, noise:.6}));
     return at + 1.05;
   },
@@ -5481,6 +5481,71 @@ const FX = {
     noise(.55,'bandpass',900,2600,1.33,at+.25);
     return at + .85;
   },
+  /* every animal its own call (owner, 2026-11-04: "the horse and zebra make the same noise"): these replace calls two
+     or three animals used to share, so a call alone tells you who it is */
+  zebra(at=0){   // zebra: zebras bark rather than neigh: a yelping "kwa-ha, kwa-ha", each bark with a squeaky in-breath
+    [0,.42].forEach(d => {
+      vox({at:at+d, vol:.3, f0:[[0,520],[.05,760],[.14,600]], amp:[[0,0],[.02,1],[.15,0]], form:[{f:1100, q:4}, {f:2400, q:5, g:.5}], rough:.55, roughHz:60, noise:.25, drive:2});
+      vox({at:at+d+.17, vol:.36, f0:[[0,420],[.06,560],[.2,380]], amp:[[0,0],[.02,1],[.21,0]], form:[{f:900, q:4}, {f:2000, q:5, g:.5}], rough:.6, roughHz:50, noise:.3, drive:2});
+    });
+    return at + .85;
+  },
+  grunt(at=0){   // bear: two deep huffs, then a long, low moaning "hrrooo"
+    [0,.24].forEach(d => noise(.18,'bandpass',700,350,.5,at+d));
+    return vox({at:at+.5, vol:.6, f0:[[0,150],[.25,175],[.8,120]], amp:[[0,0],[.1,1],[.6,.8],[.85,0]], form:[{f:[[0,380],[.3,620],[.85,420]], q:3}, {f:1000, q:4, g:.45}], rough:.5, roughHz:20, noise:.35, drive:2});
+  },
+  rasp(at=0){   // leopard: a "sawing" call, like a saw going through wood: quick rough rasps, in and out
+    for (let i=0;i<6;i++) vox({at:at+i*.17, vol:.4, f0:[[0, i%2 ? 150 : 175],[.12, i%2 ? 130 : 150]], amp:[[0,0],[.025,1],[.13,0]], form:[{f:900, q:3}, {f:2000, q:4, g:.45}], rough:.8, roughHz:45, noise:.8});
+    return at + 1.05;
+  },
+  slap(at=0){   // beaver: whack! its flat tail slaps the water, twice, with a splash after
+    [0,.55].forEach(d => { noise(.05,'highpass',3000,2000,.4,at+d); tone(260,90,.12,'sine',.15,at+d); tone(520,300,.08,'triangle',.15,at+d); noise(.35,'bandpass',2600,700,.38,at+d+.03); });
+    return at + .95;
+  },
+  song(at=0){   // whale: a long, low whale song that rises and falls: "ooo-OOOO-ooo"
+    return vox({at, vol:.29, type:'triangle', f0:[[0,300],[.5,520],[.9,580],[1.5,340]], amp:[[0,0],[.3,.8],[.9,1],[1.55,0]], form:[{f:[[0,500],[.9,800],[1.55,520]], q:3}, {f:1400, q:4, g:.3}], vib:25, vibHz:3, noise:.06});
+  },
+  bloop(at=0){   // octopus: bubbly bloops rising up through the water
+    [[0,400],[.14,500],[.25,450],[.4,600],[.52,540]].forEach(([d, f]) => { tone(f, f*2.6, .09, 'sine', .4, at+d); tone(f*2, f*4.4, .07, 'triangle', .12, at+d+.01); });
+    return at + .65;
+  },
+  clack(at=0){   // toucan: its big bill clatters like a wooden rattle, then a frog-like croak
+    for (let i=0;i<8;i++){ noise(.035,'bandpass',1500 + (i%2)*500,1200,.6,at+i*.055); tone(760 + (i%2)*120, 600, .04, 'triangle', .22, at+i*.055); }
+    return vox({at:at+.55, vol:.42, f0:[[0,330],[.2,290]], amp:[[0,0],[.03,1],[.22,0]], form:[{f:800, q:4}, {f:1800, q:5, g:.5}], rough:.9, roughHz:40, noise:.2});
+  },
+  pinch(at=0){   // crab: tiny claws going click-click-click while it scuttles sideways
+    [0,.09,.18,.42,.51,.6].forEach(d => { noise(.018,'highpass',4500,3500,.13,at+d); tone(3200,2600,.025,'sine',.05,at+d); });
+    [0,.06,.12,.18,.24].forEach(d => noise(.04,'bandpass',5200,4200,.03,at+.75+d));
+    return at + 1.05;
+  },
+  caw(at=0){   // pterodactyl: big leathery wing beats, then a deep, raspy "skraaawk" (lower and rougher than the eagle)
+    [0,.28].forEach(d => noise(.2,'bandpass',500,1100,.5,at+d));
+    return vox({at:at+.55, vol:.32, f0:[[0,620],[.12,820],[.5,560]], amp:[[0,0],[.04,1],[.4,.8],[.55,0]], form:[{f:[[0,1200],[.55,900]], q:4}, {f:2300, q:5, g:.5}], rough:.85, roughHz:45, noise:.35, drive:4});
+  },
+  snore(at=0){   // koala: a sleepy snore, rumbling in, then a whistly breath out
+    vox({at, vol:.55, f0:[[0,95],[.7,110]], amp:[[0,0],[.25,1],[.7,.8],[.8,0]], form:[{f:520, q:3}, {f:1100, q:4, g:.4}], rough:.9, roughHz:24, noise:.6});
+    noise(.6,'bandpass',1800,2600,.18,at+.9); tone(1300,1000,.5,'sine',.05,at+.95);
+    return at + 1.55;
+  },
+  hop(at=0){   // bunny: thump-thump-thump with its big back feet, and a little hop squeak
+    [0,.22,.44].forEach(d => { noise(.08,'bandpass',900,500,.6,at+d); tone(480,320,.08,'triangle',.35,at+d); });
+    tone(1100,1900,.12,'sine',.09,at+.62);
+    return at + .8;
+  },
+  slurp(at=0){   // snail: slow, slippery slurps, then a tiny pop
+    [0,.45].forEach(d => { noise(.4,'bandpass',500,1700,.55,at+d); tone(260,520,.38,'triangle',.1,at+d,7); });
+    tone(700,1400,.06,'sine',.16,at+.95);
+    return at + 1.05;
+  },
+  knock(at=0){   // turtle: knock knock on its hard shell, slow and hollow
+    [[0,520],[.3,470],[.6,560]].forEach(([d, f]) => { tone(f, f*.9, .12, 'triangle', .4, at+d); noise(.06,'bandpass',f*2,f*1.6,.45,at+d); });
+    return at + .8;
+  },
+  bamboo(at=0){   // panda: snap! goes a bamboo stalk, then chomp, chomp
+    noise(.06,'bandpass',2600,1800,.8,at); tone(1500,700,.08,'triangle',.25,at); tone(900,500,.06,'square',.06,at+.02);
+    [.3,.58].forEach(d => { noise(.1,'bandpass',1600,900,.6,at+d); tone(240,180,.1,'triangle',.25,at+d); });
+    return at + .75;
+  },
   sniff(at=0){   // hedgehog: little snuffles and a squeak
     [0,.11,.22,.33].forEach(d => noise(.07,'bandpass',2600,1800,1,at+d));
     vox({at:at+.48, vol:.29, type:'triangle', f0:[[0,2200],[.08,2800]], amp:[[0,0],[.02,1],[.1,0]], form:[{f:2600, q:3}]});
@@ -5520,7 +5585,8 @@ function playRec(buf, at = 0){
    giraffe's hum ends in the crunch sound; the crunch isn't trimmed twice). */
 const FX_TRIM = {roar:2.2, bigroar:2.3, trumpet:-2.1, munch:7.1, neigh:-2, bray:.4, hippo:6, bellow:3.6, stomp:8.2, huff:9.4, stego:6.3,
   screech:-2, splash:7, snort:11.3, growl:6.8, squawk:1.8, honk:2.7, thump:8.2, ribbit:8.2, hoot:1.5, yawn:-3, moo:4.2, meow:-1.5, quack:-.7,
-  tweet:7.4, snap:3.7, peep:6.3, boing:1, boom:7.5, crunch:8, flick:8, flutter:8};
+  tweet:7.4, snap:3.7, peep:6.3, boing:1, boom:7.5, crunch:8, flick:8, flutter:8,
+  zebra:2.3, rasp:3.9, slap:4.6, bloop:4.4, clack:7, snore:4.7, hop:10.8, slurp:14.5, knock:9.4, bamboo:9.3};
 /* after the trim, a soft limiter: untouched up to 0.7, then rounding off below 1, so a boosted thud or snort never clips.
    The curve covers -2..2 (the trim feeds it at half level), so even a peak at twice full scale is rounded, not cut off. */
 let softCurve = null;
@@ -9608,50 +9674,50 @@ const SnackTime = (() => {
     {p:'farm', a:'goat', n:'goat', food:'cabbage', w:'a cabbage', fp:'cabbages', x:'maa', m:[.1,.42]},
     {p:'farm', a:'dog', n:'puppy', food:'bone', w:'a bone', fp:'bones', x:'woof', m:[.19,.56]},
     {p:'farm', a:'cat', n:'kitty', food:'milk', w:'some milk', fp:'milk', x:'meow', m:[.33,.4]},   // (the family's pick: the kitty and her milk, as in the picture books)
-    {p:'forest', a:'bear', n:'bear', food:'honey', w:'some honey', fp:'honey', x:'growl', m:[.13,.56]},
+    {p:'forest', a:'bear', n:'bear', food:'honey', w:'some honey', fp:'honey', x:'grunt', m:[.13,.56]},
     {p:'forest', a:'squirrel', n:'squirrel', food:'acorn', w:'an acorn', fp:'acorns', x:'chitter', m:[.19,.44]},
     {p:'forest', a:'fox', n:'fox', food:'grapes', w:'some grapes', fp:'grapes', x:'yip', m:[.12,.58]},
     {p:'forest', a:'hedgehog', n:'hedgehog', food:'worm', w:'a worm', fp:'worms', x:'sniff', m:[.13,.8]},
     {p:'forest', a:'owl', n:'owl', food:'beetle', w:'a beetle', fp:'beetles', x:'hoot', m:[.5,.53]},
-    {p:'forest', a:'bunny', n:'bunny', food:'carrot', w:'a carrot', fp:'carrots', x:'', m:[.19,.56]},
+    {p:'forest', a:'bunny', n:'bunny', food:'carrot', w:'a carrot', fp:'carrots', x:'hop', m:[.19,.56]},
     {p:'forest', a:'mouse', n:'mouse', food:'cheese', w:'some cheese', fp:'cheese', x:'squeak', m:[.13,.7]},
-    {p:'forest', a:'beaver', n:'beaver', food:'stick', w:'a stick', fp:'sticks', x:'splash', m:[.13,.6]},
+    {p:'forest', a:'beaver', n:'beaver', food:'stick', w:'a stick', fp:'sticks', x:'slap', m:[.13,.6]},
     {p:'forest', a:'raccoon', n:'raccoon', food:'cherries', w:'some cherries', fp:'cherries', x:'trill', m:[.08,.6]},
-    {p:'forest', a:'koala', n:'koala', food:'eucalyptus', w:'some eucalyptus', fp:'eucalyptus', x:'bellow', m:[.25,.56]},
+    {p:'forest', a:'koala', n:'koala', food:'eucalyptus', w:'some eucalyptus', fp:'eucalyptus', x:'snore', m:[.25,.56]},
     {p:'garden', a:'bee', n:'bee', food:'sunflower', w:'a sunflower', fp:'sunflowers', x:'buzz', m:[.1,.62]},
     {p:'garden', a:'butterfly', n:'butterfly', food:'flower', w:'a flower', fp:'flowers', x:'flutter', m:[.5,.35]},
-    {p:'garden', a:'snail', n:'snail', food:'cucumber', w:'a cucumber', fp:'cucumbers', x:'', m:[.13,.72]},
-    {p:'garden', a:'turtle', n:'turtle', food:'strawberry', w:'a strawberry', fp:'strawberries', x:'', m:[.1,.6]},
+    {p:'garden', a:'snail', n:'snail', food:'cucumber', w:'a cucumber', fp:'cucumbers', x:'slurp', m:[.13,.72]},
+    {p:'garden', a:'turtle', n:'turtle', food:'strawberry', w:'a strawberry', fp:'strawberries', x:'knock', m:[.1,.6]},
     {p:'garden', a:'frog', n:'frog', food:'fly', w:'a fly', fp:'flies', x:'ribbit', m:[.5,.6]},
     {p:'garden', a:'lizard', n:'lizard', food:'cricket', w:'a cricket', fp:'crickets', x:'flick', m:[.06,.58]},
     {p:'seaside', a:'penguin', n:'penguin', food:'fish', w:'a fish', fp:'fish', x:'bray', m:[.27,.34]},
-    {p:'seaside', a:'whale', n:'whale', food:'krill', w:'some krill', fp:'krill', x:'splash', m:[.16,.63]},
-    {p:'seaside', a:'crab', n:'crab', food:'seaweed', w:'some seaweed', fp:'seaweed', x:'snap', m:[.5,.7]},
-    {p:'seaside', a:'octopus', n:'octopus', food:'clam', w:'a clam', fp:'clams', x:'splash', m:[.5,.5]},
+    {p:'seaside', a:'whale', n:'whale', food:'krill', w:'some krill', fp:'krill', x:'song', m:[.16,.63]},
+    {p:'seaside', a:'crab', n:'crab', food:'seaweed', w:'some seaweed', fp:'seaweed', x:'pinch', m:[.5,.7]},
+    {p:'seaside', a:'octopus', n:'octopus', food:'clam', w:'a clam', fp:'clams', x:'bloop', m:[.5,.5]},
     {p:'seaside', a:'flamingo', n:'flamingo', food:'shrimp', w:'a shrimp', fp:'shrimp', x:'honk', m:[.12,.2]},
     {p:'seaside', a:'eagle', n:'eagle', food:'salmon', w:'a salmon', fp:'salmon', x:'screech', m:[.12,.55]},
     {p:'jungle', a:'monkey', n:'monkey', food:'banana', w:'a banana', fp:'bananas', x:'ooh', m:[.47,.5]},
     {p:'jungle', a:'parrot', n:'parrot', food:'blueberry', w:'a blueberry', fp:'blueberries', x:'squawk', m:[.21,.4]},
-    {p:'jungle', a:'toucan', n:'toucan', food:'mango', w:'a mango', fp:'mangoes', x:'squawk', m:[.25,.31]},
+    {p:'jungle', a:'toucan', n:'toucan', food:'mango', w:'a mango', fp:'mangoes', x:'clack', m:[.25,.31]},
     {p:'jungle', a:'gorilla', n:'gorilla', food:'orange', w:'an orange', fp:'oranges', x:'thump', m:[.45,.45]},
     {p:'jungle', a:'sloth', n:'sloth', food:'lettuce', w:'some lettuce', fp:'lettuce', x:'yawn', m:[.48,.47]},
-    {p:'jungle', a:'panda', n:'panda', food:'bamboo', w:'some bamboo', fp:'bamboo', x:'', m:[.47,.49]},
+    {p:'jungle', a:'panda', n:'panda', food:'bamboo', w:'some bamboo', fp:'bamboo', x:'bamboo', m:[.47,.49]},
     {p:'jungle', a:'tiger', n:'tiger', food:'ribs', w:'some ribs', fp:'ribs', x:'growl', m:[.27,.56]},
     {p:'jungle', a:'crocodile', n:'crocodile', food:'sausage', w:'a sausage', fp:'sausages', x:'snap', m:[.06,.78]},
     {p:'savanna', a:'lion', n:'lion', food:'steak', w:'a steak', fp:'steaks', x:'roar', m:[.28,.5]},
     {p:'savanna', a:'giraffe', n:'giraffe', food:'leaf', w:'a leaf', fp:'leaves', x:'munch', m:[.1,.19]},
-    {p:'savanna', a:'zebra', n:'zebra', food:'hay', w:'some hay', fp:'hay', x:'neigh', m:[.07,.38]},
+    {p:'savanna', a:'zebra', n:'zebra', food:'hay', w:'some hay', fp:'hay', x:'zebra', m:[.07,.38]},
     {p:'savanna', a:'elephant', n:'elephant', food:'peanut', w:'a peanut', fp:'peanuts', x:'trumpet', m:[.18,.6]},
     {p:'savanna', a:'rhino', n:'rhino', food:'apple', w:'an apple', fp:'apples', x:'snort', m:[.07,.6]},
     {p:'savanna', a:'hippo', n:'hippo', food:'watermelon', w:'some watermelon', fp:'watermelon', x:'hippo', m:[.1,.65]},
-    {p:'savanna', a:'leopard', n:'leopard', food:'meat', w:'some meat', fp:'meat', x:'growl', m:[.24,.64]},
+    {p:'savanna', a:'leopard', n:'leopard', food:'meat', w:'some meat', fp:'meat', x:'rasp', m:[.24,.64]},
     {p:'savanna', a:'camel', n:'camel', food:'dates', w:'some dates', fp:'dates', x:'grumble', m:[.07,.25]},
     {p:'savanna', a:'kangaroo', n:'kangaroo', food:'sweetpotato', w:'a sweet potato', fp:'sweet potatoes', x:'boing', m:[.12,.36]},
     {p:'dino', a:'trex', n:'T rex', food:'ham', w:'a ham', fp:'hams', x:'bigroar', m:[.15,.33]},
     {p:'dino', a:'longneck', n:'long neck', food:'pinecone', w:'a pinecone', fp:'pinecones', x:'bellow', m:[.07,.2]},
     {p:'dino', a:'trike', n:'triceratops', food:'fern', w:'a fern', fp:'ferns', x:'huff', m:[.08,.55]},
     {p:'dino', a:'stego', n:'stegosaurus', food:'raspberry', w:'a raspberry', fp:'raspberries', x:'stego', m:[.06,.73]},
-    {p:'dino', a:'ptero', n:'pterodactyl', food:'squid', w:'a squid', fp:'squid', x:'screech', m:[.42,.3]},
+    {p:'dino', a:'ptero', n:'pterodactyl', food:'squid', w:'a squid', fp:'squid', x:'caw', m:[.42,.3]},
     {p:'dino', a:'dragon', n:'little dragon', food:'pepper', w:'a hot pepper', fp:'hot peppers', x:'fire', m:[.1,.5]}
   ];
   /* foods that look alike are never offered together, so the choice is about the animal, not squinting */
@@ -9818,7 +9884,7 @@ const SnackTime = (() => {
     state: () => ({want: cur && !eating ? cur.food : null, animal: cur && cur.a, fed, choices: foodsEl.children.length, two: asked === 2, need,
       parade: !!$('.st-parade', root), bus: !!$('.st-bus', root), place: place.k, left: queue.length + (cur ? 1 : 0), visited: [...visited], map: !mapEl.hidden,
       places: PLACES.map(pl => ({k:pl.k, animals:here(pl).map(s => s.a)})), offered: $$('.st-food', foodsEl).map(b => b.dataset.food),
-      foods: Object.fromEntries(SNACKS.map(s => [s.a, s.food]))}),
+      foods: Object.fromEntries(SNACKS.map(s => [s.a, s.food])), calls: Object.fromEntries(SNACKS.map(s => [s.a, s.x]))}),
     // (More Snacks borrows the animals whose snacks can be counted)
     pals: () => SNACKS.filter(countable).map(s => ({a:s.a, n:s.n, food:s.food, fp:s.fp})),
     lines: () => ['Hooray! Five full tummies!', MORE, WHERE, ...PLACES.flatMap(pl => [HELLO(pl), 'Snack Time! ' + HELLO(pl), OFF(pl), FULL(pl)]),

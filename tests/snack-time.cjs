@@ -1,7 +1,7 @@
 /* Snack Time, the journey (R-30, R-32), with real taps:
    - 54 animals in seven places (farm, forest, garden, seaside, jungle, savanna, Dino Land), each with its own snack:
      no two animals share one; every animal and snack has a picture, every call a sound, every line a recording;
-   - the kitty still wants her milk (the family's pick);
+   - the kitty still wants her milk (the family's pick); every animal has its own call, none shared or silent;
    - it starts on the farm, with the farm's scenery and only farm animals; the foods offered always include the one
      wanted, never two that look alike;
    - once a few animals are fed, some ask for two of something you can count: two in the bubble, a bite and "One more!",
@@ -31,7 +31,7 @@ const UNCOUNTABLE = ['milk', 'bamboo', 'corn', 'watermelon', 'grass', 'meat', 'h
 const LOOKALIKE = [['strawberry', 'raspberry', 'cherries'], ['leaf', 'eucalyptus', 'lettuce', 'cabbage', 'clover', 'fern'], ['fish', 'salmon'], ['shrimp', 'krill'],
   ['meat', 'ham', 'steak', 'ribs', 'sausage'], ['fly', 'cricket', 'beetle'], ['orange', 'mango', 'pumpkin'], ['peanut', 'acorn', 'dates', 'pinecone'], ['grass', 'hay', 'oats'], ['flower', 'sunflower']];
 const CALLS = ['moo', 'oink', 'peep', 'quack', 'neigh', 'baa', 'maa', 'woof', 'meow', 'growl', 'chitter', 'yip', 'sniff', 'hoot', 'squeak', 'splash', 'trill', 'bellow', 'buzz', 'flutter', 'ribbit', 'flick',
-  'bray', 'snap', 'honk', 'screech', 'ooh', 'squawk', 'thump', 'yawn', 'roar', 'munch', 'trumpet', 'snort', 'hippo', 'grumble', 'boing', 'bigroar', 'huff', 'stego', 'fire'];
+  'bray', 'snap', 'honk', 'screech', 'ooh', 'squawk', 'thump', 'yawn', 'roar', 'munch', 'trumpet', 'snort', 'hippo', 'grumble', 'boing', 'bigroar', 'huff', 'stego', 'fire', 'zebra', 'grunt', 'rasp', 'slap', 'song', 'bloop', 'clack', 'pinch', 'caw', 'snore', 'hop', 'slurp', 'knock', 'bamboo', 'crunch'];
 let allTwos = 0;
 
 (async () => {
@@ -66,6 +66,8 @@ let allTwos = 0;
         check(foods.cat === 'milk', 'the kitty still wants her milk');
         const drawn = await page.evaluate(ks => ks.filter(k => !/^<img class="px"/.test(window.__toyPhone.pic(k))), [...animals, ...Object.values(foods)]);
         const fx = await page.evaluate(() => window.__toyPhone.fx());
+        const calls = Object.values(st.calls), shared = calls.filter((c, i) => !c || calls.indexOf(c) !== i);
+        check(calls.length === 54 && !shared.length && calls.every(c => fx.includes(c)), `every animal has its own call: none silent, none shared (the horse and the zebra used to sound the same) ${shared.join(', ')}`);
         check(drawn.length === 0 && CALLS.every(n => fx.includes(n)), `every animal and snack has a picture, every call a sound ${drawn.join(', ')}`);
         const missing = await page.evaluate(() => window.__toyPhone.voiceMissing());
         check(missing.length === 0, `every line is recorded ${missing.slice(0, 4).join(', ')}`);
