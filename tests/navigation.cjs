@@ -22,10 +22,10 @@ const server = http.createServer((req, res) => {
 });
 const check = (condition, message) => { assert.ok(condition, message); console.log('ok  ' + message); };
 // what the children play with in each game: the Games button must not sit on any of it
-const PLAY = {wildtap:'#wt-menu .wt-tile', snacktime:'#stFoods .st-food, #stAnimal, #stThink', dinobuddies:'.db-side, #dbEgg', paintpals:'.pp-easel',
+const PLAY = {wildtap:'#wt-menu .wt-tile', matchup:'#muBoard .mu-card', snacktime:'#stFoods .st-food, #stAnimal, #stThink', dinobuddies:'.db-side, #dbEgg', paintpals:'.pp-easel',
   balltrail:'#balltrail .mg-board', starflight:'#starflight .mg-board'};
 const CONTROLS = '.round, .sc-back, .wt-back, .who-btn';
-const ACTIVITIES = ['wildtap', 'dinobuddies', 'snacktime', 'paintpals', 'balltrail', 'starflight', 'letterpath', 'abczoo', 'abcsnack', 'numzoo', 'numsnack', 'delivery', 'dinopicnic',
+const ACTIVITIES = ['wildtap', 'matchup', 'dinobuddies', 'snacktime', 'paintpals', 'balltrail', 'starflight', 'letterpath', 'abczoo', 'abcsnack', 'numzoo', 'numsnack', 'delivery', 'dinopicnic',
   'sorting', 'patterntrain', 'moresnacks', 'storytime', 'feelings', 'phone', 'camera', 'photos', 'music'];
 
 (async () => {

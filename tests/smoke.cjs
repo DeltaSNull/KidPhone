@@ -581,9 +581,9 @@ async function run(browser, base, name, viewport, { family = true } = {}) {
   // --- GAMES: the picker, then every game
   await tap('[data-app="games"]'); await sleep(600);
   check((await said()).some(s => /Pick a game/.test(s)), 'games speaks its prompt');
-  check(await page.locator('#gameList .gamecard').count() === 6, 'games list shows all six games');
+  check(await page.locator('#gameList .gamecard').count() === 7, 'games list shows all seven games');
   const notes = await page.$$eval('#gameList .gamecard', cs => cs.map(c => c.getAttribute('aria-label') + ': ' + c.querySelector('.gplay').textContent.trim()));
-  check(JSON.stringify(notes) === JSON.stringify(['Wild Tap: 1 player', 'Snack Time: 1 player', 'Dino Buddies: 1 or 2 players', 'Paint Pals: 1 or 2 players', 'Ball Trail: 1 player', 'Star Flight: 1 player']), `each game card says how many players ${JSON.stringify(notes)}`);
+  check(JSON.stringify(notes) === JSON.stringify(['Wild Tap: 1 player', 'Match Up: 1 player', 'Snack Time: 1 player', 'Dino Buddies: 1 or 2 players', 'Paint Pals: 1 or 2 players', 'Ball Trail: 1 player', 'Star Flight: 1 player']), `each game card says how many players ${JSON.stringify(notes)}`);
   for (const card of await page.locator('#gameList .gamecard').all()) {
     await card.evaluate(b => b.scrollIntoView({block:'nearest',inline:'nearest',behavior:'instant'}));
     check(await card.evaluate(b => { const r=b.getBoundingClientRect(), p=b.closest('#gameList').getBoundingClientRect(); return r.top>=p.top-1&&r.bottom<=p.bottom+1&&r.left>=p.left-1&&r.right<=p.right+1; }), `Games menu: ${await card.getAttribute('aria-label')} is reachable by scrolling`);

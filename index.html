@@ -159,7 +159,7 @@ img[src^="data:image/png"]{image-rendering:-webkit-optimize-contrast; image-rend
 .art{line-height:1}
 .art > .px{width:1.15em; height:1.15em}
 /* frames: notched pixel corners, a light rim, a darker lip and a drop shadow, stretched to fit (border-image) */
-.tab,.contact,.dial,.key,.callbtn,.thumb,.pic,.song,.wt-tile,.wt-back,.wt-pad,.wt-choice,.wt-stickers,.wt-newegg,.st-food,.pp-easel,.who-btn,.sheet,.sbtn,.vopt,.confirm,.bar,.pad,.pkey,.vstage img,.pkey.blk::after,.lp-card,.lp-paper,.mg-hedge,.mg-goal,.sa-choice,.sa-think,.sa-book{
+.tab,.contact,.dial,.key,.callbtn,.thumb,.pic,.song,.wt-tile,.wt-back,.wt-pad,.wt-choice,.wt-stickers,.wt-newegg,.st-food,.pp-easel,.who-btn,.sheet,.sbtn,.vopt,.confirm,.bar,.pad,.pkey,.vstage img,.pkey.blk::after,.lp-card,.lp-paper,.mg-hedge,.mg-goal,.sa-choice,.sa-think,.sa-book,.mu-face{
   border-style:solid; border-color:transparent; border-width:9px 9px 15px; border-image:var(--fr, var(--f-paper)) 9 9 15 fill / 9px 9px 15px stretch;
   border-radius:0!important; box-shadow:none!important; background:none!important}
 .word,.wt-word,.nm,.gname,.gplay,.calltime,#zoomTxt,.lp-word{border-style:solid; border-color:transparent; border-width:6px 6px 9px; border-image:var(--tg, var(--t-paper)) 6 6 9 fill / 6px 6px 9px stretch; border-radius:0!important; box-shadow:none!important; background:none!important}
@@ -507,7 +507,7 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img:not(.px){image-rendering
 .g-dino .gart,.g-paint .gart{align-items:center}
 .gamecard.go{animation:hop .45s cubic-bezier(.3,1.6,.5,1)}
 
-/* six game cards: a little tighter so they all fit */
+/* seven game cards: a little tighter, and the list scrolls */
 #gameList{gap:7px;grid-auto-rows:minmax(116px,1fr);overflow-y:auto;overscroll-behavior:contain;touch-action:pan-y}
 #gameList .gamecard{touch-action:pan-y}
 #gameList .gtext{width:150px}
@@ -716,6 +716,39 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img:not(.px){image-rendering
 .db-family .px{width:1.15em; height:1.15em}
 @keyframes db-arrive{from{transform:scale(0)}}
 .db-treat{position:absolute; left:0; top:0; width:56px; height:56px; display:grid; place-items:center; font-size:44px; line-height:1; pointer-events:none; z-index:6; will-change:transform}
+
+/* ---------- Game: Match Up (one player): flip two cards; the same animal twice stays up. 3x3, then 4x4, then 5x5 ----------
+   An odd board has a star in the middle that's always up (nobody's pair). Cards turn over in 3D; with Reduce Motion they swap. */
+.app.mu{display:grid; grid-template-rows:64px minmax(0,1fr); background:#C9F2E8}
+@media (orientation:landscape){ .app.mu{grid-template-rows:none; grid-template-columns:64px minmax(0,1fr)} }
+.mu-steps{display:flex; justify-content:center; align-items:center; gap:10px; margin:0 72px; pointer-events:none}
+@media (orientation:landscape){ .mu-steps{flex-direction:column; justify-content:flex-start; margin:76px 0 0} }
+.mu-step{display:grid; grid-template-columns:repeat(var(--n), 1fr); gap:2px; width:40px; height:40px; padding:4px; border:3px solid #5A4A3E; border-bottom-width:5px; background:#FFFDF6; opacity:.55}
+.mu-step i{background:#4FA3E6}
+.mu-step.done{opacity:1; background:#FFF1A6} .mu-step.done i{background:#3BBF5C}
+.mu-step.on{opacity:1; background:#FFC83D; animation:hop .45s cubic-bezier(.3,1.6,.5,1)}
+.mu-field{min-width:0; min-height:0; display:grid; place-items:center; container-type:size}
+.mu-board{--n:3; --g:12px; width:min(92vw, 56vh); height:min(92vw, 56vh); display:grid; grid-template-columns:repeat(var(--n), minmax(0,1fr)); grid-template-rows:repeat(var(--n), minmax(0,1fr)); gap:var(--g)}
+@supports (width:1cqw){ .mu-board{width:min(100cqw, 100cqh); height:min(100cqw, 100cqh)} }
+.mu-board.n4{--g:9px} .mu-board.n5{--g:6px}
+.mu-board.in{animation:appIn .35s cubic-bezier(.25,1.3,.5,1)}
+.mu-card{position:relative; min-width:0; min-height:0; perspective:700px; container-type:size}
+.mu-face{position:absolute; inset:0; display:grid; place-items:center; backface-visibility:hidden; -webkit-backface-visibility:hidden; transition:transform .3s ease-out; pointer-events:none}
+.mu-board.n5 .mu-face{border-width:6px 6px 10px; border-image:var(--fr) 9 9 15 fill / 6px 6px 10px stretch}   /* (thinner frames leave room for the animal on the small cards) */
+.mu-back{--fr:var(--f-lagoon)}
+.mu-back b{font-size:28px; font-size:46cqmin; color:#FFF6E0; text-shadow:0 3px 0 #163E70; margin-top:-6%}
+.mu-front{--fr:var(--f-paper); transform:rotateY(180deg)}
+.mu-front .px{width:88%; height:88%}
+.mu-card.up .mu-back{transform:rotateY(-180deg)} .mu-card.up .mu-front{transform:none}
+.mu-card.got .mu-front{--fr:var(--f-lit)}
+.mu-free .mu-front{--fr:var(--f-sun)} .mu-free .mu-front .px{width:70%; height:70%}
+.mu-card.hop{animation:hop .45s cubic-bezier(.3,1.6,.5,1)}
+/* the Games card: two of the same animal and one still face down */
+.g-match{background:#C9F2E8}
+.g-match .gart{align-items:center; gap:6px}
+.mu-gc{width:calc(var(--a) * .78); height:calc(var(--a) * .78); display:grid; place-items:center; border:3px solid #5A4A3E; border-bottom-width:5px; background:#FFFDF6}
+.mu-gc .px{width:86%; height:86%}
+.mu-gc.back{background:#4FA3E6; color:#FFF6E0; font-size:calc(var(--a) * .42); text-shadow:0 2px 0 #163E70}
 
 /* ---------- Game: Snack Time (one player): each hungry animal thinks of a food; give it that one ---------- */
 .app.st{display:grid; grid-template-rows:minmax(0,1fr) auto; overflow:hidden}
@@ -1475,6 +1508,13 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img:not(.px){image-rendering
           </div></div>
         </div>
         <div class="st-foods" id="stFoods" aria-label="Snacks"></div>
+      </section>
+
+      <!-- GAME: Match Up (one player: flip two cards; the same animal twice stays up) -->
+      <section class="app mu" id="matchup" hidden aria-label="Match Up">
+        <button class="sc-back game-back" aria-label="Games"></button>
+        <div class="mu-steps" id="muSteps" aria-label="Boards"></div>
+        <div class="mu-field"><div class="mu-board" id="muBoard" role="group" aria-label="Cards"></div></div>
       </section>
 
       <!-- GAME: Paint Pals (two kids, one picture each, painted by rubbing) -->
@@ -4944,7 +4984,7 @@ const BGS = [
   ['#camera', BG.grad(['#6CBDF5', '#4FA3E6', '#3A8EDA', '#2F7FD0'])], ['#photos', BG.grad(['#FFF6D2', '#FFEDAE', '#FFE59A', '#FFDF8A'])],
   ['.viewer', BG.grad(['#FFF6D2', '#FFEDAE', '#FFE59A', '#FFDF8A'])], ['#music', BG.grad(['#F0E8FF', '#DCCEFA', '#CAB8F6', '#BBA6F2'])], ['.stage', BG.stage],
   ['#games', BG.stripey(['#B0EBAA', '#8FDB8E', '#6CCB78', '#4FB86A'], '#C2F2BC')], ['.g-wild', BG.wild], ['.g-feed', BG.feed], ['.g-dino', BG.split], ['.g-paint', BG.paint],
-  ['#wt-menu', BG.wtMenu], ['#wt-world', BG.wtWorld], ['#wt-find', BG.grad(['#FFDCE3', '#FFC7D2', '#FFB3C2'])], ['#wt-egg', BG.wtEgg], ['#wt-bubbles', BG.bubbles],
+  ['#wt-menu', BG.wtMenu], ['#wt-world', BG.wtWorld], ['#wt-find', BG.grad(['#FFDCE3', '#FFC7D2', '#FFB3C2'])], ['#matchup', BG.grad(['#E2FAF4', '#C9F2E8', '#B0EADB'])], ['.g-match', BG.grad(['#E2FAF4', '#C9F2E8', '#B0EADB'])], ['#wt-egg', BG.wtEgg], ['#wt-bubbles', BG.bubbles],
   ['.db-a', BG.dbSide('#A6E39A', '#6CC46A', '#3E9447')], ['.db-b', BG.dbSide('#A9DDF7', '#5BB8E8', '#2F86C4')], ['.db-mid', BG.sand],
   ['#stScene', BG.snack], ['#asScene', BG.snack], ['.st-foods', BG.picnic],
   ['#school', BG.stripey(['#FFF0B8', '#FFE28A', '#FFD466', '#FFC746'], '#FFF6D2')], ['.g-abc', BG.grad(['#FFF6D2', '#FFE8A3', '#FFDB7A'])], ['.g-abcsnack', BG.grad(['#E4F6FF', '#C9ECFF', '#ADE0FF'])],
@@ -5088,7 +5128,7 @@ const saveSettings = () => store.set('settings', settings);
 
 /* Access policy is separate from sound/game settings and applies to all navigation and device entry points. */
 const ACCESS_APPS = ['school','games','camera','photos','music','phone'];
-const ACCESS_GROUP = {wildtap:'games', dinobuddies:'games', snacktime:'games', paintpals:'games', balltrail:'games', starflight:'games',
+const ACCESS_GROUP = {wildtap:'games', matchup:'games', dinobuddies:'games', snacktime:'games', paintpals:'games', balltrail:'games', starflight:'games',
   letterpath:'school', abczoo:'school', abcsnack:'school', numzoo:'school', numsnack:'school', delivery:'school', dinopicnic:'school', sorting:'school', patterntrain:'school', moresnacks:'school', storytime:'school', feelings:'school'};
 const savedAccess = store.get('access', {}) || {};
 let access = {v:2, mode:['full','school','custom'].includes(savedAccess.mode) ? savedAccess.mode : 'full',
@@ -5804,7 +5844,7 @@ function updateClock(){ const d = new Date(); $('#clockTxt').textContent = ((d.g
 updateClock(); setInterval(updateClock, 10000);
 
 /* ---------- Navigation ---------- */
-const APPS = ['home','phone','camera','photos','music','games','wildtap','dinobuddies','snacktime','paintpals','balltrail','starflight','school','letterpath','abczoo','abcsnack','numzoo','numsnack','delivery','dinopicnic','sorting','patterntrain','moresnacks','storytime','feelings'];
+const APPS = ['home','phone','camera','photos','music','games','wildtap','matchup','dinobuddies','snacktime','paintpals','balltrail','starflight','school','letterpath','abczoo','abcsnack','numzoo','numsnack','delivery','dinopicnic','sorting','patterntrain','moresnacks','storytime','feelings'];
 let current = 'home';
 const APP_SAY = {phone:'Phone! Who do you want to call?', camera:'Camera! Slide to look around. Then press the big button!', music:'Music! Let\'s play!', games:'Games! Pick a game!'};
 function go(name, fromEl){
@@ -5830,6 +5870,7 @@ function enterApp(name){
   if (name === 'games') say(APP_SAY.games, 0, 'menus');
   if (name === 'balltrail' || name === 'starflight') MotionGames.enter(name);
   if (name === 'wildtap') WildTap.enter();
+  if (name === 'matchup') MatchUp.enter();
   if (name === 'dinobuddies') DinoBuddies.enter();
   if (name === 'snacktime') SnackTime.enter();
   if (name === 'paintpals') PaintPals.enter();
@@ -5850,6 +5891,7 @@ function leaveApp(name){
   if (name === 'photos') closeViewer(true);
   if (name === 'balltrail' || name === 'starflight') MotionGames.leave();
   if (name === 'wildtap') WildTap.leave();
+  if (name === 'matchup') MatchUp.leave();
   if (name === 'dinobuddies') DinoBuddies.leave();
   if (name === 'snacktime') SnackTime.leave();
   if (name === 'paintpals') PaintPals.leave();
@@ -9129,6 +9171,7 @@ const MotionGames = (() => {
    p: how many players it can be; the card says so, with a little kid for each. A game for 1 or 2 asks when it opens. */
 const GAMES = [
   {id:'wildtap', n:'Wild Tap', p:[1], cls:'g-wild', art:`<span class="art">${ART.elephant}</span><span class="art big">${ART.lion}</span><span class="art">${ART.giraffe}</span>`},
+  {id:'matchup', n:'Match Up', p:[1], cls:'g-match', art:`<span class="mu-gc">${ART.cat}</span><span class="mu-gc back">?</span><span class="mu-gc">${ART.cat}</span>`},
   {id:'snacktime', n:'Snack Time', p:[1], cls:'g-feed', art:`<span class="art">${ART.banana}</span><span class="art big">${ART.monkey}</span><span class="art">${ART.watermelon}</span>`},
   {id:'dinobuddies', n:'Dino Buddies', p:[1,2], cls:'g-dino', art:`<span class="art mid">${ART.trex}</span><span class="art sm">${ART.egg}</span><span class="art mid flip">${ART.trex}</span>`},
   {id:'paintpals', n:'Paint Pals', p:[1,2], cls:'g-paint', art:`<span class="art mid flip">${ppHalf('giraffe')}</span><span class="art sm">${ART.brush}</span><span class="art mid">${ppHalf('lion')}</span>`},
@@ -9318,6 +9361,98 @@ const WildTap = (() => {
     lines: () => ['Wild Tap! Pick one!', 'Safari!', 'Zoo!', 'Dinosaurs!', 'Tap the egg!', 'Pop the bubbles!', 'Crack!', TEN,
       ...Object.values(W).flatMap(w => w.list.flatMap(a => [a.s, a.f])), ...ALL.flatMap(a => [WHERE(a), FOUND(a), THATS(a), FIND(a)]), ...HATCH.map(BABY)],
     leave(){ stopBubbles(); }
+  };
+})();
+
+/* ---------- Match Up: the classic memory game. Flip two cards: the same animal twice stays up, two different turn back ----------
+   3x3 (four pairs and a star), then 4x4, then 5x5 (twelve pairs and a star), and 5x5 again after that. Each opening
+   starts at 3x3; nothing is saved. Every animal makes its own call as it turns over, so a pair can be found by ear too.
+   No timer, nothing to lose: two that don't match stay up long enough to remember, and a tap on a third turns them back. */
+const MatchUp = (() => {
+  const POOL = [['cow','cow','moo'], ['pig','pig','oink'], ['chick','chick','peep'], ['duck','duck','quack'], ['sheep','sheep','baa'], ['dog','puppy','woof'],
+    ['cat','kitty','meow'], ['owl','owl','hoot'], ['frog','frog','ribbit'], ['bee','bee','buzz'], ['lion','lion','roar'], ['elephant','elephant','trumpet'],
+    ['monkey','monkey','ooh'], ['penguin','penguin','bray'], ['trex','T rex','bigroar'], ['mouse','mouse','squeak'], ['kangaroo','kangaroo','boing'],
+    ['flamingo','flamingo','honk'], ['giraffe','giraffe','munch'], ['hippo','hippo','hippo']].map(([a, n, x]) => ({a, n, x}));
+  const SIZES = [3, 4, 5];
+  const GO = 'Find the same one!', YES = ['Just the same!', 'Yay!', 'Yes! Just the same!', 'Wow!'], DONE = 'Hooray!';
+  const boardEl = $('#muBoard'), stepsEl = $('#muSteps');
+  let level = 0, cards = [], open = [], pairs = 0, need = 0, praise = 0, busy = false, free = -1;
+  const twinkle = () => [1047, 1319, 1568].forEach((f, i) => tone(f, f, .12, 'triangle', .12, i*.07));
+  const fwip = () => tone(520, 320, .1, 'sine', .08);   // turning back over
+  const call = pal => (FX[pal.x] ? FX[pal.x]() : 0) || .5;
+
+  function steps(){
+    stepsEl.innerHTML = '';
+    SIZES.forEach((n, i) => {
+      const s = document.createElement('span'); s.className = 'mu-step' + (i < level ? ' done' : i === level ? ' on' : ''); s.style.setProperty('--n', n);
+      s.innerHTML = '<i></i>'.repeat(n*n); stepsEl.appendChild(s);
+    });
+  }
+  function deal(){
+    const n = SIZES[level], cells = n*n;
+    free = cells % 2 ? (cells - 1) / 2 : -1;
+    need = Math.floor(cells / 2); pairs = 0; open = []; busy = false;
+    const pick = shuffle(POOL).slice(0, need), deck = shuffle([...pick, ...pick]);
+    boardEl.className = 'mu-board n' + n; boardEl.style.setProperty('--n', n); boardEl.innerHTML = ''; cards = [];
+    for (let i = 0; i < cells; i++){
+      const b = document.createElement('button');
+      if (i === free){
+        b.className = 'mu-card mu-free up'; b.setAttribute('aria-label', 'Star');
+        b.innerHTML = `<span class="mu-face mu-front">${ART.starBright}</span>`;
+        tap(b, () => { retrigger(b, 'hop'); twinkle(); }, {bump:false});
+      } else {
+        const c = {pal:deck.pop(), el:b, up:false, got:false};
+        b.className = 'mu-card'; b.setAttribute('aria-label', 'Card');
+        b.innerHTML = `<span class="mu-face mu-back"><b>?</b></span><span class="mu-face mu-front">${animalPic(c.pal.a)}</span>`;
+        tap(b, () => flip(c), {bump:false});
+        cards.push(c);
+      }
+      boardEl.appendChild(b);
+    }
+    steps(); retrigger(boardEl, 'in');
+  }
+  function cover(){
+    open.forEach(c => { c.up = false; c.el.classList.remove('up'); c.el.setAttribute('aria-label', 'Card'); });
+    if (open.length) fwip();
+    open = [];
+  }
+  function flip(c){
+    if (busy || c.up) return;
+    if (open.length === 2) cover();   // two that didn't match are still up: turn them back now
+    c.up = true; c.el.classList.add('up'); c.el.setAttribute('aria-label', c.pal.n);
+    const len = call(c.pal);
+    open.push(c);
+    if (open.length < 2) return;
+    const [a, b] = open;
+    if (a.pal === b.pal){
+      open = []; a.got = b.got = true; pairs++;
+      const last = pairs === need; if (last) busy = true;
+      later(() => {
+        [a, b].forEach(x => { x.el.classList.add('got'); retrigger(x.el, 'hop'); });
+        const [x, y] = rel(b.el); confetti(x, y, 14);
+        if (last) return win();
+        say(YES[praise++ % YES.length], 0, 'find');
+      }, clamp(len*1000 - 300, 350, 1200));
+    } else {
+      const pair = open.slice();
+      later(() => { if (open[0] === pair[0] && open[1] === pair[1]) cover(); }, Math.max(1500, len*1000 + 400));
+    }
+  }
+  function win(){
+    FX.cheer();
+    cards.forEach((c, i) => later(() => retrigger(c.el, 'hop'), 60*i));
+    const [x, y] = rel(boardEl); confetti(x, y, 44);
+    say(DONE, 0, 'find', () => later(() => {
+      level = Math.min(level + 1, SIZES.length - 1); deal(); say(GO, 0, 'find');
+    }, 900));
+  }
+
+  return {
+    enter(){ level = 0; praise = 0; deal(); say(GO, 0, 'find'); },
+    leave(){ busy = false; open = []; },
+    lines: () => [GO, DONE, ...YES],
+    callOf: a => (POOL.find(p => p.a === a) || {}).x,
+    state: () => ({level, n:SIZES[level], free, pairs, need, busy, cards:cards.map(c => ({a:c.pal.a, up:c.up, got:c.got}))})
   };
 })();
 
@@ -10797,7 +10932,7 @@ function areaLines(){
       ...Object.values(CAM_SAY), ...Object.values(MODE_SAY), 'Move the phone to look all around!', ...COSTUMES.map(c => `You're ${article(COSTUME_NAME[c])}!`), ...LOOK_ORDER.slice(1).map(k => LOOKS[k].say)],
     photos:['Your pictures!', 'Look at all your pictures!', 'No pictures yet! Tap the camera to take some!', 'All your pictures!'],
     music:[...Object.values(MUSIC_SAY), ...SONGS.map(x => x.n + '!'), 'Yay! Great dancing!', 'Stop!'],
-    games:[...WildTap.lines(), ...DinoBuddies.lines(), ...SnackTime.lines(), ...PaintPals.lines(), ...MotionGames.lines()],
+    games:[...WildTap.lines(), ...MatchUp.lines(), ...DinoBuddies.lines(), ...SnackTime.lines(), ...PaintPals.lines(), ...MotionGames.lines()],
     school:[SCHOOL_SAY.school, ...LetterPath.lines(), ...AbcZoo.lines(), ...AbcSnack.lines(), ...NumZoo.lines(), ...NumSnack.lines(), ...Delivery.lines(), ...DinoPicnic.lines(), ...SchoolAdventures.lines()]
   };
 }
@@ -10850,7 +10985,7 @@ window.__toyPhone = { motionGames: () => MotionGames.state(), pic: n => ART[n] |
     speaking: speaking(), sources: VB.srcs.length, waiting: !!lineWait}),
   recorded: () => Object.keys(REC), trims: FX_TRIM,
   voiceMissing: () => voiceLines().filter(l => !(VB.map && VB.map[l.who + '|' + l.s])).map(l => l.who + '|' + l.s),
-  panorama: (k, w=1600) => Promise.resolve().then(() => { const cv = document.createElement('canvas'); cv.width = w; cv.height = Math.round(w * WH / WW); renderScene(cv.getContext('2d'), SCENES[k], 0, 0, w / WW, cv.width, cv.height, 3, true); return cv.toDataURL('image/png'); }), dino: () => ({fill:DinoBuddies.fill(), family:DinoBuddies.family()}), snack: () => SnackTime.state(), paint: () => PaintPals.state(), fx: () => Object.keys(FX), ringIn: () => maybeRing(true), sound: () => ({state: ctx ? ctx.state : 'none', rebuilds, held: held.length}),
+  panorama: (k, w=1600) => Promise.resolve().then(() => { const cv = document.createElement('canvas'); cv.width = w; cv.height = Math.round(w * WH / WW); renderScene(cv.getContext('2d'), SCENES[k], 0, 0, w / WW, cv.width, cv.height, 3, true); return cv.toDataURL('image/png'); }), dino: () => ({fill:DinoBuddies.fill(), family:DinoBuddies.family()}), snack: () => SnackTime.state(), match: () => MatchUp.state(), matchCall: a => MatchUp.callOf(a), paint: () => PaintPals.state(), fx: () => Object.keys(FX), ringIn: () => maybeRing(true), sound: () => ({state: ctx ? ctx.state : 'none', rebuilds, held: held.length}),
   pauseSound: () => { if (ctx) Object.defineProperty(ctx, 'state', {configurable:true, get: () => 'interrupted'}); }, photos: () => Photos.list.length, call: () => call && call.state,
   sceneView: (k, x, y, w, h, pw = 800) => { const cv = document.createElement('canvas'); cv.width = pw; cv.height = Math.round(pw*h/w); renderScene(cv.getContext('2d'), SCENES[k], x, y, pw/w, cv.width, cv.height, 3, true); return cv.toDataURL('image/png'); },   // (any part of a world, for checking by eye)
   look: () => ({ar:arMode(), following:!!AR.raw && performance.now() - AR.live < 1200 && !AR.flat && arMode(), flat:AR.flat, perm:AR.perm, x:cam.x, y:cam.y, w:vfW/camScale(), h:vfH/camScale(), scene:cam.scene}),

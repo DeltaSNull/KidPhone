@@ -7,7 +7,7 @@ on 2026-10-09 from a 6,400-word log; the old text is in git history.)
 
 ## Active batch
 
-- None claimed after **R-32** (Claude, 2026-10-31: Snack Time as a whole game: 54 animals, 54 unique snacks, seven
+- None claimed after **R-33** (Claude, 2026-11-04: Match Up, a flip-two memory game: 3x3, 4x4, then 5x5), **R-32** (Claude, 2026-10-31: Snack Time as a whole game: 54 animals, 54 unique snacks, seven
   places), **R-31** (Claude, 2026-10-31: More Snacks, a School math game, at the owner's request), **R-30**
   (Claude, 2026-10-11: Snack Time expanded at the family's request) and **R-24 to R-29**
   (the usability and reliability pass after PR #19, one PR per batch; see History), each merged once CI passes in
@@ -40,7 +40,7 @@ on 2026-10-09 from a 6,400-word log; the old text is in git history.)
 
 - One `index.html` (no build step) plus `assets/`, `sw.js` (offline) and `tests/`. Each app is a module with
   `enter`/`leave` called from `enterApp`/`leaveApp`, and `go()` navigates (it clears `later()` timers and the voice).
-  Games: `WildTap`, `SnackTime`, `DinoBuddies`, `PaintPals`, `MotionGames` (Ball Trail, Star Flight). School: `AbcZoo`,
+  Games: `WildTap`, `MatchUp`, `SnackTime`, `DinoBuddies`, `PaintPals`, `MotionGames` (Ball Trail, Star Flight). School: `AbcZoo`,
   `NumZoo`, `LetterPath`, `AbcSnack`, `NumSnack`, `DinoPicnic`, `Delivery`, `SchoolAdventures` (Sorting Station,
   Pattern Train, Story Time, Feelings Friends). Parent side: `ACCESS_GROUP`/`appAllowed` (a new app must be listed or it
   is blocked), settings, `PLAY` (play time). Test hooks are on `window.__toyPhone` (e.g. `adventure()`,
@@ -94,6 +94,8 @@ on 2026-10-09 from a 6,400-word log; the old text is in git history.)
   gradual extraction).
 
 ## History (newest first)
+
+- 2026-11-04 R-33 Match Up (Claude, owner: a matching game for the 3½-year-old, flip two, 3x3 then 4x4 then 5x5). `MatchUp` module after `WildTap`; `#matchup` section; `POOL` = [picture, spoken name, FX call], each board picks its pairs from it (keep pictures and calls distinct when adding). Odd boards: the middle cell is `.mu-free` (star, always up). `flip()` / `cover()` / `win()`; a third tap covers a wrong pair at once. Faces are `.mu-face` frames turned with rotateY (5x5 uses thinner frames). Lines reuse existing clips only. Hooks `__toyPhone.match()` and `matchCall(a)`. Tests: match-up (new), navigation (leaving), smoke/webkit/motion-games (seven cards).
 
 - 2026-10-31 R-32 Snack Time journey (Claude, owner: more animals and snacks, then "build this out as if it's an
   entire game... a dozen more animals and even more snacks; don't reuse snacks"; chose Places to visit). 54 animals in
