@@ -5499,7 +5499,7 @@ const FX = {
     return at + 1.05;
   },
   slap(at=0){   // beaver: whack! its flat tail slaps the water, twice, with a splash after
-    [0,.55].forEach(d => { noise(.05,'highpass',3000,2000,.4,at+d); tone(260,90,.12,'sine',.15,at+d); tone(520,300,.08,'triangle',.15,at+d); noise(.35,'bandpass',2600,700,.38,at+d+.03); });
+    [0,.55].forEach(d => { noise(.05,'highpass',3000,2000,.22,at+d); tone(260,90,.12,'sine',.12,at+d); tone(520,300,.08,'triangle',.12,at+d); noise(.35,'bandpass',2600,700,.42,at+d+.03); });
     return at + .95;
   },
   song(at=0){   // whale: a long, low whale song that rises and falls: "ooo-OOOO-ooo"
@@ -5528,23 +5528,23 @@ const FX = {
     return at + 1.55;
   },
   hop(at=0){   // bunny: thump-thump-thump with its big back feet, and a little hop squeak
-    [0,.22,.44].forEach(d => { noise(.08,'bandpass',900,500,.6,at+d); tone(480,320,.08,'triangle',.35,at+d); });
-    tone(1100,1900,.12,'sine',.09,at+.62);
-    return at + .8;
+    [0,.2,.4,.6].forEach(d => { noise(.16,'bandpass',900,500,.4,at+d); tone(480,320,.16,'triangle',.22,at+d); });
+    tone(1100,1900,.12,'sine',.09,at+.82);
+    return at + 1;
   },
   slurp(at=0){   // snail: slow, slippery slurps, then a tiny pop
-    [0,.45].forEach(d => { noise(.4,'bandpass',500,1700,.55,at+d); tone(260,520,.38,'triangle',.1,at+d,7); });
-    tone(700,1400,.06,'sine',.16,at+.95);
+    [0,.45].forEach(d => { noise(.4,'bandpass',500,1700,1.1,at+d); tone(420,800,.38,'triangle',.3,at+d,7); });
+    tone(700,1400,.06,'sine',.05,at+.95);
     return at + 1.05;
   },
   knock(at=0){   // turtle: knock knock on its hard shell, slow and hollow
-    [[0,520],[.3,470],[.6,560]].forEach(([d, f]) => { tone(f, f*.9, .12, 'triangle', .4, at+d); noise(.06,'bandpass',f*2,f*1.6,.45,at+d); });
+    [[0,520],[.3,470],[.6,560]].forEach(([d, f]) => { tone(f, f*.9, .3, 'triangle', .26, at+d); noise(.06,'bandpass',f*2,f*1.6,.3,at+d); });
     return at + .8;
   },
   bamboo(at=0){   // panda: snap! goes a bamboo stalk, then chomp, chomp
-    noise(.06,'bandpass',2600,1800,.8,at); tone(1500,700,.08,'triangle',.25,at); tone(900,500,.06,'square',.06,at+.02);
-    [.3,.58].forEach(d => { noise(.1,'bandpass',1600,900,.6,at+d); tone(240,180,.1,'triangle',.25,at+d); });
-    return at + .75;
+    noise(.06,'bandpass',2600,1800,.4,at); tone(1500,700,.08,'triangle',.14,at); tone(900,500,.06,'square',.04,at+.02);
+    [.3,.56,.82].forEach(d => { noise(.2,'bandpass',1600,900,.5,at+d); tone(300,220,.18,'triangle',.18,at+d); });
+    return at + 1.05;
   },
   sniff(at=0){   // hedgehog: little snuffles and a squeak
     [0,.11,.22,.33].forEach(d => noise(.07,'bandpass',2600,1800,1,at+d));
@@ -5586,7 +5586,7 @@ function playRec(buf, at = 0){
 const FX_TRIM = {roar:2.2, bigroar:2.3, trumpet:-2.1, munch:7.1, neigh:-2, bray:.4, hippo:6, bellow:3.6, stomp:8.2, huff:9.4, stego:6.3,
   screech:-2, splash:7, snort:11.3, growl:6.8, squawk:1.8, honk:2.7, thump:8.2, ribbit:8.2, hoot:1.5, yawn:-3, moo:4.2, meow:-1.5, quack:-.7,
   tweet:7.4, snap:3.7, peep:6.3, boing:1, boom:7.5, crunch:8, flick:8, flutter:8,
-  zebra:2.3, rasp:3.9, slap:4.6, bloop:4.4, clack:7, snore:4.7, hop:10.8, slurp:14.5, knock:9.4, bamboo:9.3};
+  zebra:2.3, rasp:3.9, slap:6.2, bloop:4.4, clack:6.5, snore:4.7, hop:10.4, slurp:6, knock:9.2, bamboo:8.3};
 /* after the trim, a soft limiter: untouched up to 0.7, then rounding off below 1, so a boosted thud or snort never clips.
    The curve covers -2..2 (the trim feeds it at half level), so even a peak at twice full scale is rounded, not cut off. */
 let softCurve = null;
