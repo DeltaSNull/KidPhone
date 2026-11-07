@@ -10,6 +10,11 @@ on:
     branches: [main]
     paths-ignore: ['README.md', 'screenshots/**']
   workflow_dispatch:
+    inputs:
+      skip_tests:
+        description: One-off deploy without re-running the tests (owner's approval, 2026-11-07; removed again right after)
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -21,6 +26,7 @@ concurrency:
 jobs:
   chromium-smoke:
     name: Chromium smoke (${{ matrix.viewport }})
+    if: ${{ !inputs.skip_tests }}
     runs-on: ubuntu-latest
     timeout-minutes: 25
     strategy:
@@ -54,6 +60,7 @@ jobs:
 
   pages:
     name: Pages/offline (${{ matrix.engine }})
+    if: ${{ !inputs.skip_tests }}
     runs-on: ubuntu-latest
     timeout-minutes: 50   # (the R-24 to R-29 suites took WebKit past 30)
     strategy:
@@ -143,6 +150,7 @@ jobs:
 
   webkit-smoke:
     name: WebKit iPhone smoke
+    if: ${{ !inputs.skip_tests }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -162,7 +170,7 @@ jobs:
 
   deploy:
     name: Deploy
-    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    if: ${{ !cancelled() && github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && (inputs.skip_tests || (needs.chromium-smoke.result == 'success' && needs.pages.result == 'success' && needs.webkit-smoke.result == 'success')) }}
     needs: [chromium-smoke, pages, webkit-smoke]
     runs-on: ubuntu-latest
     permissions:
