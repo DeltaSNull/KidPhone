@@ -20,6 +20,7 @@
     "test:navigation": "node tests/navigation.cjs",
     "test:snack-time": "node tests/snack-time.cjs",
     "test:match-up": "node tests/match-up.cjs",
+    "test:splish-splash": "node tests/splish-splash.cjs",
     "test:learning-rounds": "node tests/learning-rounds.cjs",
     "test:audio-mix": "node tests/audio-mix.cjs",
     "test:social-play": "node tests/social-play.cjs && node tests/social-lifecycle.cjs",

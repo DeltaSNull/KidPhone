@@ -7,7 +7,7 @@ on 2026-10-09 from a 6,400-word log; the old text is in git history.)
 
 ## Active batch
 
-- None claimed after **R-34** (Claude, 2026-11-04: every Snack Time animal its own call), **R-33** (Claude, 2026-11-04: Match Up, a flip-two memory game: 3x3, 4x4, then 5x5), **R-32** (Claude, 2026-10-31: Snack Time as a whole game: 54 animals, 54 unique snacks, seven
+- None claimed after **R-35** (Claude, 2026-11-06: Splish Splash, a bath game), **R-34** (Claude, 2026-11-04: every Snack Time animal its own call), **R-33** (Claude, 2026-11-04: Match Up, a flip-two memory game: 3x3, 4x4, then 5x5), **R-32** (Claude, 2026-10-31: Snack Time as a whole game: 54 animals, 54 unique snacks, seven
   places), **R-31** (Claude, 2026-10-31: More Snacks, a School math game, at the owner's request), **R-30**
   (Claude, 2026-10-11: Snack Time expanded at the family's request) and **R-24 to R-29**
   (the usability and reliability pass after PR #19, one PR per batch; see History), each merged once CI passes in
@@ -40,7 +40,7 @@ on 2026-10-09 from a 6,400-word log; the old text is in git history.)
 
 - One `index.html` (no build step) plus `assets/`, `sw.js` (offline) and `tests/`. Each app is a module with
   `enter`/`leave` called from `enterApp`/`leaveApp`, and `go()` navigates (it clears `later()` timers and the voice).
-  Games: `WildTap`, `MatchUp`, `SnackTime`, `DinoBuddies`, `PaintPals`, `MotionGames` (Ball Trail, Star Flight). School: `AbcZoo`,
+  Games: `WildTap`, `MatchUp`, `SplishSplash`, `SnackTime`, `DinoBuddies`, `PaintPals`, `MotionGames` (Ball Trail, Star Flight). School: `AbcZoo`,
   `NumZoo`, `LetterPath`, `AbcSnack`, `NumSnack`, `DinoPicnic`, `Delivery`, `SchoolAdventures` (Sorting Station,
   Pattern Train, Story Time, Feelings Friends). Parent side: `ACCESS_GROUP`/`appAllowed` (a new app must be listed or it
   is blocked), settings, `PLAY` (play time). Test hooks are on `window.__toyPhone` (e.g. `adventure()`,
@@ -94,6 +94,8 @@ on 2026-10-09 from a 6,400-word log; the old text is in git history.)
   gradual extraction).
 
 ## History (newest first)
+
+- 2026-11-06 R-35 Splish Splash (Claude, owner: his son asked for "an extra extra extra special game"). `SplishSplash` module after `MatchUp`; `#splish` section; `POOL` = [picture, spoken name, FX call] (keep calls distinct). `mode`: walk → jump (tap, or `jumpT` after the line) → scrub → turn → rinse → shine → walk, and party after five. Mud/foam live in `cover` (32x32, 1 = mud, 2 = foam) over the sprite's alpha `maskOf()`, drawn on `.ss-cover` (a 32x32 canvas over the picture); `rub()` works in sprite pixels with a radius in screen pixels; `DONE_AT` (.25 left) finishes the rest. Rinsing runs on `flowT` (an interval while a finger is down; `spread` grows with a still finger), cleared by `flow(false)` and `leave()`. Party bubbles `.ss-pb` keep their duration under Reduce Motion (like Wild Tap's). The rubber duck and puddle are drawn with `Pix` (`ssDuck()`, `--ss-puddle`). Voice: Kokoro ran on CT102 with pedalboard 0.9.22 (0.9.25's wheel hits an illegal instruction on the i5-8400T). Hooks `__toyPhone.splish()`, `splishCall(a)`. Tests: splish-splash (new), navigation, smoke/webkit/motion-games (eight cards).
 
 - 2026-11-04 R-34 unique calls (Claude, owner: "several animals make the same noise, like the horse and zebra"). New FX after `fire`: zebra, grunt (bear), rasp (leopard), slap (beaver), song (whale), bloop (octopus), clack (toucan), pinch (crab), caw (pterodactyl), snore (koala), hop (bunny), slurp (snail), knock (turtle), bamboo (panda); trims in `FX_TRIM`. A new Snack Time animal needs a call no other animal uses (snack-time checks `state().calls`).
 
