@@ -21,7 +21,7 @@ concurrency:
 jobs:
   chromium-smoke:
     name: Chromium smoke (${{ matrix.viewport }})
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04   # (ubuntu-latest is 26.04 now, where Playwright 1.56.1 has no browsers; move up together with Playwright)
     timeout-minutes: 25
     strategy:
       fail-fast: false
@@ -54,7 +54,7 @@ jobs:
 
   pages:
     name: Pages/offline (${{ matrix.engine }})
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04   # (ubuntu-latest is 26.04 now, where Playwright 1.56.1 has no browsers; move up together with Playwright)
     timeout-minutes: 50   # (the R-24 to R-29 suites took WebKit past 30)
     strategy:
       fail-fast: false
@@ -133,6 +133,7 @@ jobs:
           node tests/snack-time.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
           node tests/match-up.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
           node tests/splish-splash.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
+          node tests/hide-seek.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
 
       - name: Pretend-camera hide and pop out
         run: node tests/camera-peek.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
@@ -143,7 +144,7 @@ jobs:
 
   webkit-smoke:
     name: WebKit iPhone smoke
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04   # (ubuntu-latest is 26.04 now, where Playwright 1.56.1 has no browsers; move up together with Playwright)
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4

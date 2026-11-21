@@ -48,6 +48,18 @@ Guided Access. It's one self-contained `index.html` (vanilla JS, no build step),
     The animal faces the way it moves.
   - *Wild Tap Safari* (1 player): Safari, Zoo and Dino sound boards, Find It, egg hatching and bubble popping.
     Inside, an arrow steps back to the Wild Tap menu.
+  - *Match Up* (1 player): the flip-two memory game. Two the same stay up, two different turn back. A 3x3 board (with a
+    star in the middle), then 4x4, then 5x5; every animal makes its own call as it turns over.
+  - *Splish Splash* (1 player): an animal jumps in a mud puddle; rub it into foam, rinse it clean, and five clean friends
+    make a bubble party.
+  - *Hide and Seek* (1 player): "Here comes the zebra!" An animal walks in, makes its call, "Watch!", and hides behind one
+    of three bushes. The first two rounds the bushes stay put; then they swap places, slowly (one swap, then two, then
+    three), and the child finds where it went: "Where is the Zebra?" The right bush: the animal pops up with its call, a
+    star along the top, and "Yes! You found the Zebra!". A wrong bush only rustles (sometimes a butterfly flutters out)
+    and "Try again!"; after two misses the right bush glows and the animal peeks out, and it peeks by itself after a
+    while too. Five found is a little party; ten is "Wow! Ten animals! You are a super explorer!", and then four bushes.
+    Ten animals, all different, each with its own call; no timer, nothing to lose, nothing saved. With Reduce Motion the
+    bushes still slide (the swaps are the game) but don't hop.
   - **Getting around, the same everywhere**: every game has a Games button (the four-colored grid, top left, or in the
     tool row of the two-player games, never on a play area) back to the Games menu, as every School game has its
     School button; an arrow steps back one level (Wild Tap's screens, Story Time's shelf); the berry speaker says the

@@ -808,6 +808,32 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img:not(.px){image-rendering
 .ss-gc{position:relative; width:calc(var(--a) * .9); height:calc(var(--a) * .9)}
 .ss-gc > *{position:absolute; inset:0; width:100%; height:100%}
 .ss-gc .ss-gb{inset:auto; width:34%; height:34%; background:var(--bubble) center/100% 100% no-repeat}
+/* Hide and Seek: the bushes stand on the grass in a row (--bw wide, --bh tall); the animal (--ps) stands just behind them */
+.app.hs{display:grid; grid-template-rows:64px minmax(0,1fr); overflow:hidden; background:#BDE8FA}
+@media (orientation:landscape){ .app.hs{grid-template-rows:none; grid-template-columns:64px minmax(0,1fr)} }
+.hs-stage{position:relative; min-width:0; min-height:0; overflow:hidden; container-type:size; -webkit-user-select:none; user-select:none;
+  --bw:min(31cqw, 44cqh); --bh:calc(var(--bw) * .85); --ps:min(50cqw, 42cqh); --floor:14cqh}
+@media (orientation:portrait){ .hs-stage{--floor:24cqh} }   /* (tall phones: the bushes up in the middle, not at the very bottom) */
+.app.hs.four .hs-stage{--bw:min(24cqw, 40cqh)}
+.hs-bushes{position:absolute; inset:0; pointer-events:none}
+.hs-bush{position:absolute; transition:none; bottom:var(--floor); width:var(--bw); height:var(--bh); padding:0; border:0; background:none; z-index:2; pointer-events:auto; transform-origin:50% 100%; touch-action:manipulation}
+.hs-bush .px{display:block; width:100%; height:100%; pointer-events:none}
+.hs-bush.rustle{animation:hs-rustle .45s ease-in-out}
+.hs-bush.glow{filter:drop-shadow(0 0 5px #FFF59A) drop-shadow(0 0 3px #FFD23D) drop-shadow(0 0 2px #FFD23D)}
+@keyframes hs-rustle{0%,100%{rotate:0deg} 25%{rotate:-5deg} 50%{rotate:4deg} 75%{rotate:-3deg}}
+.hs-pal{position:absolute; transition:none; left:calc(50% - var(--ps) / 2); bottom:calc(var(--floor) + var(--bh) * .5); width:var(--ps); height:var(--ps); z-index:1; opacity:0; pointer-events:none; transform-origin:50% 100%}
+.hs-pal .px{display:block; width:100%; height:100%}
+.hs-pal.idle{animation:ss-bob 1.1s ease-in-out infinite}
+.hs-fx{position:absolute; inset:0; pointer-events:none; z-index:4}
+.hs-fly{position:absolute; width:calc(var(--bw) * .32); aspect-ratio:1; margin:calc(var(--bw) * -.16) 0 0 calc(var(--bw) * -.16); animation:hs-fly 1.4s ease-out forwards}
+.hs-fly .px{width:100%; height:100%}
+@keyframes hs-fly{0%{transform:scale(.3); opacity:0} 20%{transform:translate(calc(var(--dx) * .3), -30%) scale(1); opacity:1} 50%{transform:translate(calc(var(--dx) * .6), -110%)} 100%{transform:translate(var(--dx), -260%); opacity:0}}
+.g-hide{background:#C8EDB4}
+.g-hide .gart{align-items:flex-end; gap:2px}
+.hs-gc{position:relative; display:block; width:var(--a); height:var(--a)}
+.hs-gc > .px{position:absolute; left:0; bottom:0; width:100%; height:64%}
+.hs-gc > .hs-gpeek{position:absolute; left:16%; top:0; width:68%; height:68%}
+.hs-gpeek .px{width:100%; height:100%}
 
 /* ---------- Game: Snack Time (one player): each hungry animal thinks of a food; give it that one ---------- */
 .app.st{display:grid; grid-template-rows:minmax(0,1fr) auto; overflow:hidden}
@@ -1586,6 +1612,17 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img:not(.px){image-rendering
           <button class="ss-duck" id="ssDuck" aria-label="Rubber duck"></button>
           <div class="ss-hand" id="ssHand" hidden></div>
           <div class="ss-fx" id="ssFx"></div>
+        </div>
+      </section>
+
+      <!-- GAME: Hide and Seek (one player: an animal hides behind a bush, the bushes shuffle, find it) -->
+      <section class="app hs" id="hideseek" hidden aria-label="Hide and Seek">
+        <button class="sc-back game-back" aria-label="Games"></button>
+        <div class="ss-row" id="hsRow" aria-label="Animals found"></div>
+        <div class="hs-stage" id="hsStage">
+          <div class="hs-pal" id="hsPal" aria-hidden="true"></div>
+          <div class="hs-bushes" id="hsBushes" role="group" aria-label="Bushes"></div>
+          <div class="hs-fx" id="hsFx"></div>
         </div>
       </section>
 
@@ -5047,6 +5084,9 @@ const BG = {
   splish(w, h){ const g = Math.floor(h*.56), p = new Paper(w, h).ramp(['#8FD3F5', '#B6E4F8', '#D6F2FF'], 0, g), s = sunArt(Math.max(6, Math.round(Math.min(w, h)*.06))), fh = Math.max(7, Math.round(h*.06));
     p.put(s, w - s.width - 4, Math.max(18, h*.1)).put(cloudArt(.45), w*.08, h*.16);
     return p.put(hillArt(w, h - g, x => 3 + 2*Math.sin(x*.05 + 1), ['#B8E89A', '#9AD97C', '#86CC68', '#72BE56'], 31), 0, g).put(SCENERY.fence(w, fh, true), 0, g - fh + 3); },
+  hide(w, h){ const g = Math.floor(h*.5), p = new Paper(w, h).ramp(['#8FD3F5', '#B6E4F8', '#D6F2FF'], 0, g), s = sunArt(Math.max(6, Math.round(Math.min(w, h)*.06)));
+    p.put(s, w - s.width - 4, Math.max(18, h*.1)).put(cloudArt(.45), w*.1, h*.14).put(cloudArt(.35), w*.55, h*.24);
+    return p.put(hillArt(w, h - g, x => 4 + 3*Math.sin(x*.04 + 2), ['#A8E08A', '#8FD470', '#7CC85E', '#68BA4C'], 17), 0, g); },
   picnic(w, h){ return new Paper(w, h).ramp(['#FFF6EC']).dots((x, y) => y < 2 ? (y ? '#E0574A' : '#B8382D') : gingham(x + 2, y - 2)); },
   ppSide(top, bottom, cols, seed){ return (w, h) => new Paper(w, h).ramp([top, bottom]).dots(splats(w, h, cols, seed, 7, .11)); },
   lawn(w, h){ return new Paper(w, h).ramp(['#A6DE8C', '#98D47C', '#8BCB6C']).dots((x, y) => (x >> 4) % 2 ? null : bay(x, y) < .22 ? '#B2E59A' : null).dots((x, y) => sr(x*3.7 + y*9.1) < .012 ? '#FFF3A0' : sr(x*8.3 + y*1.9) < .008 ? '#FFFFFF' : null); },
@@ -5059,7 +5099,7 @@ const BGS = [
   ['#camera', BG.grad(['#6CBDF5', '#4FA3E6', '#3A8EDA', '#2F7FD0'])], ['#photos', BG.grad(['#FFF6D2', '#FFEDAE', '#FFE59A', '#FFDF8A'])],
   ['.viewer', BG.grad(['#FFF6D2', '#FFEDAE', '#FFE59A', '#FFDF8A'])], ['#music', BG.grad(['#F0E8FF', '#DCCEFA', '#CAB8F6', '#BBA6F2'])], ['.stage', BG.stage],
   ['#games', BG.stripey(['#B0EBAA', '#8FDB8E', '#6CCB78', '#4FB86A'], '#C2F2BC')], ['.g-wild', BG.wild], ['.g-feed', BG.feed], ['.g-dino', BG.split], ['.g-paint', BG.paint],
-  ['#wt-menu', BG.wtMenu], ['#wt-world', BG.wtWorld], ['#wt-find', BG.grad(['#FFDCE3', '#FFC7D2', '#FFB3C2'])], ['#matchup', BG.grad(['#E2FAF4', '#C9F2E8', '#B0EADB'])], ['.g-match', BG.grad(['#E2FAF4', '#C9F2E8', '#B0EADB'])], ['#splish', BG.splish], ['.g-splash', BG.grad(['#D6F2FF', '#BDE8FA', '#A9DDF5'])], ['#wt-egg', BG.wtEgg], ['#wt-bubbles', BG.bubbles],
+  ['#wt-menu', BG.wtMenu], ['#wt-world', BG.wtWorld], ['#wt-find', BG.grad(['#FFDCE3', '#FFC7D2', '#FFB3C2'])], ['#matchup', BG.grad(['#E2FAF4', '#C9F2E8', '#B0EADB'])], ['.g-match', BG.grad(['#E2FAF4', '#C9F2E8', '#B0EADB'])], ['#splish', BG.splish], ['#hideseek', BG.hide], ['.g-hide', BG.grad(['#DDF5CF', '#C8EDB4', '#B3E39C'])], ['.g-splash', BG.grad(['#D6F2FF', '#BDE8FA', '#A9DDF5'])], ['#wt-egg', BG.wtEgg], ['#wt-bubbles', BG.bubbles],
   ['.db-a', BG.dbSide('#A6E39A', '#6CC46A', '#3E9447')], ['.db-b', BG.dbSide('#A9DDF7', '#5BB8E8', '#2F86C4')], ['.db-mid', BG.sand],
   ['#stScene', BG.snack], ['#asScene', BG.snack], ['.st-foods', BG.picnic],
   ['#school', BG.stripey(['#FFF0B8', '#FFE28A', '#FFD466', '#FFC746'], '#FFF6D2')], ['.g-abc', BG.grad(['#FFF6D2', '#FFE8A3', '#FFDB7A'])], ['.g-abcsnack', BG.grad(['#E4F6FF', '#C9ECFF', '#ADE0FF'])],
@@ -5203,7 +5243,7 @@ const saveSettings = () => store.set('settings', settings);
 
 /* Access policy is separate from sound/game settings and applies to all navigation and device entry points. */
 const ACCESS_APPS = ['school','games','camera','photos','music','phone'];
-const ACCESS_GROUP = {wildtap:'games', matchup:'games', splish:'games', dinobuddies:'games', snacktime:'games', paintpals:'games', balltrail:'games', starflight:'games',
+const ACCESS_GROUP = {wildtap:'games', matchup:'games', splish:'games', hideseek:'games', dinobuddies:'games', snacktime:'games', paintpals:'games', balltrail:'games', starflight:'games',
   letterpath:'school', abczoo:'school', abcsnack:'school', numzoo:'school', numsnack:'school', delivery:'school', dinopicnic:'school', sorting:'school', patterntrain:'school', moresnacks:'school', storytime:'school', feelings:'school'};
 const savedAccess = store.get('access', {}) || {};
 let access = {v:2, mode:['full','school','custom'].includes(savedAccess.mode) ? savedAccess.mode : 'full',
@@ -5985,7 +6025,7 @@ function updateClock(){ const d = new Date(); $('#clockTxt').textContent = ((d.g
 updateClock(); setInterval(updateClock, 10000);
 
 /* ---------- Navigation ---------- */
-const APPS = ['home','phone','camera','photos','music','games','wildtap','matchup','splish','dinobuddies','snacktime','paintpals','balltrail','starflight','school','letterpath','abczoo','abcsnack','numzoo','numsnack','delivery','dinopicnic','sorting','patterntrain','moresnacks','storytime','feelings'];
+const APPS = ['home','phone','camera','photos','music','games','wildtap','matchup','splish','hideseek','dinobuddies','snacktime','paintpals','balltrail','starflight','school','letterpath','abczoo','abcsnack','numzoo','numsnack','delivery','dinopicnic','sorting','patterntrain','moresnacks','storytime','feelings'];
 let current = 'home';
 const APP_SAY = {phone:'Phone! Who do you want to call?', camera:'Camera! Slide to look around. Then press the big button!', music:'Music! Let\'s play!', games:'Games! Pick a game!'};
 function go(name, fromEl){
@@ -6013,6 +6053,7 @@ function enterApp(name){
   if (name === 'wildtap') WildTap.enter();
   if (name === 'matchup') MatchUp.enter();
   if (name === 'splish') SplishSplash.enter();
+  if (name === 'hideseek') HideSeek.enter();
   if (name === 'dinobuddies') DinoBuddies.enter();
   if (name === 'snacktime') SnackTime.enter();
   if (name === 'paintpals') PaintPals.enter();
@@ -6035,6 +6076,7 @@ function leaveApp(name){
   if (name === 'wildtap') WildTap.leave();
   if (name === 'matchup') MatchUp.leave();
   if (name === 'splish') SplishSplash.leave();
+  if (name === 'hideseek') HideSeek.leave();
   if (name === 'dinobuddies') DinoBuddies.leave();
   if (name === 'snacktime') SnackTime.leave();
   if (name === 'paintpals') PaintPals.leave();
@@ -9317,10 +9359,20 @@ const ssDuck = () => once('ssDuck', () => { const P = new Pix(16, 16);
   P.ell(8.5, 11, 6.5, 4.2, 'y').poly([[11, 10], [15.5, 5.5], [15, 11]], 'y').ell(5.5, 5.5, 3.7, 3.5, 'y').shade('y', 'Y', 'l', 1);
   P.rect(.5, 5.5, 2.5, 2, 'b').set(5, 4, 'k').outline('o');
   return `<img class="px" src="${pxURL(P.canvas({y:'#FFD83D', Y:'#E8B020', l:'#FFF0A0', b:'#FF8A2A', k:'#1E1410', o:'#8A5A10'}), 6).slice(5, -2)}" alt="" draggable="false">`; });
+/* a round, flowery bush for Hide and Seek (its game card too) */
+const hsBush = () => once('hsBush', () => { const P = new Pix(40, 34);
+  P.ell(10, 23, 9, 9, 'g').ell(30, 23, 9, 9, 'g').ell(20, 15, 12.5, 12.5, 'g').ell(20, 27, 19.5, 7, 'g');
+  P.ell(15, 9, 4, 3, 'l').ell(7, 18, 2.5, 2, 'l').ell(28, 15, 2.5, 2, 'l');
+  P.shade('g', 'G', null, 2).speck('g', 'G', 50, 7).speck('g', 'l', 26, 9);
+  [[9, 21], [27, 25], [19, 11], [33, 19], [14, 28]].forEach(([x, y]) => P.set(x, y, 'w').set(x - 1, y, 'p').set(x + 1, y, 'p').set(x, y - 1, 'p').set(x, y + 1, 'p'));
+  P.outline('o');
+  return pxURL(P.canvas({g:'#4FA84A', G:'#357A34', l:'#86D06A', w:'#FFE45C', p:'#FF7AA8', o:'#1E4A1E'}), 6).slice(5, -2); });
+const hsBushImg = () => `<img class="px" src="${hsBush()}" alt="" draggable="false">`;
 const GAMES = [
   {id:'wildtap', n:'Wild Tap', p:[1], cls:'g-wild', art:`<span class="art">${ART.elephant}</span><span class="art big">${ART.lion}</span><span class="art">${ART.giraffe}</span>`},
   {id:'matchup', n:'Match Up', p:[1], cls:'g-match', art:`<span class="mu-gc">${ART.cat}</span><span class="mu-gc back">?</span><span class="mu-gc">${ART.cat}</span>`},
   {id:'splish', n:'Splish Splash', p:[1], cls:'g-splash', art:`<span class="art">${ART.bubbles}</span><span class="art big">${schoolPic('pig')}</span><span class="art">${ssDuck()}</span>`},
+  {id:'hideseek', n:'Hide and Seek', p:[1], cls:'g-hide', art:`<span class="hs-gc"><span class="hs-gpeek">${ART.lion}</span>${hsBushImg()}</span><span class="hs-gc">${hsBushImg()}</span>`},
   {id:'snacktime', n:'Snack Time', p:[1], cls:'g-feed', art:`<span class="art">${ART.banana}</span><span class="art big">${ART.monkey}</span><span class="art">${ART.watermelon}</span>`},
   {id:'dinobuddies', n:'Dino Buddies', p:[1,2], cls:'g-dino', art:`<span class="art mid">${ART.trex}</span><span class="art sm">${ART.egg}</span><span class="art mid flip">${ART.trex}</span>`},
   {id:'paintpals', n:'Paint Pals', p:[1,2], cls:'g-paint', art:`<span class="art mid flip">${ppHalf('giraffe')}</span><span class="art sm">${ART.brush}</span><span class="art mid">${ppHalf('lion')}</span>`},
@@ -9842,6 +9894,190 @@ const SplishSplash = (() => {
     callOf: a => (POOL.find(p => p.a === a) || {}).x,
     state: () => ({mode, a:pal && pal.a, start, left, mud:cover.reduce((n, v) => n + (v === 1), 0), foam:cover.reduce((n, v) => n + (v === 2), 0),
       friends:friends.map(p => p.a), hand:!handEl.hidden, pool:POOL.map(p => p.a)})
+  };
+})();
+
+/* ---------- Hide and Seek: an animal hides behind one of the bushes; the bushes shuffle; find it ----------
+   (owner, 2026-11-21: something new to show the 3½-year-old.) "Here comes the lion!" It walks in, roars, "Watch!", and hops
+   behind a bush. The first two rounds the bushes stay put (just remember where); then they swap places, slowly, the hiding
+   one always among the first: one swap, then two, then three. "Where is the Lion?" The right bush: the animal pops up with
+   its call, takes a star along the top and "Yes! You found the Lion!". A wrong bush only rustles (sometimes a butterfly
+   flutters out); "Try again!", and after two misses the right one glows and the animal peeks out. Waiting a while, it
+   peeks over its bush and calls, too. Five found: "Hooray!"; ten: "Wow! Ten animals! You are a super explorer!", and then
+   four bushes. No timer, nothing to lose, nothing saved. Every line is an existing recording (Wild Tap's Find It and
+   Splish Splash), so nothing new had to be recorded. The shuffle is the game, so it uses element.animate (the Reduce
+   Motion stylesheet would make CSS motion instant); with Reduce Motion the bushes slide straight, without hopping. */
+const HideSeek = (() => {
+  const POOL = [['lion','Lion','lion','roar'], ['elephant','Elephant','elephant','trumpet'], ['giraffe','Giraffe','giraffe','munch'], ['zebra','Zebra','zebra','zebra'],
+    ['monkey','Monkey','monkey','ooh'], ['penguin','Penguin','penguin','bray'], ['hippo','Hippo','hippo','hippo'], ['trex','T rex','T rex','bigroar'],
+    ['panda','Panda','panda','bamboo'], ['tiger','Tiger','tiger','growl']].map(([a, n, h, x]) => ({a, n, h, x}));
+  const ROW = 5, SWAPS = [0, 0, 1, 1, 2, 1, 2, 2, 3, 3];
+  const WATCH = 'Watch!', AGAIN = 'Try again!', LOOK = 'Look closely!', FIVE = 'Hooray!', TEN = 'Wow! Ten animals! You are a super explorer!';
+  const HERE = p => `Here comes the ${p.h}!`, WHERE = p => `Where is the ${p.n}?`, FOUND = p => `Yes! You found the ${p.n}!`;
+  const root = $('#hideseek'), stage = $('#hsStage'), palEl = $('#hsPal'), bushesEl = $('#hsBushes'), fxEl = $('#hsFx'), rowEl = $('#hsRow');
+  let mode = 'off', pal = null, deck = [], bushes = [], hider = null, round = 0, got = 0, misses = 0, peekT = 0, anims = [], seq = 0;
+  const swaps = () => round < SWAPS.length ? SWAPS[round] : 2 + (round % 3 === 0 ? 1 : 0);
+  const speed = () => round < 4 ? 1000 : round < 10 ? 850 : 760;   // ms for one swap
+  const count = () => round < 10 ? 3 : 4;
+  const call = p => (FX[p.x] ? FX[p.x]() : 0) || .5;
+  const rustle = () => [0, .08, .17].forEach(d => noise(.07, 'bandpass', 2400 + Math.random()*900, 1500, .2, d));
+  const uhuh = () => { tone(392, 370, .15, 'triangle', .13); tone(330, 300, .22, 'triangle', .13, .19); };   // a soft "nuh-uh", never a buzzer
+  const swish = () => noise(.32, 'bandpass', 700, 2200, .1);
+  const play = (el, frames, o) => { const a = el.animate(frames, o); anims.push(a); return a; };
+  /* say a line, then go on: when it has been heard, or a while later if something hushed it (Settings, the phone sleeping), so a round never stalls */
+  const step = (text, fn) => { const my = seq; let done = false; const go = () => { if (!done && my === seq){ done = true; fn(); } };
+    say(text, 0, 'find', go); later(go, lineMs(text, 0) + 2500); };
+  const then = (a, fn) => { const my = seq; a.finished.then(() => { anims = anims.filter(x => x !== a); if (my === seq) fn(); }, () => {}); };
+  /* where the animal goes to hide behind bush b: from where it stands (its feet, bottom middle), and how small */
+  function spot(b){
+    const sx = palEl.offsetLeft + palEl.offsetWidth/2, sb = palEl.offsetTop + palEl.offsetHeight, h = b.el.offsetHeight, s = h*.55 / palEl.offsetHeight;
+    return {dx:b.el.offsetLeft + b.el.offsetWidth/2 - sx, dy:b.el.offsetTop + h*.92 - sb, s, h:palEl.offsetHeight*s, bh:h};
+  }
+  const at = (t, up = 0, s = t.s) => `translate(${t.dx}px, ${t.dy - up}px) scale(${s})`;
+  const place = (b, n) => { b.el.style.left = `calc(${(b.slot + .5) / n * 100}% - var(--bw) / 2)`; };
+
+  function layout(){
+    const n = count(); if (bushes.length === n) return;
+    root.classList.toggle('four', n === 4); bushesEl.innerHTML = '';
+    bushes = Array.from({length:n}, (_, i) => {
+      const el = document.createElement('button'), b = {el, slot:i};
+      el.className = 'hs-bush'; el.setAttribute('aria-label', 'Bush'); el.innerHTML = hsBushImg(); place(b, n);
+      tap(el, () => pick(b), {bump:false}); bushesEl.appendChild(el); return b;
+    });
+  }
+  function row(){ rowEl.innerHTML = '<span class="ss-slot"></span>'.repeat(ROW); }
+  const settle = () => palEl.getAnimations().forEach(a => { if (!(window.CSSAnimation && a instanceof CSSAnimation)) a.cancel(); });
+  function hidePal(){ settle(); palEl.style.opacity = 0; palEl.classList.remove('idle'); }
+
+  /* 1. here it comes */
+  function arrive(){
+    mode = 'arrive'; misses = 0; hider = null; layout();
+    bushes.forEach(b => b.el.classList.remove('glow'));
+    if (!deck.length) deck = shuffle(POOL);
+    pal = deck.pop(); hidePal();
+    palEl.innerHTML = animalPic(pal.a); palEl.style.zIndex = 1; palEl.style.opacity = 1;
+    const w = stage.clientWidth;
+    for (let i = 0; i < 5; i++) tone(320, 220, .06, 'triangle', .08, i*.2);   // pitter-patter
+    then(play(palEl, [{transform:`translateX(${w*.7}px)`}, {transform:`translate(${w*.5}px, -6%)`, offset:.25}, {transform:`translateX(${w*.3}px)`, offset:.5},
+      {transform:'translate(0, -6%)', offset:.75}, {transform:'none'}], {duration:calm() ? 1 : 1000}), () => {
+      palEl.classList.add('idle');
+      step(HERE(pal), () => later(() => { const len = call(pal); later(watch, clamp(len*1000, 500, 1400)); }, 150));
+    });
+  }
+  /* 2. "Watch!": it hops behind a bush */
+  function watch(){
+    if (mode !== 'arrive') return;
+    mode = 'hide'; palEl.classList.remove('idle');
+    hider = rnd(bushes);
+    say(WATCH, 0, 'find');
+    later(() => {
+      const t = spot(hider); swish();
+      then(play(palEl, [{transform:'none'}, {transform:`translate(${t.dx*.55}px, ${-palEl.offsetHeight*.35}px) scale(${(1 + t.s)/2})`, offset:.45}, {transform:at(t)}],
+        {duration:900, easing:'ease-in-out', fill:'forwards'}), () => {
+        retrigger(hider.el, 'rustle'); rustle(); hidePal();
+        later(shuffleBushes, 600);
+      });
+    }, 450);
+  }
+  /* 3. the bushes swap places, slowly */
+  function shuffleBushes(){
+    mode = 'shuffle';
+    const n = swaps(), dur = speed();
+    let i = 0;
+    const next = () => {
+      if (i >= n) return ask();
+      const a = i === 0 && Math.random() < .75 ? hider : rnd(bushes), b = rnd(bushes.filter(x => x !== a));
+      i++;
+      then(swap(a, b, dur), () => later(next, 200));
+    };
+    next();
+  }
+  function swap(a, b, dur){
+    const step = bushesEl.clientWidth / bushes.length, da = (a.slot - b.slot)*step, db = -da;   // (from the places, not offsetLeft: Reduce Motion's tiny transitions would report the old place)
+    [a.slot, b.slot] = [b.slot, a.slot]; place(a, bushes.length); place(b, bushes.length);
+    const up = calm() ? 0 : -22, down = calm() ? 0 : 6;
+    a.el.style.zIndex = 3; b.el.style.zIndex = 2; swish();
+    play(b.el, [{transform:`translateX(${db}px)`}, {transform:`translate(${db/2}px, ${down}%)`}, {transform:'none'}], {duration:dur, easing:'ease-in-out'});
+    return play(a.el, [{transform:`translateX(${da}px)`}, {transform:`translate(${da/2}px, ${up}%)`}, {transform:'none'}], {duration:dur, easing:'ease-in-out'});
+  }
+  /* 4. "Where is the Lion?" */
+  function ask(){
+    mode = 'seek'; misses = 0;
+    bushes.forEach(b => { b.el.style.zIndex = 2; });
+    say(WHERE(pal), 0, 'find');
+    wait();
+  }
+  function wait(){ unLater(peekT); peekT = later(() => { if (mode === 'seek'){ peek(); wait(); } }, 8000); }
+  /* it peeks over its bush and calls: after a while, or after two misses */
+  function peek(){
+    const t = spot(hider);
+    retrigger(hider.el, 'rustle'); rustle();
+    palEl.style.zIndex = 1; palEl.style.opacity = 1; settle();
+    then(play(palEl, [{transform:at(t)}, {transform:at(t, t.h*1.4), offset:.3}, {transform:at(t, t.h*1.4), offset:.7}, {transform:at(t)}], {duration:1400, easing:'ease-in-out'}),
+      () => { if (mode === 'seek') palEl.style.opacity = 0; });
+    later(() => { if (mode === 'seek') call(pal); }, 350);
+  }
+  function pick(b){
+    if (mode !== 'seek') return;
+    if (b === hider) return found();
+    misses++; retrigger(b.el, 'rustle'); rustle(); uhuh();
+    if (misses === 1 || Math.random() < .5) later(() => butterfly(b), 120);
+    if (misses >= 2){ hider.el.classList.add('glow'); later(() => { if (mode === 'seek') peek(); }, 500); say(LOOK, 0, 'find'); }
+    else say(AGAIN, 0, 'find');
+    wait();
+  }
+  function butterfly(b){
+    if (mode !== 'seek') return;
+    const el = document.createElement('span'); el.className = 'hs-fly'; el.innerHTML = animalPic('butterfly');
+    el.style.left = (b.el.offsetLeft + b.el.offsetWidth/2) + 'px'; el.style.top = (b.el.offsetTop + b.el.offsetHeight*.3) + 'px';
+    el.style.setProperty('--dx', (b.slot < bushes.length/2 ? 1 : -1) * 60 + 'px');
+    fxEl.appendChild(el); FX.flutter();
+    later(() => el.remove(), 1500);
+  }
+  /* 5. found it! */
+  function found(){
+    mode = 'found'; unLater(peekT); round++; got++;
+    bushes.forEach(x => x.el.classList.remove('glow'));
+    const t = spot(hider), big = Math.min(1, t.bh*1.25 / palEl.offsetHeight);
+    retrigger(hider.el, 'rustle'); rustle();
+    palEl.style.zIndex = 1; palEl.style.opacity = 1; settle();
+    then(play(palEl, [{transform:at(t)}, {transform:at(t, t.bh*.75, big*1.06), offset:.6}, {transform:at(t, t.bh*.6, big)}],
+      {duration:calm() ? 1 : 600, easing:'cubic-bezier(.3,1.4,.5,1)', fill:'forwards'}), () => {
+      const len = call(pal), r = hider.el.getBoundingClientRect(), s = $('#screen').getBoundingClientRect();
+      confetti(r.left - s.left + r.width/2, r.top - s.top, 18);
+      const slot = rowEl.children[(got - 1) % ROW];
+      if (slot){ slot.innerHTML = animalPic(pal.a); slot.classList.add('got'); retrigger(slot, 'hop'); }
+      later(() => step(FOUND(pal), () => later(away, 500)), clamp(len*1000 - 300, 300, 1100));
+    });
+  }
+  function away(){
+    const t = spot(hider), big = Math.min(1, t.bh*1.25 / palEl.offsetHeight), w = stage.clientWidth;
+    settle();
+    then(play(palEl, [{transform:at(t, t.bh*.6, big), opacity:1}, {transform:`translate(${t.dx - w*.4}px, ${t.dy - t.bh*.9}px) scale(${big})`, opacity:1, offset:.6},
+      {transform:`translate(${t.dx - w*.75}px, ${t.dy - t.bh*.6}px) scale(${big})`, opacity:0}], {duration:calm() ? 1 : 900, easing:'ease-in', fill:'forwards'}), () => {
+      hidePal();
+      if (got % ROW === 0) party(); else later(arrive, 300);
+    });
+  }
+  function party(){
+    mode = 'party'; FX.cheer();
+    const r = stage.getBoundingClientRect(), s = $('#screen').getBoundingClientRect(); confetti(r.left - s.left + r.width/2, r.top - s.top + r.height*.4, 44);
+    [...rowEl.children].forEach((el, i) => later(() => retrigger(el, 'hop'), 90*i));
+    bushes.forEach((b, i) => later(() => retrigger(b.el, 'rustle'), 140*i));
+    const ten = got % 10 === 0;
+    step(ten ? TEN : FIVE, () => later(() => { row(); arrive(); }, 900));
+  }
+
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && current === 'hideseek' && mode === 'seek') later(() => say(WHERE(pal), 0, 'find'), 600); });   // (back in front mid-search: ask again)
+
+  return {
+    enter(){ seq++; round = 0; got = 0; deck = []; mode = 'start'; layout(); row(); hidePal(); later(arrive, 350); },
+    leave(){ seq++; mode = 'off'; unLater(peekT); anims.forEach(a => { try{ a.cancel(); }catch(e){} }); anims = []; hidePal(); fxEl.innerHTML = '';
+      bushes.forEach(b => { b.el.classList.remove('glow', 'rustle'); b.el.style.zIndex = ''; }); },
+    lines: () => [WATCH, AGAIN, LOOK, FIVE, TEN, ...POOL.flatMap(p => [HERE(p), WHERE(p), FOUND(p)])],
+    callOf: a => (POOL.find(p => p.a === a) || {}).x,
+    state: () => ({mode, a:pal && pal.a, round, got, n:bushes.length, hider:bushes.indexOf(hider), slots:bushes.map(b => b.slot), swaps:swaps(), misses,
+      glow:bushes.map(b => b.el.classList.contains('glow')), pool:POOL.map(p => p.a)})
   };
 })();
 
@@ -11321,7 +11557,7 @@ function areaLines(){
       ...Object.values(CAM_SAY), ...Object.values(MODE_SAY), 'Move the phone to look all around!', ...COSTUMES.map(c => `You're ${article(COSTUME_NAME[c])}!`), ...LOOK_ORDER.slice(1).map(k => LOOKS[k].say)],
     photos:['Your pictures!', 'Look at all your pictures!', 'No pictures yet! Tap the camera to take some!', 'All your pictures!'],
     music:[...Object.values(MUSIC_SAY), ...SONGS.map(x => x.n + '!'), 'Yay! Great dancing!', 'Stop!'],
-    games:[...WildTap.lines(), ...MatchUp.lines(), ...SplishSplash.lines(), ...DinoBuddies.lines(), ...SnackTime.lines(), ...PaintPals.lines(), ...MotionGames.lines()],
+    games:[...WildTap.lines(), ...MatchUp.lines(), ...SplishSplash.lines(), ...HideSeek.lines(), ...DinoBuddies.lines(), ...SnackTime.lines(), ...PaintPals.lines(), ...MotionGames.lines()],
     school:[SCHOOL_SAY.school, ...LetterPath.lines(), ...AbcZoo.lines(), ...AbcSnack.lines(), ...NumZoo.lines(), ...NumSnack.lines(), ...Delivery.lines(), ...DinoPicnic.lines(), ...SchoolAdventures.lines()]
   };
 }
@@ -11374,7 +11610,7 @@ window.__toyPhone = { motionGames: () => MotionGames.state(), pic: n => ART[n] |
     speaking: speaking(), sources: VB.srcs.length, waiting: !!lineWait}),
   recorded: () => Object.keys(REC), trims: FX_TRIM,
   voiceMissing: () => voiceLines().filter(l => !(VB.map && VB.map[l.who + '|' + l.s])).map(l => l.who + '|' + l.s),
-  panorama: (k, w=1600) => Promise.resolve().then(() => { const cv = document.createElement('canvas'); cv.width = w; cv.height = Math.round(w * WH / WW); renderScene(cv.getContext('2d'), SCENES[k], 0, 0, w / WW, cv.width, cv.height, 3, true); return cv.toDataURL('image/png'); }), dino: () => ({fill:DinoBuddies.fill(), family:DinoBuddies.family()}), snack: () => SnackTime.state(), match: () => MatchUp.state(), matchCall: a => MatchUp.callOf(a), splish: () => SplishSplash.state(), splishCall: a => SplishSplash.callOf(a), paint: () => PaintPals.state(), fx: () => Object.keys(FX), ringIn: () => maybeRing(true), sound: () => ({state: ctx ? ctx.state : 'none', rebuilds, held: held.length}),
+  panorama: (k, w=1600) => Promise.resolve().then(() => { const cv = document.createElement('canvas'); cv.width = w; cv.height = Math.round(w * WH / WW); renderScene(cv.getContext('2d'), SCENES[k], 0, 0, w / WW, cv.width, cv.height, 3, true); return cv.toDataURL('image/png'); }), dino: () => ({fill:DinoBuddies.fill(), family:DinoBuddies.family()}), snack: () => SnackTime.state(), match: () => MatchUp.state(), matchCall: a => MatchUp.callOf(a), splish: () => SplishSplash.state(), splishCall: a => SplishSplash.callOf(a), hide: () => HideSeek.state(), hideCall: a => HideSeek.callOf(a), paint: () => PaintPals.state(), fx: () => Object.keys(FX), ringIn: () => maybeRing(true), sound: () => ({state: ctx ? ctx.state : 'none', rebuilds, held: held.length}),
   pauseSound: () => { if (ctx) Object.defineProperty(ctx, 'state', {configurable:true, get: () => 'interrupted'}); }, photos: () => Photos.list.length, call: () => call && call.state,
   sceneView: (k, x, y, w, h, pw = 800) => { const cv = document.createElement('canvas'); cv.width = pw; cv.height = Math.round(pw*h/w); renderScene(cv.getContext('2d'), SCENES[k], x, y, pw/w, cv.width, cv.height, 3, true); return cv.toDataURL('image/png'); },   // (any part of a world, for checking by eye)
   look: () => ({ar:arMode(), following:!!AR.raw && performance.now() - AR.live < 1200 && !AR.flat && arMode(), flat:AR.flat, perm:AR.perm, x:cam.x, y:cam.y, w:vfW/camScale(), h:vfH/camScale(), scene:cam.scene}),
