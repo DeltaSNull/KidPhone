@@ -77,6 +77,8 @@ on 2026-10-09 from a 6,400-word log; the old text is in git history.)
   refinement, play-refinement, audio-return, phone-game-review, camera-peek and delivery, plus (R-24 to R-29)
   story-narration, accessibility, learning-rounds, audio-mix, stories-together, offline-ready and navigation. Main
   deploys only when all pass. audio-mix is a model of a phone speaker, not a listening test.
+- The browser jobs run on `ubuntu-24.04`, not `ubuntu-latest` (2026-11-21: `ubuntu-latest` became 26.04, where Playwright
+  1.56.1 can't install its browsers, so every job failed in setup). Move the runner up together with Playwright.
 - WebKit can't run in either model's container; CI is the WebKit check. Run the focused suites you touch plus the
   smoke test locally before pushing.
 - Tests should tap the way kids do (`page.touchscreen.tap`), not only keyboard Enter or synthetic clicks.
