@@ -79,6 +79,9 @@ on 2026-10-09 from a 6,400-word log; the old text is in git history.)
   deploys only when all pass. audio-mix is a model of a phone speaker, not a listening test.
 - The browser jobs run on `ubuntu-24.04`, not `ubuntu-latest` (2026-11-21: `ubuntu-latest` became 26.04, where Playwright
   1.56.1 can't install its browsers, so every job failed in setup). Move the runner up together with Playwright.
+- The Pages/offline suites run in two halves per engine side by side (`matrix.part`; about 23 minutes of WebKit tests
+  each), with Playwright's browsers cached. On 2026-11-24 installing WebKit took 24 and 29 minutes in that job (a minute
+  in the WebKit smoke job beside it) and ran the single 50-to-75-minute job out of time. A new suite goes in the lighter half.
 - WebKit can't run in either model's container; CI is the WebKit check. Run the focused suites you touch plus the
   smoke test locally before pushing.
 - Tests should tap the way kids do (`page.touchscreen.tap`), not only keyboard Enter or synthetic clicks.
