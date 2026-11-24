@@ -55,7 +55,7 @@ jobs:
   pages:
     name: Pages/offline (${{ matrix.engine }})
     runs-on: ubuntu-24.04   # (ubuntu-latest is 26.04 now, where Playwright 1.56.1 has no browsers; move up together with Playwright)
-    timeout-minutes: 50   # (the R-24 to R-29 suites took WebKit past 30)
+    timeout-minutes: 75   # (the R-24 to R-29 suites took WebKit past 30, and R-36/R-37 near 50; a slow WebKit install once took 24 minutes)
     strategy:
       fail-fast: false
       matrix:

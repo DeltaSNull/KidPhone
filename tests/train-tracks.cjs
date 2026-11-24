@@ -142,14 +142,15 @@ const YAY = ['You did it!', 'Great driving!', 'The train made it!', 'Toot toot! 
       check(boxes.every(b => b.w >= 50 && b.x >= 0 && b.y >= 0 && b.x + b.w <= viewport.width + 1 && b.y + b.h <= viewport.height + 1) && !boxes.some(b => ctrl.some(c => hit(b, c))),
         `${tag}: Dino Land 4: ${s.Wd}x${s.Ht}, cells ${Math.round(boxes[0].w)}px, all on screen and clear of the controls`);
       await shot('hardest');
-      n3 = await log(); await solve(); await ride(s, n3);
-      check((await st()).picked.length === 3, `${tag}: all three passengers ride along ${JSON.stringify((await st()).picked)}`);
-      await sayWait('You drove the train all the way! Wow!', n3, 20000);
-      await page.waitForFunction(() => window.__toyPhone.tracks().place === 'farm' && window.__toyPhone.tracks().mode === 'play', null, {timeout:30000});
-      s = await st();
-      check(s.lap === 1 && s.Wd*s.Ht === 30 && s.cells.filter(c => c.pass).length === 3, `${tag}: after Dino Land: "You drove the train all the way! Wow!" and round again from the farm, at the hardest (${s.Wd}x${s.Ht})`);
 
-      if (full){
+      if (full){   // (solving the hardest and the round after it take a while in WebKit; the other layouts check it fits and ride the forest puzzle)
+        n3 = await log(); await solve(); await ride(s, n3);
+        check((await st()).picked.length === 3, `${tag}: all three passengers ride along ${JSON.stringify((await st()).picked)}`);
+        await sayWait('You drove the train all the way! Wow!', n3, 20000);
+        await page.waitForFunction(() => window.__toyPhone.tracks().place === 'farm' && window.__toyPhone.tracks().mode === 'play', null, {timeout:30000});
+        s = await st();
+        check(s.lap === 1 && s.Wd*s.Ht === 30 && s.cells.filter(c => c.pass).length === 3, `${tag}: after Dino Land: "You drove the train all the way! Wow!" and round again from the farm, at the hardest (${s.Wd}x${s.Ht})`);
+
         // 5. a whole place: four puzzles, then the train goes on (farm)
         await page.evaluate(() => window.__toyPhone.tracksJump(0, 0)); await modeWait('play');
         for (let l = 0; l < 4; l++){
