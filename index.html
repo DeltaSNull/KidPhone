@@ -834,6 +834,50 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img:not(.px){image-rendering
 .hs-gc > .px{position:absolute; left:0; bottom:0; width:100%; height:64%}
 .hs-gc > .hs-gpeek{position:absolute; left:16%; top:0; width:68%; height:68%}
 .hs-gpeek .px{width:100%; height:100%}
+/* Train Tracks: the board is a grid of --t cells: the puzzle, plus the engine's cell and the station's cell */
+.app.ct{display:grid; grid-template-rows:72px minmax(0,1fr); grid-template-columns:minmax(0,1fr); overflow:hidden; background:#BDE8FA}   /* (minmax: the board sizes itself to the stage, so the stage mustn't size itself to the board) */
+@media (orientation:landscape){ .app.ct{grid-template-rows:minmax(0,1fr); grid-template-columns:72px minmax(0,1fr)} }
+.ct-mapbtn{position:absolute; left:80px; top:8px; z-index:5; width:64px; height:64px} .ct-mapbtn .px{width:62%; height:62%}
+.ct-steps{display:flex; justify-content:center; align-items:center; gap:6px; margin:0 80px 0 152px; pointer-events:none}
+@media (orientation:landscape){ .ct-mapbtn{left:8px; top:80px} .ct .lesson-replay{left:8px; right:auto; top:152px} .ct-steps{flex-direction:column; justify-content:flex-start; margin:232px 0 0; gap:4px} }
+.ct-step{width:34px; height:24px; display:grid; place-items:center; opacity:.35; filter:grayscale(1)}
+.ct-step .px{width:100%; height:auto}
+.ct-step.on,.ct-step.done{opacity:1; filter:none} .ct-step.on{scale:1.15}
+.ct-step.hop{animation:hop .45s cubic-bezier(.3,1.6,.5,1)}
+.ct-stage{position:relative; min-width:0; min-height:0; display:grid; place-items:center; overflow:hidden}
+.ct-board{position:relative; display:grid; grid-template-columns:repeat(var(--cols), var(--t)); grid-template-rows:repeat(var(--rows), var(--t)); background-color:var(--ground);
+  background-image:linear-gradient(45deg, var(--ground2) 25%, transparent 25%, transparent 75%, var(--ground2) 75%), linear-gradient(45deg, var(--ground2) 25%, transparent 25%, transparent 75%, var(--ground2) 75%);
+  background-size:calc(var(--t) * 2) calc(var(--t) * 2); background-position:0 0, var(--t) var(--t); box-shadow:0 0 0 4px var(--edge), 0 8px 0 4px rgba(0,0,0,.16)}
+.ct-board.in{animation:appIn .35s cubic-bezier(.25,1.3,.5,1)}
+.ct-cell{position:relative; width:var(--t); height:var(--t); padding:0; border:0; background:none; display:grid; place-items:center; touch-action:manipulation}
+.ct-piece{display:block; width:100%; height:100%; image-rendering:pixelated; transition:transform .18s ease-out; pointer-events:none}
+.ct-cell.turn{background:#E9CB96; box-shadow:inset 0 0 0 3px #A97A44, inset -4px -5px 0 2px rgba(90,58,30,.2), inset 4px 4px 0 2px rgba(255,255,255,.35)}
+.ct-cell.turn.lit{background:#FFF0B8}
+.ct-cell.hint{z-index:2; box-shadow:0 0 0 4px #FFE45C, 0 0 16px 6px #FFD23D, inset 0 0 0 3px #A97A44; animation:ct-pulse 1s ease-in-out infinite}
+.ct-cell.nope{animation:wig .3s linear 2}
+.ct-cell.hint.nope{animation:wig .3s linear 2, ct-pulse 1s ease-in-out .6s infinite}
+@keyframes ct-pulse{50%{scale:1.08}}
+.ct-grass .px{width:60%; height:60%; pointer-events:none}
+.ct-stub{pointer-events:none}
+.ct-pass{position:absolute; right:-12%; top:-16%; width:58%; height:58%; z-index:3; pointer-events:none; filter:drop-shadow(0 2px 0 rgba(0,0,0,.25))}
+.ct-pass .px{display:block; width:100%; height:100%}
+.ct-pass.hop{animation:hop .45s cubic-bezier(.3,1.6,.5,1)}
+.ct-station{position:absolute; left:50%; top:50%; width:calc(var(--t) * 1.2); height:calc(var(--t) * 1.2); translate:-50% -58%; z-index:2; pointer-events:none}
+.ct-station .px{display:block; width:100%; height:100%}
+.ct-train{position:absolute; inset:0; pointer-events:none; z-index:4}
+.ct-car{position:absolute; left:0; top:0; padding:0; border:0; background:none; transition:none; will-change:transform}
+.ct-car .px{display:block; width:100%; height:100%}
+.ct-engine{width:calc(var(--t) * .92); aspect-ratio:26/18; pointer-events:auto; z-index:2}
+.ct-flat{width:calc(var(--t) * .72); aspect-ratio:20/16; z-index:1}
+.ct-rider{position:absolute; left:6%; top:-42%; width:88%; aspect-ratio:1}
+.ct-rider.bounce{animation:ct-bounce .45s cubic-bezier(.3,1.6,.5,1)}
+@keyframes ct-bounce{40%{scale:1.3}}
+.ct-hand{position:absolute; width:72px; height:72px; z-index:6; pointer-events:none; animation:ct-tapping 1s ease-in-out infinite}
+.ct-hand .px{width:100%; height:100%}
+@keyframes ct-tapping{0%,100%{transform:none} 50%{transform:translate(-8px, -12px) scale(.9)}}
+.g-tracks{background:#F6DDB0}
+.g-tracks .gart{align-items:center; gap:2px}
+.g-tracks .gart .art .px{width:auto; height:1em}
 
 /* ---------- Game: Snack Time (one player): each hungry animal thinks of a food; give it that one ---------- */
 .app.st{display:grid; grid-template-rows:minmax(0,1fr) auto; overflow:hidden}
@@ -1624,6 +1668,17 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img:not(.px){image-rendering
           <div class="hs-bushes" id="hsBushes" role="group" aria-label="Bushes"></div>
           <div class="hs-fx" id="hsFx"></div>
         </div>
+      </section>
+
+      <!-- GAME: Train Tracks (one player: turn the track pieces so the train reaches the station, picking up the animals) -->
+      <section class="app ct" id="tracks" hidden aria-label="Train Tracks">
+        <button class="sc-back game-back" aria-label="Games"></button><button class="round ct-mapbtn" id="ctMapBtn" aria-label="Map: pick a place"></button><button class="round lesson-replay" id="ctReplay" aria-label="Say it again"></button>
+        <div class="ct-steps" id="ctSteps" aria-label="Puzzles here"></div>
+        <div class="ct-stage" id="ctStage">
+          <div class="ct-board" id="ctBoard" role="group" aria-label="Tracks"></div>
+          <div class="ct-hand" id="ctHand" hidden></div>
+        </div>
+        <div class="st-map" id="ctMap" hidden role="group" aria-label="Places to visit"></div>
       </section>
 
       <!-- GAME: Paint Pals (two kids, one picture each, painted by rubbing) -->
@@ -5099,7 +5154,7 @@ const BGS = [
   ['#camera', BG.grad(['#6CBDF5', '#4FA3E6', '#3A8EDA', '#2F7FD0'])], ['#photos', BG.grad(['#FFF6D2', '#FFEDAE', '#FFE59A', '#FFDF8A'])],
   ['.viewer', BG.grad(['#FFF6D2', '#FFEDAE', '#FFE59A', '#FFDF8A'])], ['#music', BG.grad(['#F0E8FF', '#DCCEFA', '#CAB8F6', '#BBA6F2'])], ['.stage', BG.stage],
   ['#games', BG.stripey(['#B0EBAA', '#8FDB8E', '#6CCB78', '#4FB86A'], '#C2F2BC')], ['.g-wild', BG.wild], ['.g-feed', BG.feed], ['.g-dino', BG.split], ['.g-paint', BG.paint],
-  ['#wt-menu', BG.wtMenu], ['#wt-world', BG.wtWorld], ['#wt-find', BG.grad(['#FFDCE3', '#FFC7D2', '#FFB3C2'])], ['#matchup', BG.grad(['#E2FAF4', '#C9F2E8', '#B0EADB'])], ['.g-match', BG.grad(['#E2FAF4', '#C9F2E8', '#B0EADB'])], ['#splish', BG.splish], ['#hideseek', BG.hide], ['.g-hide', BG.grad(['#DDF5CF', '#C8EDB4', '#B3E39C'])], ['.g-splash', BG.grad(['#D6F2FF', '#BDE8FA', '#A9DDF5'])], ['#wt-egg', BG.wtEgg], ['#wt-bubbles', BG.bubbles],
+  ['#wt-menu', BG.wtMenu], ['#wt-world', BG.wtWorld], ['#wt-find', BG.grad(['#FFDCE3', '#FFC7D2', '#FFB3C2'])], ['#matchup', BG.grad(['#E2FAF4', '#C9F2E8', '#B0EADB'])], ['.g-match', BG.grad(['#E2FAF4', '#C9F2E8', '#B0EADB'])], ['#splish', BG.splish], ['#hideseek', BG.hide], ['.g-hide', BG.grad(['#DDF5CF', '#C8EDB4', '#B3E39C'])], ['.g-tracks', BG.grad(['#FCEBC8', '#F6DDB0', '#EFCD94'])], ['.g-splash', BG.grad(['#D6F2FF', '#BDE8FA', '#A9DDF5'])], ['#wt-egg', BG.wtEgg], ['#wt-bubbles', BG.bubbles],
   ['.db-a', BG.dbSide('#A6E39A', '#6CC46A', '#3E9447')], ['.db-b', BG.dbSide('#A9DDF7', '#5BB8E8', '#2F86C4')], ['.db-mid', BG.sand],
   ['#stScene', BG.snack], ['#asScene', BG.snack], ['.st-foods', BG.picnic],
   ['#school', BG.stripey(['#FFF0B8', '#FFE28A', '#FFD466', '#FFC746'], '#FFF6D2')], ['.g-abc', BG.grad(['#FFF6D2', '#FFE8A3', '#FFDB7A'])], ['.g-abcsnack', BG.grad(['#E4F6FF', '#C9ECFF', '#ADE0FF'])],
@@ -5243,7 +5298,7 @@ const saveSettings = () => store.set('settings', settings);
 
 /* Access policy is separate from sound/game settings and applies to all navigation and device entry points. */
 const ACCESS_APPS = ['school','games','camera','photos','music','phone'];
-const ACCESS_GROUP = {wildtap:'games', matchup:'games', splish:'games', hideseek:'games', dinobuddies:'games', snacktime:'games', paintpals:'games', balltrail:'games', starflight:'games',
+const ACCESS_GROUP = {wildtap:'games', matchup:'games', splish:'games', hideseek:'games', tracks:'games', dinobuddies:'games', snacktime:'games', paintpals:'games', balltrail:'games', starflight:'games',
   letterpath:'school', abczoo:'school', abcsnack:'school', numzoo:'school', numsnack:'school', delivery:'school', dinopicnic:'school', sorting:'school', patterntrain:'school', moresnacks:'school', storytime:'school', feelings:'school'};
 const savedAccess = store.get('access', {}) || {};
 let access = {v:2, mode:['full','school','custom'].includes(savedAccess.mode) ? savedAccess.mode : 'full',
@@ -6025,7 +6080,7 @@ function updateClock(){ const d = new Date(); $('#clockTxt').textContent = ((d.g
 updateClock(); setInterval(updateClock, 10000);
 
 /* ---------- Navigation ---------- */
-const APPS = ['home','phone','camera','photos','music','games','wildtap','matchup','splish','hideseek','dinobuddies','snacktime','paintpals','balltrail','starflight','school','letterpath','abczoo','abcsnack','numzoo','numsnack','delivery','dinopicnic','sorting','patterntrain','moresnacks','storytime','feelings'];
+const APPS = ['home','phone','camera','photos','music','games','wildtap','matchup','splish','hideseek','tracks','dinobuddies','snacktime','paintpals','balltrail','starflight','school','letterpath','abczoo','abcsnack','numzoo','numsnack','delivery','dinopicnic','sorting','patterntrain','moresnacks','storytime','feelings'];
 let current = 'home';
 const APP_SAY = {phone:'Phone! Who do you want to call?', camera:'Camera! Slide to look around. Then press the big button!', music:'Music! Let\'s play!', games:'Games! Pick a game!'};
 function go(name, fromEl){
@@ -6054,6 +6109,7 @@ function enterApp(name){
   if (name === 'matchup') MatchUp.enter();
   if (name === 'splish') SplishSplash.enter();
   if (name === 'hideseek') HideSeek.enter();
+  if (name === 'tracks') Tracks.enter();
   if (name === 'dinobuddies') DinoBuddies.enter();
   if (name === 'snacktime') SnackTime.enter();
   if (name === 'paintpals') PaintPals.enter();
@@ -6077,6 +6133,7 @@ function leaveApp(name){
   if (name === 'matchup') MatchUp.leave();
   if (name === 'splish') SplishSplash.leave();
   if (name === 'hideseek') HideSeek.leave();
+  if (name === 'tracks') Tracks.leave();
   if (name === 'dinobuddies') DinoBuddies.leave();
   if (name === 'snacktime') SnackTime.leave();
   if (name === 'paintpals') PaintPals.leave();
@@ -9368,11 +9425,43 @@ const hsBush = () => once('hsBush', () => { const P = new Pix(40, 34);
   P.outline('o');
   return pxURL(P.canvas({g:'#4FA84A', G:'#357A34', l:'#86D06A', w:'#FFE45C', p:'#FF7AA8', o:'#1E4A1E'}), 6).slice(5, -2); });
 const hsBushImg = () => `<img class="px" src="${hsBush()}" alt="" draggable="false">`;
+/* ----- Train Tracks pictures: track pieces on a 24-pixel grid (plain and glowing), the engine, a flatcar, the station ----- */
+const CT_RAIL = {r:'#AEB8C2', R:'#6E7882', h:'#EEF3F7', t:'#8A5A2E', T:'#5E3A1A'}, CT_GOLD = {r:'#FFC93C', R:'#C98A10', h:'#FFF3A6', t:'#B07A3E', T:'#7E5226'};
+const ctPiece = (kind, lit) => once('ct' + kind + lit, () => { const P = new Pix(24, 24);
+  if (kind === 's'){   // straight, east to west
+    [2, 8, 14, 20].forEach(x => P.rect(x, 4, 2, 16, 't'));
+    P.rect(0, 7, 24, 1, 'h').rect(0, 8, 24, 1, 'r').rect(0, 9, 24, 1, 'R').rect(0, 14, 24, 1, 'h').rect(0, 15, 24, 1, 'r').rect(0, 16, 24, 1, 'R');
+  } else {   // a bend, east to south: arcs round the bottom-right corner
+    for (let y = 0; y < 24; y++) for (let x = 0; x < 24; x++){
+      const dx = 24 - (x + .5), dy = 24 - (y + .5), d = Math.hypot(dx, dy), a = Math.atan2(dy, dx);
+      if (d > 4.5 && d < 19.5 && [0, 1, 2, 3].some(i => Math.abs(a - (i + .5)*Math.PI/8) < .085)) P.set(x, y, 't');
+      if (Math.abs(d - 7.8) < .55 || Math.abs(d - 15.8) < .55) P.set(x, y, 'r');
+      else if (Math.abs(d - 7) < .4 || Math.abs(d - 15) < .4) P.set(x, y, 'h');
+      else if (Math.abs(d - 8.6) < .4 || Math.abs(d - 16.6) < .4) P.set(x, y, 'R');
+    }
+  }
+  P.shade('t', 'T', null, 1);
+  return pxURL(P.canvas(lit ? CT_GOLD : CT_RAIL), 4).slice(5, -2); });
+const ctEngine = () => once('ctEngine', () => { const P = new Pix(26, 18);   // seen from above, heading east
+  P.rect(1, 2, 8, 14, 'b').rect(9, 4, 14, 10, 'r').rect(23, 5, 2, 8, 'k').rect(2, 3, 6, 12, 'B');
+  P.ell(18.5, 9, 2.3, 2.3, 'k').ell(18.5, 9, 1.1, 1.1, 'g').ell(13, 9, 1.8, 1.8, 'y').rect(9, 4, 14, 1, 'l');
+  P.shade('r', 'R', null, 1).outline('o');
+  return `<img class="px" src="${pxURL(P.canvas({b:'#3D6FC4', B:'#5B8EE0', r:'#E0453A', R:'#B02E26', l:'#FF8A7A', k:'#2A2420', g:'#6E7882', y:'#FFD23F', o:'#2A1A12'}), 5).slice(5, -2)}" alt="" draggable="false">`; });
+const ctCar = () => once('ctCar', () => { const P = new Pix(20, 16);
+  P.rect(1, 1, 18, 14, 'w').rect(1, 1, 18, 2, 'l'); [5, 10, 15].forEach(x => P.rect(x, 3, 1, 12, 'W')); P.outline('o');
+  return `<img class="px" src="${pxURL(P.canvas({w:'#C9894A', W:'#A06A34', l:'#E2AA6E', o:'#4A2E16'}), 5).slice(5, -2)}" alt="" draggable="false">`; });
+const ctStation = () => once('ctStation', () => { const P = new Pix(30, 30);
+  P.rect(3, 13, 24, 13, 'w').poly([[1, 14], [15, 3], [29, 14]], 'r').rect(12, 18, 6, 8, 'd').rect(5, 16, 5, 4, 'g').rect(20, 16, 5, 4, 'g');
+  P.ell(15, 10, 2.4, 2.4, 'c').set(15, 9, 'k').set(15, 10, 'k').set(16, 10, 'k').rect(1, 26, 28, 3, 's').rect(15, 0, 1, 4, 'k').rect(16, 0, 4, 2, 'f');
+  P.shade('w', 'W', null, 1).shade('r', 'R', null, 1).outline('o');
+  return `<img class="px" src="${pxURL(P.canvas({w:'#F6E2B8', W:'#D9BE8C', r:'#D94A3E', R:'#A8322A', d:'#7A4A22', g:'#8FD3F5', c:'#FFFDF6', k:'#2A2420', s:'#A8A39A', f:'#FFD23F', o:'#3A2A1E'}), 4).slice(5, -2)}" alt="" draggable="false">`; });
+
 const GAMES = [
   {id:'wildtap', n:'Wild Tap', p:[1], cls:'g-wild', art:`<span class="art">${ART.elephant}</span><span class="art big">${ART.lion}</span><span class="art">${ART.giraffe}</span>`},
   {id:'matchup', n:'Match Up', p:[1], cls:'g-match', art:`<span class="mu-gc">${ART.cat}</span><span class="mu-gc back">?</span><span class="mu-gc">${ART.cat}</span>`},
   {id:'splish', n:'Splish Splash', p:[1], cls:'g-splash', art:`<span class="art">${ART.bubbles}</span><span class="art big">${schoolPic('pig')}</span><span class="art">${ssDuck()}</span>`},
   {id:'hideseek', n:'Hide and Seek', p:[1], cls:'g-hide', art:`<span class="hs-gc"><span class="hs-gpeek">${ART.lion}</span>${hsBushImg()}</span><span class="hs-gc">${hsBushImg()}</span>`},
+  {id:'tracks', n:'Train Tracks', p:[1], cls:'g-tracks', art:`<span class="art big">${ctEngine()}</span><span class="art big">${ctStation()}</span>`},
   {id:'snacktime', n:'Snack Time', p:[1], cls:'g-feed', art:`<span class="art">${ART.banana}</span><span class="art big">${ART.monkey}</span><span class="art">${ART.watermelon}</span>`},
   {id:'dinobuddies', n:'Dino Buddies', p:[1,2], cls:'g-dino', art:`<span class="art mid">${ART.trex}</span><span class="art sm">${ART.egg}</span><span class="art mid flip">${ART.trex}</span>`},
   {id:'paintpals', n:'Paint Pals', p:[1,2], cls:'g-paint', art:`<span class="art mid flip">${ppHalf('giraffe')}</span><span class="art sm">${ART.brush}</span><span class="art mid">${ppHalf('lion')}</span>`},
@@ -10446,8 +10535,350 @@ const SnackTime = (() => {
       foods: Object.fromEntries(SNACKS.map(s => [s.a, s.food])), calls: Object.fromEntries(SNACKS.map(s => [s.a, s.x]))}),
     // (More Snacks borrows the animals whose snacks can be counted)
     pals: () => SNACKS.filter(countable).map(s => ({a:s.a, n:s.n, food:s.food, fp:s.fp})),
+    places: () => PLACES.map(pl => ({...pl, animals:here(pl).map(s => ({a:s.a, n:s.n, x:s.x}))})),   // (Train Tracks' journey)
     lines: () => ['Hooray! Five full tummies!', MORE, WHERE, ...PLACES.flatMap(pl => [HELLO(pl), 'Snack Time! ' + HELLO(pl), OFF(pl), FULL(pl)]),
       ...SNACKS.flatMap(s => [WANTS(s), YUM(s), ...(countable(s) ? [TWO(s)] : [])])]
+  };
+})();
+
+/* ---------- Train Tracks: turn the track pieces so the train gets to the station, picking up the animals ----------
+   (owner, 2026-11-24: "a new app ... mainly geared toward the 3.5 year old ... sort of challenging"; Hide and Seek was too
+   simple.) A puzzle game with real thinking in it: a grid of track pieces; tap a piece on a wooden plate and it turns a
+   quarter; the rails glow gold from the engine as far as they join up, so every right turn shows. When the rails reach
+   the station (and pass every animal waiting by the track) the train toots, chugs along the very path that was built,
+   picks the animals up and pulls into the station. It's a journey through Snack Time's seven places, four puzzles each:
+   first a short line with one piece to turn, then bends, then decoy pieces, then a full grid of pieces that all turn,
+   one, two and then three passengers, longer and twistier routes. After Dino Land the journey goes round again at the
+   hardest level. A route that misses a passenger: "Wait! Someone needs a ride!", and the animal waves. Stuck for a
+   while: one piece that's still wrong glows ("Try turning this one!"). No timer, nothing to lose, nothing saved (the
+   map picks any place; stars mark the places finished this visit). Puzzles are made fresh each time, always solvable. */
+const Tracks = (() => {
+  const N = 1, E = 2, S = 4, W = 8, SIDES = [N, E, S, W];
+  const DR = {[N]:-1, [E]:0, [S]:1, [W]:0}, DC = {[N]:0, [E]:1, [S]:0, [W]:-1}, OPP = {[N]:S, [E]:W, [S]:N, [W]:E};
+  const turn = m => ((m << 1) | (m >> 3)) & 15;   // a quarter turn clockwise: N to E, E to S ...
+  const straight = m => m === (N|S) || m === (E|W);
+  const turnBy = (m, q) => { for (let i = 0; i < ((q % 4) + 4) % 4; i++) m = turn(m); return m; };
+  /* each place's four puzzles: a x b cells (the long side runs from the engine to the station), how many bends at
+     least, passengers, how many pieces turn (rot: that many on the route; otherwise all but a share 'fixed'), decoy:
+     the share of other cells that hold a (turnable) piece, full: every cell does */
+  const PLAN = [
+    [{a:3, b:1, bends:0, rot:1}, {a:3, b:3, bends:1, rot:2}, {a:4, b:3, bends:2, rot:3}, {a:4, b:3, bends:2, pass:1}],                       // farm: learn to turn
+    [{a:4, b:4, bends:2, pass:1, decoy:.3}, {a:4, b:4, bends:3, pass:1, decoy:.45}, {a:4, b:4, bends:3, pass:1, decoy:.6}, {a:5, b:4, bends:3, pass:1, decoy:.6}],   // forest: decoys
+    [{a:5, b:4, bends:3, pass:1, decoy:.75, fixed:.25}, {a:5, b:4, bends:4, pass:1, decoy:.85, fixed:.25}, {a:5, b:4, bends:4, pass:2, decoy:.9, fixed:.2}, {a:5, b:4, bends:4, pass:2, full:true, fixed:.2}],
+    [{a:5, b:4, bends:4, pass:2, full:true, fixed:.15}, {a:5, b:5, bends:4, pass:2, full:true, fixed:.15}, {a:5, b:5, bends:5, pass:2, full:true, fixed:.1}, {a:5, b:5, bends:5, pass:2, full:true, fixed:.1}],
+    [{a:5, b:5, bends:5, pass:2, full:true, fixed:.1}, {a:6, b:5, bends:5, pass:2, full:true, fixed:.1}, {a:6, b:5, bends:6, pass:2, full:true, fixed:.05}, {a:6, b:5, bends:6, pass:3, full:true, fixed:.05}],
+    [{a:6, b:5, bends:6, pass:3, full:true, fixed:.05}, {a:6, b:5, bends:6, pass:3, full:true}, {a:6, b:5, bends:7, pass:3, full:true}, {a:6, b:5, bends:7, pass:3, full:true}],
+    [{a:6, b:5, bends:7, pass:3, full:true}, {a:6, b:5, bends:8, pass:3, full:true}, {a:6, b:5, bends:8, pass:3, full:true}, {a:6, b:5, bends:9, pass:3, full:true}]
+  ];
+  const LAP = [{a:6, b:5, bends:8, pass:3, full:true}, {a:6, b:5, bends:8, pass:3, full:true}, {a:6, b:5, bends:9, pass:3, full:true}, {a:6, b:5, bends:9, pass:3, full:true}];   // round again: all hard
+  const DECOR = {farm:['flower', 'clover', 'grass'], forest:['tree', 'pinecone', 'acorn'], garden:['flower', 'sunflower', 'strawberry'], seaside:['clam', 'seaweed'],
+    jungle:['bamboo', 'fern', 'leaf'], savanna:['hay', 'grass', 'tree'], dino:['fern', 'pinecone']};
+  const GROUND = {farm:'#8ED16B', forest:'#76B65A', garden:'#9AD77C', seaside:'#F0D18E', jungle:'#68B45C', savanna:'#E4C37C', dino:'#C9A27A'};
+  const GO = 'Turn the tracks! Help the train get to the station!', TAP = 'Tap a track to turn it!', STATION = 'Get the train to the station!',
+    PICK = p => `Pick up the ${p.n} on the way!`, PICKS = 'Pick up all your friends on the way!', WAIT = 'Wait! Someone needs a ride!',
+    HINT = 'Try turning this one!', ABOARD = 'All aboard! Choo choo!', YAY = ['You did it!', 'Great driving!', 'The train made it!', 'Toot toot! Hooray!'],
+    ALL = 'You drove the train all the way! Wow!', WHERE = 'Where shall we go?', HELLO = pl => `Welcome to ${pl.n}!`, OFF = pl => `Off to ${pl.n}!`;
+  const root = $('#tracks'), stage = $('#ctStage'), boardEl = $('#ctBoard'), stepsEl = $('#ctSteps'), mapEl = $('#ctMap'), handEl = $('#ctHand');
+  let places = null, place = null, pi = 0, lvl = 0, lap = 0, praise = 0, visited = new Set(), started = false, mode = 'off', seq = 0;
+  let pz = null, t = 64, raf = 0, hintT = 0, sinceGain = 0, bestLit = 0, hinted = null, waited = false, pickedUp = [];
+
+  /* ----- making a puzzle: a winding route from the engine's side to the station's side, then pieces turned out of place ----- */
+  const rint = n => Math.floor(Math.random()*n);
+  function route(Wd, Ht, es, xs, spec){
+    const cells = Wd*Ht, maxLen = Math.max(spec.a, Math.ceil(cells*(spec.full ? .7 : .8))), minLen = Math.min(maxLen, spec.a + Math.min(spec.bends, 4));
+    for (let tries = 0; tries < 300; tries++){
+      const start = es === W ? [rint(Ht), 0] : [0, rint(Wd)], seen = new Set(), path = [];
+      let budget = 3000, found = null;
+      const dfs = (r, c, inS) => {
+        if (found || --budget < 0) return;
+        seen.add(r*Wd + c); path.push({r, c, in:inS, out:0});
+        for (const o of shuffle(SIDES.filter(d => d !== inS))){
+          if (found || budget < 0) break;
+          const nr = r + DR[o], nc = c + DC[o];
+          if (nr < 0 || nr >= Ht || nc < 0 || nc >= Wd){
+            if (o !== xs) continue;
+            path[path.length - 1].out = o;
+            const bends = path.filter(p => p.out !== OPP[p.in]).length;
+            if (path.length >= minLen && path.length <= maxLen && bends >= spec.bends && bends <= spec.bends + 3) found = path.map(p => ({...p}));
+            continue;
+          }
+          if (seen.has(nr*Wd + nc) || path.length >= maxLen) continue;
+          path[path.length - 1].out = o;
+          dfs(nr, nc, OPP[o]);
+        }
+        if (!found){ seen.delete(r*Wd + c); path.pop(); }
+      };
+      dfs(start[0], start[1], es);
+      if (found) return found;
+    }
+    return null;
+  }
+  function make(spec){
+    const land = innerWidth > innerHeight, Wd = land ? spec.a : spec.b, Ht = land ? spec.b : spec.a, es = land ? W : N, xs = land ? E : S;
+    let path = null;
+    for (let k = 0; !path && k < 6; k++) path = route(Wd, Ht, es, xs, k < 4 ? spec : {...spec, bends:Math.max(0, spec.bends - k + 3)});
+    if (!path) path = route(Wd, Ht, es, xs, {...spec, bends:0});
+    const grid = Array.from({length:Ht}, (_, r) => Array.from({length:Wd}, (_, c) => ({r, c, kind:'none', sol:0, q:0, base:0, turns:false, step:-1, pass:null})));
+    path.forEach((p, i) => { const g = grid[p.r][p.c]; g.kind = 'track'; g.sol = p.in | p.out; g.step = i; });
+    // passengers: by the route, never on its first or last piece, not next to each other
+    const want = Math.min(spec.pass || 0, Math.max(0, Math.floor((path.length - 2)/2))), slots = shuffle(path.slice(1, -1).map((p, i) => i + 1)), picks = [];
+    for (const i of slots) if (picks.length < want && picks.every(j => Math.abs(j - i) > 1)) picks.push(i);
+    const riders = shuffle(place.animals);
+    picks.sort((x, y) => x - y).forEach((i, k) => { grid[path[i].r][path[i].c].pass = riders[k % riders.length]; });
+    // the other cells: decoy pieces, or grass with a flower, a tree ...
+    grid.flat().forEach(g => { if (g.kind === 'none' && (spec.full || Math.random() < (spec.decoy || 0))){ g.kind = 'track'; g.sol = Math.random() < .5 ? (E|W) : (E|S); g.decoy = true; g.turns = true; } });
+    // which pieces of the route turn
+    const onRoute = path.map(p => grid[p.r][p.c]);
+    if (spec.rot != null){ shuffle(onRoute.map((g, i) => i).filter(i => spec.rot >= onRoute.length || (i > 0 || onRoute.length < 3))).slice(0, spec.rot).forEach(i => { onRoute[i].turns = true; }); }
+    else { const fixed = Math.round(onRoute.length*(spec.fixed || 0)); onRoute.forEach(g => { g.turns = true; }); shuffle(onRoute).slice(0, fixed).forEach(g => { g.turns = false; }); }
+    // the picture: straight pieces are drawn east-west, bends east-south; q is how many quarter turns from there
+    grid.flat().forEach(g => { if (g.kind !== 'track') return; g.base = straight(g.sol) ? (E|W) : (E|S); g.q = [0, 1, 2, 3].find(q => turnBy(g.base, q) === g.sol); });
+    const p = {Wd, Ht, es, xs, path, grid, entry:path[0], exit:path[path.length - 1]};
+    // turn the turnable route pieces out of place (and shuffle the decoys) until nothing is joined up already
+    for (let k = 0; k < 20; k++){
+      grid.flat().forEach(g => { if (!g.turns) return; if (g.decoy) g.q = rint(4); else if (spec.rot != null || Math.random() > .2) g.q += straight(g.sol) ? 1 : 1 + rint(3); });   // (after the farm, about one route piece in five is already right: which ones need turning is part of the puzzle)
+      pz = p; if (!trace().done) break;
+    }
+    return p;
+  }
+  const mask = g => turnBy(g.base, g.q);
+  const cell = (r, c) => pz.grid[r] && pz.grid[r][c];
+  /* follow the rails from the engine: the pieces that join up, and whether they reach the station */
+  function trace(){
+    let {r, c} = pz.entry, inS = pz.es; const lit = [];
+    for (;;){
+      const g = cell(r, c);
+      if (!g || g.kind !== 'track' || lit.includes(g)) return {lit, done:false};
+      const m = mask(g); if (!(m & inS)) return {lit, done:false};
+      lit.push(g); g.inS = inS;
+      const out = m & ~inS, nr = r + DR[out], nc = c + DC[out];
+      if (!cell(nr, nc)) return {lit, done:out === pz.xs && r === pz.exit.r && c === pz.exit.c};
+      r = nr; c = nc; inS = OPP[out];
+    }
+  }
+
+  /* ----- the board: the puzzle cells, plus the engine's cell before it and the station's cell after it ----- */
+  const layoutDims = () => pz.es === W ? [pz.Wd + 2, pz.Ht] : [pz.Wd, pz.Ht + 2];
+  const at = (r, c) => pz.es === W ? [r, c + 1] : [r + 1, c];   // puzzle cell -> board row, column
+  const startCell = () => pz.es === W ? [pz.entry.r, 0] : [0, pz.entry.c];
+  const endCell = () => pz.es === W ? [pz.exit.r, pz.Wd + 1] : [pz.Ht + 1, pz.exit.c];
+  function fit(){
+    if (!pz) return;
+    const [cols, rows] = layoutDims(), w = stage.clientWidth - 12, h = stage.clientHeight - 12;
+    t = Math.max(30, Math.min(110, Math.floor(Math.min(w/cols, h/rows))));
+    boardEl.style.setProperty('--t', t + 'px'); boardEl.style.width = cols*t + 'px'; boardEl.style.height = rows*t + 'px';
+    if (mode !== 'ride') parkTrain();
+  }
+  function draw(){
+    const [cols, rows] = layoutDims();
+    boardEl.innerHTML = ''; boardEl.style.setProperty('--cols', cols); boardEl.style.setProperty('--rows', rows);
+    const ground = GROUND[place.k], decor = DECOR[place.k];
+    boardEl.style.setProperty('--ground', ground); boardEl.style.setProperty('--ground2', dim(ground, .1)); boardEl.style.setProperty('--edge', dim(ground, .45));
+    const put1 = (el, [r, c]) => { el.style.gridRow = r + 1; el.style.gridColumn = c + 1; boardEl.appendChild(el); return el; };
+    pz.grid.flat().forEach(g => {
+      if (g.kind !== 'track'){
+        const d = document.createElement('div'); d.className = 'ct-cell ct-grass'; if (Math.random() < .55) d.innerHTML = animalPic(rnd(decor)); put1(d, at(g.r, g.c)); g.el = d; return;
+      }
+      const b = document.createElement('button'); b.className = 'ct-cell' + (g.turns ? ' turn' : ' fixed'); b.dataset.r = g.r; b.dataset.c = g.c;
+      b.setAttribute('aria-label', g.turns ? 'Track piece: tap to turn' : 'Track piece');
+      b.innerHTML = `<img class="ct-piece" src="${ctPiece(straight(g.sol) ? 's' : 'c', false)}" alt="" draggable="false">` + (g.pass ? `<span class="ct-pass">${animalPic(g.pass.a)}</span>` : '');
+      g.el = b; g.img = b.firstChild; g.img.style.transform = `rotate(${g.q*90}deg)`;
+      tap(b, () => press(g), {bump:false, throttle:90});
+      put1(b, at(g.r, g.c));
+    });
+    // the track into the puzzle and out to the station, the station, and the train
+    const stub = (rc, side) => { const s = document.createElement('div'); s.className = 'ct-cell ct-stub'; s.innerHTML = `<img class="ct-piece" src="${ctPiece('s', false)}" alt="" draggable="false">`;
+      s.firstChild.style.transform = `rotate(${side === N || side === S ? 90 : 0}deg)`; return put1(s, rc); };
+    stub(startCell(), pz.es); const out = stub(endCell(), pz.xs);
+    const st = document.createElement('div'); st.className = 'ct-station'; st.innerHTML = ctStation(); out.appendChild(st);
+    const tr = document.createElement('div'); tr.className = 'ct-train'; tr.innerHTML = `<button class="ct-car ct-engine" aria-label="Train">${ctEngine()}</button>`;
+    boardEl.appendChild(tr);
+    tap($('.ct-engine', tr), () => { if (mode === 'play' || mode === 'intro') toot(); }, {bump:false, throttle:600});
+    fit(); light(false);
+  }
+  /* the engine waits on its little track, facing the puzzle */
+  function parkTrain(){
+    const tr = $('.ct-train', boardEl); if (!tr) return;
+    const [r, c] = startCell(), eng = $('.ct-engine', tr);
+    place1(eng, (c + .5)*t, (r + .5)*t, pz.es === W ? 0 : 90);
+    $$('.ct-car:not(.ct-engine)', tr).forEach(x => x.remove());
+  }
+  function place1(el, x, y, deg){ el.style.transform = `translate(${x}px, ${y}px) translate(-50%, -50%) rotate(${deg}deg)`; const rider = el.querySelector('.ct-rider'); if (rider) rider.style.transform = `rotate(${-deg}deg)`; }
+
+  /* ----- playing: turn a piece, watch the gold reach further ----- */
+  const NOTES = [523.25, 587.33, 659.25, 783.99, 880, 1046.5, 1174.66, 1318.51, 1567.98, 1760];
+  function press(g){
+    if (mode === 'intro') mode = 'play';   // (no waiting for the words: a quick finger can start at once)
+    if (mode !== 'play') return;
+    if (!g.turns){ retrigger(g.el, 'nope'); FX.boop(); return; }
+    g.q++; g.img.style.transform = `rotate(${g.q*90}deg)`; tone(900, 620, .05, 'square', .05); noise(.05, 'highpass', 2400, 1800, .1);
+    if (hinted === g){ g.el.classList.remove('hint'); hinted = null; }
+    handEl.hidden = true;
+    sinceGain++; light(true); if (mode === 'play') wait();
+  }
+  function light(sound){
+    const {lit, done} = trace();
+    pz.grid.flat().forEach(g => { if (g.kind !== 'track') return; const on = lit.includes(g); if (on !== !!g.lit){ g.lit = on; g.el.classList.toggle('lit', on); g.img.src = ctPiece(straight(g.sol) ? 's' : 'c', on);
+      if (on && g.pass) retrigger($('.ct-pass', g.el), 'hop'); } });
+    if (sound && lit.length > bestLit){ const f = NOTES[Math.min(lit.length - 1, NOTES.length - 1)]; tone(f, f, .18, 'triangle', .1); sinceGain = 0; }
+    bestLit = lit.length;
+    if (!done){ waited = false; return; }
+    const missed = pz.grid.flat().filter(g => g.pass && !lit.includes(g));
+    if (missed.length){
+      if (!waited){ waited = true; say(WAIT, 0, 'find'); missed.forEach((g, i) => later(() => { retrigger($('.ct-pass', g.el), 'hop'); call(g.pass); }, 400 + i*700)); }
+      return;
+    }
+    go2(lit);
+  }
+  const call = p => (FX[p.x] ? FX[p.x]() : 0) || .5;
+  const toot = () => { tone(587, 587, .32, 'sine', .14, 0, 6); tone(740, 740, .32, 'sine', .1, 0, 6); tone(587, 587, .5, 'sine', .14, .38, 6); tone(740, 740, .5, 'sine', .1, .38, 6); };
+  const chug = () => noise(.07, 'bandpass', 500, 300, .12);
+  /* stuck for a while (no taps, or taps that don't reach further): one piece of the route that's still wrong glows */
+  function wait(){ unLater(hintT); hintT = later(hint, sinceGain >= 12 ? 1500 : 20000); }
+  function hint(){
+    if (mode !== 'play') return;
+    const g = pz.path.map(p => cell(p.r, p.c)).find(x => x.turns && mask(x) !== x.sol);
+    if (!g) return;
+    if (hinted) hinted.el.classList.remove('hint');
+    hinted = g; g.el.classList.add('hint'); retrigger(g.el, 'nope'); say(HINT, 0, 'find'); sinceGain = 0;
+  }
+
+  /* ----- the ride: the engine follows the rails that were built, picking up each animal on the way ----- */
+  function samples(lit){
+    // in cell units on the board: from the engine's cell, through every piece, to the station's
+    const pts = [], push = (x, y) => pts.push([x, y]);
+    const vec = s => [DC[s], DR[s]];
+    const [sr, sc] = startCell(); push(sc + .5, sr + .5);
+    lit.forEach(g => {
+      const [br, bc] = at(g.r, g.c), cx = bc + .5, cy = br + .5, m = mask(g);
+      const inS = g.inS, out = m & ~inS;
+      const [ix, iy] = vec(inS), [ox, oy] = vec(out);
+      if (straight(m)){ for (let k = 1; k <= 10; k++){ const f = k/10; push(cx + ix*.5*(1 - f) + ox*.5*f, cy + iy*.5*(1 - f) + oy*.5*f); } }
+      else {
+        const kx = cx + (ix + ox)*.5, ky = cy + (iy + oy)*.5, a0 = Math.atan2(cy + iy*.5 - ky, cx + ix*.5 - kx), a1 = Math.atan2(cy + oy*.5 - ky, cx + ox*.5 - kx);
+        let da = a1 - a0; if (da > Math.PI) da -= 2*Math.PI; if (da < -Math.PI) da += 2*Math.PI;
+        for (let k = 1; k <= 12; k++){ const a = a0 + da*k/12; push(kx + .5*Math.cos(a), ky + .5*Math.sin(a)); }
+      }
+      g.at = pts.length - 1;
+    });
+    const [er, ec] = endCell(); push(ec + .5, er + .5);
+    // distances along the way
+    const d = [0]; for (let i = 1; i < pts.length; i++) d.push(d[i - 1] + Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]));
+    return {pts, d};
+  }
+  function pose(sm, s){
+    const {pts, d} = sm; s = clamp(s, 0, d[d.length - 1]);
+    let i = 1; while (i < d.length - 1 && d[i] < s) i++;
+    const f = (s - d[i - 1]) / Math.max(1e-6, d[i] - d[i - 1]), x = pts[i - 1][0] + (pts[i][0] - pts[i - 1][0])*f, y = pts[i - 1][1] + (pts[i][1] - pts[i - 1][1])*f;
+    return [x, y, Math.atan2(pts[i][1] - pts[i - 1][1], pts[i][0] - pts[i - 1][0])*180/Math.PI];
+  }
+  function go2(lit){
+    mode = 'ride'; unLater(hintT); handEl.hidden = true; if (hinted){ hinted.el.classList.remove('hint'); hinted = null; }
+    const sm = samples(lit), tr = $('.ct-train', boardEl), eng = $('.ct-engine', tr), cars = [], my = seq;
+    const stops = lit.filter(g => g.pass).map(g => ({g, s:sm.d[g.at] - .5, done:false}));
+    pickedUp = [];
+    later(() => { toot(); say(ABOARD, 0, 'find'); }, 250);
+    const end = sm.d[sm.d.length - 1], speed = calm() ? 3.2 : 1.7;   // cells a second
+    let s = 0, last = 0, chugAt = 0, t0 = 0;
+    const frame = now => {
+      if (my !== seq || mode !== 'ride') return;
+      if (!t0){ t0 = now; last = now; }
+      const dt = Math.min(.05, (now - last)/1000); last = now;
+      if (now - t0 > 900){ s = Math.min(end, s + speed*dt); if (now - chugAt > 260){ chugAt = now; chug(); } }
+      stops.forEach(st => { if (!st.done && s >= st.s){ st.done = true; pickUp(st.g, tr, cars); } });
+      const [x, y, deg] = pose(sm, s); place1(eng, x*t, y*t, deg);
+      cars.forEach((car, k) => { const [cx, cy, cd] = pose(sm, s - .78*(k + 1)); place1(car, cx*t, cy*t, cd); });
+      if (s >= end){ raf = 0; arrive(cars); return; }
+      raf = requestAnimationFrame(frame);
+    };
+    raf = requestAnimationFrame(frame);
+  }
+  function pickUp(g, tr, cars){
+    const car = document.createElement('div'); car.className = 'ct-car ct-flat'; car.innerHTML = ctCar() + `<span class="ct-rider">${animalPic(g.pass.a)}</span>`;
+    tr.appendChild(car); cars.push(car); pickedUp.push(g.pass.a);
+    const p = $('.ct-pass', g.el); if (p) p.remove();
+    retrigger($('.ct-rider', car), 'bounce'); call(g.pass);
+  }
+  function arrive(cars){
+    mode = 'arrive'; toot();
+    const st = $('.ct-station', boardEl), r = st.getBoundingClientRect(), sc = $('#screen').getBoundingClientRect();
+    confetti(r.left - sc.left + r.width/2, r.top - sc.top + r.height/3, 30); FX.cheer();
+    cars.forEach((c, i) => later(() => retrigger($('.ct-rider', c), 'bounce'), 300 + i*220));
+    const n = $$('.ct-step', stepsEl)[lvl]; if (n){ n.classList.add('done'); retrigger(n, 'hop'); }
+    step(YAY[praise++ % YAY.length], () => later(next, 700));
+  }
+  /* say a line, then go on: when it's been heard, or a while later if something hushed it (Settings, the phone sleeping) */
+  function step(text, fn){ const my = seq; let done = false; const go = () => { if (!done && my === seq){ done = true; fn(); } }; say(text, 0, 'find', go); later(go, lineMs(text, 0) + 2500); }
+
+  /* ----- the journey: four puzzles a place, then the train goes on to the next ----- */
+  function next(){
+    if (lvl < 3){ lvl++; puzzle(); return; }
+    visited.add(place.k);
+    if (pi === places.length - 1){ lap++; step(ALL, () => travel(0)); return; }
+    travel(pi + 1);
+  }
+  function travel(i){
+    mode = 'travel'; const to = places[i];
+    [0, .3, .6, .9, 1.2].forEach(d => noise(.08, 'bandpass', 500, 300, .12, d));
+    fly(boardEl, [{transform:'none', opacity:1}, {transform:`translateX(${-stage.clientWidth*.6}px)`, opacity:0}], {duration:900, easing:'ease-in', fill:'forwards'});
+    step(OFF(to), () => { boardEl.getAnimations().forEach(a => a.cancel()); visit(i, false); });
+  }
+  function visit(i, first, keep){
+    pi = i; place = places[i]; if (!keep) lvl = 0;
+    const fn = BG.place(place.k); bgFor.set(stage, fn); paintBG(stage, fn, true); root.dataset.place = place.k;
+    puzzle(first ? GO : HELLO(place));
+  }
+  function steps(){
+    stepsEl.innerHTML = '';
+    for (let i = 0; i < 4; i++){ const s = document.createElement('span'); s.className = 'ct-step' + (i < lvl ? ' done' : i === lvl ? ' on' : ''); s.innerHTML = ctEngine(); stepsEl.appendChild(s); }
+  }
+  function puzzle(first){
+    mode = 'intro'; seq++; waited = false; sinceGain = 0; bestLit = 0; hinted = null; cancelAnimationFrame(raf); raf = 0; handEl.hidden = true;
+    const spec = lap ? LAP[lvl] : PLAN[pi][lvl];
+    pz = make(spec); draw(); steps(); retrigger(boardEl, 'in');
+    const riders = pz.grid.flat().filter(g => g.pass), tutor = !lap && pi === 0 && lvl === 0;
+    const goal = riders.length === 1 ? PICK(riders[0].pass) : riders.length ? PICKS : tutor ? TAP : STATION;
+    pz.goal = goal;
+    const startPlay = () => { if (mode !== 'intro') return; mode = 'play'; wait(); if (tutor) showHand(); };
+    if (first) step(first, () => step(goal, startPlay)); else step(goal, startPlay);
+    later(() => { if (mode === 'intro') startPlay(); }, 600);   // (taps work while it talks)
+    riders.forEach((g, i) => later(() => { retrigger($('.ct-pass', g.el), 'hop'); }, 500 + i*300));
+  }
+  function showHand(){
+    const g = pz.path.map(p => cell(p.r, p.c)).find(x => x.turns && mask(x) !== x.sol); if (!g) return;
+    handEl.innerHTML = ART.hand; handEl.hidden = false;
+    const b = g.el.getBoundingClientRect(), s = stage.getBoundingClientRect();
+    handEl.style.left = (b.left - s.left + b.width*.55) + 'px'; handEl.style.top = (b.top - s.top + b.height*.45) + 'px';
+  }
+
+  /* ----- the map: every place as a picture card; a star on the ones finished this visit ----- */
+  function openMap(){
+    if (!mapEl.hidden || mode === 'ride') return;
+    seq++; clearLater(); hush(); mode = 'map'; handEl.hidden = true;
+    mapEl.innerHTML = ''; mapEl.hidden = false;
+    places.forEach((pl, i) => {
+      const b = document.createElement('button'); b.className = 'st-place' + (pl === place ? ' here' : ''); b.dataset.place = pl.k; b.setAttribute('aria-label', pl.title);
+      b.innerHTML = `<span class="st-place-who">${pl.animals.slice(0, 2).map(s => animalPic(s.a)).join('')}</span>${visited.has(pl.k) ? `<span class="st-place-star art">${ART.star}</span>` : ''}`;
+      mapEl.appendChild(b); paintBG(b, BG.place(pl.k), true);
+      tap(b, () => { if (mapEl.hidden) return; FX.pop(); closeMap(); lap = 0; visit(i, false); }, {bump:false});
+    });
+    say(WHERE, 0, 'find');
+  }
+  function closeMap(){ mapEl.hidden = true; mapEl.innerHTML = ''; }
+  put($('#ctMapBtn'), schoolPic('map')); tap($('#ctMapBtn'), () => { FX.boop(); openMap(); }, {throttle:700});
+  put($('#ctReplay'), ART.ear); tap($('#ctReplay'), () => { if (!pz || (mode !== 'play' && mode !== 'intro')) return; hush(); say(pz.goal, 0, 'find'); }, {throttle:700});
+  if (window.ResizeObserver) new ResizeObserver(() => { if (current === 'tracks') fit(); }).observe(stage);
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && current === 'tracks' && mode === 'play') later(() => say(pz.goal, 0, 'find'), 600); });
+
+  return {
+    // the journey picks up where it was this visit (a fresh puzzle at the same step); the first visit starts on the farm
+    enter(){ places = places || SnackTime.places(); closeMap(); visit(started ? pi : 0, !started, started); started = true; },
+    leave(){ seq++; mode = 'off'; cancelAnimationFrame(raf); raf = 0; unLater(hintT); closeMap(); handEl.hidden = true; boardEl.getAnimations({subtree:true}).forEach(a => a.cancel()); },
+    lines: () => { const ps = SnackTime.places(); return [GO, TAP, STATION, PICKS, WAIT, HINT, ABOARD, ALL, WHERE, ...YAY, ...ps.flatMap(pl => [HELLO(pl), OFF(pl), ...pl.animals.map(PICK)])]; },
+    jump(i, l){ seq++; mode = 'off'; cancelAnimationFrame(raf); raf = 0; closeMap(); lap = 0; visit(i, false); lvl = l; puzzle(); },   // (tests)
+    state: () => pz ? ({mode, place:place.k, pi, level:lvl, lap, goal:pz.goal, picked:pickedUp.slice(), visited:[...visited], map:!mapEl.hidden, Wd:pz.Wd, Ht:pz.Ht, es:pz.es, xs:pz.xs,
+      lit:trace().lit.length, done:trace().done, hint:hinted ? [hinted.r, hinted.c] : null, route:pz.path.map(p => [p.r, p.c]),
+      cells:pz.grid.flat().filter(g => g.kind === 'track').map(g => ({r:g.r, c:g.c, turns:g.turns, ok:mask(g) === g.sol, step:g.step, decoy:!!g.decoy, pass:g.pass && g.pass.a}))}) : {mode}
   };
 })();
 
@@ -11557,7 +11988,7 @@ function areaLines(){
       ...Object.values(CAM_SAY), ...Object.values(MODE_SAY), 'Move the phone to look all around!', ...COSTUMES.map(c => `You're ${article(COSTUME_NAME[c])}!`), ...LOOK_ORDER.slice(1).map(k => LOOKS[k].say)],
     photos:['Your pictures!', 'Look at all your pictures!', 'No pictures yet! Tap the camera to take some!', 'All your pictures!'],
     music:[...Object.values(MUSIC_SAY), ...SONGS.map(x => x.n + '!'), 'Yay! Great dancing!', 'Stop!'],
-    games:[...WildTap.lines(), ...MatchUp.lines(), ...SplishSplash.lines(), ...HideSeek.lines(), ...DinoBuddies.lines(), ...SnackTime.lines(), ...PaintPals.lines(), ...MotionGames.lines()],
+    games:[...WildTap.lines(), ...MatchUp.lines(), ...SplishSplash.lines(), ...HideSeek.lines(), ...Tracks.lines(), ...DinoBuddies.lines(), ...SnackTime.lines(), ...PaintPals.lines(), ...MotionGames.lines()],
     school:[SCHOOL_SAY.school, ...LetterPath.lines(), ...AbcZoo.lines(), ...AbcSnack.lines(), ...NumZoo.lines(), ...NumSnack.lines(), ...Delivery.lines(), ...DinoPicnic.lines(), ...SchoolAdventures.lines()]
   };
 }
@@ -11610,7 +12041,7 @@ window.__toyPhone = { motionGames: () => MotionGames.state(), pic: n => ART[n] |
     speaking: speaking(), sources: VB.srcs.length, waiting: !!lineWait}),
   recorded: () => Object.keys(REC), trims: FX_TRIM,
   voiceMissing: () => voiceLines().filter(l => !(VB.map && VB.map[l.who + '|' + l.s])).map(l => l.who + '|' + l.s),
-  panorama: (k, w=1600) => Promise.resolve().then(() => { const cv = document.createElement('canvas'); cv.width = w; cv.height = Math.round(w * WH / WW); renderScene(cv.getContext('2d'), SCENES[k], 0, 0, w / WW, cv.width, cv.height, 3, true); return cv.toDataURL('image/png'); }), dino: () => ({fill:DinoBuddies.fill(), family:DinoBuddies.family()}), snack: () => SnackTime.state(), match: () => MatchUp.state(), matchCall: a => MatchUp.callOf(a), splish: () => SplishSplash.state(), splishCall: a => SplishSplash.callOf(a), hide: () => HideSeek.state(), hideCall: a => HideSeek.callOf(a), paint: () => PaintPals.state(), fx: () => Object.keys(FX), ringIn: () => maybeRing(true), sound: () => ({state: ctx ? ctx.state : 'none', rebuilds, held: held.length}),
+  panorama: (k, w=1600) => Promise.resolve().then(() => { const cv = document.createElement('canvas'); cv.width = w; cv.height = Math.round(w * WH / WW); renderScene(cv.getContext('2d'), SCENES[k], 0, 0, w / WW, cv.width, cv.height, 3, true); return cv.toDataURL('image/png'); }), dino: () => ({fill:DinoBuddies.fill(), family:DinoBuddies.family()}), snack: () => SnackTime.state(), match: () => MatchUp.state(), matchCall: a => MatchUp.callOf(a), splish: () => SplishSplash.state(), splishCall: a => SplishSplash.callOf(a), hide: () => HideSeek.state(), hideCall: a => HideSeek.callOf(a), tracks: () => Tracks.state(), tracksJump: (i, l) => Tracks.jump(i, l), paint: () => PaintPals.state(), fx: () => Object.keys(FX), ringIn: () => maybeRing(true), sound: () => ({state: ctx ? ctx.state : 'none', rebuilds, held: held.length}),
   pauseSound: () => { if (ctx) Object.defineProperty(ctx, 'state', {configurable:true, get: () => 'interrupted'}); }, photos: () => Photos.list.length, call: () => call && call.state,
   sceneView: (k, x, y, w, h, pw = 800) => { const cv = document.createElement('canvas'); cv.width = pw; cv.height = Math.round(pw*h/w); renderScene(cv.getContext('2d'), SCENES[k], x, y, pw/w, cv.width, cv.height, 3, true); return cv.toDataURL('image/png'); },   // (any part of a world, for checking by eye)
   look: () => ({ar:arMode(), following:!!AR.raw && performance.now() - AR.live < 1200 && !AR.flat && arMode(), flat:AR.flat, perm:AR.perm, x:cam.x, y:cam.y, w:vfW/camScale(), h:vfH/camScale(), scene:cam.scene}),

@@ -26,6 +26,9 @@ pip install -r tools/voices/requirements.txt
 
 # the model: Kokoro-82M v1.0, ONNX, full precision (about 325 MB)
 #   https://huggingface.co/onnx-community/Kokoro-82M-v1.0-ONNX/resolve/main/onnx/model.onnx
+#   (where Hugging Face can't be reached: the same file is on npm in 19 pieces, kokoro-fp32a-shards, -b- and -c-, 1.0.0;
+#   npm pack the three, cat kokoro-fp32.part0.bin ... part18.bin in order into model.onnx: 325,532,232 bytes,
+#   sha256 8fbea51e...a34cb. On 2026-11-24 it re-recorded existing clips byte for byte, so it's the same model.)
 # the voices: the voices/ folder of the kokoro-js npm package
 npm pack kokoro-js@1.2.1 && tar xzf kokoro-js-1.2.1.tgz   # → package/voices/*.bin
 

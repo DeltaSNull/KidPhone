@@ -7,7 +7,7 @@ on 2026-10-09 from a 6,400-word log; the old text is in git history.)
 
 ## Active batch
 
-- None claimed after **R-36** (Claude, 2026-11-21: Hide and Seek, a find-where-it-went game), **R-35** (Claude, 2026-11-06: Splish Splash, a bath game), **R-34** (Claude, 2026-11-04: every Snack Time animal its own call), **R-33** (Claude, 2026-11-04: Match Up, a flip-two memory game: 3x3, 4x4, then 5x5), **R-32** (Claude, 2026-10-31: Snack Time as a whole game: 54 animals, 54 unique snacks, seven
+- None claimed after **R-37** (Claude, 2026-11-24: Train Tracks, a track puzzle journey), **R-36** (Claude, 2026-11-21: Hide and Seek, a find-where-it-went game), **R-35** (Claude, 2026-11-06: Splish Splash, a bath game), **R-34** (Claude, 2026-11-04: every Snack Time animal its own call), **R-33** (Claude, 2026-11-04: Match Up, a flip-two memory game: 3x3, 4x4, then 5x5), **R-32** (Claude, 2026-10-31: Snack Time as a whole game: 54 animals, 54 unique snacks, seven
   places), **R-31** (Claude, 2026-10-31: More Snacks, a School math game, at the owner's request), **R-30**
   (Claude, 2026-10-11: Snack Time expanded at the family's request) and **R-24 to R-29**
   (the usability and reliability pass after PR #19, one PR per batch; see History), each merged once CI passes in
@@ -40,7 +40,7 @@ on 2026-10-09 from a 6,400-word log; the old text is in git history.)
 
 - One `index.html` (no build step) plus `assets/`, `sw.js` (offline) and `tests/`. Each app is a module with
   `enter`/`leave` called from `enterApp`/`leaveApp`, and `go()` navigates (it clears `later()` timers and the voice).
-  Games: `WildTap`, `MatchUp`, `SplishSplash`, `HideSeek`, `SnackTime`, `DinoBuddies`, `PaintPals`, `MotionGames` (Ball Trail, Star Flight). School: `AbcZoo`,
+  Games: `WildTap`, `MatchUp`, `SplishSplash`, `HideSeek`, `Tracks` (Train Tracks), `SnackTime`, `DinoBuddies`, `PaintPals`, `MotionGames` (Ball Trail, Star Flight). School: `AbcZoo`,
   `NumZoo`, `LetterPath`, `AbcSnack`, `NumSnack`, `DinoPicnic`, `Delivery`, `SchoolAdventures` (Sorting Station,
   Pattern Train, Story Time, Feelings Friends). Parent side: `ACCESS_GROUP`/`appAllowed` (a new app must be listed or it
   is blocked), settings, `PLAY` (play time). Test hooks are on `window.__toyPhone` (e.g. `adventure()`,
@@ -79,6 +79,9 @@ on 2026-10-09 from a 6,400-word log; the old text is in git history.)
   deploys only when all pass. audio-mix is a model of a phone speaker, not a listening test.
 - The browser jobs run on `ubuntu-24.04`, not `ubuntu-latest` (2026-11-21: `ubuntu-latest` became 26.04, where Playwright
   1.56.1 can't install its browsers, so every job failed in setup). Move the runner up together with Playwright.
+- The Pages/offline suites run in two halves per engine side by side (`matrix.part`; about 23 minutes of WebKit tests
+  each), with Playwright's browsers cached. On 2026-11-24 installing WebKit took 24 and 29 minutes in that job (a minute
+  in the WebKit smoke job beside it) and ran the single 50-to-75-minute job out of time. A new suite goes in the lighter half.
 - WebKit can't run in either model's container; CI is the WebKit check. Run the focused suites you touch plus the
   smoke test locally before pushing.
 - Tests should tap the way kids do (`page.touchscreen.tap`), not only keyboard Enter or synthetic clicks.
@@ -96,6 +99,8 @@ on 2026-10-09 from a 6,400-word log; the old text is in git history.)
   gradual extraction).
 
 ## History (newest first)
+
+- 2026-11-24 R-37 Train Tracks (Claude, owner: a challenging new app for the 3½-year-old; Hide and Seek was "too simple"). `Tracks` module after `SnackTime` (which now exports `places()`: its PLACES with each place's animals and calls); `#tracks` section; pictures `ctPiece(kind, lit)`, `ctEngine()`, `ctCar()`, `ctStation()` before `GAMES`. Pieces are masks (N1 E2 S4 W8): a straight drawn east-west, a bend east-south, `q` quarter turns from there (CSS rotate, accumulating). `PLAN[place][level]` sets the grid (a x b, long side engine to station: left to right in landscape, top to bottom in portrait), bends, passengers, `rot` (that many route pieces turn) or `fixed` (a share don't), `decoy`/`full`. `make()` builds a route by randomized self-avoiding DFS (`route()`), puts passengers on it (not first/last, not adjacent), fills decoys, turns pieces out of place until `trace()` (engine to station, recording each piece's entry side) isn't done. The board grid has one extra cell before (engine) and after (station). `light()` marks the joined pieces gold; `go2()` rides with requestAnimationFrame along `samples()` (cell units, arcs for bends) and picks up passengers on the way; `leave()` cancels it. `step()` (line, then go on, with a fallback) as in Hide and Seek; taps work during the opening words. Hooks `__toyPhone.tracks()`, `tracksJump(place, level)`. 72 new lines: Kokoro model from npm shards (see tools/voices/README.md), verified byte for byte against existing clips. Tests: train-tracks (new), navigation, smoke/webkit/motion-games (ten cards).
 
 - 2026-11-21 R-36 Hide and Seek (Claude, owner: something to show the 3½-year-old tonight). `HideSeek` module after `SplishSplash`; `#hideseek` section; `POOL` = [picture, name as Wild Tap says it, name as Splish Splash says it, FX call] (lines are only existing clips: "Here comes the x!", "Where is the X?", "Yes! You found the X!", "Watch!", "Try again!", "Look closely!", "Hooray!", the Wild Tap ten line). `mode`: arrive → hide → shuffle → seek → found → (party) → arrive. Bushes are buttons placed by `slot` (`left` from the slot, `--bw`/`--bh`/`--floor` on `.hs-stage`); the hider is a bush, so it moves with its bush. Swaps and the animal's moves are `element.animate` (Reduce Motion squashes CSS motion; the slide comes from slots, since that stylesheet's 0.01 ms transitions make offsetLeft stale); `leave()` cancels them, `settle()` clears the animal's held ones. Background `BG.hide`, bush art `hsBush()` (also on the card). Hooks `__toyPhone.hide()`, `hideCall(a)`. Tests: hide-seek (new), navigation, smoke/webkit/motion-games (nine cards). README now also lists Match Up and Splish Splash.
 

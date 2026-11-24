@@ -60,6 +60,19 @@ Guided Access. It's one self-contained `index.html` (vanilla JS, no build step),
     while too. Five found is a little party; ten is "Wow! Ten animals! You are a super explorer!", and then four bushes.
     Ten animals, all different, each with its own call; no timer, nothing to lose, nothing saved. With Reduce Motion the
     bushes still slide (the swaps are the game) but don't hop.
+  - *Train Tracks* (1 player): a track puzzle with real thinking in it, for the 3½-year-old. A grid of track pieces lies
+    between the engine and the station; a tap turns a piece on a wooden plate a quarter (pieces without a plate stay put).
+    The rails glow gold from the engine as far as they join up, so every right turn shows. Joined all the way: "All
+    aboard! Choo choo!", and the train chugs along the very route that was built, picks up each animal waiting by the
+    track into its own car, and pulls into the station (praise, a step lit along the top). A route that misses an animal:
+    "Wait! Someone needs a ride!" and the animal waves. It's a journey through Snack Time's seven places, four puzzles
+    each, getting harder: a line of three with one piece to turn (a hand shows where), then bends, then decoy pieces that
+    lead nowhere, then a full grid where every piece turns and some are already right, one, two, then three passengers,
+    up to a 6 x 5 grid with long twisty routes. Four puzzles finish a place ("Off to the forest!"); after Dino Land, "You
+    drove the train all the way! Wow!" and round again at the hardest. Stuck (twelve taps that don't help, or twenty
+    quiet seconds): one wrong piece of the route glows ("Try turning this one!"). The map picks any place (stars on the
+    ones finished this visit); the berry speaker says the goal again. Puzzles are made fresh each time, always solvable;
+    no timer, nothing to lose, nothing saved.
   - **Getting around, the same everywhere**: every game has a Games button (the four-colored grid, top left, or in the
     tool row of the two-player games, never on a play area) back to the Games menu, as every School game has its
     School button; an arrow steps back one level (Wild Tap's screens, Story Time's shelf); the berry speaker says the

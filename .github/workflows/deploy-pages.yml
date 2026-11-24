@@ -52,18 +52,27 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
 
+  # The browser suites, in two halves per engine that run side by side (about 23 minutes of WebKit tests each). One job
+  # for everything had grown to about 50 minutes, and on 2026-11-24 installing WebKit took 24 and 29 minutes on two runs
+  # in a row (a minute in the WebKit smoke job beside it), which ran it out of time.
   pages:
-    name: Pages/offline (${{ matrix.engine }})
+    name: Pages/offline (${{ matrix.engine }} ${{ matrix.part }})
     runs-on: ubuntu-24.04   # (ubuntu-latest is 26.04 now, where Playwright 1.56.1 has no browsers; move up together with Playwright)
-    timeout-minutes: 50   # (the R-24 to R-29 suites took WebKit past 30)
+    timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
         include:
           - engine: chromium
+            part: 1
             command: npm run test:pages
+          - engine: chromium
+            part: 2
           - engine: webkit
+            part: 1
             command: npm run test:pages:webkit
+          - engine: webkit
+            part: 2
     steps:
       - uses: actions/checkout@v4
 
@@ -74,34 +83,45 @@ jobs:
 
       - run: npm ci
 
+      - name: Cache the ${{ matrix.engine }} browser
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-24.04-${{ matrix.engine }}-${{ hashFiles('package-lock.json') }}
+
       - name: Install ${{ matrix.engine }}
         run: npx playwright install --with-deps ${{ matrix.engine }}
 
       - name: Text and number legibility
+        if: matrix.part == 1
         run: |
           node tests/text-legibility.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
           node tests/accessibility.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
 
       - name: Parent controls (Chromium)
-        if: matrix.engine == 'chromium'
+        if: matrix.part == 1 && matrix.engine == 'chromium'
         run: npm run test:parents
 
       - name: Parent controls (WebKit)
-        if: matrix.engine == 'webkit'
+        if: matrix.part == 1 && matrix.engine == 'webkit'
         run: npm run test:parents:webkit
 
       - name: Play-time preview
+        if: matrix.part == 1
         run: node tests/break-preview.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
 
       - name: Run Pages/offline checks
+        if: matrix.part == 1
         run: |
           ${{ matrix.command }}
           node tests/offline-ready.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
 
       - name: Motion games
+        if: matrix.part == 1
         run: node tests/motion-games.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
 
       - name: Expanded Delivery and School activities
+        if: matrix.part == 1
         run: |
           node tests/delivery-expanded.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
           node tests/school-activities.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
@@ -111,22 +131,27 @@ jobs:
           node tests/learning-rounds.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
 
       - name: Cooperative play and interruption recovery
+        if: matrix.part == 1
         run: |
           node tests/social-play.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
           node tests/social-lifecycle.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
 
       - name: Interaction refinement
+        if: matrix.part == 1
         run: node tests/refinement.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
 
       - name: Learning controls and photo navigation
+        if: matrix.part == 1
         run: node tests/play-refinement.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
 
       - name: Audio return and piano
+        if: matrix.part == 2
         run: |
           node tests/audio-return.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
           node tests/audio-mix.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
 
       - name: Phone layout and game navigation
+        if: matrix.part == 2
         run: |
           node tests/phone-game-review.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
           node tests/navigation.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
@@ -134,11 +159,14 @@ jobs:
           node tests/match-up.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
           node tests/splish-splash.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
           node tests/hide-seek.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
+          node tests/train-tracks.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
 
       - name: Pretend-camera hide and pop out
+        if: matrix.part == 2
         run: node tests/camera-peek.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
 
       - name: Animal Delivery
+        if: matrix.part == 2
         run: node tests/delivery.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
 
 
