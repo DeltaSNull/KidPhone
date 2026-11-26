@@ -129,6 +129,7 @@ jobs:
           node tests/story-narration.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
           node tests/stories-together.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
           node tests/learning-rounds.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
+          node tests/cookie-shop.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
 
       - name: Cooperative play and interruption recovery
         if: matrix.part == 1
