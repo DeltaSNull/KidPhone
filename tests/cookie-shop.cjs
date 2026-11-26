@@ -152,8 +152,12 @@ const YUM = ['Yum! Just right!', 'Mmm, delicious!', 'Thank you! Yummy!'];
         s = await st(); await sayWait(s.said, n2);
         await page.waitForFunction(() => window.__toyPhone.cookies().closed, null, {timeout:8000});
         check((await st()).stage === 5 && await page.locator('#ckOrder').evaluate(e => getComputedStyle(e).visibility) === 'hidden', `${tag}: "Now remember the cookie!": once the order is said, the bubble closes`);
+        // (watch the bubble's class from inside the page, so a peek that opens and closes again at once still shows)
+        await page.evaluate(() => { const t = document.querySelector('#ckThink'); window.__peeks = []; new MutationObserver(() => window.__peeks.push(t.classList.contains('closed') ? 'closed' : 'open')).observe(t, {attributes:true, attributeFilter:['class']}); });
+        const under = await page.evaluate(() => { const r = document.querySelector('#ckThink').getBoundingClientRect(), e = document.elementFromPoint(r.left + r.width/2, r.top + r.height/2); return e ? (e.id || e.className || e.tagName) : 'nothing'; });
         await touch('#ckThink');
-        check(!(await st()).closed, `${tag}: a tap on the bubble peeks at the order`);
+        const opened = await page.waitForFunction(() => !window.__toyPhone.cookies().closed, null, {timeout:2000}).then(() => true, () => false);
+        check(opened, `${tag}: a tap on the bubble peeks at the order ${opened ? '' : JSON.stringify({under, classes:await page.evaluate(() => window.__peeks), state:await st()})}`);
         await page.waitForFunction(() => window.__toyPhone.cookies().closed, null, {timeout:6000});
         check(true, `${tag}: ...and it closes again`);
         await shot('memory');
