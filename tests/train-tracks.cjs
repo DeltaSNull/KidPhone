@@ -168,6 +168,15 @@ const YAY = ['You did it!', 'Great driving!', 'The train made it!', 'Toot toot! 
         await shot('map');
         await page.locator('#ctMap .st-place[data-place="seaside"]').tap(); await modeWait('play');
         s = await st(); check(s.place === 'seaside' && s.level === 0 && await page.locator('#ctMap').isHidden(), `${tag}: a tap on the seaside goes there`);
+        // the map picked while the train goes on to the next place: the new puzzle shows (it used to stay hidden, slid away)
+        await page.evaluate(() => window.__toyPhone.tracksJump(0, 3)); await modeWait('play');
+        s = await st(); const n7 = await log(); await solve(false); await ride(s, n7);
+        await modeWait('travel', 30000); await page.waitForTimeout(300);
+        await page.locator('#ctMapBtn').tap(); await page.waitForTimeout(300);
+        await page.locator('#ctMap .st-place[data-place="jungle"]').tap(); await modeWait('play'); await page.waitForTimeout(500);
+        const look = await page.locator('#ctBoard').evaluate(b => { const cs = getComputedStyle(b), r = b.getBoundingClientRect(); return {opacity:cs.opacity, transform:cs.transform, left:r.left, right:r.right}; });
+        check((await st()).place === 'jungle' && look.opacity === '1' && look.transform === 'none' && look.left >= 0 && look.right <= viewport.width,
+          `${tag}: the map picked on the way to the next place: the new puzzle shows ${JSON.stringify(look)}`);
       }
 
       // the Games button goes back, and leaving stops it
