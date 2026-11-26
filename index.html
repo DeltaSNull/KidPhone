@@ -159,7 +159,7 @@ img[src^="data:image/png"]{image-rendering:-webkit-optimize-contrast; image-rend
 .art{line-height:1}
 .art > .px{width:1.15em; height:1.15em}
 /* frames: notched pixel corners, a light rim, a darker lip and a drop shadow, stretched to fit (border-image) */
-.tab,.contact,.dial,.key,.callbtn,.thumb,.pic,.song,.wt-tile,.wt-back,.wt-pad,.wt-choice,.wt-stickers,.wt-newegg,.st-food,.pp-easel,.who-btn,.sheet,.sbtn,.vopt,.confirm,.bar,.pad,.pkey,.vstage img,.pkey.blk::after,.lp-card,.lp-paper,.mg-hedge,.mg-goal,.sa-choice,.sa-think,.sa-book,.mu-face{
+.tab,.contact,.dial,.key,.callbtn,.thumb,.pic,.song,.wt-tile,.wt-back,.wt-pad,.wt-choice,.wt-stickers,.wt-newegg,.st-food,.pp-easel,.who-btn,.sheet,.sbtn,.vopt,.confirm,.bar,.pad,.pkey,.vstage img,.pkey.blk::after,.lp-card,.lp-paper,.mg-hedge,.mg-goal,.sa-choice,.sa-think,.sa-book,.mu-face,.ck-tool{
   border-style:solid; border-color:transparent; border-width:9px 9px 15px; border-image:var(--fr, var(--f-paper)) 9 9 15 fill / 9px 9px 15px stretch;
   border-radius:0!important; box-shadow:none!important; background:none!important}
 .word,.wt-word,.nm,.gname,.gplay,.calltime,#zoomTxt,.lp-word{border-style:solid; border-color:transparent; border-width:6px 6px 9px; border-image:var(--tg, var(--t-paper)) 6 6 9 fill / 6px 6px 9px stretch; border-radius:0!important; box-shadow:none!important; background:none!important}
@@ -878,6 +878,47 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img:not(.px){image-rendering
 .g-tracks{background:#F6DDB0}
 .g-tracks .gart{align-items:center; gap:2px}
 .g-tracks .gart .art .px{width:auto; height:1em}
+/* Cookie Shop: the customer and its order on top, the plate in the middle, the tools below (on the right sideways) */
+.app.ck{display:grid; grid-template-rows:72px minmax(0,1fr); grid-template-columns:minmax(0,1fr); overflow:hidden; background:#FFE9EF}
+@media (orientation:landscape){ .app.ck{grid-template-rows:minmax(0,1fr); grid-template-columns:72px minmax(0,1fr)} }
+.ck-levels{position:absolute; left:80px; top:8px; z-index:5; width:64px; height:64px} .ck-levels .px{width:74%; height:74%}
+.ck .ss-row{margin:0 80px 0 152px; gap:4px} .ck .ss-slot{width:28px; height:28px; border-width:2px 2px 4px}
+@media (orientation:landscape){ .ck-levels{left:8px; top:80px} .ck .lesson-replay{left:8px; right:auto; top:152px} .ck .ss-row{position:absolute; top:6px; right:12px; margin:0; z-index:3; flex-direction:row} .ck .ss-slot{width:32px; height:32px} }
+.ck-shop{grid-row:-2; grid-column:-2; position:relative; min-width:0; min-height:0; display:grid; grid-template-rows:minmax(0,1fr) minmax(0,1.15fr) auto; gap:4px; padding:0 8px 8px}
+@media (orientation:landscape){ .ck-shop{grid-template-rows:minmax(0,1fr) minmax(0,1.15fr); grid-template-columns:minmax(0,1fr) auto; padding:44px 10px 8px 4px; column-gap:10px} .ck-tools{grid-row:1 / span 2; grid-column:2; align-self:center} }
+.ck-customer{position:relative; min-width:0; min-height:0; display:flex; align-items:center; justify-content:center; gap:3%; container-type:size}
+.ck-pal{width:min(40cqw, 92cqh); aspect-ratio:1; padding:0; border:0; background:none; display:block}
+.ck-pal .px{display:block; width:100%; height:100%}
+.ck-pal.hop{animation:hop .45s cubic-bezier(.3,1.6,.5,1)} .ck-pal.nope{animation:st-nope .4s 2} .ck-pal.chomp{animation:st-chomp .25s 3}
+.ck-think{position:relative; width:min(48cqw, 112cqh); aspect-ratio:42/34; padding:0 3% 6% 0; border:0; background:var(--think) center/100% 100% no-repeat; display:grid; place-items:center; transform:scale(0); transform-origin:90% 90%; transition:transform .3s cubic-bezier(.3,1.6,.5,1)}
+.ck-think.on{transform:none}
+.ck-think.big{transform:scale(1.18); z-index:4; filter:drop-shadow(0 0 6px #FFE45C)}
+.ck-order{width:58%; aspect-ratio:1; display:grid; place-items:center} .ck-order .px{width:100%; height:100%}
+.ck-think.closed .ck-order{visibility:hidden}
+.ck-think.closed::after{content:'?'; position:absolute; inset:0 3% 6% 0; display:grid; place-items:center; font:700 min(20cqw, 46cqh)/1 var(--display); color:#B07AE0; text-shadow:0 3px 0 #FFFFFF}
+.ck-think.wig{animation:wig .4s}
+.ck-counter{min-width:0; min-height:0; display:flex; align-items:center; justify-content:center; gap:10px; container-type:size}
+.ck-plate{position:relative; flex:none; width:min(calc(100cqw - 190px), 100cqh); aspect-ratio:1; background:var(--ck-plate) center/100% 100% no-repeat; image-rendering:pixelated}
+@media (orientation:landscape){   /* sideways the tools take the width: take-back above serve, beside the plate */
+  .ck-counter{display:grid; grid-template-columns:auto auto; grid-template-rows:1fr 1fr; align-items:center; justify-content:center; column-gap:12px; row-gap:8px}
+  .ck-plate{grid-row:1 / span 2; grid-column:1; width:min(calc(100cqw - 110px), 100cqh)} #ckUndo{grid-column:2; grid-row:1; align-self:end} #ckServe{grid-column:2; grid-row:2; align-self:start} }
+.ck-cookie{position:absolute; inset:13%; display:block} .ck-cookie[hidden]{display:none} .ck-cookie .px{display:block; width:100%; height:100%}
+.ck-cookie.pop{animation:hop .35s cubic-bezier(.3,1.6,.5,1)}
+.ck-tools{display:flex; flex-direction:column; align-items:center; gap:4px}
+.ck-tray{display:flex; gap:5px; justify-content:center; padding:3px} .ck-tray[hidden]{display:none}
+.ck-tray.look{background:#FFF3B0; box-shadow:0 0 0 4px #FFE45C, 0 0 14px 4px #FFD23D; animation:ct-pulse 1s ease-in-out 3}
+.ck-tool{width:clamp(44px, min(14.4vw, 7.6vh), 62px); height:clamp(44px, min(14.4vw, 7.6vh), 62px); padding:0; display:grid; place-items:center}
+@media (orientation:landscape){ .ck-tool{width:clamp(44px, 14vh, 58px); height:clamp(44px, 14vh, 58px)} }
+@media (orientation:portrait){ .ck-tools{container-type:inline-size} .ck-tool{width:clamp(40px, min(calc((100cqw - 31px) / 6), 7.6vh), 62px); height:clamp(40px, min(calc((100cqw - 31px) / 6), 7.6vh), 62px)} }   /* (six across, inside the frame) */
+.ck-tool .px{width:100%; height:100%; pointer-events:none}
+.ck-tool.on{--fr:var(--f-sun)}
+.st-place.ck-pick{flex-direction:column; align-items:center; justify-content:center; gap:4%; padding:0; background-color:#FFF1F5}
+.ck-sample{width:52%; aspect-ratio:1; display:block} .ck-sample .px{width:100%; height:100%}
+.ck-pick.memory .ck-sample{filter:drop-shadow(0 0 0 #B07AE0)}
+.ck-steps{display:flex; gap:4px} .ck-steps i{width:10px; height:10px; background:#E8689A; box-shadow:0 2px 0 #A8406A}
+.g-cookie{background:#FFD8E4}
+.g-cookie .gart{align-items:center; gap:2px}
+.g-cookie .gart .art .px{width:auto; height:1em}
 
 /* ---------- Game: Snack Time (one player): each hungry animal thinks of a food; give it that one ---------- */
 .app.st{display:grid; grid-template-rows:minmax(0,1fr) auto; overflow:hidden}
@@ -1679,6 +1720,18 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img:not(.px){image-rendering
           <div class="ct-hand" id="ctHand" hidden></div>
         </div>
         <div class="st-map" id="ctMap" hidden role="group" aria-label="Places to visit"></div>
+      </section>
+
+      <!-- GAME: Cookie Shop (one player: make the cookie the customer is thinking of) -->
+      <section class="app ck" id="cookies" hidden aria-label="Cookie Shop">
+        <button class="sc-back game-back" aria-label="Games"></button><button class="round ck-levels" id="ckLevels" aria-label="Which cookies"></button><button class="round lesson-replay" id="ckReplay" aria-label="Say it again"></button>
+        <div class="ss-row" id="ckRow" aria-label="Happy customers"></div>
+        <div class="ck-shop" id="ckShop">
+          <div class="ck-customer"><button class="ck-think" id="ckThink" aria-label="The order"><span class="ck-order" id="ckOrder"></span></button><button class="ck-pal" id="ckPal" aria-label="Customer"></button></div>
+          <div class="ck-counter"><button class="round count-undo" id="ckUndo" aria-label="Take a candy off" disabled></button><div class="ck-plate" id="ckPlate"><span class="ck-cookie" id="ckCookie" hidden></span></div><button class="round ns-feed" id="ckServe" aria-label="Serve" disabled></button></div>
+          <div class="ck-tools" id="ckTools"><div class="ck-tray" data-kind="shape" aria-label="Shapes"></div><div class="ck-tray" data-kind="frost" aria-label="Frosting"></div><div class="ck-tray" data-kind="extra" aria-label="Candies and sprinkles"></div></div>
+        </div>
+        <div class="st-map" id="ckMap" hidden role="group" aria-label="Which cookies"></div>
       </section>
 
       <!-- GAME: Paint Pals (two kids, one picture each, painted by rubbing) -->
@@ -5154,7 +5207,7 @@ const BGS = [
   ['#camera', BG.grad(['#6CBDF5', '#4FA3E6', '#3A8EDA', '#2F7FD0'])], ['#photos', BG.grad(['#FFF6D2', '#FFEDAE', '#FFE59A', '#FFDF8A'])],
   ['.viewer', BG.grad(['#FFF6D2', '#FFEDAE', '#FFE59A', '#FFDF8A'])], ['#music', BG.grad(['#F0E8FF', '#DCCEFA', '#CAB8F6', '#BBA6F2'])], ['.stage', BG.stage],
   ['#games', BG.stripey(['#B0EBAA', '#8FDB8E', '#6CCB78', '#4FB86A'], '#C2F2BC')], ['.g-wild', BG.wild], ['.g-feed', BG.feed], ['.g-dino', BG.split], ['.g-paint', BG.paint],
-  ['#wt-menu', BG.wtMenu], ['#wt-world', BG.wtWorld], ['#wt-find', BG.grad(['#FFDCE3', '#FFC7D2', '#FFB3C2'])], ['#matchup', BG.grad(['#E2FAF4', '#C9F2E8', '#B0EADB'])], ['.g-match', BG.grad(['#E2FAF4', '#C9F2E8', '#B0EADB'])], ['#splish', BG.splish], ['#hideseek', BG.hide], ['.g-hide', BG.grad(['#DDF5CF', '#C8EDB4', '#B3E39C'])], ['.g-tracks', BG.grad(['#FCEBC8', '#F6DDB0', '#EFCD94'])], ['.g-splash', BG.grad(['#D6F2FF', '#BDE8FA', '#A9DDF5'])], ['#wt-egg', BG.wtEgg], ['#wt-bubbles', BG.bubbles],
+  ['#wt-menu', BG.wtMenu], ['#wt-world', BG.wtWorld], ['#wt-find', BG.grad(['#FFDCE3', '#FFC7D2', '#FFB3C2'])], ['#matchup', BG.grad(['#E2FAF4', '#C9F2E8', '#B0EADB'])], ['.g-match', BG.grad(['#E2FAF4', '#C9F2E8', '#B0EADB'])], ['#splish', BG.splish], ['#hideseek', BG.hide], ['.g-hide', BG.grad(['#DDF5CF', '#C8EDB4', '#B3E39C'])], ['.g-tracks', BG.grad(['#FCEBC8', '#F6DDB0', '#EFCD94'])], ['#cookies', BG.grad(['#FFF1F5', '#FFE3EC', '#FFD3E0'])], ['.g-cookie', BG.grad(['#FFE8EF', '#FFD8E4', '#FFC8D8'])], ['.g-splash', BG.grad(['#D6F2FF', '#BDE8FA', '#A9DDF5'])], ['#wt-egg', BG.wtEgg], ['#wt-bubbles', BG.bubbles],
   ['.db-a', BG.dbSide('#A6E39A', '#6CC46A', '#3E9447')], ['.db-b', BG.dbSide('#A9DDF7', '#5BB8E8', '#2F86C4')], ['.db-mid', BG.sand],
   ['#stScene', BG.snack], ['#asScene', BG.snack], ['.st-foods', BG.picnic],
   ['#school', BG.stripey(['#FFF0B8', '#FFE28A', '#FFD466', '#FFC746'], '#FFF6D2')], ['.g-abc', BG.grad(['#FFF6D2', '#FFE8A3', '#FFDB7A'])], ['.g-abcsnack', BG.grad(['#E4F6FF', '#C9ECFF', '#ADE0FF'])],
@@ -5298,7 +5351,7 @@ const saveSettings = () => store.set('settings', settings);
 
 /* Access policy is separate from sound/game settings and applies to all navigation and device entry points. */
 const ACCESS_APPS = ['school','games','camera','photos','music','phone'];
-const ACCESS_GROUP = {wildtap:'games', matchup:'games', splish:'games', hideseek:'games', tracks:'games', dinobuddies:'games', snacktime:'games', paintpals:'games', balltrail:'games', starflight:'games',
+const ACCESS_GROUP = {wildtap:'games', matchup:'games', splish:'games', hideseek:'games', tracks:'games', cookies:'games', dinobuddies:'games', snacktime:'games', paintpals:'games', balltrail:'games', starflight:'games',
   letterpath:'school', abczoo:'school', abcsnack:'school', numzoo:'school', numsnack:'school', delivery:'school', dinopicnic:'school', sorting:'school', patterntrain:'school', moresnacks:'school', storytime:'school', feelings:'school'};
 const savedAccess = store.get('access', {}) || {};
 let access = {v:2, mode:['full','school','custom'].includes(savedAccess.mode) ? savedAccess.mode : 'full',
@@ -6080,7 +6133,7 @@ function updateClock(){ const d = new Date(); $('#clockTxt').textContent = ((d.g
 updateClock(); setInterval(updateClock, 10000);
 
 /* ---------- Navigation ---------- */
-const APPS = ['home','phone','camera','photos','music','games','wildtap','matchup','splish','hideseek','tracks','dinobuddies','snacktime','paintpals','balltrail','starflight','school','letterpath','abczoo','abcsnack','numzoo','numsnack','delivery','dinopicnic','sorting','patterntrain','moresnacks','storytime','feelings'];
+const APPS = ['home','phone','camera','photos','music','games','wildtap','matchup','splish','hideseek','tracks','cookies','dinobuddies','snacktime','paintpals','balltrail','starflight','school','letterpath','abczoo','abcsnack','numzoo','numsnack','delivery','dinopicnic','sorting','patterntrain','moresnacks','storytime','feelings'];
 let current = 'home';
 const APP_SAY = {phone:'Phone! Who do you want to call?', camera:'Camera! Slide to look around. Then press the big button!', music:'Music! Let\'s play!', games:'Games! Pick a game!'};
 function go(name, fromEl){
@@ -6110,6 +6163,7 @@ function enterApp(name){
   if (name === 'splish') SplishSplash.enter();
   if (name === 'hideseek') HideSeek.enter();
   if (name === 'tracks') Tracks.enter();
+  if (name === 'cookies') CookieShop.enter();
   if (name === 'dinobuddies') DinoBuddies.enter();
   if (name === 'snacktime') SnackTime.enter();
   if (name === 'paintpals') PaintPals.enter();
@@ -6134,6 +6188,7 @@ function leaveApp(name){
   if (name === 'splish') SplishSplash.leave();
   if (name === 'hideseek') HideSeek.leave();
   if (name === 'tracks') Tracks.leave();
+  if (name === 'cookies') CookieShop.leave();
   if (name === 'dinobuddies') DinoBuddies.leave();
   if (name === 'snacktime') SnackTime.leave();
   if (name === 'paintpals') PaintPals.leave();
@@ -9456,12 +9511,61 @@ const ctStation = () => once('ctStation', () => { const P = new Pix(30, 30);
   P.shade('w', 'W', null, 1).shade('r', 'R', null, 1).outline('o');
   return `<img class="px" src="${pxURL(P.canvas({w:'#F6E2B8', W:'#D9BE8C', r:'#D94A3E', R:'#A8322A', d:'#7A4A22', g:'#8FD3F5', c:'#FFFDF6', k:'#2A2420', s:'#A8A39A', f:'#FFD23F', o:'#3A2A1E'}), 4).slice(5, -2)}" alt="" draggable="false">`; });
 
+/* ---------- Cookie Shop: an animal orders a cookie; make it just like the one in its bubble ----------
+   (owner, 2026-11-26: "a completely new app ... do your best"; the 3½-year-old likes a challenge.) A customer comes to
+   the counter thinking of a cookie, and the narrator says the order ("A pink star cookie! With three candies!"). Pick the
+   shape, spread the frosting, drop in candies one by one (the arrow takes one back), shake on sprinkles, and serve. Just
+   right: the customer munches it, makes its call, and takes a place in the row of happy customers. Not quite: it shakes
+   its head and says what to look at ("Look at the color!", "Count the candies!"), that row of tools glows, and the cookie
+   stays to be fixed; after two tries the order grows big beside it. Five stages, each adding one thing: shapes; then
+   frosting; then candies (one to three); then sprinkles, more colours, a square, up to five candies; then memory: the
+   bubble closes once the order has been said ("Remember the cookie!"), and a tap on it peeks. The cookie picker
+   jumps to any stage (stars on the ones done this visit). No timer, nothing to lose, nothing saved. */
+const ckShapes = {
+  circle: P => P.ell(16, 16, 13, 13, 'd'),
+  square: P => { P.rect(4, 4, 24, 24, 'd'); [[4, 4], [27, 4], [4, 27], [27, 27]].forEach(([x, y]) => P.set(x, y, 0)); },
+  heart: P => P.ell(11, 12, 7, 7, 'd').ell(21, 12, 7, 7, 'd').poly([[4.4, 13.5], [27.6, 13.5], [16, 28.5]], 'd'),
+  star: P => { const pts = []; for (let i = 0; i < 10; i++){ const a = -Math.PI/2 + i*Math.PI/5, r = i % 2 ? 6.6 : 14.5; pts.push([16 + r*Math.cos(a), 16.8 + r*Math.sin(a)]); } P.poly(pts, 'd'); }
+};
+const CK_SLOTS = {   // where 1 to 5 candies sit on each shape
+  circle: [[[16, 16]], [[11, 16], [21, 16]], [[16, 10.5], [11, 20], [21, 20]], [[11, 11], [21, 11], [11, 21], [21, 21]], [[10, 10.5], [22, 10.5], [10, 21.5], [22, 21.5], [16, 16]]],
+  square: [[[16, 16]], [[11, 16], [21, 16]], [[16, 10.5], [11, 20], [21, 20]], [[11, 11], [21, 11], [11, 21], [21, 21]], [[10, 10], [22, 10], [10, 22], [22, 22], [16, 16]]],
+  heart: [[[16, 17]], [[11, 13], [21, 13]], [[11, 13], [21, 13], [16, 20]], [[10, 12], [22, 12], [13, 19.5], [19, 19.5]], [[10, 12], [22, 12], [13, 19.5], [19, 19.5], [16, 14]]],
+  star: [[[16, 17]], [[8.8, 14], [23.2, 14]], [[16, 8.6], [11.5, 22.5], [20.5, 22.5]], [[8.8, 14], [23.2, 14], [11.5, 22.5], [20.5, 22.5]], [[16, 8.6], [8.8, 14], [23.2, 14], [11.5, 22.5], [20.5, 22.5]]]
+};
+const CK_FROST = {pink:['#FF8FB8', '#E8689A', '#FFC2D8'], blue:['#6EC3F2', '#3E9AD8', '#B6E2FA'], yellow:['#FFE066', '#E8BE30', '#FFF2B0'], green:['#8FD86A', '#5EB444', '#C6F0AE'], chocolate:['#7A4A2A', '#5A341C', '#9E6A44']};
+const CK_SPRINKLE = ['#FF5A6E', '#4FA3E6', '#FFD23F', '#7CC96B', '#B07AE0', '#FFFFFF'];
+/* a cookie as a picture: {shape, frost, candies, sprinkles}; cached */
+const ckCookie = (c, k = 6) => once('ck' + c.shape + c.frost + c.candies + c.sprinkles + k, () => {
+  const P = new Pix(32, 32); ckShapes[c.shape](P);
+  const dough = Uint8Array.from(P.a), inside = (x, y) => x >= 0 && y >= 0 && x < 32 && y < 32 && dough[y*32 + x];
+  const deep = (x, y, r) => { for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) if (dx*dx + dy*dy <= r*r + .5 && !inside(x + dx, y + dy)) return false; return true; };
+  if (c.frost){ for (let y = 0; y < 32; y++) for (let x = 0; x < 32; x++) if (inside(x, y) && deep(x, y, 2)) P.set(x, y, 'f'); P.shade('f', 'F', 'g', 1); }
+  P.shade('d', 'D', 'l', 1);
+  if (c.sprinkles) for (let i = 0; i < 46; i++){ const x = Math.floor(sr(i*3.1 + 7)*32), y = Math.floor(sr(i*5.7 + 2)*32); if (inside(x, y) && inside(x + 1, y) && deep(x, y, 1)) { const col = 'abcehj'[i % 6]; P.set(x, y, col); if (i % 2) P.set(x + 1, y, col); else P.set(x, y + 1, col); } }
+  (c.candies ? CK_SLOTS[c.shape][c.candies - 1] : []).forEach(([x, y]) => { P.ell(x, y, 2.6, 2.6, 'r'); P.set(x - 1, y - 1, 'w'); P.set(x + 1, y + 1, 'R'); });
+  P.outline('o');
+  const [f, F, g] = CK_FROST[c.frost] || ['#000', '#000', '#000'];
+  return pxURL(P.canvas({d:'#E3A857', D:'#B97C3A', l:'#F4CB86', f, F, g, r:'#E8384A', R:'#A81E2E', w:'#FFD0D6', o:'#6B4423',
+    a:CK_SPRINKLE[0], b:CK_SPRINKLE[1], c:CK_SPRINKLE[2], e:CK_SPRINKLE[3], h:CK_SPRINKLE[4], j:CK_SPRINKLE[5]}), k).slice(5, -2); });
+const ckImg = (c, cls = 'px') => `<img class="${cls}" src="${ckCookie(c)}" alt="" draggable="false">`;
+const ckJar = () => once('ckJar', () => { const P = new Pix(20, 22);
+  P.rect(5, 1, 10, 3, 'k').rect(3, 4, 14, 17, 'g'); [[7, 9], [12, 8], [9, 14], [14, 13], [6, 17], [12, 18]].forEach(([x, y], i) => P.ell(x, y, 2.2, 2.2, i % 2 ? 'r' : 'R')); P.rect(4, 5, 1, 12, 'w');
+  P.outline('o'); return `<img class="px" src="${pxURL(P.canvas({k:'#C98A4A', g:'#D8EEF6', r:'#E8384A', R:'#FF8FB8', w:'#FFFFFF', o:'#3A4A5A'}), 5).slice(5, -2)}" alt="" draggable="false">`; });
+const ckShaker = () => once('ckShaker', () => { const P = new Pix(18, 22);
+  P.ell(9, 4, 6, 3, 'm').rect(3, 4, 12, 17, 'y').rect(3, 4, 12, 3, 'm'); for (let i = 0; i < 9; i++) P.set(5 + (i*3) % 9, 9 + Math.floor(i/3)*4, 'abcde'[i % 5]); P.set(7, 2, 'k').set(11, 2, 'k').set(9, 1, 'k');
+  P.outline('o'); return `<img class="px" src="${pxURL(P.canvas({m:'#C8D0D8', y:'#FFF6E6', k:'#4A4A4A', a:CK_SPRINKLE[0], b:CK_SPRINKLE[1], c:CK_SPRINKLE[2], d:CK_SPRINKLE[3], e:CK_SPRINKLE[4], o:'#4A3A2E'}), 5).slice(5, -2)}" alt="" draggable="false">`; });
+
+const ckPlate = () => once('ckPlate', () => { const P = new Pix(40, 40);
+  P.ell(20, 20, 19, 19, 'r').ell(20, 20, 15, 15, 'p').ell(20, 20, 13.5, 13.5, 'c'); P.ell(14, 12, 3, 1.4, 'w'); P.outline('o');
+  return pxURL(P.canvas({r:'#F4F0EA', p:'#E2DAD0', c:'#FFFDF8', w:'#FFFFFF', o:'#B8AC9E'}), 6); });
 const GAMES = [
   {id:'wildtap', n:'Wild Tap', p:[1], cls:'g-wild', art:`<span class="art">${ART.elephant}</span><span class="art big">${ART.lion}</span><span class="art">${ART.giraffe}</span>`},
   {id:'matchup', n:'Match Up', p:[1], cls:'g-match', art:`<span class="mu-gc">${ART.cat}</span><span class="mu-gc back">?</span><span class="mu-gc">${ART.cat}</span>`},
   {id:'splish', n:'Splish Splash', p:[1], cls:'g-splash', art:`<span class="art">${ART.bubbles}</span><span class="art big">${schoolPic('pig')}</span><span class="art">${ssDuck()}</span>`},
   {id:'hideseek', n:'Hide and Seek', p:[1], cls:'g-hide', art:`<span class="hs-gc"><span class="hs-gpeek">${ART.lion}</span>${hsBushImg()}</span><span class="hs-gc">${hsBushImg()}</span>`},
   {id:'tracks', n:'Train Tracks', p:[1], cls:'g-tracks', art:`<span class="art big">${ctEngine()}</span><span class="art big">${ctStation()}</span>`},
+  {id:'cookies', n:'Cookie Shop', p:[1], cls:'g-cookie', art:`<span class="art big">${ckImg({shape:'heart', frost:'pink', candies:3, sprinkles:true})}</span><span class="art">${ckJar()}</span>`},
   {id:'snacktime', n:'Snack Time', p:[1], cls:'g-feed', art:`<span class="art">${ART.banana}</span><span class="art big">${ART.monkey}</span><span class="art">${ART.watermelon}</span>`},
   {id:'dinobuddies', n:'Dino Buddies', p:[1,2], cls:'g-dino', art:`<span class="art mid">${ART.trex}</span><span class="art sm">${ART.egg}</span><span class="art mid flip">${ART.trex}</span>`},
   {id:'paintpals', n:'Paint Pals', p:[1,2], cls:'g-paint', art:`<span class="art mid flip">${ppHalf('giraffe')}</span><span class="art sm">${ART.brush}</span><span class="art mid">${ppHalf('lion')}</span>`},
@@ -10883,6 +10987,174 @@ const Tracks = (() => {
   };
 })();
 
+const CookieShop = (() => {
+  const NUMW = ['zero', 'one', 'two', 'three', 'four', 'five'];
+  const STAGES = [   // what each stage asks for, and how many happy customers move it on
+    {shapes:['circle', 'star', 'heart'], frost:[], candies:0, sprinkles:false, need:3},
+    {shapes:['circle', 'star', 'heart'], frost:['pink', 'blue', 'yellow'], candies:0, sprinkles:false, need:3},
+    {shapes:['circle', 'star', 'heart'], frost:['pink', 'blue', 'yellow'], candies:3, sprinkles:false, need:4},
+    {shapes:['circle', 'star', 'heart', 'square'], frost:['pink', 'blue', 'yellow', 'green', 'chocolate'], plain:true, candies:5, sprinkles:true, need:4},
+    {shapes:['circle', 'star', 'heart', 'square'], frost:['pink', 'blue', 'yellow', 'green', 'chocolate'], plain:true, candies:5, sprinkles:true, memory:true, need:Infinity}
+  ];
+  const WELCOME = 'Welcome to the cookie shop!', FIRST = 'Make a cookie just like this one!', SHAPE_FIRST = 'Pick a shape first!', REMEMBER = 'Remember the cookie!',
+    PICK = 'Which cookies today?', FIVE = 'Five happy customers! Hooray!', YUM = ['Yum! Just right!', 'Mmm, delicious!', 'Thank you! Yummy!'],
+    LOOK = {shape:'Look at the shape!', frost:'Look at the color!', candies:'Count the candies!', sprinkles:'Look at the sprinkles!'},
+    NEW = [null, 'Now with frosting!', 'Now with candies!', 'Now with sprinkles too!', 'Now remember the cookie!'];
+  const first = o => o.frost ? `A ${o.frost} ${o.shape} cookie!` : `A ${o.shape} cookie!`;
+  const candyWords = n => `${NUMW[n]} ${n === 1 ? 'candy' : 'candies'}`;
+  const extra = o => o.candies && o.sprinkles ? `With ${candyWords(o.candies)} and sprinkles!` : o.candies ? `With ${candyWords(o.candies)}!` : o.sprinkles ? 'With sprinkles!' : '';
+  const said = o => [first(o), extra(o)].filter(Boolean).join(' ');
+  $('#cookies').style.setProperty('--ck-plate', ckPlate());
+  const root = $('#cookies'), palEl = $('#ckPal'), thinkEl = $('#ckThink'), orderEl = $('#ckOrder'), cookieEl = $('#ckCookie'), plateEl = $('#ckPlate'), rowEl = $('#ckRow'),
+    undoEl = $('#ckUndo'), serveEl = $('#ckServe'), trays = Object.fromEntries($$('.ck-tray', root).map(t => [t.dataset.kind, t])), mapEl = $('#ckMap');
+  let chain = 0, stage = 0, inStage = 0, happy = 0, mode = 'off', order = null, cur = null, pal = null, misses = 0, seq = 0, started = false, welcomed = false, done = new Set(), peekT = 0, lastPals = [];
+  const blank = () => ({shape:null, frost:null, candies:0, sprinkles:false});
+  const S = () => STAGES[stage];
+  const call = p => (FX[p.x] ? FX[p.x]() : 0) || .5;
+  const uhuh = () => { tone(392, 370, .15, 'triangle', .13); tone(330, 300, .22, 'triangle', .13, .19); };
+  const plink = n => tone(880 + n*110, 880 + n*110, .12, 'triangle', .12);
+  const squish = () => noise(.22, 'lowpass', 900, 300, .18);
+  const shake = () => [0, .09, .18, .27].forEach(d => noise(.06, 'highpass', 5000, 4000, .1, d));
+  function step(text, fn){ const my = seq; let ok = false; const go = () => { if (!ok && my === seq){ ok = true; fn(); } }; say(text, 0, 'find', go); later(go, lineMs(text, 0) + 2500); }
+
+  /* ----- the tools for this stage ----- */
+  function tools(){
+    const s = S();
+    trays.shape.innerHTML = ''; trays.frost.innerHTML = ''; trays.extra.innerHTML = '';
+    const btn = (tray, html, label, fn, data) => { const b = document.createElement('button'); b.className = 'ck-tool'; b.innerHTML = html; b.setAttribute('aria-label', label); Object.assign(b.dataset, data || {}); tap(b, () => fn(b), {bump:false, throttle:150}); tray.appendChild(b); return b; };
+    s.shapes.forEach(sh => btn(trays.shape, ckImg({shape:sh, frost:null, candies:0, sprinkles:false}), sh, () => setShape(sh), {shape:sh}));
+    if (s.frost.length){
+      if (s.plain) btn(trays.frost, ckImg({shape:'circle', frost:null, candies:0, sprinkles:false}), 'no frosting', () => setFrost(null), {frost:'none'});
+      s.frost.forEach(f => btn(trays.frost, ckImg({shape:'circle', frost:f, candies:0, sprinkles:false}), f + ' frosting', () => setFrost(f), {frost:f}));
+    }
+    if (s.candies) btn(trays.extra, ckJar(), 'add a candy', addCandy, {extra:'candy'});
+    if (s.sprinkles) btn(trays.extra, ckShaker(), 'sprinkles', toggleSprinkles, {extra:'sprinkles'});
+    trays.frost.hidden = !s.frost.length; trays.extra.hidden = !s.candies && !s.sprinkles;
+    root.dataset.stage = stage + 1;
+    sync();
+  }
+  function sync(){
+    $$('.ck-tool', root).forEach(b => b.classList.toggle('on', !!cur && ((b.dataset.shape && b.dataset.shape === cur.shape) || (b.dataset.frost && (b.dataset.frost === (cur.frost || 'none')) && !!cur.shape) || (b.dataset.extra === 'sprinkles' && cur.sprinkles))));
+    undoEl.hidden = !S().candies; undoEl.disabled = !cur || !cur.candies || mode !== 'make';
+    serveEl.disabled = !cur || !cur.shape || mode !== 'make';
+    if (cur && cur.shape){ cookieEl.innerHTML = ckImg(cur); cookieEl.hidden = false; } else { cookieEl.innerHTML = ''; cookieEl.hidden = true; }
+  }
+  const making = () => mode === 'make' || mode === 'order';
+  function needShape(){ if (cur.shape) return false; retrigger(trays.shape, 'look'); FX.boop(); say(SHAPE_FIRST, 0, 'find'); return true; }
+  function setShape(sh){ if (!making()) return; cur.shape = sh; FX.pop(); retrigger(cookieEl, 'pop'); clearLook(); sync(); }
+  function setFrost(f){ if (!making() || needShape()) return; cur.frost = f; squish(); retrigger(cookieEl, 'pop'); clearLook(); sync(); }
+  function addCandy(){ if (!making() || needShape()) return; if (cur.candies >= 5){ retrigger(trays.extra, 'look'); FX.boop(); return; } cur.candies++; plink(cur.candies); clearLook(); sync(); }
+  function takeCandy(){ if (!making() || !cur.candies) return; cur.candies--; tone(520, 380, .09, 'sine', .1); sync(); }
+  function toggleSprinkles(){ if (!making() || needShape()) return; cur.sprinkles = !cur.sprinkles; shake(); clearLook(); sync(); }
+  const clearLook = () => $$('.ck-tray.look', root).forEach(t => t.classList.remove('look'));
+
+  /* ----- customers ----- */
+  function pickOrder(){
+    const s = S(), prev = order;
+    for (let k = 0; k < 20; k++){
+      const o = {shape:rnd(s.shapes), frost:s.frost.length ? (s.plain && Math.random() < .2 ? null : rnd(s.frost)) : null,
+        candies:s.candies ? (stage === 2 ? 1 + Math.floor(Math.random()*3) : Math.floor(Math.random()*6)) : 0, sprinkles:s.sprinkles ? Math.random() < .5 : false};
+      if (!prev || said(o) !== said(prev)) return o;
+    }
+    return prev;
+  }
+  function next(intro){
+    mode = 'order'; seq++; misses = 0; unLater(peekT); clearLook();
+    const all = SnackTime.places().flatMap(pl => pl.animals);
+    pal = rnd(all.filter(a => !lastPals.includes(a.a))) || rnd(all); lastPals = [...lastPals.slice(-5), pal.a];
+    order = pickOrder(); cur = blank();
+    palEl.innerHTML = animalPic(pal.a); palEl.setAttribute('aria-label', pal.n);
+    orderEl.innerHTML = ckImg(order); thinkEl.classList.remove('closed', 'big'); thinkEl.classList.add('on');
+    fly(palEl, [{transform:'translateX(60%)', opacity:0}, {transform:'none', opacity:1}], {duration:500, easing:'ease-out'});
+    sync(); later(() => call(pal), 350);
+    const lines = [...(intro || []), ...(S().memory ? [REMEMBER] : []), said(order)];
+    const my = seq;   // (the words can finish after a quick cookie has been served: then they change nothing)
+    const go = () => { if (my !== seq) return; if (mode === 'order'){ mode = 'make'; sync(); } if (S().memory && mode === 'make') later(() => { if (my === seq && mode === 'make' && !thinkEl.classList.contains('big')) closeBubble(); }, 1400); };
+    const ck = ++chain, talk = i => { if (ck !== chain) return; if (i < lines.length) step(lines[i], () => talk(i + 1)); else go(); };   // (serving stops the rest of the words)
+    later(() => talk(0), 700);
+    later(() => { if (mode === 'order'){ mode = 'make'; sync(); } }, 900);   // (hands can start while it talks)
+  }
+  function closeBubble(){ thinkEl.classList.add('closed'); FX.pop(); }
+  function peek(){
+    if (!order || (mode !== 'make' && mode !== 'order')) return;
+    if (!thinkEl.classList.contains('closed')){ retrigger(thinkEl, 'wig'); FX.pop(); return; }
+    thinkEl.classList.remove('closed'); FX.pop(); unLater(peekT);
+    peekT = later(() => { if (S().memory && mode === 'make' && !thinkEl.classList.contains('big')) closeBubble(); }, 2600);
+  }
+  /* ----- serving ----- */
+  function serve(){
+    if (mode !== 'make' || !cur.shape) return;
+    chain++; hush();   // (served before the order was finished: what the customer says next is what matters)
+    const norm = c => ({shape:c.shape, frost:c.frost || null, candies:c.candies || 0, sprinkles:!!c.sprinkles}), a = norm(cur), b = norm(order);
+    const wrong = ['shape', 'frost', 'candies', 'sprinkles'].find(k => a[k] !== b[k]);
+    if (wrong){
+      misses++; uhuh(); retrigger(palEl, 'nope'); retrigger(serveEl, 'wig');
+      const tray = wrong === 'shape' ? trays.shape : wrong === 'frost' ? trays.frost : trays.extra;
+      clearLook(); tray.classList.add('look');
+      say(LOOK[wrong], 0, 'find');
+      if (misses >= 2){ thinkEl.classList.remove('closed'); thinkEl.classList.add('big'); }   // the order big beside the cookie, to compare
+      return;
+    }
+    mode = 'eat'; sync(); thinkEl.classList.remove('big', 'closed');
+    const p = palEl.getBoundingClientRect(), c = cookieEl.getBoundingClientRect();
+    fly(cookieEl, [{transform:'none'}, {transform:`translate(${p.left + p.width*.3 - c.left - c.width/2}px, ${p.top + p.height*.5 - c.top - c.height/2}px) scale(.35)`, opacity:.9}], {duration:550, easing:'ease-in', fill:'forwards'});
+    later(() => { FX.crunch(); retrigger(palEl, 'chomp'); }, 500);
+    later(() => { cookieEl.getAnimations().forEach(a => a.cancel()); cookieEl.hidden = true; const len = call(pal); const s = $('#screen').getBoundingClientRect(); confetti(p.left - s.left + p.width/2, p.top - s.top + p.height/3, 18);
+      happy++; inStage++; const slot = rowEl.children[(happy - 1) % 5]; if (slot){ slot.innerHTML = animalPic(pal.a); slot.classList.add('got'); retrigger(slot, 'hop'); }
+      later(() => step(YUM[(happy - 1) % YUM.length], after), clamp(len*1000, 400, 1200));
+    }, 1150);
+  }
+  function after(){
+    thinkEl.classList.remove('on');
+    fly(palEl, [{transform:'none', opacity:1}, {transform:'translateX(-70%)', opacity:0}], {duration:500, easing:'ease-in', fill:'forwards'});
+    const five = happy % 5 === 0, up = inStage >= S().need && stage < STAGES.length - 1;
+    const goOn = () => later(() => { palEl.getAnimations().forEach(a => a.cancel()); if (up){ done.add(stage); stage++; inStage = 0; tools(); next([NEW[stage]]); } else next(); }, 600);
+    if (five){ FX.cheer(); [...rowEl.children].forEach((el, i) => later(() => retrigger(el, 'hop'), 90*i)); step(FIVE, () => { row(); goOn(); }); } else goOn();
+  }
+  function row(){ rowEl.innerHTML = '<span class="ss-slot"></span>'.repeat(5); }
+
+  /* ----- the cookie picker: each stage as a sample cookie ----- */
+  const SAMPLE = [{shape:'star', frost:null, candies:0, sprinkles:false}, {shape:'heart', frost:'pink', candies:0, sprinkles:false}, {shape:'circle', frost:'blue', candies:3, sprinkles:false},
+    {shape:'square', frost:'chocolate', candies:5, sprinkles:true}, {shape:'heart', frost:'green', candies:2, sprinkles:true}];
+  function openMap(){
+    if (!mapEl.hidden || mode === 'eat') return;
+    seq++; clearLater(); hush(); mode = 'map'; unLater(peekT);
+    mapEl.innerHTML = ''; mapEl.hidden = false;
+    STAGES.forEach((s, i) => {
+      const b = document.createElement('button'); b.className = 'st-place ck-pick' + (i === stage ? ' here' : '') + (s.memory ? ' memory' : ''); b.dataset.stage = i + 1; b.setAttribute('aria-label', 'Cookies ' + (i + 1));
+      b.innerHTML = `<span class="ck-sample">${ckImg(SAMPLE[i])}</span><span class="ck-steps">${'<i></i>'.repeat(i + 1)}</span>${done.has(i) ? `<span class="st-place-star art">${ART.star}</span>` : ''}`;
+      tap(b, () => { if (mapEl.hidden) return; FX.pop(); closeMap(); stage = i; inStage = 0; tools(); next(); }, {bump:false});
+      mapEl.appendChild(b);
+    });
+    say(PICK, 0, 'find');
+  }
+  function closeMap(){ mapEl.hidden = true; mapEl.innerHTML = ''; }
+
+  tap(serveEl, serve, {bump:false, throttle:500}); put(serveEl, ART.check);
+  put(undoEl, ICON.left); tap(undoEl, takeCandy, {throttle:150});
+  tap(thinkEl, peek, {bump:false, throttle:300});
+  tap(palEl, () => { if (pal && making()){ retrigger(palEl, 'hop'); call(pal); } }, {bump:false, throttle:800});
+  put($('#ckLevels'), ckImg({shape:'star', frost:'pink', candies:3, sprinkles:true})); tap($('#ckLevels'), () => { FX.boop(); openMap(); }, {throttle:700});
+  put($('#ckReplay'), ART.ear); tap($('#ckReplay'), () => { if (order && making()){ hush(); say(said(order), 0, 'find'); } }, {throttle:700});
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && current === 'cookies' && mode === 'make' && order) later(() => say(said(order), 0, 'find'), 600); });
+
+  return {
+    // (a visit picks up at the same stage; the very first starts with shapes and a hello)
+    enter(){ closeMap(); if (!started){ row(); started = true; } tools(); const intro = welcomed ? [] : [WELCOME, FIRST]; welcomed = true; next(intro); },
+    leave(){ seq++; mode = 'off'; unLater(peekT); closeMap(); [palEl, cookieEl].forEach(e => e.getAnimations().forEach(a => a.cancel())); },
+    lines: () => {
+      const out = new Set([WELCOME, FIRST, SHAPE_FIRST, REMEMBER, PICK, FIVE, ...YUM, ...Object.values(LOOK), ...NEW.filter(Boolean)]);
+      ['circle', 'star', 'heart', 'square'].forEach(sh => [null, 'pink', 'blue', 'yellow', 'green', 'chocolate'].forEach(f => out.add(first({shape:sh, frost:f}))));
+      for (let n = 0; n <= 5; n++) [false, true].forEach(sp => { const e = extra({candies:n, sprinkles:sp}); if (e) out.add(e); });
+      return [...out];
+    },
+    jump(i){ seq++; closeMap(); stage = i; inStage = 0; tools(); next(); },   // (tests)
+    state: () => ({mode, stage:stage + 1, inStage, happy, misses, order, cur, said:order ? said(order) : '', closed:thinkEl.classList.contains('closed'), big:thinkEl.classList.contains('big'),
+      look:$$('.ck-tray.look', root).map(t => t.dataset.kind), map:!mapEl.hidden, done:[...done].map(i => i + 1), pal:pal && pal.a,
+      tools:$$('.ck-tool', root).map(b => b.dataset.shape || b.dataset.frost || b.dataset.extra)})
+  };
+})();
+
 /* ---------- Paint Pals (two players): each kid gets a coloring page; rubbing (or tapping) paints it in its real colors.
    When both pictures are done, the two animals meet, then go up on the gallery shelf and a new pair arrives. ---------- */
 /* a sprite as a coloring page: the outline and eyes show from the start, every other pixel is a pale gray waiting for paint */
@@ -11989,7 +12261,7 @@ function areaLines(){
       ...Object.values(CAM_SAY), ...Object.values(MODE_SAY), 'Move the phone to look all around!', ...COSTUMES.map(c => `You're ${article(COSTUME_NAME[c])}!`), ...LOOK_ORDER.slice(1).map(k => LOOKS[k].say)],
     photos:['Your pictures!', 'Look at all your pictures!', 'No pictures yet! Tap the camera to take some!', 'All your pictures!'],
     music:[...Object.values(MUSIC_SAY), ...SONGS.map(x => x.n + '!'), 'Yay! Great dancing!', 'Stop!'],
-    games:[...WildTap.lines(), ...MatchUp.lines(), ...SplishSplash.lines(), ...HideSeek.lines(), ...Tracks.lines(), ...DinoBuddies.lines(), ...SnackTime.lines(), ...PaintPals.lines(), ...MotionGames.lines()],
+    games:[...WildTap.lines(), ...MatchUp.lines(), ...SplishSplash.lines(), ...HideSeek.lines(), ...Tracks.lines(), ...CookieShop.lines(), ...DinoBuddies.lines(), ...SnackTime.lines(), ...PaintPals.lines(), ...MotionGames.lines()],
     school:[SCHOOL_SAY.school, ...LetterPath.lines(), ...AbcZoo.lines(), ...AbcSnack.lines(), ...NumZoo.lines(), ...NumSnack.lines(), ...Delivery.lines(), ...DinoPicnic.lines(), ...SchoolAdventures.lines()]
   };
 }
@@ -12042,7 +12314,7 @@ window.__toyPhone = { motionGames: () => MotionGames.state(), pic: n => ART[n] |
     speaking: speaking(), sources: VB.srcs.length, waiting: !!lineWait}),
   recorded: () => Object.keys(REC), trims: FX_TRIM,
   voiceMissing: () => voiceLines().filter(l => !(VB.map && VB.map[l.who + '|' + l.s])).map(l => l.who + '|' + l.s),
-  panorama: (k, w=1600) => Promise.resolve().then(() => { const cv = document.createElement('canvas'); cv.width = w; cv.height = Math.round(w * WH / WW); renderScene(cv.getContext('2d'), SCENES[k], 0, 0, w / WW, cv.width, cv.height, 3, true); return cv.toDataURL('image/png'); }), dino: () => ({fill:DinoBuddies.fill(), family:DinoBuddies.family()}), snack: () => SnackTime.state(), match: () => MatchUp.state(), matchCall: a => MatchUp.callOf(a), splish: () => SplishSplash.state(), splishCall: a => SplishSplash.callOf(a), hide: () => HideSeek.state(), hideCall: a => HideSeek.callOf(a), tracks: () => Tracks.state(), tracksJump: (i, l) => Tracks.jump(i, l), paint: () => PaintPals.state(), fx: () => Object.keys(FX), ringIn: () => maybeRing(true), sound: () => ({state: ctx ? ctx.state : 'none', rebuilds, held: held.length}),
+  panorama: (k, w=1600) => Promise.resolve().then(() => { const cv = document.createElement('canvas'); cv.width = w; cv.height = Math.round(w * WH / WW); renderScene(cv.getContext('2d'), SCENES[k], 0, 0, w / WW, cv.width, cv.height, 3, true); return cv.toDataURL('image/png'); }), dino: () => ({fill:DinoBuddies.fill(), family:DinoBuddies.family()}), snack: () => SnackTime.state(), match: () => MatchUp.state(), matchCall: a => MatchUp.callOf(a), splish: () => SplishSplash.state(), splishCall: a => SplishSplash.callOf(a), hide: () => HideSeek.state(), hideCall: a => HideSeek.callOf(a), tracks: () => Tracks.state(), tracksJump: (i, l) => Tracks.jump(i, l), cookies: () => CookieShop.state(), cookiesJump: i => CookieShop.jump(i), paint: () => PaintPals.state(), fx: () => Object.keys(FX), ringIn: () => maybeRing(true), sound: () => ({state: ctx ? ctx.state : 'none', rebuilds, held: held.length}),
   pauseSound: () => { if (ctx) Object.defineProperty(ctx, 'state', {configurable:true, get: () => 'interrupted'}); }, photos: () => Photos.list.length, call: () => call && call.state,
   sceneView: (k, x, y, w, h, pw = 800) => { const cv = document.createElement('canvas'); cv.width = pw; cv.height = Math.round(pw*h/w); renderScene(cv.getContext('2d'), SCENES[k], x, y, pw/w, cv.width, cv.height, 3, true); return cv.toDataURL('image/png'); },   // (any part of a world, for checking by eye)
   look: () => ({ar:arMode(), following:!!AR.raw && performance.now() - AR.live < 1200 && !AR.flat && arMode(), flat:AR.flat, perm:AR.perm, x:cam.x, y:cam.y, w:vfW/camScale(), h:vfH/camScale(), scene:cam.scene}),

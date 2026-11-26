@@ -73,6 +73,17 @@ Guided Access. It's one self-contained `index.html` (vanilla JS, no build step),
     quiet seconds): one wrong piece of the route glows ("Try turning this one!"). The map picks any place (stars on the
     ones finished this visit); the berry speaker says the goal again. Puzzles are made fresh each time, always solvable;
     no timer, nothing to lose, nothing saved.
+  - *Cookie Shop* (1 player): an animal comes to the counter thinking of a cookie, and the narrator says the order ("A pink
+    star cookie! With three candies!"). The child makes it: taps a shape, a frosting, the candy jar once per candy (the
+    arrow takes one back), the sprinkle shaker, then the green check to serve. Just right: the customer munches it, makes
+    its call, says thank you, and takes a place in the row of happy customers (five: "Five happy customers! Hooray!").
+    Not quite: it shakes its head and says what to look at ("Look at the shape!", "Look at the color!", "Count the
+    candies!", "Look at the sprinkles!"), that row of tools glows, and the cookie stays to be fixed; after two tries the
+    order grows big beside it. Five stages, each adding one thing: three shapes; then three frostings ("Now with
+    frosting!"); then one to three candies; then sprinkles, a square, five colours and plain, up to five candies; then
+    memory ("Now remember the cookie!"): the bubble closes once the order has been said, and a tap peeks. The cookie button
+    picks any stage (stars on the ones done this visit); the berry speaker says the order again. Serving before the
+    narrator has finished stops the talking, so the customer's answer is heard. No timer, nothing to lose, nothing saved.
   - **Getting around, the same everywhere**: every game has a Games button (the four-colored grid, top left, or in the
     tool row of the two-player games, never on a play area) back to the Games menu, as every School game has its
     School button; an arrow steps back one level (Wild Tap's screens, Story Time's shelf); the berry speaker says the
