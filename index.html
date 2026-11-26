@@ -887,10 +887,10 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img:not(.px){image-rendering
 .ck-shop{grid-row:-2; grid-column:-2; position:relative; min-width:0; min-height:0; display:grid; grid-template-rows:minmax(0,1fr) minmax(0,1.15fr) auto; gap:4px; padding:0 8px 8px}
 @media (orientation:landscape){ .ck-shop{grid-template-rows:minmax(0,1fr) minmax(0,1.15fr); grid-template-columns:minmax(0,1fr) auto; padding:44px 10px 8px 4px; column-gap:10px} .ck-tools{grid-row:1 / span 2; grid-column:2; align-self:center} }
 .ck-customer{position:relative; min-width:0; min-height:0; display:flex; align-items:center; justify-content:center; gap:3%; container-type:size}
-.ck-pal{width:min(40cqw, 92cqh); aspect-ratio:1; padding:0; border:0; background:none; display:block}
+.ck-pal{position:relative; z-index:0; width:min(40cqw, 92cqh); aspect-ratio:1; padding:0; border:0; background:none; display:block}
 .ck-pal .px{display:block; width:100%; height:100%}
 .ck-pal.hop{animation:hop .45s cubic-bezier(.3,1.6,.5,1)} .ck-pal.nope{animation:st-nope .4s 2} .ck-pal.chomp{animation:st-chomp .25s 3}
-.ck-think{position:relative; width:min(48cqw, 112cqh); aspect-ratio:42/34; padding:0 3% 6% 0; border:0; background:var(--think) center/100% 100% no-repeat; display:grid; place-items:center; transform:scale(0); transform-origin:90% 90%; transition:transform .3s cubic-bezier(.3,1.6,.5,1)}
+.ck-think{position:relative; z-index:1; width:min(48cqw, 112cqh); aspect-ratio:42/34; padding:0 3% 6% 0; border:0; background:var(--think) center/100% 100% no-repeat; display:grid; place-items:center; transform:scale(0); transform-origin:90% 90%; transition:transform .3s cubic-bezier(.3,1.6,.5,1)}
 .ck-think.on{transform:none}
 .ck-think.big{transform:scale(1.18); z-index:4; filter:drop-shadow(0 0 6px #FFE45C)}
 .ck-order{width:58%; aspect-ratio:1; display:grid; place-items:center} .ck-order .px{width:100%; height:100%}
@@ -11063,6 +11063,7 @@ const CookieShop = (() => {
     const all = SnackTime.places().flatMap(pl => pl.animals);
     pal = rnd(all.filter(a => !lastPals.includes(a.a))) || rnd(all); lastPals = [...lastPals.slice(-5), pal.a];
     order = pickOrder(); cur = blank();
+    palEl.getAnimations().forEach(a => a.cancel());   // (never the last customer's walk-off, held off to the left, invisible, over the bubble)
     palEl.innerHTML = animalPic(pal.a); palEl.setAttribute('aria-label', pal.n);
     orderEl.innerHTML = ckImg(order); thinkEl.classList.remove('closed', 'big'); thinkEl.classList.add('on');
     fly(palEl, [{transform:'translateX(60%)', opacity:0}, {transform:'none', opacity:1}], {duration:500, easing:'ease-out'});
