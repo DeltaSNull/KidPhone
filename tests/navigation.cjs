@@ -57,6 +57,8 @@ const ACTIVITIES = ['wildtap', 'matchup', 'splish', 'hideseek', 'tracks', 'cooki
       for (const g of Object.keys(PLAY)){
         await page.evaluate(g => window.__toyPhone.go(g), g); await page.waitForTimeout(g === 'snacktime' ? 1700 : 500);   // (Snack Time: once its foods are dealt)
         if (await page.locator(`#${g} .who-btn:visible`).count()){ await touch(`#${g} .who-btn:visible`); await page.waitForTimeout(400); }   // (two-player games ask how many first)
+        // WebKit can start appIn on the first layout read, after the time-based wait above.
+        await page.waitForFunction(id => getComputedStyle(document.getElementById(id)).transform === 'none', g);
         const [back] = await box(`#${g} .game-back`), plays = await box(`#${g} ${PLAY[g].split(', ').join(`, #${g} `)}`.replace(`#${g} #${g}`, `#${g}`));
         const others = (await page.locator(`#${g} :is(${CONTROLS})`).evaluateAll(els => els.filter(e => !e.classList.contains('game-back') && e.getClientRects().length && getComputedStyle(e).visibility !== 'hidden').map(e => { const r = e.getBoundingClientRect(); return {l:r.left, t:r.top, r:r.right, b:r.bottom}; })));
         check(back && back.w >= 56 && back.h >= 56 && back.l >= 0 && back.t >= 0 && back.r <= viewport.width && back.b <= viewport.height && await page.locator(`#${g} .game-back`).getAttribute('aria-label') === 'Games',
