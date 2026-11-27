@@ -7,7 +7,10 @@ on 2026-10-09 from a 6,400-word log; the old text is in git history.)
 
 ## Active batch
 
-- None claimed after **R-38** (Claude, 2026-11-26: Cookie Shop, and Train Tracks' blank-board fix), **R-37** (Claude, 2026-11-24: Train Tracks, a track puzzle journey), **R-36** (Claude, 2026-11-21: Hide and Seek, a find-where-it-went game), **R-35** (Claude, 2026-11-06: Splish Splash, a bath game), **R-34** (Claude, 2026-11-04: every Snack Time animal its own call), **R-33** (Claude, 2026-11-04: Match Up, a flip-two memory game: 3x3, 4x4, then 5x5), **R-32** (Claude, 2026-10-31: Snack Time as a whole game: 54 animals, 54 unique snacks, seven
+- **R-39 Firefly Festival** (Codex, 2026-11-27, `codex/firefly-festival`). Ten one-player puzzles with reversible
+  lantern switches, three selectable difficulties and a firefly dance. Focused Chromium playthrough, voice manifest
+  and four phone layouts verified. Navigation, motion games and offline-ready passed in Chromium. Follow the branch's CI before release. Family playtest stays R-04.
+- Previous batches include **R-38** (Claude, 2026-11-26: Cookie Shop, and Train Tracks' blank-board fix), **R-37** (Claude, 2026-11-24: Train Tracks, a track puzzle journey), **R-36** (Claude, 2026-11-21: Hide and Seek, a find-where-it-went game), **R-35** (Claude, 2026-11-06: Splish Splash, a bath game), **R-34** (Claude, 2026-11-04: every Snack Time animal its own call), **R-33** (Claude, 2026-11-04: Match Up, a flip-two memory game: 3x3, 4x4, then 5x5), **R-32** (Claude, 2026-10-31: Snack Time as a whole game: 54 animals, 54 unique snacks, seven
   places), **R-31** (Claude, 2026-10-31: More Snacks, a School math game, at the owner's request), **R-30**
   (Claude, 2026-10-11: Snack Time expanded at the family's request) and **R-24 to R-29**
   (the usability and reliability pass after PR #19, one PR per batch; see History), each merged once CI passes in
@@ -99,6 +102,12 @@ on 2026-10-09 from a 6,400-word log; the old text is in git history.)
   gradual extraction).
 
 ## History (newest first)
+
+- 2026-11-27 R-39 Firefly Festival: `FireflyFestival` in `index.html`, with shape-coded switches and a bitmask for
+  lit lanterns. Each starting pattern is a set of moves away from all-on. A backwards breadth-first search keeps the
+  hint useful after experimentation. It appears in the first puzzle, on request, or after three turns without a new
+  best distance. Narration uses six new Kokoro clips and follows the Games offline pack. Added
+  `tests/firefly-festival.cjs` to CI; it plays the full progression and checks controls in four layouts.
 
 - 2026-11-26 R-38 Cookie Shop and a Train Tracks fix (Claude, owner: the train board "occasionally loads completely blank" after picking a map place; "a completely new app for tomorrow"). Blank board: `puzzle()` now cancels `boardEl`'s animations (the trip's slide-away was held at its end when the map stopped the trip). `CookieShop` module after `Tracks`; `#cookies` section; pictures before `GAMES`: `ckCookie({shape, frost, candies, sprinkles})` (32x32: `ckShapes` masks, frosting = the dough eroded by 2 px, `CK_SLOTS` per shape for 1-5 candies, sprinkles inside), `ckJar()`, `ckShaker()`, `ckPlate()`. `STAGES[i]` = shapes, frost colours (`plain`: a no-frosting swatch), candies max, sprinkles, memory, `need` (happy customers to move on). Customers come from `SnackTime.places()`. Orders are said as two sentences (`first()` + `extra()`), each recorded alone (lineClips joins them), so `lines()` lists the pieces, not every combination. `next()` runs the opening words as a chain (`talk`, token `chain`; `serve()` bumps it and hushes, so a hint is heard); `go` only moves `order` to `make`. Hooks `__toyPhone.cookies()`, `cookiesJump(i)`. 54 new lines (Kokoro from the npm shards, as in R-37). Tests: cookie-shop (new; in CI's part 1), train-tracks (the mid-trip map), navigation, smoke/webkit/motion-games (eleven cards).
 

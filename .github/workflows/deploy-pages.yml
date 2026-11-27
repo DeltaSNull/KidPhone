@@ -131,6 +131,10 @@ jobs:
           node tests/learning-rounds.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
           node tests/cookie-shop.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
 
+      - name: Firefly Festival
+        if: matrix.part == 1
+        run: node tests/firefly-festival.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
+
       - name: Cooperative play and interruption recovery
         if: matrix.part == 1
         run: |
