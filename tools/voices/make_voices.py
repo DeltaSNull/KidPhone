@@ -39,6 +39,8 @@ RESPELL = [(r'\bgrr+\b', 'Gurr'), (r'\bbrr+\b', 'Burr'), (r'\bla la la\b', 'Lah 
 # speech front end reads "Ay" as "eye" and spells "Eff" out), and a bare "A is for" comes out as the word "a", so the
 # letter's name goes in as phonemes, spliced between the rest of the line.
 LONE_LETTER = re.compile(r"\b([A-Za-z])(?=[!?.,]| is | says)")
+HUM = re.compile(r'\b[mM]{2,}\b')
+SPOKEN_TOKEN = re.compile(f'{LONE_LETTER.pattern}|{HUM.pattern}')
 LETTER_IPA = dict(A='ˈeɪ', B='bˈiː', C='sˈiː', D='dˈiː', E='ˈiː', F='ˈɛf', G='dʒˈiː', H='ˈeɪtʃ', I='ˈaɪ', J='dʒˈeɪ', K='kˈeɪ', L='ˈɛl', M='ˈɛm',
                   N='ˈɛn', O='ˈoʊ', P='pˈiː', Q='kjˈuː', R='ˈɑːɹ', S='ˈɛs', T='tˈiː', U='jˈuː', V='vˈiː', W='dˈʌbəljˌuː', X='ˈɛks', Y='wˈaɪ', Z='zˈiː')
 
@@ -50,13 +52,13 @@ def tts_text(t):
 
 
 def phonemes(k, text):
-    """the line as phonemes, with each lone letter's name put in exactly"""
+    """The line as phonemes, with exact letter names and a continuous m hum."""
     ph = lambda t: k.tokenizer.phonemize(t, 'en-us')
     out, pos = [], 0
-    for m in LONE_LETTER.finditer(text):
+    for m in SPOKEN_TOKEN.finditer(text):
         if text[pos:m.start()].strip():
             out.append(ph(text[pos:m.start()]))
-        name = LETTER_IPA[m.group(1).upper()]
+        name = LETTER_IPA[m.group(1).upper()] if m.group(1) else 'mmm'
         if out and out[-1].endswith('ðə') and name.lstrip('ˈ')[0] in 'eɛaoɑi':
             out[-1] = out[-1][:-2] + 'ðɪ'   # "the" before a vowel sound: "thee A", "thee F"
         out.append(name)
@@ -83,6 +85,8 @@ def voices_npz(path):
 
 def clip_name(who, text, spk):
     key = f"{VERSION}|{who}|{text}|{spk['voice']}|{spk['speed']}|{spk['semis']}" + ('|letters2' if LONE_LETTER.search(text) else '') + (f'|sounds{SOUNDS_VERSION}' if SOUND_TOKEN.search(text) else '') + ('|lone1' if LONE.match(text) else '')   # (a new name for re-recorded letter lines and changed sounds, so no phone keeps an old copy)
+    if HUM.search(text):
+        key += '|hum1'
     return hashlib.sha1(key.encode()).hexdigest()[:12] + '.mp3'
 
 

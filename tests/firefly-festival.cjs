@@ -1,4 +1,4 @@
-/* Play Firefly Festival with real touches in three phone layouts. */
+/* Play Firefly Festival with real touches in four phone layouts. */
 const assert = require('node:assert/strict');
 const { chromium, webkit } = require('playwright');
 const path = require('node:path');
@@ -97,6 +97,10 @@ const layouts = [
 
       assert.equal(await lamps.count(), 5);
       assert.equal(await switches.count(), 5);
+      const harderPrompt = goal + ' One switch can flip more than one lantern!';
+      const spoken = await page.evaluate(() => window.__toyPhone.voice().log.length);
+      await replay.tap();
+      await page.waitForFunction(([line, from]) => window.__toyPhone.voice().log.slice(from).includes(line), [harderPrompt, spoken], {timeout:5000});
       await page.waitForTimeout(350);
       const targets = await game.locator('button:visible, .ff-lantern').evaluateAll(nodes => nodes.map(node => {
         const {x,y,width,height} = node.getBoundingClientRect();
@@ -121,6 +125,12 @@ const layouts = [
       await page.keyboard.press('Enter');
       const after = await states();
       assert.deepEqual(after.map((lit,i) => lit !== before[i]), [false,true,true,true,false], 'keyboard activation flips three marked lanterns');
+      if (width === 390){
+        await game.getByRole('button', {name:'Games', exact:true}).tap();
+        await card.tap();
+        assert.deepEqual(await states(), after, 'coming back from Games preserves the unsolved lantern pattern');
+        assert.equal(await moonlight.getAttribute('aria-pressed'), 'true', 'returning keeps the difficulty');
+      }
       await solve();
       if (process.env.FIREFLY_SHOTS) await page.screenshot({path:path.join(process.env.FIREFLY_SHOTS, `fireflies-${width}.png`)});
       for (let i = 0; i < 3; i++) {
@@ -132,7 +142,7 @@ const layouts = [
       assert.deepEqual(await states(), ['true','false','true']);
       await game.getByRole('button', {name:'Games', exact:true}).tap();
       await card.tap();
-      assert.deepEqual(await states(), ['true','false','true'], 'reopening starts a fresh visit');
+      assert.deepEqual(await states(), ['true','false','true'], 'Play again keeps the fresh board when returning from Games');
       assert.deepEqual(errors, []);
       assert.deepEqual(await page.evaluate(() => window.__toyPhone.voiceMissing()), []);
       console.log(`Firefly Festival passes at ${width}x${height} (${reducedMotion})`);

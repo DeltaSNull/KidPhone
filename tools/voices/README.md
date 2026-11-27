@@ -41,7 +41,8 @@ and clips nothing uses any more are deleted. `npm test` checks that every line t
 
 **Respellings**: a few sound words come out wrong from the model ("Grr" is spelled out letter by letter), so
 `make_voices.py` respells them for the model only: Grr → Gurr, Brr → Burr, La la la → Lah lah lah, Pawoo → Pah-woo,
-and 123 (in the counting games' names) → "One, two, three".
+and 123 (in the counting games' names) → "One, two, three". A written "Mmm" goes in as a continuous /m/ sound.
+A single M in the letter activities still uses the letter name.
 
 ## Letter names and sounds
 

@@ -6267,18 +6267,36 @@ updateClock(); setInterval(updateClock, 10000);
 const APPS = ['home','phone','camera','photos','music','games','wildtap','matchup','splish','hideseek','tracks','cookies','fireflies','dinobuddies','snacktime','paintpals','balltrail','starflight','school','letterpath','abczoo','abcsnack','numzoo','numsnack','delivery','dinopicnic','sorting','patterntrain','moresnacks','storytime','feelings'];
 let current = 'home';
 const APP_SAY = {phone:'Phone! Who do you want to call?', camera:'Camera! Slide to look around. Then press the big button!', music:'Music! Let\'s play!', games:'Games! Pick a game!'};
+const activityCards = new Map();
 function go(name, fromEl){
   if (!APPS.includes(name) || !appAllowed(name) || name === 'home') name = accessHome();
   if (PLAY.navigate()) name = accessHome();   // play time is up: leaving an activity ends the session
+  let origin = '50% 100%';
+  if (fromEl?.getClientRects().length){
+    const r = fromEl.getBoundingClientRect(), a = $('#apps').getBoundingClientRect();
+    origin = `${r.left - a.left + r.width/2}px ${r.top - a.top + r.height/2}px`;
+  }
   clearLater(); hush(); if (name !== current) fadeFx();
   leaveApp(current);
   current = name; syncFx();
   APPS.forEach(a => { $('#' + a).hidden = a !== name; });
   const el = $('#' + name);
-  if (fromEl){ const r = fromEl.getBoundingClientRect(), a = $('#apps').getBoundingClientRect(); el.style.transformOrigin = `${r.left - a.left + r.width/2}px ${r.top - a.top + r.height/2}px`; }
-  else el.style.transformOrigin = '50% 100%';
+  el.style.transformOrigin = origin;
   retrigger(el, 'enter');
   enterApp(name);
+}
+function openActivity(id, card, event){
+  FX.pop(); retrigger(card, 'go'); go(id, card);
+  if (event.type === 'click' && current === id){
+    const app = document.getElementById(id);
+    const control = $('.who:not([hidden]) .who-btn.last', app) || $('.sc-back, .game-back', app);
+    control?.focus({preventScroll:true});
+  }
+}
+function returnToActivityMenu(menu, event){
+  const card = activityCards.get(current);
+  go(menu);
+  if (event.type === 'click' && current === menu) card?.focus();
 }
 function enterApp(name){
   if (!appAllowed(name)) return;
@@ -8270,10 +8288,11 @@ SCHOOL.forEach(g => {
   const b = document.createElement('button'); b.className = 'gamecard ' + g.cls; b.setAttribute('aria-label', g.n);
   b.innerHTML = `<span class="gtext"><span class="gname">${g.n}</span><span class="gnote">${g.note}</span></span><span class="gart">${g.art()}</span>`;
   $('#schoolList').appendChild(b);
-  tapInScroll(b, () => { FX.pop(); retrigger(b, 'go'); go(g.id, b); }, {bump:false});
+  activityCards.set(g.id, b);
+  tapInScroll(b, event => openActivity(g.id, b, event), {bump:false});
 });
-$$('.sc-back:not(.game-back)').forEach(b => { b.innerHTML = ICON.grid; tap(b, () => { FX.boop(); go('school'); }); });
-$$('.game-back').forEach(b => { put(b, ICON.grid); tap(b, () => { FX.boop(); go('games'); }); });   // every regular game: back to the Games menu
+$$('.sc-back:not(.game-back)').forEach(b => { b.innerHTML = ICON.grid; tap(b, event => { FX.boop(); returnToActivityMenu('school', event); }); });
+$$('.game-back').forEach(b => { put(b, ICON.grid); tap(b, event => { FX.boop(); returnToActivityMenu('games', event); }); });   // every regular game: back to the Games menu
 const SCHOOL_SAY = {school:'School! What do you want to learn?', abczoo:'ABC Zoo! Tap a letter!', abcsnack:'ABC Snack! The animals want letter cookies!'};
 const cap = w => w[0].toUpperCase() + w.slice(1);
 const isFor = e => e.L === 'X' ? `X is in ${e.w}!` : `${e.L} is for ${e.w}!`;
@@ -9734,7 +9753,8 @@ GAMES.forEach(g => {
   const two = g.p.includes(2), who = g.p.length > 1 ? '<span class="both"><span><b>1</b> or <b>2</b></span> <span>players</span></span>' : two ? '<span><b>2</b> players</span>' : '<span><b>1</b> player</span>';
   b.innerHTML = `<span class="gtext"><span class="gname">${g.n}</span><span class="gplay" data-players="${g.p.join(' ')}">${ART.kidA}${two ? ART.kidB : ''}${who}</span></span><span class="gart">${g.art}</span>`;
   $('#gameList').appendChild(b);
-  tapInScroll(b, () => { FX.pop(); retrigger(b, 'go'); go(g.id, b); }, {bump:false});
+  activityCards.set(g.id, b);
+  tapInScroll(b, event => openActivity(g.id, b, event), {bump:false});
 });
 
 /* ---------- Wild Tap Safari: sound boards, Find It, egg hatching, bubble popping ---------- */
@@ -10439,10 +10459,11 @@ function whoPicker(root, title, key, onPick){
     `<button class="who-btn" data-n="${n}" aria-label="${n} player${n > 1 ? 's' : ''}"><span class="who-kids">${ART.kidA}${n > 1 ? ART.kidB : ''}</span><span class="who-lbl"><b>${n}</b> player${n > 1 ? 's' : ''}</span></button>`).join('')}</div>`;
   el.querySelector('.who-title').textContent = title;
   root.appendChild(el);
-  $$('.who-btn', el).forEach(b => tap(b, () => {
+  $$('.who-btn', el).forEach(b => tap(b, event => {
     const n = +b.dataset.n, all = store.get('players', {}) || {};
     all[key] = n; store.set('players', all);
     FX.pop(); el.hidden = true; onPick(n);
+    if (event.type === 'click') $('.game-back', root)?.focus({preventScroll:true});
   }, {bump:false}));
   return {
     last: () => (store.get('players', {}) || {})[key] || 2,
@@ -11167,6 +11188,7 @@ const FireflyFestival = (() => {
   const last = () => level === LEVELS.length - 1 && round === config().setups.length - 1;
   const symbols = mask => SHAPES.filter((_, i) => mask & (1 << i));
   const mark = shape => `<span aria-hidden="true" class="ff-symbol" data-shape="${shape}"></span>`;
+  const prompt = () => level === 0 ? GOAL : GOAL + ' ' + PAIRS;
   const speak = line => { hush(); say(line, 0, 'find'); };
 
   /* Work backwards from all-on. Each move is reversible, so this finds the shortest
@@ -11216,7 +11238,7 @@ const FireflyFestival = (() => {
       `<span class="${i === count ? 'current' : ''}">${i < count ? ART.star : ''}</span>`).join('');
   }
 
-  function begin(newLevel, newRound, line){
+  function begin(newLevel, newRound, introduce = false){
     level = newLevel;
     round = newRound;
     stalled = 0;
@@ -11252,7 +11274,7 @@ const FireflyFestival = (() => {
     drawLights(target);
     drawProgress();
     showHint(level === 0 && round === 0);
-    speak(line);
+    speak(introduce ? prompt() : GOAL);
   }
 
   function flip(i, fromKeyboard){
@@ -11295,7 +11317,7 @@ const FireflyFestival = (() => {
     button.setAttribute('aria-label', name);
     button.innerHTML = levelIcons[i];
     tap(button, () => {
-      if (i !== level) begin(i,0,i === 0 ? GOAL : PAIRS);
+      if (i !== level) begin(i,0,true);
     });
     return button;
   });
@@ -11306,21 +11328,25 @@ const FireflyFestival = (() => {
   put(hintButton, ART.hand);
   put(nextButton, ICON.right);
   put(restart, ffFirefly());
-  tap($('#ffReplay'), () => speak(solved() ? (last() ? END : WIN) : GOAL), {throttle:500});
+  tap($('#ffReplay'), () => speak(solved() ? (last() ? END : WIN) : prompt()), {throttle:500});
   tap(hintButton, () => { showHint(true); speak(HINT); });
   tap(nextButton, event => {
     if (!solved() || last()) return;
-    if (round + 1 < config().setups.length) begin(level,round + 1,GOAL);
-    else begin(level + 1,0,PAIRS);
+    if (round + 1 < config().setups.length) begin(level,round + 1);
+    else begin(level + 1,0,true);
     if (event.type === 'click') switches[0].focus();
   });
   tap(restart, event => {
-    begin(0,0,GOAL);
+    begin(0,0);
     if (event.type === 'click') switches[0].focus();
   });
 
   return {
-    enter(){ begin(0,0,GOAL); },
+    enter(){
+      if (!target) begin(0,0);
+      else if (solved()) dance.hidden = false;
+      else speak(prompt());
+    },
     leave(){ dance.hidden = true; },
     lines:() => [GOAL, PAIRS, HINT, WIN, END]
   };
@@ -12531,7 +12557,7 @@ const SchoolAdventures = (() => {
       tap($('.sa-next', s), () => { if (id === k && phase === 'page' && reading()) next(); });
       tap($('.sa-prev', s), () => { if (id === k && phase === 'page' && reading() && step > 0){ step--; show(); } });
     }
-    $('.sc-back', s).innerHTML = ICON.grid; tap($('.sc-back', s), () => { FX.boop(); if (id === k && e.shelf && phase !== 'shelf'){ clearLater(); shelf(); } else go('school'); });
+    $('.sc-back', s).innerHTML = ICON.grid; tap($('.sc-back', s), event => { FX.boop(); if (id === k && e.shelf && phase !== 'shelf'){ clearLater(); shelf(); } else returnToActivityMenu('school', event); });
     // the speaker says what's on screen again: the page, the question (not once it's answered: the next round is coming), or the shelf
     put(e.replay, ART.ear); tap(e.replay, () => { if (id !== k) return; const r = cur(); if (phase === 'page') readPage(); else if (r && phase === 'ask' && !busy) speak(r.ask); else if (phase === 'shelf') speak(SAY.storytime.pick); }, {throttle:700});
     if (e.shelf) BOOKS.forEach(b => {   // a cover for each story: its friend and its last page

@@ -82,6 +82,30 @@ const ACTIVITIES = ['wildtap', 'matchup', 'splish', 'hideseek', 'tracks', 'cooki
       await touch('#stReplay'); await page.waitForTimeout(700);
       check((await page.evaluate(() => window.__toyPhone.voice().log)).length > said, `${tag} snacktime: the speaker says what the animal wants again`);
 
+      // Keyboard focus follows both menus in each direction.
+      for (const [menu, id, label] of [['games','fireflies','Firefly Festival'], ['games','dinobuddies','Dino Buddies'], ['school','sorting','Sorting Station']]){
+        await page.evaluate(menu => window.__toyPhone.go(menu), menu);
+        const card = page.locator(`#${menu}`).getByRole('button', {name:label, exact:true});
+        const back = page.locator(`#${id} :is(.sc-back, .game-back)`);
+        await page.waitForFunction(menu => getComputedStyle(document.getElementById(menu)).transform === 'none', menu);
+        await card.focus();
+        const center = await card.evaluate(b => {
+          const r = b.getBoundingClientRect(), apps = document.querySelector('#apps').getBoundingClientRect();
+          return [r.left + r.width/2 - apps.left, r.top + r.height/2 - apps.top];
+        });
+        await card.press('Enter');
+        const origin = await page.locator('#' + id).evaluate(app => app.style.transformOrigin.split(' ').map(parseFloat));
+        check(origin.every((coordinate, i) => Math.abs(coordinate - center[i]) < 2), `${tag} ${label}: opens from the card's center`);
+        const player = page.locator(`#${id} .who:not([hidden]) .who-btn.last`);
+        if (await player.isVisible()){
+          check(await player.evaluate(b => document.activeElement === b), `${tag} ${label}: keyboard launch focuses the player picker`);
+          await player.press('Enter');
+        }
+        check(await back.evaluate(b => document.activeElement === b), `${tag} ${label}: keyboard launch focuses its back button`);
+        await back.press('Enter');
+        check(await card.evaluate(b => document.activeElement === b), `${tag} ${label}: keyboard back returns focus to its card`);
+      }
+
       // 2. leaving any activity stops it
       await page.evaluate(() => window.__toyPhone.go('home')); await page.waitForTimeout(800);
       const base = await page.evaluate(() => new Promise(done => { const r0 = window.__raf; setTimeout(() => done(window.__raf - r0), 1500); }));

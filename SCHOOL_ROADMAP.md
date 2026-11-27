@@ -70,6 +70,11 @@ PR #14's expansion (Delivery quantity/color/size, Ball Trail mazes, Star Flight 
   full journey in portrait and checks the largest board in four layouts. Release follows the branch CI.
   Difficulty and audio on the family's iPhone remain open under R-04.
 
+- [ ] **R-40 — Phone and game refinements (Codex, 2026-11-27):** in [PR #38](https://github.com/DeltaSNull/KidPhone/pull/38).
+  Cookie Shop uses a continuous “Mmm.” Firefly retains the board while the phone is open and can repeat both its goal
+  and the advanced switch rule. App transitions originate at the tapped control. Keyboard focus enters Games and
+  School activities and returns to their cards. Family listening and play remain under R-04.
+
 ## App/game review ideas — pending, ordered for continuation
 
 Purpose: a playful pretend phone with satisfying cause/effect for toddlers, meaningful choices for preschoolers, and opportunities to play with a grown-up or sibling. Keep free play available; no new learner records, competitive rankings, punitive lives or timed learning tests. These suggestions are **not shipped** and do not override the existing School plan or its holds. Work on one bounded batch at a time, with the existing audio quality and offline gates.

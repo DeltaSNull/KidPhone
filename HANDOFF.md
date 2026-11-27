@@ -7,6 +7,12 @@ on 2026-10-09 from a 6,400-word log; the old text is in git history.)
 
 ## Active batch
 
+- **R-40 Phone and game refinements** (Codex, 2026-11-27, [PR #38](https://github.com/DeltaSNull/KidPhone/pull/38)).
+  Cookie Shop's “Mmm, delicious!” uses one sustained hum. Firefly Festival resumes the current board when returning
+  to the game and repeats the switch rule at higher difficulties. The phone opens apps from the visible launch
+  control. Games and School move keyboard focus into the activity and back to its card. Pages tests run each
+  device in a separate browser after WebKit exited during the second camera check in CI.
+
 - **R-39 Firefly Festival** (Codex, 2026-11-27, `codex/firefly-festival`). Ten one-player puzzles with reversible
   lantern switches, three selectable difficulties and a firefly dance. Focused Chromium playthrough, voice manifest
   and four phone layouts verified. Navigation, motion games and offline-ready passed in Chromium. Follow the branch's CI before release. Family playtest stays R-04.
@@ -102,6 +108,11 @@ on 2026-10-09 from a 6,400-word log; the old text is in git history.)
   gradual extraction).
 
 ## History (newest first)
+
+- 2026-11-27 R-40. The voice generator sends a written hum as contiguous /m/ phonemes and gives affected lines a new
+  cache filename. Regular letter names keep their original clips. Firefly preserves its in-memory board on reentry
+  and joins its two existing prompts when repeating the advanced rule. The Games and School activity cards share
+  keyboard focus handling. The shared transition measures the opener before hiding its screen.
 
 - 2026-11-27 R-39 Firefly Festival: `FireflyFestival` in `index.html`, with shape-coded switches and a bitmask for
   lit lanterns. Each starting pattern is a set of moves away from all-on. A backwards breadth-first search keeps the

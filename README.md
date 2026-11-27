@@ -93,7 +93,7 @@ Guided Access. It's one self-contained `index.html` (vanilla JS, no build step),
   - *Firefly Festival* (1 player): light every lantern to make the fireflies dance. A switch flips the lanterns with
     its matching shapes. Ten puzzles start with single switches, then mix in pairs and a switch that flips three lanterns.
     A hand button highlights one helpful switch, and the berry speaker repeats the goal. The star, firefly, and owl pick
-    the difficulty. Tap the green arrow after each dance to keep playing. There is no timer, and progress lasts for the visit.
+    the difficulty. Tap the green arrow after each dance to keep playing. There is no timer. The puzzle stays put if you leave the game and come back while KidPhone is open.
   - *Snack Time* (1 player): a picnic journey through seven places, each with its own scenery and hungry animals. A
     hungry animal walks in, thinking of a food in a thought bubble. Tap that food on the picnic blanket and it flies into
     the animal's mouth: munching, the animal's call, hearts and a sticker, then the next animal walks in. Two foods to
