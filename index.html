@@ -6533,12 +6533,12 @@ function animalTalk(c, text){
 const CALL_MAX_MS = 3*60*1000;   // a forgotten call says goodbye by itself after 3 minutes
 function talk(first){
   if (!call || call.state !== 'talking') return;
-  const c = call.c;
-  if (performance.now() - call.started > CALL_MAX_MS){ animalTalk(c, BYES[3]); callLater(() => endCall(), 4200); return; }
+  const owner = call, c = owner.c;
+  if (performance.now() - owner.started > CALL_MAX_MS){ animalTalk(c, BYES[3]); callLater(() => endCall(), 4200); return; }
   if (c.family && c.clips && c.clips.length){
     const url = first ? c.clips[0] : (c.clips.length > 1 ? rnd(c.clips.slice(1)) : c.clips[0]);
-    playClip(url).then(dur => {
-      if (!call || call.state !== 'talking') return;
+    playClip(url, owner).then(dur => {
+      if (call !== owner || owner.state !== 'talking') return;
       if (dur == null){ const t = first ? c.lines[0] : nextLine(c); animalTalk(c, t); callLater(talk, Math.max(6000, lineMs(t, c) + 2200)); return; }
       callFace.classList.add('talk'); callLater(() => callFace.classList.remove('talk'), dur*1000);
       callLater(talk, Math.max(6000, dur*1000 + 2500));
@@ -6640,13 +6640,14 @@ function loadClip(url){
   }
   return clipCache.get(url);
 }
-function playClip(url){
+function playClip(url, owner = call, state = owner?.state){
   return loadClip(url).then(buf => {
-    if (!buf) return null;
+    if (!buf || !owner || call !== owner || owner.state !== state) return null;
     busy(buf.duration);
-    if (hold(() => playClip(url))) return buf.duration;
+    if (hold(() => playClip(url, owner, state))) return buf.duration;
     const s = ctx.createBufferSource(); s.buffer = buf; s.connect(master); s.start();
-    if (call){ call.src = s; s.onended = () => { if (call && call.src === s) call.src = null; }; }
+    owner.src = s;
+    s.onended = () => { if (owner.src === s) owner.src = null; };
     return buf.duration;
   });
 }
@@ -7256,26 +7257,54 @@ const MAX_PHOTOS = 60;
 const mem = new Map();   // fallback when the phone refuses storage
 const Photos = {
   list: (store.get('photos', []) || []).filter(p => p && p.id),
+  generation:0,
   src(id){ if (mem.has(id)) return mem.get(id); const u = PhotoDB.url(id); if (u) return u; try{ return localStorage.getItem('toyphone.photo.' + id); }catch(e){ return null; } },
-  saveIndex(){ store.set('photos', this.list); },
-  dropOldest(){ const old = this.list.pop(); if (!old) return false; mem.delete(old.id); if (old.db) PhotoDB.del(old.id); try{ localStorage.removeItem('toyphone.photo.' + old.id); }catch(e){} this.saveIndex(); return true; },
+  saveIndex(list = this.list){ return store.set('photos', list.filter(p => !mem.has(p.id))); },
+  removeFile(photo){
+    mem.delete(photo.id);
+    if (photo.db) PhotoDB.del(photo.id);
+    else try{ localStorage.removeItem('toyphone.photo.' + photo.id); }catch(e){}
+  },
+  remember(photo){
+    const next = [photo, ...this.list], overflow = next.splice(MAX_PHOTOS);
+    if (!this.saveIndex(next)) return false;
+    this.list = next;
+    overflow.forEach(old => this.removeFile(old));
+    return true;
+  },
   newId: () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
-  addBlob(blob, meta){
-    const id = this.newId();
-    while (this.list.length >= MAX_PHOTOS) this.dropOldest();
-    return PhotoDB.put(id, blob).then(() => { this.list.unshift({id, t:Date.now(), db:true, ...meta}); this.saveIndex(); });
+  async addBlob(blob, meta){
+    const generation = this.generation;
+    const photo = {id:this.newId(), t:Date.now(), db:true, ...meta};
+    await PhotoDB.put(photo.id, blob);
+    if (generation !== this.generation){
+      PhotoDB.del(photo.id);
+      return false;
+    }
+    if (this.remember(photo)) return true;
+    PhotoDB.del(photo.id);
+    throw new Error('Could not save the photo index');
   },
   add(src, meta){
-    const id = this.newId();
-    while (this.list.length >= MAX_PHOTOS) this.dropOldest();
-    for (;;){
-      try{ localStorage.setItem('toyphone.photo.' + id, src); break; }
-      catch(e){ if (!this.dropOldest()){ mem.set(id, src); break; } }
-    }
-    this.list.unshift({id, t:Date.now(), ...meta});
-    if (!store.set('photos', this.list)){ this.dropOldest(); this.saveIndex(); }
+    const photo = {id:this.newId(), t:Date.now(), ...meta};
+    try{
+      localStorage.setItem('toyphone.photo.' + photo.id, src);
+      if (this.remember(photo)) return true;
+      this.removeFile(photo);
+    }catch(e){}
+    if (this.list.length >= MAX_PHOTOS) return false;
+    mem.set(photo.id, src);
+    this.list.unshift(photo);
+    return true;
   },
-  clear(){ this.list.forEach(p => { try{ localStorage.removeItem('toyphone.photo.' + p.id); }catch(e){} }); this.list = []; mem.clear(); PhotoDB.clear(); this.saveIndex(); }
+  clear(){
+    this.generation++;
+    this.list.forEach(p => { try{ localStorage.removeItem('toyphone.photo.' + p.id); }catch(e){} });
+    this.list = [];
+    mem.clear();
+    PhotoDB.clear();
+    this.saveIndex();
+  }
 };
 /* The database for real photos: each a JPEG file, shown through a blob: address made once when the toy starts.
    A photo whose file is gone (the phone cleared the website's data) drops out of the album. */
@@ -7289,7 +7318,12 @@ const PhotoDB = (() => {
       r.onupgradeneeded = () => r.result.createObjectStore('photos');
       r.onsuccess = async () => {
         db = r.result;
-        for (const p of Photos.list.filter(p => p.db)){ try{ const b = await req(os('readonly').get(p.id)); if (b) urls.set(p.id, URL.createObjectURL(b)); }catch(e){} }
+        for (const p of Photos.list.filter(p => p.db)){
+          try{
+            const b = await req(os('readonly').get(p.id));
+            if (b && Photos.list.includes(p)) urls.set(p.id, URL.createObjectURL(b));
+          }catch(e){}
+        }
         res(true);
       };
       r.onerror = r.onblocked = () => res(false);
@@ -7303,7 +7337,15 @@ const PhotoDB = (() => {
   });
   return {
     ready, ok: () => !!db, url: id => urls.get(id) || null,
-    put: (id, blob) => req(os('readwrite').put(blob, id)).then(() => { urls.set(id, URL.createObjectURL(blob)); }),
+    put: async (id, blob) => {
+      await new Promise((resolve, reject) => {
+        const tx = db.transaction('photos', 'readwrite');
+        tx.oncomplete = resolve;
+        tx.onabort = () => reject(tx.error);
+        tx.objectStore('photos').put(blob, id);
+      });
+      urls.set(id, URL.createObjectURL(blob));
+    },
     del: id => { const u = urls.get(id); if (u){ URL.revokeObjectURL(u); urls.delete(id); } try{ if (db) os('readwrite').delete(id); }catch(e){} },
     clear: () => { urls.forEach(u => URL.revokeObjectURL(u)); urls.clear(); try{ if (db) os('readwrite').clear(); }catch(e){} }
   };
@@ -7779,10 +7821,20 @@ function realShutter(){
   const c = realSnapshot(); if (!c) return;
   const id = curCostume(), look = curLook();
   const meta = {real:true, names:id ? [COSTUME_NAME[id]] : [], ...(id ? {costume:id} : {}), ...(look !== 'normal' ? {look} : {}), ...(cam.mode === 'selfie' ? {selfie:true} : {})};
-  const fallback = () => { try{ Photos.add(c.toDataURL('image/jpeg', .76), meta); }catch(e){} showThumb(true); };
-  if (c.toBlob && PhotoDB.ok()) c.toBlob(b => { if (b) Photos.addBlob(b, meta).then(() => showThumb(true), fallback); else fallback(); }, 'image/jpeg', .82);
-  else fallback();
-  later(() => say(rnd(CLICKS), 0, 'camera'), 420);
+  const generation = Photos.generation;
+  const currentCapture = () => generation === Photos.generation;
+  const fallback = () => {
+    if (!currentCapture()) return;
+    try{ if (Photos.add(c.toDataURL('image/jpeg', .76), meta)) showThumb(true); }catch(e){}
+  };
+  if (c.toBlob && PhotoDB.ok()){
+    c.toBlob(blob => {
+      if (!currentCapture()) return;
+      if (!blob) return fallback();
+      Photos.addBlob(blob, meta).then(saved => { if (saved && currentCapture()) showThumb(true); }, fallback);
+    }, 'image/jpeg', .82);
+  } else fallback();
+  later(() => { if (currentCapture()) say(rnd(CLICKS), 0, 'camera'); }, 420);
 }
 
 /* ----- settings: what the parent sees about the camera ----- */

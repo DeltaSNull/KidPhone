@@ -170,6 +170,10 @@ jobs:
         if: matrix.part == 2
         run: node tests/camera-peek.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
 
+      - name: Phone and photo lifecycle
+        if: matrix.part == 2 && matrix.engine == 'chromium'
+        run: npm run test:photo-call-lifecycle
+
       - name: Animal Delivery
         if: matrix.part == 2
         run: node tests/delivery.cjs ${{ matrix.engine == 'webkit' && '--webkit' || '' }}
