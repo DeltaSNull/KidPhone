@@ -125,8 +125,9 @@ const YAY = ['You did it!', 'Great driving!', 'The train made it!', 'Toot toot! 
       if (decoy && full){
         const n2 = await log();
         for (let k = 0; k < 12; k++){ await touch(decoy.r, decoy.c); await page.waitForTimeout(150); }
-        await sayWait('Try turning this one!', n2, 6000);
         const h = (await st()).hint, hc = (await st()).cells.find(c => h && c.r === h[0] && c.c === h[1]);
+        check(!!h, `${tag}: the hint is already visible while the child is still tapping`);
+        await sayWait('Try turning this one!', n2, 6000);
         check(hc && hc.step >= 0 && !hc.ok && await cellAt(h[0], h[1]).evaluate(e => e.classList.contains('hint')), `${tag}: twelve taps that don't help: a wrong piece of the route glows ("Try turning this one!")`);
       }
       let n3 = await log(); await solve();

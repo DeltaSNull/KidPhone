@@ -29,6 +29,14 @@ const server=http.createServer((req,res)=>{
   const after=await page.evaluate(()=>({osc:__osc,src:__src,stops:__stops.slice(-3)}));check(after.osc>before.osc,'piano key '+i+' uses synthesized notes');
   if(i===5){check(after.src===before.src,'duck piano does not play the real-world quack clip');check(Math.max(...after.stops)<.7,'duck piano is short like its neighbors');}
  }
+ for (const [tab, key] of [['xylo','.bar'], ['drums','.pad'], ['piano','.pkey']]){
+  await tap(`[data-mtab="${tab}"]`);
+  const before = await page.evaluate(() => __osc);
+  await page.locator(`#${tab} ${key}`).first().press('Enter');
+  check(await page.evaluate(() => __osc) > before, tab + ': keyboard activation plays the instrument');
+  if (tab === 'xylo') check(await page.locator('#screen > .fly').last().evaluate(note => parseFloat(note.style.left) > 0 && parseFloat(note.style.top) > 0),
+    'the keyboard xylophone note starts on its visible bar');
+ }
  const recorded=await page.evaluate(()=>window.__toyPhone.recorded().slice().sort().join(','));
  async function recover(kind){
   await page.evaluate(()=>window.__toyPhone.go('music'));await tap('[data-mtab="piano"]');await tap('.pkey[data-i="5"]');

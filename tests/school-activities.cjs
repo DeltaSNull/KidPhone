@@ -118,12 +118,22 @@ const BOOKS = ['seed', 'egg', 'rain'];   // Story Time's shelf
             check(same, `${tag} sorting: "the same one" is drawn exactly the same, size included`);
           }
           if (feel){ felt.push(st); check((await sceneFaces()).length === 0, `${tag} feelings: "${st.ask}" is worked out from the story, the face isn't shown`); }
-          await touch(`#${id} [data-choice="${st.right}"]`);
+          const answer = `#${id} [data-choice="${st.right}"]`;
+          const keyboard = id === 'sorting' && rounds === 0;
+          if (keyboard){
+            await page.locator(answer).focus();
+            check(await page.locator(answer).evaluate(b => document.activeElement === b), `${tag} sorting: the selected answer can receive keyboard focus`);
+            await page.keyboard.press('Enter');
+          } else {
+            await touch(answer);
+          }
           await page.waitForTimeout(150);
           check((await state()).solved === st.solved + 1, `${tag} ${id}: a right answer lights a star (${st.ask})`);
           if (feel) check(JSON.stringify(await sceneFaces()) === JSON.stringify([`${st.right} face`]), `${tag} feelings: then ${st.right} face shows`);
           await moved(st.step);
           const now = await state();
+          if (keyboard) check(await page.locator('#sorting .sa-choices .sa-choice').first().evaluate(b => document.activeElement === b),
+            `${tag} sorting: keyboard focus moves to the first choice in the new round`);
           if (id === 'feelings' && now.phase !== 'done' && (/^What can help/.test(st.ask) || st.right === 'happy'))
             check(now.phase === 'page', `${tag} feelings: the next friend's story is told before its question`);
         }

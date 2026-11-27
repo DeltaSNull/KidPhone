@@ -6027,21 +6027,32 @@ const normLine = t => String(t).replace(/[’‘]/g, "'").replace(/\bT\. rex\b/g
 const sentences = t => (normLine(t).match(/[^.!?]+[.!?]*/g) || []).map(x => x.trim()).filter(Boolean);
 const VB = {map:null, bufs:new Map(), loading:new Map(), srcs:[], until:0, seq:0, fallbacks:[], played:0, log:[], last:null, warmed:false};
 const VOICE_GAP = .14;   // seconds between sentences
+let voiceBankRequest = null;
 async function loadVoiceBank(){
-  try{
-    if (location.protocol === 'file:') return;
-    const r = await fetch('assets/voice/voice.json', {cache:'no-cache'});
-    if (r.ok) VB.map = (await r.json()).clips || null;
-    if (VB.map){ setSession(); if (unlocked) setTimeout(warmVoices, 3000); }
-  }catch(e){}
+  if (VB.map || location.protocol === 'file:') return VB.map;
+  if (!voiceBankRequest) voiceBankRequest = (async () => {
+    try{
+      const r = await fetch('assets/voice/voice.json', {cache:'no-cache'});
+      if (!r.ok) return null;
+      const {clips} = await r.json();
+      if (!clips || !Object.keys(clips).length) return null;
+      VB.map = clips;
+      setSession();
+      if (unlocked) setTimeout(warmVoices, 3000);
+      return VB.map;
+    }catch(e){ return null; }
+    finally { voiceBankRequest = null; }
+  })();
+  return voiceBankRequest;
 }
 /* After the first touch, quietly save the clips of the parts of the toy that are switched on (a few at a time, with
    retries): lines are then ready the moment they're needed, also offline. Settings shows how far it got, checks it,
    and can save everything. (Fetched, not decoded: decoding waits until a line is said.) */
 function warmVoices(){
-  if (!VB.map || VB.warmed || location.protocol === 'file:') return; VB.warmed = true;
-  // only with the service worker installed: without it nothing would serve the saved files offline
-  try{ navigator.serviceWorker.getRegistration().then(r => { if (r && r.active) OFFLINE.save(false, true); }, () => {}); }catch(e){}
+  if (!VB.map || VB.warmed || !navigator.serviceWorker || location.protocol === 'file:') return;
+  VB.warmed = true;
+  // On a first visit the worker can still be installing when the child starts playing.
+  navigator.serviceWorker.ready.then(() => OFFLINE.save(false, true)).catch(() => {});
 }
 /* who: a speaker id, an animal contact, or nothing (a number is an old pitch value) = the narrator */
 const whoId = who => typeof who === 'string' ? who : who && typeof who === 'object' && who.id && !who.family ? who.id : 'n';
@@ -6228,6 +6239,7 @@ function playField(box, sel, hit){
     if (el && box.contains(el) && el !== lastEl.get(e.pointerId)){ lastEl.set(e.pointerId, el); fire(el, e); }
   });
   ['pointerup','pointercancel'].forEach(t => box.addEventListener(t, e => lastEl.delete(e.pointerId)));
+  $$(sel, box).forEach(el => keyboardTap(el, event => { keepAwake(); fire(el, event); }));
 }
 
 const screenEl = $('#screen');
@@ -9299,7 +9311,13 @@ function mallet(f, vol=.3, at=0){ synth({f, dur:1.2, vol, at}); synth({f:f*4, du
 const XYLO = [[523.25,'#F0524F'],[587.33,'#FF9F43'],[659.25,'#FFC83D'],[783.99,'#7CC96B'],[880,'#5CC9B5'],[1046.5,'#3D8FE0'],[1174.66,'#6F7BE0'],[1318.51,'#A46FD1']];
 XYLO.forEach(([f, c], i) => { const b = document.createElement('button'); b.className = 'bar'; b.dataset.i = i; b.setAttribute('aria-label', 'Bar ' + (i + 1)); b.style.setProperty('--c', c); b.style.setProperty('--fr', frameURL(c, dim(c, .6))); b.style.setProperty('--len', (100 - i*5.2) + '%'); $('#xylo').appendChild(b); });
 const barVol = i => .3 * .91 ** i;   // each bar up a little softer (-0.8 dB), so all eight measure about as loud on a phone speaker
-playField($('#xylo'), '.bar', (b, e) => { const i = +b.dataset.i; mallet(XYLO[i][0], barVol(i)); retrigger(b, 'hit'); const [x, y] = relPt(e); flyNote(x, y); });
+playField($('#xylo'), '.bar', (b, event) => {
+  const i = +b.dataset.i;
+  mallet(XYLO[i][0], barVol(i));
+  retrigger(b, 'hit');
+  const [x, y] = event.type === 'click' ? rel(b) : relPt(event);
+  flyNote(x, y);
+});
 
 /* drums: all six about as loud on a phone speaker (within ~2 dB through the master compressor; see the smoke test).
    A phone barely plays anything under 300 Hz, so the drum and the conga ring in the mids (a buzzy body, a beater
@@ -10862,7 +10880,7 @@ const Tracks = (() => {
     ALL = 'You drove the train all the way! Wow!', WHERE = 'Where shall we go?', HELLO = pl => `Welcome to ${pl.n}!`, OFF = pl => `Off to ${pl.n}!`;
   const root = $('#tracks'), stage = $('#ctStage'), boardEl = $('#ctBoard'), stepsEl = $('#ctSteps'), mapEl = $('#ctMap'), handEl = $('#ctHand');
   let places = null, place = null, pi = 0, lvl = 0, lap = 0, praise = 0, visited = new Set(), started = false, mode = 'off', seq = 0;
-  let pz = null, t = 64, raf = 0, hintT = 0, sinceGain = 0, bestLit = 0, hinted = null, waited = false, pickedUp = [];
+  let pz = null, t = 64, raf = 0, hintT = 0, sinceGain = 0, bestLit = 0, previousLit = 0, hinted = null, waited = false, pickedUp = [];
 
   /* ----- making a puzzle: a winding route from the engine's side to the station's side, then pieces turned out of place ----- */
   const rint = n => Math.floor(Math.random()*n);
@@ -11002,8 +11020,12 @@ const Tracks = (() => {
     const {lit, done} = trace();
     pz.grid.flat().forEach(g => { if (g.kind !== 'track') return; const on = lit.includes(g); if (on !== !!g.lit){ g.lit = on; g.el.classList.toggle('lit', on); g.img.src = ctPiece(straight(g.sol) ? 's' : 'c', on);
       if (on && g.pass) retrigger($('.ct-pass', g.el), 'hop'); } });
-    if (sound && lit.length > bestLit){ const f = NOTES[Math.min(lit.length - 1, NOTES.length - 1)]; tone(f, f, .18, 'triangle', .1); sinceGain = 0; }
-    bestLit = lit.length;
+    if (sound && lit.length > previousLit){
+      const f = NOTES[Math.min(lit.length - 1, NOTES.length - 1)];
+      tone(f, f, .18, 'triangle', .1);
+    }
+    if (lit.length > bestLit){ bestLit = lit.length; sinceGain = 0; }
+    previousLit = lit.length;
     if (!done){ waited = false; return; }
     const missed = pz.grid.flat().filter(g => g.pass && !lit.includes(g));
     if (missed.length){
@@ -11016,7 +11038,11 @@ const Tracks = (() => {
   const toot = () => { tone(587, 587, .32, 'sine', .14, 0, 6); tone(740, 740, .32, 'sine', .1, 0, 6); tone(587, 587, .5, 'sine', .14, .38, 6); tone(740, 740, .5, 'sine', .1, .38, 6); };
   const chug = () => noise(.07, 'bandpass', 500, 300, .12);
   /* stuck for a while (no taps, or taps that don't reach further): one piece of the route that's still wrong glows */
-  function wait(){ unLater(hintT); hintT = later(hint, sinceGain >= 12 ? 1500 : 20000); }
+  function wait(){
+    unLater(hintT);
+    if (sinceGain >= 12) hint();
+    hintT = later(hint, 20000);
+  }
   function hint(){
     if (mode !== 'play') return;
     const g = pz.path.map(p => cell(p.r, p.c)).find(x => x.turns && mask(x) !== x.sol);
@@ -11115,7 +11141,7 @@ const Tracks = (() => {
     for (let i = 0; i < 4; i++){ const s = document.createElement('span'); s.className = 'ct-step' + (i < lvl ? ' done' : i === lvl ? ' on' : ''); s.innerHTML = ctEngine(); stepsEl.appendChild(s); }
   }
   function puzzle(first){
-    mode = 'intro'; seq++; waited = false; sinceGain = 0; bestLit = 0; hinted = null; cancelAnimationFrame(raf); raf = 0; handEl.hidden = true;
+    mode = 'intro'; seq++; waited = false; sinceGain = 0; bestLit = previousLit = 0; hinted = null; cancelAnimationFrame(raf); raf = 0; handEl.hidden = true;
     boardEl.getAnimations().forEach(a => a.cancel());   // (the map picked during the trip to the next place: the board's slide-away, held at its end, would hide the new puzzle)
     const spec = lap ? LAP[lvl] : PLAN[pi][lvl];
     pz = make(spec); draw(); steps(); retrigger(boardEl, 'in');
@@ -11874,6 +11900,7 @@ function applyAccess(){
   scheduleIncoming();
   if (!appAllowed(current) || (current === 'home' && access.mode === 'school')) go(accessHome());
   renderAccess();
+  if (!$('#settings').hidden) OFFLINE.check();
 }
 function setAccessMode(mode){
   const change = () => { if (saveAccess({...access, mode})){ applyAccess(); FX.pop(); } };
@@ -11993,7 +12020,8 @@ const PLAY = (() => {
 const OFFLINE = (() => {
   const CACHE = 'toy-phone-v3';   // the cache in sw.js (keep the two names the same; tests/offline-ready.cjs checks)
   const PARTS = {school:'School', games:'Games', camera:'Camera', photos:'Photos', music:'Music', phone:'Phone'};
-  let st = {phase:'idle', done:0, total:0, failed:[], missing:null, worker:null, all:false, checked:0}, job = null;
+  const st = {phase:'idle', done:0, total:0, failed:[], missing:null, worker:null, all:false, checked:0, error:null};
+  let job = null, checkVersion = 0, checkAfterSave = false;
   const supported = () => { try{ return 'caches' in window && 'serviceWorker' in navigator && isSecureContext && location.protocol !== 'file:' && !/claude\.ai|claudeusercontent/.test(location.hostname); }catch(e){ return false; } };
   const parts = all => Object.keys(PARTS).filter(k => all || appAllowed(k));
   function files(all){
@@ -12006,15 +12034,31 @@ const OFFLINE = (() => {
     }
     return [...set];
   }
-  const worker = async () => { try{ const r = await navigator.serviceWorker.getRegistration(); return !!(r && (r.active || r.waiting || r.installing)); }catch(e){ return false; } };
-  async function check(all = st.all){
+  async function inspect(all){
+    const unavailable = {missing:[], checked:0, total:0, worker:false};
+    if (!await loadVoiceBank()) return {...unavailable, error:'voice'};
+    try {
+      const list = files(all), cache = await caches.open(CACHE);
+      const hits = await Promise.all(list.map(url => cache.match(url)));
+      const registration = await navigator.serviceWorker.getRegistration();
+      return {cache, missing:list.filter((_, i) => !hits[i]), checked:list.length, total:list.length,
+        worker:registration?.active?.state === 'activated', error:null};
+    }catch(e){ return {...unavailable, error:'storage'}; }
+  }
+  function report({cache, ...result}){
+    Object.assign(st, result, {phase:'checked'});
+    render();
+  }
+  async function check(){
     if (!supported()) return render();
-    if (st.phase !== 'saving'){ st.missing = null; render(); }   // ("Checking…" until every file has been looked up)
-    const list = files(all), cache = await caches.open(CACHE);
-    const hits = await Promise.all(list.map(u => cache.match(u).then(Boolean, () => false)));
-    st.missing = list.filter((u, i) => !hits[i]); st.checked = list.length; st.total = list.length; st.worker = await worker(); st.all = all;
-    if (st.phase !== 'saving') st.phase = 'checked';
-    render(); return st.missing.length === 0 && st.worker;
+    if (job){ checkAfterSave = true; return job; }
+    const version = ++checkVersion;
+    st.phase = 'checking';
+    st.missing = null;
+    st.error = null;
+    render();
+    const result = await inspect(st.all);
+    if (version === checkVersion) report(result);
   }
   async function get(cache, url){
     for (let n = 0; n < 3; n++){
@@ -12026,16 +12070,39 @@ const OFFLINE = (() => {
   /* save what's missing (all: every part, not just the switched-on ones), quiet: the automatic first download */
   function save(all, quiet = false){
     if (!supported() || job) return job;
+    checkVersion++;
+    st.all = all || st.all;
+    st.phase = 'checking';
+    st.missing = null;
+    st.error = null;
     job = (async () => {
-      try{
-        await check(all || st.all);
-        const todo = st.missing.slice(), cache = await caches.open(CACHE); st.phase = 'saving'; st.done = st.total - todo.length; st.failed = []; render();
+      try {
+        const result = await inspect(st.all);
+        if (result.error){ report(result); return; }
+        const {cache, missing:todo, total} = result;
+        st.phase = 'saving';
+        st.total = total;
+        st.done = total - todo.length;
+        st.failed = [];
+        render();
         let i = 0;
-        const lane = async () => { while (i < todo.length){ const u = todo[i++]; if (await get(cache, u)) st.done++; else st.failed.push(u); if (st.done % 20 === 0) render(); } };
+        const lane = async () => {
+          while (i < todo.length){
+            const url = todo[i++];
+            if (await get(cache, url)) st.done++;
+            else st.failed.push(url);
+            if (st.done % 20 === 0) render();
+          }
+        };
         await Promise.all(Array.from({length:quiet ? 2 : 4}, lane));
-        st.phase = 'checked'; await check(st.all);
-      } finally { job = null; render(); }
+        report(await inspect(st.all));
+      } finally {
+        job = null;
+        if (checkAfterSave){ checkAfterSave = false; check(); }
+        else render();
+      }
     })();
+    render();
     return job;
   }
   function render(){
@@ -12044,6 +12111,8 @@ const OFFLINE = (() => {
     let html;
     if (!supported()) html = 'This copy can\'t save itself for offline use. Open the toy from its web address in Safari and add it to the Home Screen.';
     else if (st.phase === 'saving') html = `Saving for offline: ${n(st.done)} of ${n(st.total)} files…`;
+    else if (st.error === 'voice') html = 'The recorded voice list couldn’t load. Connect to the internet, then tap Try again.';
+    else if (st.error === 'storage') html = 'The phone couldn’t check its offline storage. Tap Try again.';
     else if (st.missing === null) html = 'Checking what\'s saved on this phone…';
     else if (st.failed.length && st.missing.length) html = `Not ready offline: ${n(st.missing.length)} file${st.missing.length === 1 ? '' : 's'} couldn't download (no connection?). Tap Try again.`;
     else if (st.missing.length) html = `Not ready offline yet: ${n(st.total - st.missing.length)} of ${n(st.total)} files saved for ${which}.`;
@@ -12051,8 +12120,8 @@ const OFFLINE = (() => {
     else html = `Ready offline: ${which} (${n(st.checked)} files checked on this phone).`;
     note.innerHTML = html;
     const get1 = $('#offlineGet'), all1 = $('#offlineAll');
-    get1.textContent = st.failed.length && st.missing && st.missing.length ? 'Try again' : 'Save for offline';
-    get1.disabled = all1.disabled = !supported() || st.phase === 'saving';
+    get1.textContent = st.error || st.failed.length && st.missing?.length ? 'Try again' : 'Save for offline';
+    get1.disabled = all1.disabled = !supported() || !!job;
   }
   tapInScroll($('#offlineGet'), () => { FX.pop(); save(st.all); });
   tapInScroll($('#offlineAll'), () => { FX.pop(); save(true); });
@@ -12504,15 +12573,24 @@ const SchoolAdventures = (() => {
     if (r.train) $$('.sa-car', e.scene).forEach((c, i) => later(() => { retrigger(c, 'hop'); tone(392 + i*66, 392 + i*66, .09, 'square', .07); }, 120*i));
     later(() => FX.cheer(), 250);
   }
+  function focusStep(e){
+    const button = phase === 'ask' || phase === 'free' ? $('.sa-choice', e.choices)
+      : phase === 'done' ? $('.sa-again', e.finish)
+      : reading() ? $('.sa-next', e.turns) : e.replay;
+    button?.focus({preventScroll:true});
+  }
   function next(){
     if (!id) return;
+    const e = els[id], active = document.activeElement;
+    const follow = e.choices.contains(active) || active === e.replay;
     step++;
-    if (step < rounds.length){ show(); return; }
-    const e = els[id]; phase = 'done';
+    if (step < rounds.length){ show(); if (follow) focusStep(e); return; }
+    phase = 'done';
     e.scene.hidden = e.choices.hidden = true; e.replay.hidden = true; e.finish.hidden = false; if (e.turns) e.turns.hidden = true;
     $('.sa-train-own', e.finish).hidden = id !== 'patterntrain'; $('.sa-more', e.finish).hidden = id !== 'storytime';
     $('.sa-together', e.finish).textContent = book ? BOOKS.find(b => b.key === book).together : SAY[id].together;
     retrigger($('.sa-end-art', e.finish), 'hop'); FX.cheer(); speak(SAY[id].end);
+    if (follow || e.turns?.contains(active)) focusStep(e);
   }
   function freeTrain(){   // Pattern Train's last stop: any cars, any order, no wrong answers
     const e = els[id]; phase = 'free'; cars = [];
@@ -12539,6 +12617,13 @@ const SchoolAdventures = (() => {
     speak(first ? TITLE.storytime + '! ' + SAY.storytime.pick : SAY.storytime.pick);
   }
 
+  function returnToShelf(e, event){
+    const cover = book && $(`[data-book="${book}"]`, e.shelf);
+    clearLater();
+    shelf();
+    if (event.type === 'click') cover?.focus({preventScroll:true});
+  }
+
   Object.keys(TITLE).forEach(k => {
     const s = document.createElement('section'); s.className = 'app sa'; s.id = k; s.hidden = true; s.setAttribute('aria-label', TITLE[k]);
     s.innerHTML = `<button class="sc-back" aria-label="School"></button><div class="sa-stars"></div><button class="round lesson-replay" aria-label="Say it again"></button>
@@ -12555,20 +12640,28 @@ const SchoolAdventures = (() => {
       $$('.sa-mode', s).forEach(b => tap(b, () => { if (id !== k || phase !== 'shelf') return; mode = b.dataset.mode; markMode(e); FX.pop(); speak(SAY.storytime[mode]); }));
       put($('.sa-prev', s), ICON.left); put($('.sa-next', s), ICON.right);
       tap($('.sa-next', s), () => { if (id === k && phase === 'page' && reading()) next(); });
-      tap($('.sa-prev', s), () => { if (id === k && phase === 'page' && reading() && step > 0){ step--; show(); } });
+      tap($('.sa-prev', s), event => {
+        if (id !== k || phase !== 'page' || !reading() || step === 0) return;
+        step--; show();
+        if (!step && event.type === 'click') focusStep(e);
+      });
     }
-    $('.sc-back', s).innerHTML = ICON.grid; tap($('.sc-back', s), event => { FX.boop(); if (id === k && e.shelf && phase !== 'shelf'){ clearLater(); shelf(); } else returnToActivityMenu('school', event); });
+    $('.sc-back', s).innerHTML = ICON.grid; tap($('.sc-back', s), event => { FX.boop(); if (id === k && e.shelf && phase !== 'shelf') returnToShelf(e, event); else returnToActivityMenu('school', event); });
     // the speaker says what's on screen again: the page, the question (not once it's answered: the next round is coming), or the shelf
     put(e.replay, ART.ear); tap(e.replay, () => { if (id !== k) return; const r = cur(); if (phase === 'page') readPage(); else if (r && phase === 'ask' && !busy) speak(r.ask); else if (phase === 'shelf') speak(SAY.storytime.pick); }, {throttle:700});
     if (e.shelf) BOOKS.forEach(b => {   // a cover for each story: its friend and its last page
       const c = document.createElement('button'); c.className = 'sa-book'; c.dataset.book = b.key; c.setAttribute('aria-label', b.title);
       c.innerHTML = `<span class="sa-book-pet">${ART[b.pet]}</span><span class="sa-book-pic">${saCard(b.cover)}</span>`; e.shelf.appendChild(c);
-      tap(c, () => { if (id !== k || phase !== 'shelf') return; FX.pop(); book = b.key; start(); });
+      tap(c, event => {
+        if (id !== k || phase !== 'shelf') return;
+        FX.pop(); book = b.key; start();
+        if (event.type === 'click') focusStep(e);
+      });
     });
-    put($('.sa-more', s), schoolPic('book')); tap($('.sa-more', s), () => { if (id === k) shelf(); });
+    put($('.sa-more', s), schoolPic('book')); tap($('.sa-more', s), event => { if (id === k) returnToShelf(e, event); });
     tap(e.scene, () => { if (id === k && phase === 'page') readPage(); }, {bump:false, throttle:700});
-    put($('.sa-again', s), ART.play); tap($('.sa-again', s), () => { if (id === k) start(); });
-    put($('.sa-train-own', s), schoolPic('bus')); tap($('.sa-train-own', s), () => { if (id === k) freeTrain(); });
+    put($('.sa-again', s), ART.play); tap($('.sa-again', s), event => { if (id === k){ start(); if (event.type === 'click') focusStep(e); } });
+    put($('.sa-train-own', s), schoolPic('bus')); tap($('.sa-train-own', s), event => { if (id === k){ freeTrain(); if (event.type === 'click') focusStep(e); } });
     if (k === 'patterntrain' && window.ResizeObserver) new ResizeObserver(() => { const r = cur(); if (id === k && r && r.actual && phase === 'ask') carSize(e); }).observe(e.scene);
     const paint = BG.grad(BACK[k]); bgFor.set(s, paint); if (bgWatch) bgWatch.observe(s);
   });
