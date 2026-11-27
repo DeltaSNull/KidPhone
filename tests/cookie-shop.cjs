@@ -176,6 +176,27 @@ const YUM = ['Yum! Just right!', 'Mmm, delicious!', 'Thank you! Yummy!'];
         const h = (await st()).happy; await happyOne(); check((await st()).happy === h + 1, `${tag}: a cookie made and served`);
       }
 
+      if (viewport.width > viewport.height){
+        const opener = page.locator('#ckLevels'), first = page.locator('#ckMap [data-stage="1"]');
+        await opener.tap();
+        await first.waitFor();
+        const box = await first.boundingBox();
+        await page.touchscreen.tap(box.x + 8, box.y + box.height / 2);
+        check(!(await st()).map && (await st()).stage === 1, `${tag}: the first cookie card responds right to its left edge`);
+        await modeWait('make');
+
+        await opener.press('Enter');
+        check(await first.evaluate(b => document.activeElement === b), `${tag}: opening the picker by keyboard focuses the current stage`);
+        await page.keyboard.press('Shift+Tab');
+        check(await opener.evaluate(b => document.activeElement === b), `${tag}: the cookie picker button is adjacent to the cards in tab order`);
+        await page.keyboard.press('Shift+Tab');
+        check(await page.locator('#cookies .game-back').evaluate(b => document.activeElement === b), `${tag}: Games is reachable from the picker by keyboard`);
+        await page.keyboard.press('Tab');
+        await page.keyboard.press('Tab');
+        await page.keyboard.press('Enter');
+        check(!(await st()).map && await opener.evaluate(b => document.activeElement === b), `${tag}: choosing a stage by keyboard returns focus to the picker button`);
+      }
+
       // the Games button goes back, and leaving stops it
       await page.locator('#cookies .game-back').tap(); await page.waitForTimeout(500);
       check(await page.locator('#games').isVisible() && (await st()).mode === 'off', `${tag}: the Games button goes back to the Games menu and stops the game`);

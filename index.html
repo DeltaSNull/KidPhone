@@ -1023,6 +1023,7 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img:not(.px){image-rendering
 .st-map{position:absolute; inset:0; z-index:4; display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); grid-auto-rows:minmax(0, 1fr); gap:10px; padding:80px 12px 12px; background:#FFF6EC}
 .st-map[hidden]{display:none}
 @media (orientation:landscape){ .st-map{grid-template-columns:repeat(4, minmax(0, 1fr)); padding:76px 12px 10px} }
+@media (orientation:landscape){ :is(.ct,.ck) .st-map{padding:12px 12px 10px 80px} }
 .st-place{position:relative; min-height:0; min-width:0; border:4px solid #5A4A3E; box-shadow:inset 0 -5px 0 rgba(0,0,0,.14); background-color:#BDE8FA; display:flex; align-items:flex-end; justify-content:center; padding:0 0 4%}
 .st-place.here{border-color:#E8981E; box-shadow:0 0 0 4px #FFD23F, inset 0 -5px 0 rgba(0,0,0,.14)}
 .st-place-who{display:flex; justify-content:center; gap:6%; width:86%; pointer-events:none} .st-place-who .px{width:44%; height:auto; aspect-ratio:1; display:block}
@@ -1806,7 +1807,7 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img:not(.px){image-rendering
 
       <!-- GAME: Train Tracks (one player: turn the track pieces so the train reaches the station, picking up the animals) -->
       <section class="app ct" id="tracks" hidden aria-label="Train Tracks">
-        <button class="sc-back game-back" aria-label="Games"></button><button class="round ct-mapbtn" id="ctMapBtn" aria-label="Map: pick a place"></button><button class="round lesson-replay" id="ctReplay" aria-label="Say it again"></button>
+        <button class="sc-back game-back" aria-label="Games"></button><button class="round ct-mapbtn" id="ctMapBtn" aria-label="Map: pick a place" aria-controls="ctMap" aria-expanded="false"></button><button class="round lesson-replay" id="ctReplay" aria-label="Say it again"></button>
         <div class="ct-steps" id="ctSteps" aria-label="Puzzles here"></div>
         <div class="ct-stage" id="ctStage">
           <div class="ct-board" id="ctBoard" role="group" aria-label="Tracks"></div>
@@ -1838,7 +1839,7 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img:not(.px){image-rendering
 
       <!-- GAME: Cookie Shop (one player: make the cookie the customer is thinking of) -->
       <section class="app ck" id="cookies" hidden aria-label="Cookie Shop">
-        <button class="sc-back game-back" aria-label="Games"></button><button class="round ck-levels" id="ckLevels" aria-label="Which cookies"></button><button class="round lesson-replay" id="ckReplay" aria-label="Say it again"></button>
+        <button class="sc-back game-back" aria-label="Games"></button><button class="round ck-levels" id="ckLevels" aria-label="Which cookies" aria-controls="ckMap" aria-expanded="false"></button><button class="round lesson-replay" id="ckReplay" aria-label="Say it again"></button>
         <div class="ss-row" id="ckRow" aria-label="Happy customers"></div>
         <div class="ck-shop" id="ckShop">
           <div class="ck-customer"><button class="ck-think" id="ckThink" aria-label="The order"><span class="ck-order" id="ckOrder"></span></button><button class="ck-pal" id="ckPal" aria-label="Customer"></button></div>
@@ -10879,6 +10880,7 @@ const Tracks = (() => {
     HINT = 'Try turning this one!', ABOARD = 'All aboard! Choo choo!', YAY = ['You did it!', 'Great driving!', 'The train made it!', 'Toot toot! Hooray!'],
     ALL = 'You drove the train all the way! Wow!', WHERE = 'Where shall we go?', HELLO = pl => `Welcome to ${pl.n}!`, OFF = pl => `Off to ${pl.n}!`;
   const root = $('#tracks'), stage = $('#ctStage'), boardEl = $('#ctBoard'), stepsEl = $('#ctSteps'), mapEl = $('#ctMap'), handEl = $('#ctHand');
+  const mapButton = $('#ctMapBtn'), replay = $('#ctReplay');
   let places = null, place = null, pi = 0, lvl = 0, lap = 0, praise = 0, visited = new Set(), started = false, mode = 'off', seq = 0;
   let pz = null, t = 64, raf = 0, hintT = 0, sinceGain = 0, bestLit = 0, previousLit = 0, hinted = null, waited = false, pickedUp = [];
 
@@ -11161,21 +11163,29 @@ const Tracks = (() => {
   }
 
   /* ----- the map: every place as a picture card; a star on the ones finished this visit ----- */
-  function openMap(){
+  function openMap(event){
     if (!mapEl.hidden || mode === 'ride') return;
     seq++; clearLater(); hush(); mode = 'map'; handEl.hidden = true;
     mapEl.innerHTML = ''; mapEl.hidden = false;
+    stage.inert = replay.hidden = true;
+    mapButton.setAttribute('aria-expanded', 'true');
     places.forEach((pl, i) => {
       const b = document.createElement('button'); b.className = 'st-place' + (pl === place ? ' here' : ''); b.dataset.place = pl.k; b.setAttribute('aria-label', pl.title);
       b.innerHTML = `<span class="st-place-who">${pl.animals.slice(0, 2).map(s => animalPic(s.a)).join('')}</span>${visited.has(pl.k) ? `<span class="st-place-star art">${ART.star}</span>` : ''}`;
       mapEl.appendChild(b); paintBG(b, BG.place(pl.k), true);
-      tap(b, () => { if (mapEl.hidden) return; FX.pop(); closeMap(); lap = 0; visit(i, false); }, {bump:false});
+      tap(b, e => { if (mapEl.hidden) return; FX.pop(); closeMap(e); lap = 0; visit(i, false); }, {bump:false});
     });
+    if (event.type === 'click') $('.here', mapEl)?.focus({preventScroll:true});
     say(WHERE, 0, 'find');
   }
-  function closeMap(){ mapEl.hidden = true; mapEl.innerHTML = ''; }
-  put($('#ctMapBtn'), schoolPic('map')); tap($('#ctMapBtn'), () => { FX.boop(); openMap(); }, {throttle:700});
-  put($('#ctReplay'), ART.ear); tap($('#ctReplay'), () => { if (!pz || (mode !== 'play' && mode !== 'intro')) return; hush(); say(pz.goal, 0, 'find'); }, {throttle:700});
+  function closeMap(event){
+    mapEl.hidden = true; mapEl.innerHTML = '';
+    stage.inert = replay.hidden = false;
+    mapButton.setAttribute('aria-expanded', 'false');
+    if (event?.type === 'click') mapButton.focus({preventScroll:true});
+  }
+  put(mapButton, schoolPic('map')); tap(mapButton, event => { FX.boop(); openMap(event); }, {throttle:700});
+  put(replay, ART.ear); tap(replay, () => { if (!pz || (mode !== 'play' && mode !== 'intro')) return; hush(); say(pz.goal, 0, 'find'); }, {throttle:700});
   if (window.ResizeObserver) new ResizeObserver(() => { if (current === 'tracks') fit(); }).observe(stage);
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && current === 'tracks' && mode === 'play') later(() => say(pz.goal, 0, 'find'), 600); });
 
@@ -11398,6 +11408,7 @@ const CookieShop = (() => {
   $('#cookies').style.setProperty('--ck-plate', ckPlate());
   const root = $('#cookies'), palEl = $('#ckPal'), thinkEl = $('#ckThink'), orderEl = $('#ckOrder'), cookieEl = $('#ckCookie'), plateEl = $('#ckPlate'), rowEl = $('#ckRow'),
     undoEl = $('#ckUndo'), serveEl = $('#ckServe'), trays = Object.fromEntries($$('.ck-tray', root).map(t => [t.dataset.kind, t])), mapEl = $('#ckMap');
+  const shop = $('#ckShop'), mapButton = $('#ckLevels'), replay = $('#ckReplay');
   let chain = 0, stage = 0, inStage = 0, happy = 0, mode = 'off', order = null, cur = null, pal = null, misses = 0, seq = 0, started = false, welcomed = false, done = new Set(), peekT = 0, lastPals = [];
   const blank = () => ({shape:null, frost:null, candies:0, sprinkles:false});
   const S = () => STAGES[stage];
@@ -11508,26 +11519,34 @@ const CookieShop = (() => {
   /* ----- the cookie picker: each stage as a sample cookie ----- */
   const SAMPLE = [{shape:'star', frost:null, candies:0, sprinkles:false}, {shape:'heart', frost:'pink', candies:0, sprinkles:false}, {shape:'circle', frost:'blue', candies:3, sprinkles:false},
     {shape:'square', frost:'chocolate', candies:5, sprinkles:true}, {shape:'heart', frost:'green', candies:2, sprinkles:true}];
-  function openMap(){
+  function openMap(event){
     if (!mapEl.hidden || mode === 'eat') return;
     seq++; clearLater(); hush(); mode = 'map'; unLater(peekT);
     mapEl.innerHTML = ''; mapEl.hidden = false;
+    shop.inert = replay.hidden = true;
+    mapButton.setAttribute('aria-expanded', 'true');
     STAGES.forEach((s, i) => {
       const b = document.createElement('button'); b.className = 'st-place ck-pick' + (i === stage ? ' here' : '') + (s.memory ? ' memory' : ''); b.dataset.stage = i + 1; b.setAttribute('aria-label', 'Cookies ' + (i + 1));
       b.innerHTML = `<span class="ck-sample">${ckImg(SAMPLE[i])}</span><span class="ck-steps">${'<i></i>'.repeat(i + 1)}</span>${done.has(i) ? `<span class="st-place-star art">${ART.star}</span>` : ''}`;
-      tap(b, () => { if (mapEl.hidden) return; FX.pop(); closeMap(); stage = i; inStage = 0; tools(); next(); }, {bump:false});
+      tap(b, e => { if (mapEl.hidden) return; FX.pop(); closeMap(e); stage = i; inStage = 0; tools(); next(); }, {bump:false});
       mapEl.appendChild(b);
     });
+    if (event.type === 'click') $('.here', mapEl)?.focus({preventScroll:true});
     say(PICK, 0, 'find');
   }
-  function closeMap(){ mapEl.hidden = true; mapEl.innerHTML = ''; }
+  function closeMap(event){
+    mapEl.hidden = true; mapEl.innerHTML = '';
+    shop.inert = replay.hidden = false;
+    mapButton.setAttribute('aria-expanded', 'false');
+    if (event?.type === 'click') mapButton.focus({preventScroll:true});
+  }
 
   tap(serveEl, serve, {bump:false, throttle:500}); put(serveEl, ART.check);
   put(undoEl, ICON.left); tap(undoEl, takeCandy, {throttle:150});
   tap(thinkEl, peek, {bump:false, throttle:300});
   tap(palEl, () => { if (pal && making()){ retrigger(palEl, 'hop'); call(pal); } }, {bump:false, throttle:800});
-  put($('#ckLevels'), ckImg({shape:'star', frost:'pink', candies:3, sprinkles:true})); tap($('#ckLevels'), () => { FX.boop(); openMap(); }, {throttle:700});
-  put($('#ckReplay'), ART.ear); tap($('#ckReplay'), () => { if (order && making()){ hush(); say(said(order), 0, 'find'); } }, {throttle:700});
+  put(mapButton, ckImg({shape:'star', frost:'pink', candies:3, sprinkles:true})); tap(mapButton, event => { FX.boop(); openMap(event); }, {throttle:700});
+  put(replay, ART.ear); tap(replay, () => { if (order && making()){ hush(); say(said(order), 0, 'find'); } }, {throttle:700});
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && current === 'cookies' && mode === 'make' && order) later(() => say(said(order), 0, 'find'), 600); });
 
   return {
