@@ -75,6 +75,11 @@ PR #14's expansion (Delivery quantity/color/size, Ball Trail mazes, Star Flight 
   and the advanced switch rule. App transitions originate at the tapped control. Keyboard focus enters Games and
   School activities and returns to their cards. Family listening and play remain under R-04.
 
+- [x] **R-42 — Firefly Festival first lights:** direct taps light dark lanterns. A firefly guides the first move,
+  and six short rounds end without opening the switch puzzles. Switch puzzles are opt-in and show each switch's
+  result. Added browser checks for the direct journey, switch previews, and returning to the simpler game.
+  Family playtest remains under R-04.
+
 ## App/game review ideas — pending, ordered for continuation
 
 Purpose: a playful pretend phone with satisfying cause/effect for toddlers, meaningful choices for preschoolers, and opportunities to play with a grown-up or sibling. Keep free play available; no new learner records, competitive rankings, punitive lives or timed learning tests. These suggestions are **not shipped** and do not override the existing School plan or its holds. Work on one bounded batch at a time, with the existing audio quality and offline gates.

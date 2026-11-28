@@ -7,6 +7,11 @@ on 2026-10-09 from a 6,400-word log; the old text is in git history.)
 
 ## Active batch
 
+- **R-42 Firefly Festival first lights** (Codex, 2026-11-28, `codex/firefly-first-lights`). The default game uses
+  large lanterns as the controls. The first firefly guides the first tap. Lights stay on across six short rounds,
+  and the original linked puzzles are opt-in under Switches. Each switch previews the changed lanterns. Two
+  recorded prompts cover direct taps and hints.
+
 - **R-40 Phone and game refinements** (Codex, 2026-11-27, [PR #38](https://github.com/DeltaSNull/KidPhone/pull/38)).
   Cookie Shop's “Mmm, delicious!” uses one sustained hum. Firefly Festival resumes the current board when returning
   to the game and repeats the switch rule at higher difficulties. The phone opens apps from the visible launch
