@@ -75,6 +75,12 @@ PR #14's expansion (Delivery quantity/color/size, Ball Trail mazes, Star Flight 
   and the advanced switch rule. App transitions originate at the tapped control. Keyboard focus enters Games and
   School activities and returns to their cards. Family listening and play remain under R-04.
 
+- [x] **R-41 — KidPhone polish (Codex, 2026-11-28):** Offline readiness checks the recorded voice list and the current
+  access settings. Music, School, Train Tracks and Cookie Shop support keyboard play and picker navigation. Train
+  Tracks offers a hint during repeated attempts. Family audio stops with its call, and clearing Photos cancels
+  unfinished captures. Implemented on `codex/kidphone-polish` with local regression checks and tracked for CI.
+  Family device checks remain under R-04.
+
 ## App/game review ideas — pending, ordered for continuation
 
 Purpose: a playful pretend phone with satisfying cause/effect for toddlers, meaningful choices for preschoolers, and opportunities to play with a grown-up or sibling. Keep free play available; no new learner records, competitive rankings, punitive lives or timed learning tests. These suggestions are **not shipped** and do not override the existing School plan or its holds. Work on one bounded batch at a time, with the existing audio quality and offline gates.
@@ -207,6 +213,7 @@ Use these as curriculum/design references, not as claims that app scores diagnos
 
 | Date | Change | Evidence |
 | --- | --- | --- |
+| 2026-11-28 | R-41 Offline readiness, picker and keyboard usability, Train Tracks hints, and call/photo lifecycle fixes. | `codex/kidphone-polish`; local race and browser regressions, CI follows. |
 | 2026-11-27 | R-39 Firefly Festival: ten lantern puzzles, optional hints, and a firefly dance. | `codex/firefly-festival`; tests/firefly-festival.cjs, navigation, smoke, offline-ready |
 | 2026-11-26 | R-38 Cookie Shop: make the customer's cookie (shape, frosting, candies, sprinkles; five stages to a memory stage), with spoken orders and targeted hints; Train Tracks no longer loads blank when the map is used mid-trip. | `claude/admiring-mendel-ffweeh`; tests/cookie-shop.cjs, tests/train-tracks.cjs |
 | 2026-11-24 | R-37 Train Tracks: a track puzzle journey through seven places (28 generated puzzles, decoys, full grids, up to three passengers), gold progress glow, hints, map; 72 new narrator lines. | `claude/admiring-mendel-ffweeh`; tests/train-tracks.cjs |

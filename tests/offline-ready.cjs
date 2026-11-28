@@ -15,10 +15,17 @@ const http = require('node:http');
 const ROOT = path.resolve(__dirname, '..');
 const WEBKIT = process.argv.includes('--webkit');
 const types = {'.html':'text/html', '.js':'text/javascript', '.json':'application/json', '.mp3':'audio/mpeg', '.png':'image/png', '.webmanifest':'application/manifest+json'};
+let partialVoice = false;
 let blocked = new Set();   // voice clips the "network" refuses for now (refused by the server: the service worker's own requests don't pass through the test's routes)
 const server = http.createServer((req, res) => {
   const pathname = new URL(req.url, 'http://localhost').pathname;
   if (blocked.has(path.basename(pathname))){ res.writeHead(503); res.end(); return; }
+  if (partialVoice && pathname === '/assets/voice/voice.json'){
+    const manifest = require('../assets/voice/voice.json');
+    res.writeHead(200, {'content-type':'application/json'});
+    res.end(JSON.stringify({clips:Object.fromEntries(Object.entries(manifest.clips).slice(0, 1))}));
+    return;
+  }
   const file = path.join(ROOT, pathname === '/' ? 'index.html' : pathname);
   if (!file.startsWith(ROOT + path.sep) || !fs.existsSync(file) || !fs.statSync(file).isFile()){ res.writeHead(404); res.end(); return; }
   res.writeHead(200, {'content-type':types[path.extname(file)] || 'application/octet-stream'});
@@ -61,9 +68,15 @@ const check = (condition, message) => { assert.ok(condition, message); console.l
     check(!(await page.evaluate(() => window.__toyPhone.voice().loaded)), 'the voice list is still unavailable');
     await closeSettings();
     blocked.clear();
+    partialVoice = true;
     await openSettings();
     await idle();
-    check(await page.evaluate(() => window.__toyPhone.voice().loaded), 'rechecking Settings fetches the voice list again without a reload');
+    check(/recorded voice list/.test(await note()), 'a partial voice list still cannot establish offline readiness');
+    await closeSettings();
+    partialVoice = false;
+    await openSettings();
+    await idle();
+    check(await page.evaluate(() => window.__toyPhone.voiceMissing().length === 0), 'rechecking Settings fetches the complete voice list without a reload');
     await closeSettings();
     await page.reload();
     await page.waitForFunction(() => window.__toyPhone && window.__toyPhone.voice().loaded);

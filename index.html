@@ -6029,14 +6029,14 @@ const sentences = t => (normLine(t).match(/[^.!?]+[.!?]*/g) || []).map(x => x.tr
 const VB = {map:null, bufs:new Map(), loading:new Map(), srcs:[], until:0, seq:0, fallbacks:[], played:0, log:[], last:null, warmed:false};
 const VOICE_GAP = .14;   // seconds between sentences
 let voiceBankRequest = null;
-async function loadVoiceBank(){
-  if (VB.map || location.protocol === 'file:') return VB.map;
+async function loadVoiceBank(refresh = false){
+  if ((VB.map && !refresh) || location.protocol === 'file:') return VB.map;
   if (!voiceBankRequest) voiceBankRequest = (async () => {
     try{
       const r = await fetch('assets/voice/voice.json', {cache:'no-cache'});
       if (!r.ok) return null;
       const {clips} = await r.json();
-      if (!clips || !Object.keys(clips).length) return null;
+      if (!clips || typeof clips !== 'object' || !Object.keys(clips).length) return null;
       VB.map = clips;
       setSession();
       if (unlocked) setTimeout(warmVoices, 3000);
@@ -12105,9 +12105,19 @@ const OFFLINE = (() => {
     }
     return [...set];
   }
+  function completeVoiceBank(){
+    return VB.map && voiceLines().every(({who, s}) => {
+      const clip = VB.map[who + '|' + s];
+      return Array.isArray(clip) && typeof clip[0] === 'string' && Number.isFinite(clip[1]) && clip[1] > 0;
+    });
+  }
   async function inspect(all){
     const unavailable = {missing:[], checked:0, total:0, worker:false};
-    if (!await loadVoiceBank()) return {...unavailable, error:'voice'};
+    // Playback can still use old recordings during an update, but readiness requires this page's full voice list.
+    if (!completeVoiceBank()){
+      await loadVoiceBank(true);
+      if (!completeVoiceBank()) return {...unavailable, error:'voice'};
+    }
     try {
       const list = files(all), cache = await caches.open(CACHE);
       const hits = await Promise.all(list.map(url => cache.match(url)));
