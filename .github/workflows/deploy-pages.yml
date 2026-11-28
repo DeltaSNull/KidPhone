@@ -10,11 +10,6 @@ on:
     branches: [main]
     paths-ignore: ['README.md', 'screenshots/**']
   workflow_dispatch:
-    inputs:
-      skip_tests:
-        description: One-off deploy without re-running the tests (owner's request, 2026-11-24, Train Tracks; removed again right after)
-        type: boolean
-        default: false
 
 permissions:
   contents: read
@@ -26,7 +21,6 @@ concurrency:
 jobs:
   chromium-smoke:
     name: Chromium smoke (${{ matrix.viewport }})
-    if: ${{ !inputs.skip_tests }}
     runs-on: ubuntu-24.04   # (ubuntu-latest is 26.04 now, where Playwright 1.56.1 has no browsers; move up together with Playwright)
     timeout-minutes: 25
     strategy:
@@ -63,7 +57,6 @@ jobs:
   # in a row (a minute in the WebKit smoke job beside it), which ran it out of time.
   pages:
     name: Pages/offline (${{ matrix.engine }} ${{ matrix.part }})
-    if: ${{ !inputs.skip_tests }}
     runs-on: ubuntu-24.04   # (ubuntu-latest is 26.04 now, where Playwright 1.56.1 has no browsers; move up together with Playwright)
     timeout-minutes: 60
     strategy:
@@ -184,7 +177,6 @@ jobs:
 
   webkit-smoke:
     name: WebKit iPhone smoke
-    if: ${{ !inputs.skip_tests }}
     runs-on: ubuntu-24.04   # (ubuntu-latest is 26.04 now, where Playwright 1.56.1 has no browsers; move up together with Playwright)
     timeout-minutes: 15
     steps:
@@ -204,7 +196,7 @@ jobs:
 
   deploy:
     name: Deploy
-    if: ${{ !cancelled() && github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && (inputs.skip_tests || (needs.chromium-smoke.result == 'success' && needs.pages.result == 'success' && needs.webkit-smoke.result == 'success')) }}
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     needs: [chromium-smoke, pages, webkit-smoke]
     runs-on: ubuntu-latest
     permissions:
