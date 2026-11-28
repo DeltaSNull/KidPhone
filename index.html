@@ -891,11 +891,13 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img:not(.px){image-rendering
 }
 .ff-levels{display:flex; align-items:center; justify-content:center; gap:4px; margin:0 64px}
 .ff-level{
-  --disc:var(--d-paper); width:44px; height:44px; padding:0 4px;
-  display:flex; align-items:center; justify-content:center;
+  --disc:var(--d-paper); width:62px; height:54px; padding:0 3px;
+  display:grid; justify-items:center; align-content:center; gap:0; font-size:12px;
 }
 .ff-level[aria-pressed="true"]{--disc:var(--d-sun)}
-.ff-level .px{width:30px; height:30px}
+.ff-level-art{display:flex; height:27px; align-items:center; justify-content:center; pointer-events:none}
+.ff-level-art .px{width:27px; height:27px}
+.ff-level-art .px + .px{margin-left:-8px}
 .ff-puzzle{
   position:relative; display:grid; grid-template-rows:auto minmax(0,1fr) auto; gap:6px;
   align-items:center; width:min(100%,520px); min-height:0; justify-self:center;
@@ -916,7 +918,19 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img:not(.px){image-rendering
   display:grid; place-items:center; position:relative;
   width:min(calc((100cqw - 12px) / var(--ff-count)),78px,88cqh); aspect-ratio:1;
 }
-.ff-lantern > .px{width:100%; height:100%}
+.ff-lantern > .px{width:100%; height:100%; pointer-events:none}
+.ff-direct .ff-stage{align-items:center}
+.ff-direct .ff-lanterns{height:min(100%,190px); align-items:center}
+.ff-direct .ff-lantern{
+  border:0; padding:0; background:none; cursor:pointer;
+  width:min(calc((100cqw - 12px) / var(--ff-count)),96px,72cqh);
+}
+.ff-direct .ff-lantern[aria-disabled="true"]{cursor:default}
+.ff-guide{display:none; position:absolute; width:36%; aspect-ratio:1; top:-23%; left:32%; pointer-events:none}
+.ff-guide .px{width:100%; height:100%; filter:drop-shadow(0 0 6px #ffe878)}
+.ff-lantern[data-hint="true"] .ff-guide{display:block}
+.ff-direct .ff-lantern[data-hint="true"]::after{border-bottom:3px solid #ffe79a}
+
 .ff-lantern[data-lit="true"] > .px{filter:drop-shadow(0 0 9px #ffd387aa)}
 .ff-symbol{
   --symbol:#31244d;
@@ -944,6 +958,13 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img:not(.px){image-rendering
   background:#edd6b2; border:3px solid #fff1cc; border-bottom:7px solid #b98970; box-shadow:0 2px 0 #3d2b4a;
 }
 .ff-switch[data-hint="true"]{background:#ffe47c; outline:2px dashed #fff2a8; outline-offset:2px}
+.ff-switch-preview{
+  display:grid; place-items:center; width:clamp(10px,26%,17px); height:23px;
+  background:#46395e; border:1px solid #685075;
+}
+.ff-switch-preview[data-result-lit="true"]{background:#ffdc78; border-color:#a66735}
+.ff-switch-preview .ff-symbol{width:70%; height:53%; --symbol:#f2deff}
+.ff-switch-preview[data-result-lit="true"] .ff-symbol{--symbol:#59394e}
 .ff-switch:disabled{opacity:.56}
 .ff-controls{display:grid; align-items:center; justify-items:center}
 .ff-controls .round{width:64px; height:64px; --disc:var(--d-sun)}
@@ -959,7 +980,7 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img:not(.px){image-rendering
 @keyframes ff-swarm{50%{transform:translate(18px,-25px)}100%{transform:translate(-12px,14px)}}
 @media (prefers-reduced-motion:reduce){.ff-fly,.ff-lantern.flash{animation:none}}
 @media (orientation:landscape){
-  .app.ff{grid-template-columns:64px minmax(0,1fr) 64px; grid-template-rows:44px minmax(0,1fr)}
+  .app.ff{grid-template-columns:64px minmax(0,1fr) 64px; grid-template-rows:54px minmax(0,1fr)}
   .ff-levels{grid-column:2; margin:0}
   .ff .lesson-replay{left:8px; right:auto; top:80px}
   .ff-puzzle{grid-row:2; grid-column:2; width:min(100%,520px)}
@@ -1819,7 +1840,7 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img:not(.px){image-rendering
       <section class="app ff" id="fireflies" hidden aria-label="Firefly Festival">
         <button class="sc-back game-back" aria-label="Games"></button>
         <button class="round lesson-replay" id="ffReplay" aria-label="Say it again"></button>
-        <div class="ff-levels" id="ffLevels" role="group" aria-label="Choose difficulty"></div>
+        <div class="ff-levels" id="ffLevels" role="group" aria-label="Choose how to play"></div>
         <div class="ff-puzzle" id="ffPuzzle">
           <div class="ff-progress" id="ffProgress" role="img"></div>
           <div class="ff-stage">
@@ -1829,7 +1850,7 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img:not(.px){image-rendering
           <div class="ff-switches" id="ffSwitches" role="group" aria-label="Lantern switches"></div>
         </div>
         <div class="ff-controls">
-          <button class="round ff-hint" id="ffHint" aria-label="Show me a switch"></button>
+          <button class="round ff-hint" id="ffHint" aria-label="Show me a lantern"></button>
           <button class="round ff-next" id="ffNext" aria-label="Next puzzle" hidden></button>
           <button class="round ff-restart" id="ffRestart" aria-label="Play again" hidden></button>
         </div>
@@ -11165,19 +11186,25 @@ const Tracks = (() => {
   };
 })();
 
-/* Firefly Festival. Each bit is a lantern. A switch flips every bit in its mask. */
+/* Firefly Festival. Each bit is a lantern. Direct taps only light lanterns. In Switches, a switch flips its mask. */
 const FireflyFestival = (() => {
   const SHAPES = ['circle','diamond','triangle','square','cross'];
   const LEVELS = [
-    {name:'First lights', masks:[1,2,4], setups:[[1],[0,2],[0,1,2]]},
-    {name:'Twinkle pairs', masks:[1,3,6,12], setups:[[1],[2,3],[0,1,3]]},
-    {name:'Moonlight mix', masks:[3,6,12,24,14], setups:[[0,2],[1,4],[0,2,3,4],[0,1,2,3,4]]}
+    {setups:[
+      {count:3, dark:0b010}, {count:3, dark:0b101}, {count:4, dark:0b0110},
+      {count:4, dark:0b1101}, {count:5, dark:0b10101}, {count:5, dark:0b11101}
+    ]},
+    {masks:[1,3,6,12], setups:[[1],[2,3],[0,1,3]]},
+    {masks:[3,6,12,24,14], setups:[[0,2],[1,4],[0,2,3,4],[0,1,2,3,4]]}
   ];
+  const TAP_LAMP = 'Tap a dark lantern to light it!';
+  const SHOW_LAMP = 'Try this lantern!';
   const GOAL = 'Can you light all the lanterns?';
   const PAIRS = 'One switch can flip more than one lantern!';
   const HINT = 'Try this switch!';
   const WIN = 'You lit them all!';
   const END = 'The fireflies are dancing! Hooray!';
+  const root = $('#fireflies'), puzzleEl = $('#ffPuzzle');
   const lanternsEl = $('#ffLanterns'), switchesEl = $('#ffSwitches'), levelsEl = $('#ffLevels');
   const progress = $('#ffProgress'), status = $('#ffStatus'), dance = $('#ffDance');
   const hintButton = $('#ffHint'), nextButton = $('#ffNext'), restart = $('#ffRestart');
@@ -11185,10 +11212,11 @@ const FireflyFestival = (() => {
   let lanterns = [], switches = [], stalled = 0, best = 0;
   const config = () => LEVELS[level];
   const solved = () => lit === target;
-  const last = () => level === LEVELS.length - 1 && round === config().setups.length - 1;
+  const direct = () => level === 0;
+  const last = () => (direct() || level === LEVELS.length - 1) && round === config().setups.length - 1;
   const symbols = mask => SHAPES.filter((_, i) => mask & (1 << i));
   const mark = shape => `<span aria-hidden="true" class="ff-symbol" data-shape="${shape}"></span>`;
-  const prompt = () => level === 0 ? GOAL : GOAL + ' ' + PAIRS;
+  const prompt = () => direct() ? TAP_LAMP : GOAL + ' ' + PAIRS;
   const speak = line => { hush(); say(line, 0, 'find'); };
 
   /* Work backwards from all-on. Each move is reversible, so this finds the shortest
@@ -11211,23 +11239,36 @@ const FireflyFestival = (() => {
   }
 
   function showHint(on){
-    const pick = on ? hints[lit] : undefined;
-    const mask = pick === undefined ? 0 : config().masks[pick];
+    const dark = target ^ lit;
+    const pick = on && !direct() ? hints[lit] : undefined;
+    const mask = !on ? 0 : direct() ? dark & -dark : config().masks[pick] || 0;
     switches.forEach((button, i) => { button.dataset.hint = String(i === pick); });
     lanterns.forEach((lamp, i) => { lamp.dataset.hint = String(!!(mask & (1 << i))); });
-    if (pick !== undefined) {
-      status.textContent = `Try the ${symbols(mask).join(', ')} switch.`;
-    }
+    if (mask) status.textContent = direct() ? `Try lantern ${Math.log2(mask) + 1}.` : `Try the ${symbols(mask).join(', ')} switch.`;
   }
 
   function drawLights(changed){
     lanterns.forEach((lamp, i) => {
-      const bit = 1 << i;
+      const bit = 1 << i, shape = SHAPES[i];
       if (!(changed & bit)) return;
       const on = !!(lit & bit);
       lamp.dataset.lit = String(on);
-      lamp.setAttribute('aria-label', `${SHAPES[i]} lantern, ${on ? 'lit' : 'dark'}`);
-      lamp.innerHTML = ffLantern(on) + mark(SHAPES[i]);
+      if (direct()){
+        lamp.setAttribute('aria-label', on ? `Lantern ${i + 1}, lit` : `Light lantern ${i + 1}`);
+        lamp.setAttribute('aria-disabled', String(on));
+        lamp.innerHTML = ffLantern(on) + `<span aria-hidden="true" class="ff-guide">${ffFirefly()}</span>`;
+      } else {
+        lamp.setAttribute('aria-label', `${shape} lantern, ${on ? 'lit' : 'dark'}`);
+        lamp.innerHTML = ffLantern(on) + mark(shape);
+      }
+    });
+    switches.forEach((button, i) => {
+      const mask = config().masks[i], result = lit ^ mask;
+      button.setAttribute('aria-label', symbols(mask).map(shape =>
+        `${result & (1 << SHAPES.indexOf(shape)) ? 'Light' : 'Dim'} the ${shape} lantern`).join(', '));
+      for (const preview of button.children){
+        preview.dataset.resultLit = String(!!(result & (1 << Number(preview.dataset.lamp))));
+      }
     });
   }
 
@@ -11243,27 +11284,33 @@ const FireflyFestival = (() => {
     round = newRound;
     stalled = 0;
     status.textContent = '';
-    const {masks, setups} = config();
-    target = (1 << masks.length) - 1;
-    lit = setups[round].reduce((state, index) => state ^ masks[index], target);
-    findHints();
-    best = distances[lit];
-    $('#ffPuzzle').style.setProperty('--ff-count', masks.length);
-    levelButtons.forEach((button, i) => button.setAttribute('aria-pressed', String(i === level)));
-    lanterns = masks.map(() => {
-      const lamp = document.createElement('span');
+    const {masks, setups} = config(), setup = setups[round];
+    const count = direct() ? setup.count : masks.length;
+    target = (1 << count) - 1;
+    lit = direct() ? target ^ setup.dark : setup.reduce((state, index) => state ^ masks[index], target);
+    root.classList.toggle('ff-direct', direct());
+    switchesEl.hidden = direct();
+    puzzleEl.style.setProperty('--ff-count', count);
+    modeButtons.forEach((button, i) => button.setAttribute('aria-pressed', String(i === Number(!direct()))));
+    hintButton.setAttribute('aria-label', direct() ? 'Show me a lantern' : 'Show me a switch');
+    if (!direct()){
+      findHints();
+      best = distances[lit];
+    }
+    lanterns = Array.from({length:count}, (_, i) => {
+      const lamp = document.createElement(direct() ? 'button' : 'span');
       lamp.className = 'ff-lantern';
-      lamp.setAttribute('role','img');
+      if (direct()) tap(lamp, event => move(1 << i, i, event.type === 'click'), {bump:false});
+      else lamp.setAttribute('role','img');
       return lamp;
     });
     lanternsEl.replaceChildren(...lanterns);
-    switches = masks.map((mask, i) => {
+    switches = (masks || []).map((mask, i) => {
       const button = document.createElement('button');
-      const shapes = symbols(mask);
       button.className = 'ff-switch';
-      button.setAttribute('aria-label', `Flip ${shapes.join(', ')} ${shapes.length === 1 ? 'lantern' : 'lanterns'}`);
-      button.innerHTML = shapes.map(mark).join('');
-      tap(button, event => flip(i, event.type === 'click'), {bump:false});
+      button.innerHTML = symbols(mask).map(shape =>
+        `<span aria-hidden="true" class="ff-switch-preview" data-lamp="${SHAPES.indexOf(shape)}">${mark(shape)}</span>`).join('');
+      tap(button, event => move(mask, i, event.type === 'click'), {bump:false});
       return button;
     });
     switchesEl.replaceChildren(...switches);
@@ -11273,26 +11320,27 @@ const FireflyFestival = (() => {
     dance.hidden = true;
     drawLights(target);
     drawProgress();
-    showHint(level === 0 && round === 0);
-    speak(introduce ? prompt() : GOAL);
+    showHint(round === 0);
+    speak(direct() || introduce ? prompt() : GOAL);
   }
 
-  function flip(i, fromKeyboard){
-    if (solved()) return;
-    const mask = config().masks[i];
+  function move(mask, i, fromKeyboard){
+    if (solved() || (direct() && (lit & mask))) return;
     lit ^= mask;
-    if (distances[lit] < best){
-      best = distances[lit];
-      stalled = 0;
-    } else {
-      stalled++;
+    if (!direct()){
+      if (distances[lit] < best){
+        best = distances[lit];
+        stalled = 0;
+      } else {
+        stalled++;
+      }
     }
     drawLights(mask);
     lanterns.forEach((lamp, index) => {
       if (mask & (1 << index)) retrigger(lamp, 'flash');
     });
     status.textContent = `${symbols(lit).length} of ${lanterns.length} lanterns lit.`;
-    showHint(stalled >= 3);
+    showHint(direct() ? round === 0 : stalled >= 3);
     if (!solved()){
       const notes = [392,440,494,523,587];
       tone(notes[i], notes[i] * .94, .16, 'triangle', .25);
@@ -11310,18 +11358,28 @@ const FireflyFestival = (() => {
     speak(last() ? END : WIN);
   }
 
-  const levelIcons = [ART.star, ffFirefly(), ART.owl];
-  const levelButtons = LEVELS.map(({name}, i) => {
+  function focusMove(event){
+    if (event.type !== 'click') return;
+    const button = direct() ? lanterns.find(lamp => lamp.dataset.lit === 'false') : switches.find(b => b.dataset.hint === 'true') || switches[0];
+    button?.focus({preventScroll:true});
+  }
+  const modes = [
+    {name:'Lanterns', label:'Lanterns', art:ffLantern(true)},
+    {name:'Switch puzzles', label:'Switches', art:ffLantern(true) + ffLantern(false)}
+  ];
+  const modeButtons = modes.map(({name,label,art}, i) => {
     const button = document.createElement('button');
     button.className = 'round ff-level';
     button.setAttribute('aria-label', name);
-    button.innerHTML = levelIcons[i];
-    tap(button, () => {
-      if (i !== level) begin(i,0,true);
+    button.innerHTML = `<span class="ff-level-art">${art}</span><span>${label}</span>`;
+    tap(button, event => {
+      if (i === Number(!direct())) return;
+      begin(i,0,true);
+      focusMove(event);
     });
     return button;
   });
-  levelsEl.replaceChildren(...levelButtons);
+  levelsEl.replaceChildren(...modeButtons);
   dance.innerHTML = [[12,46],[28,65],[49,51],[70,72],[86,42]].map(([x,y], i) =>
     `<span class="ff-fly" style="--x:${x}%;--y:${y}%;--delay:${i * .12}s">${ffFirefly()}</span>`).join('');
   put($('#ffReplay'), ART.ear);
@@ -11329,16 +11387,16 @@ const FireflyFestival = (() => {
   put(nextButton, ICON.right);
   put(restart, ffFirefly());
   tap($('#ffReplay'), () => speak(solved() ? (last() ? END : WIN) : prompt()), {throttle:500});
-  tap(hintButton, () => { showHint(true); speak(HINT); });
+  tap(hintButton, () => { showHint(true); speak(direct() ? SHOW_LAMP : HINT); });
   tap(nextButton, event => {
     if (!solved() || last()) return;
     if (round + 1 < config().setups.length) begin(level,round + 1);
     else begin(level + 1,0,true);
-    if (event.type === 'click') switches[0].focus();
+    focusMove(event);
   });
   tap(restart, event => {
-    begin(0,0);
-    if (event.type === 'click') switches[0].focus();
+    begin(direct() ? 0 : 1,0,true);
+    focusMove(event);
   });
 
   return {
@@ -11348,7 +11406,7 @@ const FireflyFestival = (() => {
       else speak(prompt());
     },
     leave(){ dance.hidden = true; },
-    lines:() => [GOAL, PAIRS, HINT, WIN, END]
+    lines:() => [TAP_LAMP, SHOW_LAMP, GOAL, PAIRS, HINT, WIN, END]
   };
 })();
 
