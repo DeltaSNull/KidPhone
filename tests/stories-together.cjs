@@ -58,8 +58,11 @@ const REACTIONS = /wags|jumps up and down|tears|cry|stomps|shouts|hides and shak
         `${tag}: tapping the grown-up picture chooses "Read together!" (spoken)`);
 
       // reading together: the page waits for the grown-up
-      await touch('#storytime [data-book="seed"]');
+      const seed = page.locator('#storytime [data-book="seed"]');
+      const nextPage = page.locator('#storytime .sa-next');
+      await seed.press('Enter');
       await page.waitForFunction(() => window.__toyPhone.adventure().phase === 'page');
+      check(await nextPage.evaluate(b => document.activeElement === b), `${tag}: opening a story by keyboard focuses the page arrow`);
       await page.waitForTimeout(6000);
       let st = await state();
       check(st.step === 0 && st.phase === 'page' && !st.turning, `${tag}: reading together, the first page stays after it's read`);
@@ -79,7 +82,8 @@ const REACTIONS = /wags|jumps up and down|tears|cry|stomps|shouts|hides and shak
       st = await state();
       check(st.phase === 'done' && st.total === 0 && await visible('#storytime .sa-more') && !(await log()).some(l => /^What /.test(l)),
         `${tag}: after the last page the story ends, with no questions`);
-      await touch('#storytime .sa-more'); await page.waitForTimeout(300);
+      await page.locator('#storytime .sa-more').press('Enter'); await page.waitForTimeout(300);
+      check(await seed.evaluate(b => document.activeElement === b), `${tag}: the shelf returns keyboard focus to the last book`);
       check((await state()).phase === 'shelf' && (await state()).mode === 'together', `${tag}: the book button returns to the shelf, still reading together`);
 
       // back to questions: as before

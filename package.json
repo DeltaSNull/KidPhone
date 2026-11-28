@@ -42,6 +42,7 @@
     "test:audio-return:webkit": "node tests/audio-return.cjs --webkit",
     "test:phone-game-review": "node tests/phone-game-review.cjs",
     "test:phone-game-review:webkit": "node tests/phone-game-review.cjs --webkit",
+    "test:photo-call-lifecycle": "node tests/photo-call-lifecycle.cjs",
     "test:camera-peek": "node tests/camera-peek.cjs",
     "test:camera-peek:webkit": "node tests/camera-peek.cjs --webkit",
     "test:break-preview": "node tests/break-preview.cjs",

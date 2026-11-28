@@ -7,6 +7,14 @@ on 2026-10-09 from a 6,400-word log; the old text is in git history.)
 
 ## Active batch
 
+- **R-41 KidPhone polish** (Codex, 2026-11-27, `codex/kidphone-polish`). The offline check waits for the recordings
+  list, retries stale or partial lists, and rechecks when available apps change. Music instruments respond to keyboard activation. School keeps focus
+  as pages and choices change. Train Tracks gives a hint while a child is still trying, and both Train Tracks and
+  Cookie Shop place their landscape pickers clear of the side controls. Phone and Photos guard asynchronous playback
+  and writes when a call ends or the album is cleared. Chromium portrait smoke, game and School checks, and the
+  delayed call/photo regressions passed locally. Offline readiness, Music audio recovery and Story Time passed
+  in Chromium and WebKit. Follow CI before release. Real-device play stays R-04.
+
 - **R-40 Phone and game refinements** (Codex, 2026-11-27, [PR #38](https://github.com/DeltaSNull/KidPhone/pull/38)).
   Cookie Shop's “Mmm, delicious!” uses one sustained hum. Firefly Festival resumes the current board when returning
   to the game and repeats the switch rule at higher difficulties. The phone opens apps from the visible launch
@@ -108,6 +116,12 @@ on 2026-10-09 from a 6,400-word log; the old text is in git history.)
   gradual extraction).
 
 ## History (newest first)
+
+- 2026-11-28 R-41. The offline check distinguishes an incomplete recording list from an incomplete download.
+  Train Tracks counts attempts against the furthest track lit and offers its hint on the twelfth attempt. The
+  Train Tracks and Cookie Shop pickers reserve the left rail in landscape. School and Music keep keyboard play
+  working within their screens. Family playback callbacks stay with the initiating call and state. Photo writes
+  preserve existing files on failure and honor the parent's Clear Photos while a capture is finishing.
 
 - 2026-11-27 R-40. The voice generator sends a written hum as contiguous /m/ phonemes and gives affected lines a new
   cache filename. Regular letter names keep their original clips. Firefly preserves its in-memory board on reentry

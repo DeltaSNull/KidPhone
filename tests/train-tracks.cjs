@@ -125,8 +125,9 @@ const YAY = ['You did it!', 'Great driving!', 'The train made it!', 'Toot toot! 
       if (decoy && full){
         const n2 = await log();
         for (let k = 0; k < 12; k++){ await touch(decoy.r, decoy.c); await page.waitForTimeout(150); }
-        await sayWait('Try turning this one!', n2, 6000);
         const h = (await st()).hint, hc = (await st()).cells.find(c => h && c.r === h[0] && c.c === h[1]);
+        check(!!h, `${tag}: the hint is already visible while the child is still tapping`);
+        await sayWait('Try turning this one!', n2, 6000);
         check(hc && hc.step >= 0 && !hc.ok && await cellAt(h[0], h[1]).evaluate(e => e.classList.contains('hint')), `${tag}: twelve taps that don't help: a wrong piece of the route glows ("Try turning this one!")`);
       }
       let n3 = await log(); await solve();
@@ -177,6 +178,27 @@ const YAY = ['You did it!', 'Great driving!', 'The train made it!', 'Toot toot! 
         const look = await page.locator('#ctBoard').evaluate(b => { const cs = getComputedStyle(b), r = b.getBoundingClientRect(); return {opacity:cs.opacity, transform:cs.transform, left:r.left, right:r.right}; });
         check((await st()).place === 'jungle' && look.opacity === '1' && look.transform === 'none' && look.left >= 0 && look.right <= viewport.width,
           `${tag}: the map picked on the way to the next place: the new puzzle shows ${JSON.stringify(look)}`);
+      }
+
+      if (viewport.width > viewport.height){
+        const opener = page.locator('#ctMapBtn'), farm = page.locator('#ctMap [data-place="farm"]');
+        await opener.tap();
+        await farm.waitFor();
+        const box = await farm.boundingBox();
+        await page.touchscreen.tap(box.x + 8, box.y + box.height / 2);
+        check(!(await st()).map && (await st()).place === 'farm', `${tag}: the Farm card responds right to its left edge`);
+        await modeWait('play'); await page.waitForTimeout(150);
+
+        await opener.press('Enter');
+        check(await farm.evaluate(b => document.activeElement === b), `${tag}: opening the map by keyboard focuses the current place`);
+        await page.keyboard.press('Shift+Tab');
+        check(await opener.evaluate(b => document.activeElement === b), `${tag}: the map button is adjacent to the cards in tab order`);
+        await page.keyboard.press('Shift+Tab');
+        check(await page.locator('#tracks .game-back').evaluate(b => document.activeElement === b), `${tag}: Games is reachable from the map by keyboard`);
+        await page.keyboard.press('Tab');
+        await page.keyboard.press('Tab');
+        await page.keyboard.press('Enter');
+        check(!(await st()).map && await opener.evaluate(b => document.activeElement === b), `${tag}: choosing a place by keyboard returns focus to the map button`);
       }
 
       // the Games button goes back, and leaving stops it

@@ -1023,6 +1023,7 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img:not(.px){image-rendering
 .st-map{position:absolute; inset:0; z-index:4; display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); grid-auto-rows:minmax(0, 1fr); gap:10px; padding:80px 12px 12px; background:#FFF6EC}
 .st-map[hidden]{display:none}
 @media (orientation:landscape){ .st-map{grid-template-columns:repeat(4, minmax(0, 1fr)); padding:76px 12px 10px} }
+@media (orientation:landscape){ :is(.ct,.ck) .st-map{padding:12px 12px 10px 80px} }
 .st-place{position:relative; min-height:0; min-width:0; border:4px solid #5A4A3E; box-shadow:inset 0 -5px 0 rgba(0,0,0,.14); background-color:#BDE8FA; display:flex; align-items:flex-end; justify-content:center; padding:0 0 4%}
 .st-place.here{border-color:#E8981E; box-shadow:0 0 0 4px #FFD23F, inset 0 -5px 0 rgba(0,0,0,.14)}
 .st-place-who{display:flex; justify-content:center; gap:6%; width:86%; pointer-events:none} .st-place-who .px{width:44%; height:auto; aspect-ratio:1; display:block}
@@ -1806,7 +1807,7 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img:not(.px){image-rendering
 
       <!-- GAME: Train Tracks (one player: turn the track pieces so the train reaches the station, picking up the animals) -->
       <section class="app ct" id="tracks" hidden aria-label="Train Tracks">
-        <button class="sc-back game-back" aria-label="Games"></button><button class="round ct-mapbtn" id="ctMapBtn" aria-label="Map: pick a place"></button><button class="round lesson-replay" id="ctReplay" aria-label="Say it again"></button>
+        <button class="sc-back game-back" aria-label="Games"></button><button class="round ct-mapbtn" id="ctMapBtn" aria-label="Map: pick a place" aria-controls="ctMap" aria-expanded="false"></button><button class="round lesson-replay" id="ctReplay" aria-label="Say it again"></button>
         <div class="ct-steps" id="ctSteps" aria-label="Puzzles here"></div>
         <div class="ct-stage" id="ctStage">
           <div class="ct-board" id="ctBoard" role="group" aria-label="Tracks"></div>
@@ -1838,7 +1839,7 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img:not(.px){image-rendering
 
       <!-- GAME: Cookie Shop (one player: make the cookie the customer is thinking of) -->
       <section class="app ck" id="cookies" hidden aria-label="Cookie Shop">
-        <button class="sc-back game-back" aria-label="Games"></button><button class="round ck-levels" id="ckLevels" aria-label="Which cookies"></button><button class="round lesson-replay" id="ckReplay" aria-label="Say it again"></button>
+        <button class="sc-back game-back" aria-label="Games"></button><button class="round ck-levels" id="ckLevels" aria-label="Which cookies" aria-controls="ckMap" aria-expanded="false"></button><button class="round lesson-replay" id="ckReplay" aria-label="Say it again"></button>
         <div class="ss-row" id="ckRow" aria-label="Happy customers"></div>
         <div class="ck-shop" id="ckShop">
           <div class="ck-customer"><button class="ck-think" id="ckThink" aria-label="The order"><span class="ck-order" id="ckOrder"></span></button><button class="ck-pal" id="ckPal" aria-label="Customer"></button></div>
@@ -6027,21 +6028,32 @@ const normLine = t => String(t).replace(/[’‘]/g, "'").replace(/\bT\. rex\b/g
 const sentences = t => (normLine(t).match(/[^.!?]+[.!?]*/g) || []).map(x => x.trim()).filter(Boolean);
 const VB = {map:null, bufs:new Map(), loading:new Map(), srcs:[], until:0, seq:0, fallbacks:[], played:0, log:[], last:null, warmed:false};
 const VOICE_GAP = .14;   // seconds between sentences
-async function loadVoiceBank(){
-  try{
-    if (location.protocol === 'file:') return;
-    const r = await fetch('assets/voice/voice.json', {cache:'no-cache'});
-    if (r.ok) VB.map = (await r.json()).clips || null;
-    if (VB.map){ setSession(); if (unlocked) setTimeout(warmVoices, 3000); }
-  }catch(e){}
+let voiceBankRequest = null;
+async function loadVoiceBank(refresh = false){
+  if ((VB.map && !refresh) || location.protocol === 'file:') return VB.map;
+  if (!voiceBankRequest) voiceBankRequest = (async () => {
+    try{
+      const r = await fetch('assets/voice/voice.json', {cache:'no-cache'});
+      if (!r.ok) return null;
+      const {clips} = await r.json();
+      if (!clips || typeof clips !== 'object' || !Object.keys(clips).length) return null;
+      VB.map = clips;
+      setSession();
+      if (unlocked) setTimeout(warmVoices, 3000);
+      return VB.map;
+    }catch(e){ return null; }
+    finally { voiceBankRequest = null; }
+  })();
+  return voiceBankRequest;
 }
 /* After the first touch, quietly save the clips of the parts of the toy that are switched on (a few at a time, with
    retries): lines are then ready the moment they're needed, also offline. Settings shows how far it got, checks it,
    and can save everything. (Fetched, not decoded: decoding waits until a line is said.) */
 function warmVoices(){
-  if (!VB.map || VB.warmed || location.protocol === 'file:') return; VB.warmed = true;
-  // only with the service worker installed: without it nothing would serve the saved files offline
-  try{ navigator.serviceWorker.getRegistration().then(r => { if (r && r.active) OFFLINE.save(false, true); }, () => {}); }catch(e){}
+  if (!VB.map || VB.warmed || !navigator.serviceWorker || location.protocol === 'file:') return;
+  VB.warmed = true;
+  // On a first visit the worker can still be installing when the child starts playing.
+  navigator.serviceWorker.ready.then(() => OFFLINE.save(false, true)).catch(() => {});
 }
 /* who: a speaker id, an animal contact, or nothing (a number is an old pitch value) = the narrator */
 const whoId = who => typeof who === 'string' ? who : who && typeof who === 'object' && who.id && !who.family ? who.id : 'n';
@@ -6228,6 +6240,7 @@ function playField(box, sel, hit){
     if (el && box.contains(el) && el !== lastEl.get(e.pointerId)){ lastEl.set(e.pointerId, el); fire(el, e); }
   });
   ['pointerup','pointercancel'].forEach(t => box.addEventListener(t, e => lastEl.delete(e.pointerId)));
+  $$(sel, box).forEach(el => keyboardTap(el, event => { keepAwake(); fire(el, event); }));
 }
 
 const screenEl = $('#screen');
@@ -6520,12 +6533,12 @@ function animalTalk(c, text){
 const CALL_MAX_MS = 3*60*1000;   // a forgotten call says goodbye by itself after 3 minutes
 function talk(first){
   if (!call || call.state !== 'talking') return;
-  const c = call.c;
-  if (performance.now() - call.started > CALL_MAX_MS){ animalTalk(c, BYES[3]); callLater(() => endCall(), 4200); return; }
+  const owner = call, c = owner.c;
+  if (performance.now() - owner.started > CALL_MAX_MS){ animalTalk(c, BYES[3]); callLater(() => endCall(), 4200); return; }
   if (c.family && c.clips && c.clips.length){
     const url = first ? c.clips[0] : (c.clips.length > 1 ? rnd(c.clips.slice(1)) : c.clips[0]);
-    playClip(url).then(dur => {
-      if (!call || call.state !== 'talking') return;
+    playClip(url, owner).then(dur => {
+      if (call !== owner || owner.state !== 'talking') return;
       if (dur == null){ const t = first ? c.lines[0] : nextLine(c); animalTalk(c, t); callLater(talk, Math.max(6000, lineMs(t, c) + 2200)); return; }
       callFace.classList.add('talk'); callLater(() => callFace.classList.remove('talk'), dur*1000);
       callLater(talk, Math.max(6000, dur*1000 + 2500));
@@ -6627,13 +6640,14 @@ function loadClip(url){
   }
   return clipCache.get(url);
 }
-function playClip(url){
+function playClip(url, owner = call, state = owner?.state){
   return loadClip(url).then(buf => {
-    if (!buf) return null;
+    if (!buf || !owner || call !== owner || owner.state !== state) return null;
     busy(buf.duration);
-    if (hold(() => playClip(url))) return buf.duration;
+    if (hold(() => playClip(url, owner, state))) return buf.duration;
     const s = ctx.createBufferSource(); s.buffer = buf; s.connect(master); s.start();
-    if (call){ call.src = s; s.onended = () => { if (call && call.src === s) call.src = null; }; }
+    owner.src = s;
+    s.onended = () => { if (owner.src === s) owner.src = null; };
     return buf.duration;
   });
 }
@@ -7243,26 +7257,54 @@ const MAX_PHOTOS = 60;
 const mem = new Map();   // fallback when the phone refuses storage
 const Photos = {
   list: (store.get('photos', []) || []).filter(p => p && p.id),
+  generation:0,
   src(id){ if (mem.has(id)) return mem.get(id); const u = PhotoDB.url(id); if (u) return u; try{ return localStorage.getItem('toyphone.photo.' + id); }catch(e){ return null; } },
-  saveIndex(){ store.set('photos', this.list); },
-  dropOldest(){ const old = this.list.pop(); if (!old) return false; mem.delete(old.id); if (old.db) PhotoDB.del(old.id); try{ localStorage.removeItem('toyphone.photo.' + old.id); }catch(e){} this.saveIndex(); return true; },
+  saveIndex(list = this.list){ return store.set('photos', list.filter(p => !mem.has(p.id))); },
+  removeFile(photo){
+    mem.delete(photo.id);
+    if (photo.db) PhotoDB.del(photo.id);
+    else try{ localStorage.removeItem('toyphone.photo.' + photo.id); }catch(e){}
+  },
+  remember(photo){
+    const next = [photo, ...this.list], overflow = next.splice(MAX_PHOTOS);
+    if (!this.saveIndex(next)) return false;
+    this.list = next;
+    overflow.forEach(old => this.removeFile(old));
+    return true;
+  },
   newId: () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
-  addBlob(blob, meta){
-    const id = this.newId();
-    while (this.list.length >= MAX_PHOTOS) this.dropOldest();
-    return PhotoDB.put(id, blob).then(() => { this.list.unshift({id, t:Date.now(), db:true, ...meta}); this.saveIndex(); });
+  async addBlob(blob, meta){
+    const generation = this.generation;
+    const photo = {id:this.newId(), t:Date.now(), db:true, ...meta};
+    await PhotoDB.put(photo.id, blob);
+    if (generation !== this.generation){
+      PhotoDB.del(photo.id);
+      return false;
+    }
+    if (this.remember(photo)) return true;
+    PhotoDB.del(photo.id);
+    throw new Error('Could not save the photo index');
   },
   add(src, meta){
-    const id = this.newId();
-    while (this.list.length >= MAX_PHOTOS) this.dropOldest();
-    for (;;){
-      try{ localStorage.setItem('toyphone.photo.' + id, src); break; }
-      catch(e){ if (!this.dropOldest()){ mem.set(id, src); break; } }
-    }
-    this.list.unshift({id, t:Date.now(), ...meta});
-    if (!store.set('photos', this.list)){ this.dropOldest(); this.saveIndex(); }
+    const photo = {id:this.newId(), t:Date.now(), ...meta};
+    try{
+      localStorage.setItem('toyphone.photo.' + photo.id, src);
+      if (this.remember(photo)) return true;
+      this.removeFile(photo);
+    }catch(e){}
+    if (this.list.length >= MAX_PHOTOS) return false;
+    mem.set(photo.id, src);
+    this.list.unshift(photo);
+    return true;
   },
-  clear(){ this.list.forEach(p => { try{ localStorage.removeItem('toyphone.photo.' + p.id); }catch(e){} }); this.list = []; mem.clear(); PhotoDB.clear(); this.saveIndex(); }
+  clear(){
+    this.generation++;
+    this.list.forEach(p => { try{ localStorage.removeItem('toyphone.photo.' + p.id); }catch(e){} });
+    this.list = [];
+    mem.clear();
+    PhotoDB.clear();
+    this.saveIndex();
+  }
 };
 /* The database for real photos: each a JPEG file, shown through a blob: address made once when the toy starts.
    A photo whose file is gone (the phone cleared the website's data) drops out of the album. */
@@ -7276,7 +7318,12 @@ const PhotoDB = (() => {
       r.onupgradeneeded = () => r.result.createObjectStore('photos');
       r.onsuccess = async () => {
         db = r.result;
-        for (const p of Photos.list.filter(p => p.db)){ try{ const b = await req(os('readonly').get(p.id)); if (b) urls.set(p.id, URL.createObjectURL(b)); }catch(e){} }
+        for (const p of Photos.list.filter(p => p.db)){
+          try{
+            const b = await req(os('readonly').get(p.id));
+            if (b && Photos.list.includes(p)) urls.set(p.id, URL.createObjectURL(b));
+          }catch(e){}
+        }
         res(true);
       };
       r.onerror = r.onblocked = () => res(false);
@@ -7290,7 +7337,15 @@ const PhotoDB = (() => {
   });
   return {
     ready, ok: () => !!db, url: id => urls.get(id) || null,
-    put: (id, blob) => req(os('readwrite').put(blob, id)).then(() => { urls.set(id, URL.createObjectURL(blob)); }),
+    put: async (id, blob) => {
+      await new Promise((resolve, reject) => {
+        const tx = db.transaction('photos', 'readwrite');
+        tx.oncomplete = resolve;
+        tx.onabort = () => reject(tx.error);
+        tx.objectStore('photos').put(blob, id);
+      });
+      urls.set(id, URL.createObjectURL(blob));
+    },
     del: id => { const u = urls.get(id); if (u){ URL.revokeObjectURL(u); urls.delete(id); } try{ if (db) os('readwrite').delete(id); }catch(e){} },
     clear: () => { urls.forEach(u => URL.revokeObjectURL(u)); urls.clear(); try{ if (db) os('readwrite').clear(); }catch(e){} }
   };
@@ -7766,10 +7821,20 @@ function realShutter(){
   const c = realSnapshot(); if (!c) return;
   const id = curCostume(), look = curLook();
   const meta = {real:true, names:id ? [COSTUME_NAME[id]] : [], ...(id ? {costume:id} : {}), ...(look !== 'normal' ? {look} : {}), ...(cam.mode === 'selfie' ? {selfie:true} : {})};
-  const fallback = () => { try{ Photos.add(c.toDataURL('image/jpeg', .76), meta); }catch(e){} showThumb(true); };
-  if (c.toBlob && PhotoDB.ok()) c.toBlob(b => { if (b) Photos.addBlob(b, meta).then(() => showThumb(true), fallback); else fallback(); }, 'image/jpeg', .82);
-  else fallback();
-  later(() => say(rnd(CLICKS), 0, 'camera'), 420);
+  const generation = Photos.generation;
+  const currentCapture = () => generation === Photos.generation;
+  const fallback = () => {
+    if (!currentCapture()) return;
+    try{ if (Photos.add(c.toDataURL('image/jpeg', .76), meta)) showThumb(true); }catch(e){}
+  };
+  if (c.toBlob && PhotoDB.ok()){
+    c.toBlob(blob => {
+      if (!currentCapture()) return;
+      if (!blob) return fallback();
+      Photos.addBlob(blob, meta).then(saved => { if (saved && currentCapture()) showThumb(true); }, fallback);
+    }, 'image/jpeg', .82);
+  } else fallback();
+  later(() => { if (currentCapture()) say(rnd(CLICKS), 0, 'camera'); }, 420);
 }
 
 /* ----- settings: what the parent sees about the camera ----- */
@@ -9299,7 +9364,13 @@ function mallet(f, vol=.3, at=0){ synth({f, dur:1.2, vol, at}); synth({f:f*4, du
 const XYLO = [[523.25,'#F0524F'],[587.33,'#FF9F43'],[659.25,'#FFC83D'],[783.99,'#7CC96B'],[880,'#5CC9B5'],[1046.5,'#3D8FE0'],[1174.66,'#6F7BE0'],[1318.51,'#A46FD1']];
 XYLO.forEach(([f, c], i) => { const b = document.createElement('button'); b.className = 'bar'; b.dataset.i = i; b.setAttribute('aria-label', 'Bar ' + (i + 1)); b.style.setProperty('--c', c); b.style.setProperty('--fr', frameURL(c, dim(c, .6))); b.style.setProperty('--len', (100 - i*5.2) + '%'); $('#xylo').appendChild(b); });
 const barVol = i => .3 * .91 ** i;   // each bar up a little softer (-0.8 dB), so all eight measure about as loud on a phone speaker
-playField($('#xylo'), '.bar', (b, e) => { const i = +b.dataset.i; mallet(XYLO[i][0], barVol(i)); retrigger(b, 'hit'); const [x, y] = relPt(e); flyNote(x, y); });
+playField($('#xylo'), '.bar', (b, event) => {
+  const i = +b.dataset.i;
+  mallet(XYLO[i][0], barVol(i));
+  retrigger(b, 'hit');
+  const [x, y] = event.type === 'click' ? rel(b) : relPt(event);
+  flyNote(x, y);
+});
 
 /* drums: all six about as loud on a phone speaker (within ~2 dB through the master compressor; see the smoke test).
    A phone barely plays anything under 300 Hz, so the drum and the conga ring in the mids (a buzzy body, a beater
@@ -10861,8 +10932,9 @@ const Tracks = (() => {
     HINT = 'Try turning this one!', ABOARD = 'All aboard! Choo choo!', YAY = ['You did it!', 'Great driving!', 'The train made it!', 'Toot toot! Hooray!'],
     ALL = 'You drove the train all the way! Wow!', WHERE = 'Where shall we go?', HELLO = pl => `Welcome to ${pl.n}!`, OFF = pl => `Off to ${pl.n}!`;
   const root = $('#tracks'), stage = $('#ctStage'), boardEl = $('#ctBoard'), stepsEl = $('#ctSteps'), mapEl = $('#ctMap'), handEl = $('#ctHand');
+  const mapButton = $('#ctMapBtn'), replay = $('#ctReplay');
   let places = null, place = null, pi = 0, lvl = 0, lap = 0, praise = 0, visited = new Set(), started = false, mode = 'off', seq = 0;
-  let pz = null, t = 64, raf = 0, hintT = 0, sinceGain = 0, bestLit = 0, hinted = null, waited = false, pickedUp = [];
+  let pz = null, t = 64, raf = 0, hintT = 0, sinceGain = 0, bestLit = 0, previousLit = 0, hinted = null, waited = false, pickedUp = [];
 
   /* ----- making a puzzle: a winding route from the engine's side to the station's side, then pieces turned out of place ----- */
   const rint = n => Math.floor(Math.random()*n);
@@ -11002,8 +11074,12 @@ const Tracks = (() => {
     const {lit, done} = trace();
     pz.grid.flat().forEach(g => { if (g.kind !== 'track') return; const on = lit.includes(g); if (on !== !!g.lit){ g.lit = on; g.el.classList.toggle('lit', on); g.img.src = ctPiece(straight(g.sol) ? 's' : 'c', on);
       if (on && g.pass) retrigger($('.ct-pass', g.el), 'hop'); } });
-    if (sound && lit.length > bestLit){ const f = NOTES[Math.min(lit.length - 1, NOTES.length - 1)]; tone(f, f, .18, 'triangle', .1); sinceGain = 0; }
-    bestLit = lit.length;
+    if (sound && lit.length > previousLit){
+      const f = NOTES[Math.min(lit.length - 1, NOTES.length - 1)];
+      tone(f, f, .18, 'triangle', .1);
+    }
+    if (lit.length > bestLit){ bestLit = lit.length; sinceGain = 0; }
+    previousLit = lit.length;
     if (!done){ waited = false; return; }
     const missed = pz.grid.flat().filter(g => g.pass && !lit.includes(g));
     if (missed.length){
@@ -11016,7 +11092,11 @@ const Tracks = (() => {
   const toot = () => { tone(587, 587, .32, 'sine', .14, 0, 6); tone(740, 740, .32, 'sine', .1, 0, 6); tone(587, 587, .5, 'sine', .14, .38, 6); tone(740, 740, .5, 'sine', .1, .38, 6); };
   const chug = () => noise(.07, 'bandpass', 500, 300, .12);
   /* stuck for a while (no taps, or taps that don't reach further): one piece of the route that's still wrong glows */
-  function wait(){ unLater(hintT); hintT = later(hint, sinceGain >= 12 ? 1500 : 20000); }
+  function wait(){
+    unLater(hintT);
+    if (sinceGain >= 12) hint();
+    hintT = later(hint, 20000);
+  }
   function hint(){
     if (mode !== 'play') return;
     const g = pz.path.map(p => cell(p.r, p.c)).find(x => x.turns && mask(x) !== x.sol);
@@ -11115,7 +11195,7 @@ const Tracks = (() => {
     for (let i = 0; i < 4; i++){ const s = document.createElement('span'); s.className = 'ct-step' + (i < lvl ? ' done' : i === lvl ? ' on' : ''); s.innerHTML = ctEngine(); stepsEl.appendChild(s); }
   }
   function puzzle(first){
-    mode = 'intro'; seq++; waited = false; sinceGain = 0; bestLit = 0; hinted = null; cancelAnimationFrame(raf); raf = 0; handEl.hidden = true;
+    mode = 'intro'; seq++; waited = false; sinceGain = 0; bestLit = previousLit = 0; hinted = null; cancelAnimationFrame(raf); raf = 0; handEl.hidden = true;
     boardEl.getAnimations().forEach(a => a.cancel());   // (the map picked during the trip to the next place: the board's slide-away, held at its end, would hide the new puzzle)
     const spec = lap ? LAP[lvl] : PLAN[pi][lvl];
     pz = make(spec); draw(); steps(); retrigger(boardEl, 'in');
@@ -11135,21 +11215,29 @@ const Tracks = (() => {
   }
 
   /* ----- the map: every place as a picture card; a star on the ones finished this visit ----- */
-  function openMap(){
+  function openMap(event){
     if (!mapEl.hidden || mode === 'ride') return;
     seq++; clearLater(); hush(); mode = 'map'; handEl.hidden = true;
     mapEl.innerHTML = ''; mapEl.hidden = false;
+    stage.inert = replay.hidden = true;
+    mapButton.setAttribute('aria-expanded', 'true');
     places.forEach((pl, i) => {
       const b = document.createElement('button'); b.className = 'st-place' + (pl === place ? ' here' : ''); b.dataset.place = pl.k; b.setAttribute('aria-label', pl.title);
       b.innerHTML = `<span class="st-place-who">${pl.animals.slice(0, 2).map(s => animalPic(s.a)).join('')}</span>${visited.has(pl.k) ? `<span class="st-place-star art">${ART.star}</span>` : ''}`;
       mapEl.appendChild(b); paintBG(b, BG.place(pl.k), true);
-      tap(b, () => { if (mapEl.hidden) return; FX.pop(); closeMap(); lap = 0; visit(i, false); }, {bump:false});
+      tap(b, e => { if (mapEl.hidden) return; FX.pop(); closeMap(e); lap = 0; visit(i, false); }, {bump:false});
     });
+    if (event.type === 'click') $('.here', mapEl)?.focus({preventScroll:true});
     say(WHERE, 0, 'find');
   }
-  function closeMap(){ mapEl.hidden = true; mapEl.innerHTML = ''; }
-  put($('#ctMapBtn'), schoolPic('map')); tap($('#ctMapBtn'), () => { FX.boop(); openMap(); }, {throttle:700});
-  put($('#ctReplay'), ART.ear); tap($('#ctReplay'), () => { if (!pz || (mode !== 'play' && mode !== 'intro')) return; hush(); say(pz.goal, 0, 'find'); }, {throttle:700});
+  function closeMap(event){
+    mapEl.hidden = true; mapEl.innerHTML = '';
+    stage.inert = replay.hidden = false;
+    mapButton.setAttribute('aria-expanded', 'false');
+    if (event?.type === 'click') mapButton.focus({preventScroll:true});
+  }
+  put(mapButton, schoolPic('map')); tap(mapButton, event => { FX.boop(); openMap(event); }, {throttle:700});
+  put(replay, ART.ear); tap(replay, () => { if (!pz || (mode !== 'play' && mode !== 'intro')) return; hush(); say(pz.goal, 0, 'find'); }, {throttle:700});
   if (window.ResizeObserver) new ResizeObserver(() => { if (current === 'tracks') fit(); }).observe(stage);
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && current === 'tracks' && mode === 'play') later(() => say(pz.goal, 0, 'find'), 600); });
 
@@ -11372,6 +11460,7 @@ const CookieShop = (() => {
   $('#cookies').style.setProperty('--ck-plate', ckPlate());
   const root = $('#cookies'), palEl = $('#ckPal'), thinkEl = $('#ckThink'), orderEl = $('#ckOrder'), cookieEl = $('#ckCookie'), plateEl = $('#ckPlate'), rowEl = $('#ckRow'),
     undoEl = $('#ckUndo'), serveEl = $('#ckServe'), trays = Object.fromEntries($$('.ck-tray', root).map(t => [t.dataset.kind, t])), mapEl = $('#ckMap');
+  const shop = $('#ckShop'), mapButton = $('#ckLevels'), replay = $('#ckReplay');
   let chain = 0, stage = 0, inStage = 0, happy = 0, mode = 'off', order = null, cur = null, pal = null, misses = 0, seq = 0, started = false, welcomed = false, done = new Set(), peekT = 0, lastPals = [];
   const blank = () => ({shape:null, frost:null, candies:0, sprinkles:false});
   const S = () => STAGES[stage];
@@ -11482,26 +11571,34 @@ const CookieShop = (() => {
   /* ----- the cookie picker: each stage as a sample cookie ----- */
   const SAMPLE = [{shape:'star', frost:null, candies:0, sprinkles:false}, {shape:'heart', frost:'pink', candies:0, sprinkles:false}, {shape:'circle', frost:'blue', candies:3, sprinkles:false},
     {shape:'square', frost:'chocolate', candies:5, sprinkles:true}, {shape:'heart', frost:'green', candies:2, sprinkles:true}];
-  function openMap(){
+  function openMap(event){
     if (!mapEl.hidden || mode === 'eat') return;
     seq++; clearLater(); hush(); mode = 'map'; unLater(peekT);
     mapEl.innerHTML = ''; mapEl.hidden = false;
+    shop.inert = replay.hidden = true;
+    mapButton.setAttribute('aria-expanded', 'true');
     STAGES.forEach((s, i) => {
       const b = document.createElement('button'); b.className = 'st-place ck-pick' + (i === stage ? ' here' : '') + (s.memory ? ' memory' : ''); b.dataset.stage = i + 1; b.setAttribute('aria-label', 'Cookies ' + (i + 1));
       b.innerHTML = `<span class="ck-sample">${ckImg(SAMPLE[i])}</span><span class="ck-steps">${'<i></i>'.repeat(i + 1)}</span>${done.has(i) ? `<span class="st-place-star art">${ART.star}</span>` : ''}`;
-      tap(b, () => { if (mapEl.hidden) return; FX.pop(); closeMap(); stage = i; inStage = 0; tools(); next(); }, {bump:false});
+      tap(b, e => { if (mapEl.hidden) return; FX.pop(); closeMap(e); stage = i; inStage = 0; tools(); next(); }, {bump:false});
       mapEl.appendChild(b);
     });
+    if (event.type === 'click') $('.here', mapEl)?.focus({preventScroll:true});
     say(PICK, 0, 'find');
   }
-  function closeMap(){ mapEl.hidden = true; mapEl.innerHTML = ''; }
+  function closeMap(event){
+    mapEl.hidden = true; mapEl.innerHTML = '';
+    shop.inert = replay.hidden = false;
+    mapButton.setAttribute('aria-expanded', 'false');
+    if (event?.type === 'click') mapButton.focus({preventScroll:true});
+  }
 
   tap(serveEl, serve, {bump:false, throttle:500}); put(serveEl, ART.check);
   put(undoEl, ICON.left); tap(undoEl, takeCandy, {throttle:150});
   tap(thinkEl, peek, {bump:false, throttle:300});
   tap(palEl, () => { if (pal && making()){ retrigger(palEl, 'hop'); call(pal); } }, {bump:false, throttle:800});
-  put($('#ckLevels'), ckImg({shape:'star', frost:'pink', candies:3, sprinkles:true})); tap($('#ckLevels'), () => { FX.boop(); openMap(); }, {throttle:700});
-  put($('#ckReplay'), ART.ear); tap($('#ckReplay'), () => { if (order && making()){ hush(); say(said(order), 0, 'find'); } }, {throttle:700});
+  put(mapButton, ckImg({shape:'star', frost:'pink', candies:3, sprinkles:true})); tap(mapButton, event => { FX.boop(); openMap(event); }, {throttle:700});
+  put(replay, ART.ear); tap(replay, () => { if (order && making()){ hush(); say(said(order), 0, 'find'); } }, {throttle:700});
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && current === 'cookies' && mode === 'make' && order) later(() => say(said(order), 0, 'find'), 600); });
 
   return {
@@ -11874,6 +11971,7 @@ function applyAccess(){
   scheduleIncoming();
   if (!appAllowed(current) || (current === 'home' && access.mode === 'school')) go(accessHome());
   renderAccess();
+  if (!$('#settings').hidden) OFFLINE.check();
 }
 function setAccessMode(mode){
   const change = () => { if (saveAccess({...access, mode})){ applyAccess(); FX.pop(); } };
@@ -11993,7 +12091,8 @@ const PLAY = (() => {
 const OFFLINE = (() => {
   const CACHE = 'toy-phone-v3';   // the cache in sw.js (keep the two names the same; tests/offline-ready.cjs checks)
   const PARTS = {school:'School', games:'Games', camera:'Camera', photos:'Photos', music:'Music', phone:'Phone'};
-  let st = {phase:'idle', done:0, total:0, failed:[], missing:null, worker:null, all:false, checked:0}, job = null;
+  const st = {phase:'idle', done:0, total:0, failed:[], missing:null, worker:null, all:false, checked:0, error:null};
+  let job = null, checkVersion = 0, checkAfterSave = false;
   const supported = () => { try{ return 'caches' in window && 'serviceWorker' in navigator && isSecureContext && location.protocol !== 'file:' && !/claude\.ai|claudeusercontent/.test(location.hostname); }catch(e){ return false; } };
   const parts = all => Object.keys(PARTS).filter(k => all || appAllowed(k));
   function files(all){
@@ -12006,15 +12105,41 @@ const OFFLINE = (() => {
     }
     return [...set];
   }
-  const worker = async () => { try{ const r = await navigator.serviceWorker.getRegistration(); return !!(r && (r.active || r.waiting || r.installing)); }catch(e){ return false; } };
-  async function check(all = st.all){
+  function completeVoiceBank(){
+    return VB.map && voiceLines().every(({who, s}) => {
+      const clip = VB.map[who + '|' + s];
+      return Array.isArray(clip) && typeof clip[0] === 'string' && Number.isFinite(clip[1]) && clip[1] > 0;
+    });
+  }
+  async function inspect(all){
+    const unavailable = {missing:[], checked:0, total:0, worker:false};
+    // Playback can still use old recordings during an update, but readiness requires this page's full voice list.
+    if (!completeVoiceBank()){
+      await loadVoiceBank(true);
+      if (!completeVoiceBank()) return {...unavailable, error:'voice'};
+    }
+    try {
+      const list = files(all), cache = await caches.open(CACHE);
+      const hits = await Promise.all(list.map(url => cache.match(url)));
+      const registration = await navigator.serviceWorker.getRegistration();
+      return {cache, missing:list.filter((_, i) => !hits[i]), checked:list.length, total:list.length,
+        worker:registration?.active?.state === 'activated', error:null};
+    }catch(e){ return {...unavailable, error:'storage'}; }
+  }
+  function report({cache, ...result}){
+    Object.assign(st, result, {phase:'checked'});
+    render();
+  }
+  async function check(){
     if (!supported()) return render();
-    if (st.phase !== 'saving'){ st.missing = null; render(); }   // ("Checking…" until every file has been looked up)
-    const list = files(all), cache = await caches.open(CACHE);
-    const hits = await Promise.all(list.map(u => cache.match(u).then(Boolean, () => false)));
-    st.missing = list.filter((u, i) => !hits[i]); st.checked = list.length; st.total = list.length; st.worker = await worker(); st.all = all;
-    if (st.phase !== 'saving') st.phase = 'checked';
-    render(); return st.missing.length === 0 && st.worker;
+    if (job){ checkAfterSave = true; return job; }
+    const version = ++checkVersion;
+    st.phase = 'checking';
+    st.missing = null;
+    st.error = null;
+    render();
+    const result = await inspect(st.all);
+    if (version === checkVersion) report(result);
   }
   async function get(cache, url){
     for (let n = 0; n < 3; n++){
@@ -12026,16 +12151,39 @@ const OFFLINE = (() => {
   /* save what's missing (all: every part, not just the switched-on ones), quiet: the automatic first download */
   function save(all, quiet = false){
     if (!supported() || job) return job;
+    checkVersion++;
+    st.all = all || st.all;
+    st.phase = 'checking';
+    st.missing = null;
+    st.error = null;
     job = (async () => {
-      try{
-        await check(all || st.all);
-        const todo = st.missing.slice(), cache = await caches.open(CACHE); st.phase = 'saving'; st.done = st.total - todo.length; st.failed = []; render();
+      try {
+        const result = await inspect(st.all);
+        if (result.error){ report(result); return; }
+        const {cache, missing:todo, total} = result;
+        st.phase = 'saving';
+        st.total = total;
+        st.done = total - todo.length;
+        st.failed = [];
+        render();
         let i = 0;
-        const lane = async () => { while (i < todo.length){ const u = todo[i++]; if (await get(cache, u)) st.done++; else st.failed.push(u); if (st.done % 20 === 0) render(); } };
+        const lane = async () => {
+          while (i < todo.length){
+            const url = todo[i++];
+            if (await get(cache, url)) st.done++;
+            else st.failed.push(url);
+            if (st.done % 20 === 0) render();
+          }
+        };
         await Promise.all(Array.from({length:quiet ? 2 : 4}, lane));
-        st.phase = 'checked'; await check(st.all);
-      } finally { job = null; render(); }
+        report(await inspect(st.all));
+      } finally {
+        job = null;
+        if (checkAfterSave){ checkAfterSave = false; check(); }
+        else render();
+      }
     })();
+    render();
     return job;
   }
   function render(){
@@ -12044,6 +12192,8 @@ const OFFLINE = (() => {
     let html;
     if (!supported()) html = 'This copy can\'t save itself for offline use. Open the toy from its web address in Safari and add it to the Home Screen.';
     else if (st.phase === 'saving') html = `Saving for offline: ${n(st.done)} of ${n(st.total)} files…`;
+    else if (st.error === 'voice') html = 'The recorded voice list couldn’t load. Connect to the internet, then tap Try again.';
+    else if (st.error === 'storage') html = 'The phone couldn’t check its offline storage. Tap Try again.';
     else if (st.missing === null) html = 'Checking what\'s saved on this phone…';
     else if (st.failed.length && st.missing.length) html = `Not ready offline: ${n(st.missing.length)} file${st.missing.length === 1 ? '' : 's'} couldn't download (no connection?). Tap Try again.`;
     else if (st.missing.length) html = `Not ready offline yet: ${n(st.total - st.missing.length)} of ${n(st.total)} files saved for ${which}.`;
@@ -12051,8 +12201,8 @@ const OFFLINE = (() => {
     else html = `Ready offline: ${which} (${n(st.checked)} files checked on this phone).`;
     note.innerHTML = html;
     const get1 = $('#offlineGet'), all1 = $('#offlineAll');
-    get1.textContent = st.failed.length && st.missing && st.missing.length ? 'Try again' : 'Save for offline';
-    get1.disabled = all1.disabled = !supported() || st.phase === 'saving';
+    get1.textContent = st.error || st.failed.length && st.missing?.length ? 'Try again' : 'Save for offline';
+    get1.disabled = all1.disabled = !supported() || !!job;
   }
   tapInScroll($('#offlineGet'), () => { FX.pop(); save(st.all); });
   tapInScroll($('#offlineAll'), () => { FX.pop(); save(true); });
@@ -12504,15 +12654,24 @@ const SchoolAdventures = (() => {
     if (r.train) $$('.sa-car', e.scene).forEach((c, i) => later(() => { retrigger(c, 'hop'); tone(392 + i*66, 392 + i*66, .09, 'square', .07); }, 120*i));
     later(() => FX.cheer(), 250);
   }
+  function focusStep(e){
+    const button = phase === 'ask' || phase === 'free' ? $('.sa-choice', e.choices)
+      : phase === 'done' ? $('.sa-again', e.finish)
+      : reading() ? $('.sa-next', e.turns) : e.replay;
+    button?.focus({preventScroll:true});
+  }
   function next(){
     if (!id) return;
+    const e = els[id], active = document.activeElement;
+    const follow = e.choices.contains(active) || active === e.replay;
     step++;
-    if (step < rounds.length){ show(); return; }
-    const e = els[id]; phase = 'done';
+    if (step < rounds.length){ show(); if (follow) focusStep(e); return; }
+    phase = 'done';
     e.scene.hidden = e.choices.hidden = true; e.replay.hidden = true; e.finish.hidden = false; if (e.turns) e.turns.hidden = true;
     $('.sa-train-own', e.finish).hidden = id !== 'patterntrain'; $('.sa-more', e.finish).hidden = id !== 'storytime';
     $('.sa-together', e.finish).textContent = book ? BOOKS.find(b => b.key === book).together : SAY[id].together;
     retrigger($('.sa-end-art', e.finish), 'hop'); FX.cheer(); speak(SAY[id].end);
+    if (follow || e.turns?.contains(active)) focusStep(e);
   }
   function freeTrain(){   // Pattern Train's last stop: any cars, any order, no wrong answers
     const e = els[id]; phase = 'free'; cars = [];
@@ -12539,6 +12698,13 @@ const SchoolAdventures = (() => {
     speak(first ? TITLE.storytime + '! ' + SAY.storytime.pick : SAY.storytime.pick);
   }
 
+  function returnToShelf(e, event){
+    const cover = book && $(`[data-book="${book}"]`, e.shelf);
+    clearLater();
+    shelf();
+    if (event.type === 'click') cover?.focus({preventScroll:true});
+  }
+
   Object.keys(TITLE).forEach(k => {
     const s = document.createElement('section'); s.className = 'app sa'; s.id = k; s.hidden = true; s.setAttribute('aria-label', TITLE[k]);
     s.innerHTML = `<button class="sc-back" aria-label="School"></button><div class="sa-stars"></div><button class="round lesson-replay" aria-label="Say it again"></button>
@@ -12555,20 +12721,28 @@ const SchoolAdventures = (() => {
       $$('.sa-mode', s).forEach(b => tap(b, () => { if (id !== k || phase !== 'shelf') return; mode = b.dataset.mode; markMode(e); FX.pop(); speak(SAY.storytime[mode]); }));
       put($('.sa-prev', s), ICON.left); put($('.sa-next', s), ICON.right);
       tap($('.sa-next', s), () => { if (id === k && phase === 'page' && reading()) next(); });
-      tap($('.sa-prev', s), () => { if (id === k && phase === 'page' && reading() && step > 0){ step--; show(); } });
+      tap($('.sa-prev', s), event => {
+        if (id !== k || phase !== 'page' || !reading() || step === 0) return;
+        step--; show();
+        if (!step && event.type === 'click') focusStep(e);
+      });
     }
-    $('.sc-back', s).innerHTML = ICON.grid; tap($('.sc-back', s), event => { FX.boop(); if (id === k && e.shelf && phase !== 'shelf'){ clearLater(); shelf(); } else returnToActivityMenu('school', event); });
+    $('.sc-back', s).innerHTML = ICON.grid; tap($('.sc-back', s), event => { FX.boop(); if (id === k && e.shelf && phase !== 'shelf') returnToShelf(e, event); else returnToActivityMenu('school', event); });
     // the speaker says what's on screen again: the page, the question (not once it's answered: the next round is coming), or the shelf
     put(e.replay, ART.ear); tap(e.replay, () => { if (id !== k) return; const r = cur(); if (phase === 'page') readPage(); else if (r && phase === 'ask' && !busy) speak(r.ask); else if (phase === 'shelf') speak(SAY.storytime.pick); }, {throttle:700});
     if (e.shelf) BOOKS.forEach(b => {   // a cover for each story: its friend and its last page
       const c = document.createElement('button'); c.className = 'sa-book'; c.dataset.book = b.key; c.setAttribute('aria-label', b.title);
       c.innerHTML = `<span class="sa-book-pet">${ART[b.pet]}</span><span class="sa-book-pic">${saCard(b.cover)}</span>`; e.shelf.appendChild(c);
-      tap(c, () => { if (id !== k || phase !== 'shelf') return; FX.pop(); book = b.key; start(); });
+      tap(c, event => {
+        if (id !== k || phase !== 'shelf') return;
+        FX.pop(); book = b.key; start();
+        if (event.type === 'click') focusStep(e);
+      });
     });
-    put($('.sa-more', s), schoolPic('book')); tap($('.sa-more', s), () => { if (id === k) shelf(); });
+    put($('.sa-more', s), schoolPic('book')); tap($('.sa-more', s), event => { if (id === k) returnToShelf(e, event); });
     tap(e.scene, () => { if (id === k && phase === 'page') readPage(); }, {bump:false, throttle:700});
-    put($('.sa-again', s), ART.play); tap($('.sa-again', s), () => { if (id === k) start(); });
-    put($('.sa-train-own', s), schoolPic('bus')); tap($('.sa-train-own', s), () => { if (id === k) freeTrain(); });
+    put($('.sa-again', s), ART.play); tap($('.sa-again', s), event => { if (id === k){ start(); if (event.type === 'click') focusStep(e); } });
+    put($('.sa-train-own', s), schoolPic('bus')); tap($('.sa-train-own', s), event => { if (id === k){ freeTrain(); if (event.type === 'click') focusStep(e); } });
     if (k === 'patterntrain' && window.ResizeObserver) new ResizeObserver(() => { const r = cur(); if (id === k && r && r.actual && phase === 'ask') carSize(e); }).observe(e.scene);
     const paint = BG.grad(BACK[k]); bgFor.set(s, paint); if (bgWatch) bgWatch.observe(s);
   });

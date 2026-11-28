@@ -15,10 +15,17 @@ const http = require('node:http');
 const ROOT = path.resolve(__dirname, '..');
 const WEBKIT = process.argv.includes('--webkit');
 const types = {'.html':'text/html', '.js':'text/javascript', '.json':'application/json', '.mp3':'audio/mpeg', '.png':'image/png', '.webmanifest':'application/manifest+json'};
+let partialVoice = false;
 let blocked = new Set();   // voice clips the "network" refuses for now (refused by the server: the service worker's own requests don't pass through the test's routes)
 const server = http.createServer((req, res) => {
   const pathname = new URL(req.url, 'http://localhost').pathname;
   if (blocked.has(path.basename(pathname))){ res.writeHead(503); res.end(); return; }
+  if (partialVoice && pathname === '/assets/voice/voice.json'){
+    const manifest = require('../assets/voice/voice.json');
+    res.writeHead(200, {'content-type':'application/json'});
+    res.end(JSON.stringify({clips:Object.fromEntries(Object.entries(manifest.clips).slice(0, 1))}));
+    return;
+  }
   const file = path.join(ROOT, pathname === '/' ? 'index.html' : pathname);
   if (!file.startsWith(ROOT + path.sep) || !fs.existsSync(file) || !fs.statSync(file).isFile()){ res.writeHead(404); res.end(); return; }
   res.writeHead(200, {'content-type':types[path.extname(file)] || 'application/octet-stream'});
@@ -44,15 +51,35 @@ const check = (condition, message) => { assert.ok(condition, message); console.l
     const page = await context.newPage(), errors = [];
     page.on('pageerror', e => errors.push(e.message));
     const base = `http://127.0.0.1:${server.address().port}/`;
-    await page.goto(base); await page.waitForFunction(() => window.__toyPhone && window.__toyPhone.voice().loaded);
-    // (the page registers the worker itself only on https; this test server is http)
-    await page.evaluate(async () => { await navigator.serviceWorker.register('sw.js'); await navigator.serviceWorker.ready; });
+    blocked = new Set(['voice.json']);
+    await page.goto(base); await page.waitForFunction(() => window.__toyPhone);
     const off = () => page.evaluate(() => window.__toyPhone.offline());
     const note = () => page.locator('#offlineNote').innerText();
     const cached = files => page.evaluate(async files => { const hits = await Promise.all(files.map(f => caches.match(f))); return hits.filter(Boolean).length; }, files);
     const openSettings = async () => { await page.locator('#clock').focus(); await page.keyboard.down('Enter'); await page.waitForTimeout(3250); await page.keyboard.up('Enter'); await page.locator('#settings').waitFor({state:'visible'}); };
     const closeSettings = async () => { await page.locator('#doneBtn').tap(); await page.locator('#settings').waitFor({state:'hidden'}); };
     const idle = () => page.waitForFunction(() => { const o = window.__toyPhone.offline(); return !o.busy && o.missing !== null; }, null, {timeout:180000});
+
+    // A missing voice index never allows a shell-only offline readiness claim.
+    await openSettings();
+    await idle();
+    check(/recorded voice list/.test(await note()) && await page.locator('#offlineGet').innerText() === 'Try again',
+      'offline readiness explains that the voice list could not load');
+    check(!(await page.evaluate(() => window.__toyPhone.voice().loaded)), 'the voice list is still unavailable');
+    await closeSettings();
+    blocked.clear();
+    partialVoice = true;
+    await openSettings();
+    await idle();
+    check(/recorded voice list/.test(await note()), 'a partial voice list still cannot establish offline readiness');
+    await closeSettings();
+    partialVoice = false;
+    await openSettings();
+    await idle();
+    check(await page.evaluate(() => window.__toyPhone.voiceMissing().length === 0), 'rechecking Settings fetches the complete voice list without a reload');
+    await closeSettings();
+    await page.reload();
+    await page.waitForFunction(() => window.__toyPhone && window.__toyPhone.voice().loaded);
 
     const school = await page.evaluate(() => window.__toyPhone.offline().files(false));
     const every = await page.evaluate(() => window.__toyPhone.offline().files(true));
@@ -63,6 +90,9 @@ const check = (condition, message) => { assert.ok(condition, message); console.l
     const some = school.filter(f => /\.mp3$/.test(f) && f.startsWith('assets/voice/')).slice(5, 9);
     blocked = new Set(some.map(f => path.basename(f)));
     await page.touchscreen.tap(195, 500);
+    // On this HTTP test origin the worker starts only when registered here. Delay activation past first-tap warmup.
+    await page.waitForTimeout(3400);
+    await page.evaluate(async () => { await navigator.serviceWorker.register('sw.js'); await navigator.serviceWorker.ready; });
     await page.waitForFunction(() => window.__toyPhone.offline().busy, null, {timeout:10000});
     await idle();
     let o = await off();
@@ -80,6 +110,14 @@ const check = (condition, message) => { assert.ok(condition, message); console.l
     o = await off();
     check(o.missing === 0 && /^Ready offline: School \([\d,]+ files checked on this phone\)\.$/.test(await note()), `after Try again: "${await note()}"`);
     check(await cached(school) === school.length, `every one of School's ${school.length} files is really in the cache`);
+
+    // Changing Access while Settings is open changes which files the current readiness result covers.
+    await page.locator('[data-access="full"]').tap();
+    await idle();
+    check((await off()).total === every.length && /Not ready offline yet/.test(await note()), 'enabling the full phone rechecks the newly available apps');
+    await page.locator('[data-access="school"]').tap();
+    await idle();
+    check(/^Ready offline: School/.test(await note()), 'returning to School only rechecks the smaller set');
 
     // a missing file means not ready
     await page.evaluate(async f => { const c = await caches.open((await caches.keys())[0]); await c.delete(f); }, some[0]);
