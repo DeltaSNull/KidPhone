@@ -878,6 +878,99 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img:not(.px){image-rendering
 .g-tracks{background:#F6DDB0}
 .g-tracks .gart{align-items:center; gap:2px}
 .g-tracks .gart .art .px{width:auto; height:1em}
+/* Firefly Festival */
+.ff-status{
+  position:absolute; width:1px; height:1px; margin:-1px; padding:0; overflow:hidden;
+  white-space:nowrap; clip-path:inset(50%);
+}
+.g-fireflies .gart{align-items:center}
+.g-fireflies .gart .px{width:auto; height:1em}
+.app.ff{
+  display:grid; grid-template-rows:64px minmax(0,1fr) 64px; gap:8px;
+  overflow:hidden; background:#202449; padding:8px;
+}
+.ff-levels{display:flex; align-items:center; justify-content:center; gap:4px; margin:0 64px}
+.ff-level{
+  --disc:var(--d-paper); width:44px; height:44px; padding:0 4px;
+  display:flex; align-items:center; justify-content:center;
+}
+.ff-level[aria-pressed="true"]{--disc:var(--d-sun)}
+.ff-level .px{width:30px; height:30px}
+.ff-puzzle{
+  position:relative; display:grid; grid-template-rows:auto minmax(0,1fr) auto; gap:6px;
+  align-items:center; width:min(100%,520px); min-height:0; justify-self:center;
+}
+.ff-progress{display:flex; justify-content:center; gap:6px; min-height:22px}
+.ff-progress > span{
+  display:grid; place-items:center; width:22px; height:22px; background:#202043;
+  border:2px solid #897cae; box-shadow:0 2px 0 #14162e;
+}
+.ff-progress .px{width:18px; height:18px}
+.ff-progress .current{border-color:#ffda84}
+.ff-stage{position:relative; isolation:isolate; display:grid; align-items:end; min-height:0; align-self:stretch}
+.ff-lanterns{
+  position:relative; display:flex; justify-content:center; align-items:end; gap:3px;
+  padding:4px 5px 5px; container-type:size; height:min(100%,150px);
+}
+.ff-lantern{
+  display:grid; place-items:center; position:relative;
+  width:min(calc((100cqw - 12px) / var(--ff-count)),78px,88cqh); aspect-ratio:1;
+}
+.ff-lantern > .px{width:100%; height:100%}
+.ff-lantern[data-lit="true"] > .px{filter:drop-shadow(0 0 9px #ffd387aa)}
+.ff-symbol{
+  --symbol:#31244d;
+  display:inline-block; width:13px; height:13px; background:var(--symbol); flex:none;
+}
+.ff-lantern .ff-symbol{position:absolute; top:43%; width:25%; height:25%; --symbol:#f2deff}
+.ff-lantern[data-lit="true"] .ff-symbol{--symbol:#59394e}
+.ff-symbol[data-shape="circle"]{clip-path:polygon(25% 0,75% 0,75% 12%,88% 12%,88% 25%,100% 25%,100% 75%,88% 75%,88% 88%,75% 88%,75% 100%,25% 100%,25% 88%,12% 88%,12% 75%,0 75%,0 25%,12% 25%,12% 12%,25% 12%)}
+.ff-symbol[data-shape="diamond"]{clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%)}
+.ff-symbol[data-shape="triangle"]{clip-path:polygon(50% 0,100% 100%,0 100%)}
+.ff-symbol[data-shape="cross"]{clip-path:polygon(33% 0,67% 0,67% 33%,100% 33%,100% 67%,67% 67%,67% 100%,33% 100%,33% 67%,0 67%,0 33%,33% 33%)}
+.ff-lantern[data-hint="true"]::after{
+  content:''; position:absolute; width:65%; height:82%; outline:2px dashed #ffe79a; pointer-events:none;
+}
+.ff-lantern.flash{animation:ff-ping .3s ease-out}
+@keyframes ff-ping{35%{transform:translateY(-5px)}}
+.ff-switches{
+  display:flex; justify-content:center; gap:4px; padding:9px 4px 8px;
+  background:#5f4571; border:3px solid #a88ab2; border-bottom-color:#352846;
+  box-shadow:0 4px 0 #181629;
+}
+.ff-switch{
+  width:min(76px, calc((100% - 16px) / var(--ff-count))); min-width:44px; height:56px;
+  display:flex; align-items:center; justify-content:center; gap:2px; padding:0;
+  background:#edd6b2; border:3px solid #fff1cc; border-bottom:7px solid #b98970; box-shadow:0 2px 0 #3d2b4a;
+}
+.ff-switch[data-hint="true"]{background:#ffe47c; outline:2px dashed #fff2a8; outline-offset:2px}
+.ff-switch:disabled{opacity:.56}
+.ff-controls{display:grid; align-items:center; justify-items:center}
+.ff-controls .round{width:64px; height:64px; --disc:var(--d-sun)}
+.ff-controls .ff-next,.ff-controls .ff-restart{--disc:var(--d-go)}
+.ff-controls .px{width:52%; height:52%}
+.ff-dance{position:absolute; inset:0; pointer-events:none}
+.ff-fly{
+  position:absolute; left:var(--x); bottom:var(--y); width:clamp(20px,7vw,37px); aspect-ratio:1;
+  filter:drop-shadow(0 0 7px #ffe878); animation:ff-swarm 2.2s ease-in-out alternate 2;
+  animation-delay:var(--delay);
+}
+.ff-fly .px{width:100%; height:100%}
+@keyframes ff-swarm{50%{transform:translate(18px,-25px)}100%{transform:translate(-12px,14px)}}
+@media (prefers-reduced-motion:reduce){.ff-fly,.ff-lantern.flash{animation:none}}
+@media (orientation:landscape){
+  .app.ff{grid-template-columns:64px minmax(0,1fr) 64px; grid-template-rows:44px minmax(0,1fr)}
+  .ff-levels{grid-column:2; margin:0}
+  .ff .lesson-replay{left:8px; right:auto; top:80px}
+  .ff-puzzle{grid-row:2; grid-column:2; width:min(100%,520px)}
+  .ff-controls{grid-column:3; grid-row:1 / span 2}
+}
+
+@media (orientation:landscape) and (max-width:540px){
+  .app.ff{grid-template-columns:64px minmax(0,1fr)}
+  .ff-controls{grid-column:1; align-self:end}
+}
+
 /* Cookie Shop: the customer and its order on top, the plate in the middle, the tools below (on the right sideways) */
 .app.ck{display:grid; grid-template-rows:72px minmax(0,1fr); grid-template-columns:minmax(0,1fr); overflow:hidden; background:#FFE9EF}
 @media (orientation:landscape){ .app.ck{grid-template-rows:minmax(0,1fr); grid-template-columns:72px minmax(0,1fr)} }
@@ -1720,6 +1813,27 @@ img[src^="data:image/jpeg"],img[src^="blob:"],.face img:not(.px){image-rendering
           <div class="ct-hand" id="ctHand" hidden></div>
         </div>
         <div class="st-map" id="ctMap" hidden role="group" aria-label="Places to visit"></div>
+      </section>
+
+      <!-- GAME: Firefly Festival (one player: light all the lanterns) -->
+      <section class="app ff" id="fireflies" hidden aria-label="Firefly Festival">
+        <button class="sc-back game-back" aria-label="Games"></button>
+        <button class="round lesson-replay" id="ffReplay" aria-label="Say it again"></button>
+        <div class="ff-levels" id="ffLevels" role="group" aria-label="Choose difficulty"></div>
+        <div class="ff-puzzle" id="ffPuzzle">
+          <div class="ff-progress" id="ffProgress" role="img"></div>
+          <div class="ff-stage">
+            <div class="ff-lanterns" id="ffLanterns" role="group" aria-label="Lanterns"></div>
+            <div class="ff-dance" id="ffDance" aria-hidden="true" hidden></div>
+          </div>
+          <div class="ff-switches" id="ffSwitches" role="group" aria-label="Lantern switches"></div>
+        </div>
+        <div class="ff-controls">
+          <button class="round ff-hint" id="ffHint" aria-label="Show me a switch"></button>
+          <button class="round ff-next" id="ffNext" aria-label="Next puzzle" hidden></button>
+          <button class="round ff-restart" id="ffRestart" aria-label="Play again" hidden></button>
+        </div>
+        <span class="ff-status" id="ffStatus" role="status" aria-live="polite"></span>
       </section>
 
       <!-- GAME: Cookie Shop (one player: make the cookie the customer is thinking of) -->
@@ -5192,6 +5306,22 @@ const BG = {
   splish(w, h){ const g = Math.floor(h*.56), p = new Paper(w, h).ramp(['#8FD3F5', '#B6E4F8', '#D6F2FF'], 0, g), s = sunArt(Math.max(6, Math.round(Math.min(w, h)*.06))), fh = Math.max(7, Math.round(h*.06));
     p.put(s, w - s.width - 4, Math.max(18, h*.1)).put(cloudArt(.45), w*.08, h*.16);
     return p.put(hillArt(w, h - g, x => 3 + 2*Math.sin(x*.05 + 1), ['#B8E89A', '#9AD97C', '#86CC68', '#72BE56'], 31), 0, g).put(SCENERY.fence(w, fh, true), 0, g - fh + 3); },
+  fireflies(w, h){
+    const p = new Paper(w,h).ramp(['#242548','#443b6e','#6b507f']);
+    const ground = Math.floor(h*.74), radius = Math.max(4,Math.round(Math.min(w,h)*.08));
+    const moon = new Pix(radius*2,radius*2);
+    moon.ell(radius,radius,radius,radius,'m').ell(radius*1.45,radius*.63,radius*.88,radius*.88,0);
+    p.dots((x,y) => y < ground && sr(x*2.3 + y*7.1) < .017 ? '#c6b3db' : null);
+    p.put(moon.canvas({m:'#FFF0BA'}), Math.floor(w*.73), Math.floor(h*.19));
+    const trees = new Pix(w,h);
+    for (let x = 0; x < w + 6; x += 8 + Math.floor(sr(x)*7)){
+      const height = 5 + Math.floor(sr(x+17) * Math.max(4,h*.16));
+      const y = ground + 5 + Math.round(3*Math.sin(x*.19));
+      trees.poly([[x,y-height],[x-height*.29,y],[x+height*.29,y]],'t');
+    }
+    p.put(trees.canvas({t:'#29294d'}), 0, 0);
+    return p.put(hillArt(w,h-ground,x => 4+3*Math.sin(x*.11),['#516078','#33465d','#25344f'],34),0,ground);
+  },
   hide(w, h){ const g = Math.floor(h*.5), p = new Paper(w, h).ramp(['#8FD3F5', '#B6E4F8', '#D6F2FF'], 0, g), s = sunArt(Math.max(6, Math.round(Math.min(w, h)*.06)));
     p.put(s, w - s.width - 4, Math.max(18, h*.1)).put(cloudArt(.45), w*.1, h*.14).put(cloudArt(.35), w*.55, h*.24);
     return p.put(hillArt(w, h - g, x => 4 + 3*Math.sin(x*.04 + 2), ['#A8E08A', '#8FD470', '#7CC85E', '#68BA4C'], 17), 0, g); },
@@ -5208,6 +5338,7 @@ const BGS = [
   ['.viewer', BG.grad(['#FFF6D2', '#FFEDAE', '#FFE59A', '#FFDF8A'])], ['#music', BG.grad(['#F0E8FF', '#DCCEFA', '#CAB8F6', '#BBA6F2'])], ['.stage', BG.stage],
   ['#games', BG.stripey(['#B0EBAA', '#8FDB8E', '#6CCB78', '#4FB86A'], '#C2F2BC')], ['.g-wild', BG.wild], ['.g-feed', BG.feed], ['.g-dino', BG.split], ['.g-paint', BG.paint],
   ['#wt-menu', BG.wtMenu], ['#wt-world', BG.wtWorld], ['#wt-find', BG.grad(['#FFDCE3', '#FFC7D2', '#FFB3C2'])], ['#matchup', BG.grad(['#E2FAF4', '#C9F2E8', '#B0EADB'])], ['.g-match', BG.grad(['#E2FAF4', '#C9F2E8', '#B0EADB'])], ['#splish', BG.splish], ['#hideseek', BG.hide], ['.g-hide', BG.grad(['#DDF5CF', '#C8EDB4', '#B3E39C'])], ['.g-tracks', BG.grad(['#FCEBC8', '#F6DDB0', '#EFCD94'])], ['#cookies', BG.grad(['#FFF1F5', '#FFE3EC', '#FFD3E0'])], ['.g-cookie', BG.grad(['#FFE8EF', '#FFD8E4', '#FFC8D8'])], ['.g-splash', BG.grad(['#D6F2FF', '#BDE8FA', '#A9DDF5'])], ['#wt-egg', BG.wtEgg], ['#wt-bubbles', BG.bubbles],
+  ['#fireflies', BG.fireflies], ['.g-fireflies', BG.grad(['#efe5ff','#decbf3','#cdb5e9'])],
   ['.db-a', BG.dbSide('#A6E39A', '#6CC46A', '#3E9447')], ['.db-b', BG.dbSide('#A9DDF7', '#5BB8E8', '#2F86C4')], ['.db-mid', BG.sand],
   ['#stScene', BG.snack], ['#asScene', BG.snack], ['.st-foods', BG.picnic],
   ['#school', BG.stripey(['#FFF0B8', '#FFE28A', '#FFD466', '#FFC746'], '#FFF6D2')], ['.g-abc', BG.grad(['#FFF6D2', '#FFE8A3', '#FFDB7A'])], ['.g-abcsnack', BG.grad(['#E4F6FF', '#C9ECFF', '#ADE0FF'])],
@@ -5351,7 +5482,7 @@ const saveSettings = () => store.set('settings', settings);
 
 /* Access policy is separate from sound/game settings and applies to all navigation and device entry points. */
 const ACCESS_APPS = ['school','games','camera','photos','music','phone'];
-const ACCESS_GROUP = {wildtap:'games', matchup:'games', splish:'games', hideseek:'games', tracks:'games', cookies:'games', dinobuddies:'games', snacktime:'games', paintpals:'games', balltrail:'games', starflight:'games',
+const ACCESS_GROUP = {wildtap:'games', matchup:'games', splish:'games', hideseek:'games', tracks:'games', cookies:'games', fireflies:'games', dinobuddies:'games', snacktime:'games', paintpals:'games', balltrail:'games', starflight:'games',
   letterpath:'school', abczoo:'school', abcsnack:'school', numzoo:'school', numsnack:'school', delivery:'school', dinopicnic:'school', sorting:'school', patterntrain:'school', moresnacks:'school', storytime:'school', feelings:'school'};
 const savedAccess = store.get('access', {}) || {};
 let access = {v:2, mode:['full','school','custom'].includes(savedAccess.mode) ? savedAccess.mode : 'full',
@@ -6133,21 +6264,39 @@ function updateClock(){ const d = new Date(); $('#clockTxt').textContent = ((d.g
 updateClock(); setInterval(updateClock, 10000);
 
 /* ---------- Navigation ---------- */
-const APPS = ['home','phone','camera','photos','music','games','wildtap','matchup','splish','hideseek','tracks','cookies','dinobuddies','snacktime','paintpals','balltrail','starflight','school','letterpath','abczoo','abcsnack','numzoo','numsnack','delivery','dinopicnic','sorting','patterntrain','moresnacks','storytime','feelings'];
+const APPS = ['home','phone','camera','photos','music','games','wildtap','matchup','splish','hideseek','tracks','cookies','fireflies','dinobuddies','snacktime','paintpals','balltrail','starflight','school','letterpath','abczoo','abcsnack','numzoo','numsnack','delivery','dinopicnic','sorting','patterntrain','moresnacks','storytime','feelings'];
 let current = 'home';
 const APP_SAY = {phone:'Phone! Who do you want to call?', camera:'Camera! Slide to look around. Then press the big button!', music:'Music! Let\'s play!', games:'Games! Pick a game!'};
+const activityCards = new Map();
 function go(name, fromEl){
   if (!APPS.includes(name) || !appAllowed(name) || name === 'home') name = accessHome();
   if (PLAY.navigate()) name = accessHome();   // play time is up: leaving an activity ends the session
+  let origin = '50% 100%';
+  if (fromEl?.getClientRects().length){
+    const r = fromEl.getBoundingClientRect(), a = $('#apps').getBoundingClientRect();
+    origin = `${r.left - a.left + r.width/2}px ${r.top - a.top + r.height/2}px`;
+  }
   clearLater(); hush(); if (name !== current) fadeFx();
   leaveApp(current);
   current = name; syncFx();
   APPS.forEach(a => { $('#' + a).hidden = a !== name; });
   const el = $('#' + name);
-  if (fromEl){ const r = fromEl.getBoundingClientRect(), a = $('#apps').getBoundingClientRect(); el.style.transformOrigin = `${r.left - a.left + r.width/2}px ${r.top - a.top + r.height/2}px`; }
-  else el.style.transformOrigin = '50% 100%';
+  el.style.transformOrigin = origin;
   retrigger(el, 'enter');
   enterApp(name);
+}
+function openActivity(id, card, event){
+  FX.pop(); retrigger(card, 'go'); go(id, card);
+  if (event.type === 'click' && current === id){
+    const app = document.getElementById(id);
+    const control = $('.who:not([hidden]) .who-btn.last', app) || $('.sc-back, .game-back', app);
+    control?.focus({preventScroll:true});
+  }
+}
+function returnToActivityMenu(menu, event){
+  const card = activityCards.get(current);
+  go(menu);
+  if (event.type === 'click' && current === menu) card?.focus();
 }
 function enterApp(name){
   if (!appAllowed(name)) return;
@@ -6164,6 +6313,7 @@ function enterApp(name){
   if (name === 'hideseek') HideSeek.enter();
   if (name === 'tracks') Tracks.enter();
   if (name === 'cookies') CookieShop.enter();
+  if (name === 'fireflies') FireflyFestival.enter();
   if (name === 'dinobuddies') DinoBuddies.enter();
   if (name === 'snacktime') SnackTime.enter();
   if (name === 'paintpals') PaintPals.enter();
@@ -6189,6 +6339,7 @@ function leaveApp(name){
   if (name === 'hideseek') HideSeek.leave();
   if (name === 'tracks') Tracks.leave();
   if (name === 'cookies') CookieShop.leave();
+  if (name === 'fireflies') FireflyFestival.leave();
   if (name === 'dinobuddies') DinoBuddies.leave();
   if (name === 'snacktime') SnackTime.leave();
   if (name === 'paintpals') PaintPals.leave();
@@ -8137,10 +8288,11 @@ SCHOOL.forEach(g => {
   const b = document.createElement('button'); b.className = 'gamecard ' + g.cls; b.setAttribute('aria-label', g.n);
   b.innerHTML = `<span class="gtext"><span class="gname">${g.n}</span><span class="gnote">${g.note}</span></span><span class="gart">${g.art()}</span>`;
   $('#schoolList').appendChild(b);
-  tapInScroll(b, () => { FX.pop(); retrigger(b, 'go'); go(g.id, b); }, {bump:false});
+  activityCards.set(g.id, b);
+  tapInScroll(b, event => openActivity(g.id, b, event), {bump:false});
 });
-$$('.sc-back:not(.game-back)').forEach(b => { b.innerHTML = ICON.grid; tap(b, () => { FX.boop(); go('school'); }); });
-$$('.game-back').forEach(b => { put(b, ICON.grid); tap(b, () => { FX.boop(); go('games'); }); });   // every regular game: back to the Games menu
+$$('.sc-back:not(.game-back)').forEach(b => { b.innerHTML = ICON.grid; tap(b, event => { FX.boop(); returnToActivityMenu('school', event); }); });
+$$('.game-back').forEach(b => { put(b, ICON.grid); tap(b, event => { FX.boop(); returnToActivityMenu('games', event); }); });   // every regular game: back to the Games menu
 const SCHOOL_SAY = {school:'School! What do you want to learn?', abczoo:'ABC Zoo! Tap a letter!', abcsnack:'ABC Snack! The animals want letter cookies!'};
 const cap = w => w[0].toUpperCase() + w.slice(1);
 const isFor = e => e.L === 'X' ? `X is in ${e.w}!` : `${e.L} is for ${e.w}!`;
@@ -9559,6 +9711,29 @@ const ckShaker = () => once('ckShaker', () => { const P = new Pix(18, 22);
 const ckPlate = () => once('ckPlate', () => { const P = new Pix(40, 40);
   P.ell(20, 20, 19, 19, 'r').ell(20, 20, 15, 15, 'p').ell(20, 20, 13.5, 13.5, 'c'); P.ell(14, 12, 3, 1.4, 'w'); P.outline('o');
   return pxURL(P.canvas({r:'#F4F0EA', p:'#E2DAD0', c:'#FFFDF8', w:'#FFFFFF', o:'#B8AC9E'}), 6); });
+/* Nighttime props for Firefly Festival, drawn in the phone's pixel palette. */
+const ffArt = (name, draw) => once(name, () =>
+  `<img class="px" src="${pxURL(draw(),5).slice(5,-2)}" alt="" draggable="false">`);
+const ffLantern = lit => ffArt('ff-lantern-' + lit, () => {
+  const p = new Pix(26,26);
+  p.rect(10,1,6,2,'m').rect(9,3,2,4,'m').rect(15,3,2,4,'m')
+    .poly([[8,5],[18,5],[23,9],[3,9]],'m')
+    .rect(4,9,18,12,'f').rect(6,9,14,12,'a').rect(8,10,11,9,'b')
+    .rect(7,10,2,8,'s').rect(4,20,18,2,'m').rect(3,22,20,2,'m')
+    .rect(5,22,16,1,'s').outline('o');
+  return p.canvas(lit ?
+    {o:'#312443',m:'#C08046',f:'#9D603E',a:'#FFBB59',b:'#FFF09B',s:'#FFE2A1'} :
+    {o:'#241D3D',m:'#85668E',f:'#503D68',a:'#513D6E',b:'#665080',s:'#AA89AD'});
+});
+const ffFirefly = () => ffArt('ff-firefly', () => {
+  const p = new Pix(23,21);
+  p.ell(6,7,5,3,'w').ell(17,7,5,3,'w').ell(11.5,13,5,6,'g')
+    .ell(11.5,14.5,4,4,'y').rect(9,13,5,2,'s').ell(11.5,7,4,4,'m')
+    .set(10,6,'o').set(13,6,'o').line(9,4,7,2,'m').line(13,4,15,2,'m').outline('o');
+  return p.canvas({w:'#C9EAEF',g:'#A0C577',y:'#FFE372',s:'#FFF4BC',m:'#8AC194',o:'#342D53'});
+});
+
+
 const GAMES = [
   {id:'wildtap', n:'Wild Tap', p:[1], cls:'g-wild', art:`<span class="art">${ART.elephant}</span><span class="art big">${ART.lion}</span><span class="art">${ART.giraffe}</span>`},
   {id:'matchup', n:'Match Up', p:[1], cls:'g-match', art:`<span class="mu-gc">${ART.cat}</span><span class="mu-gc back">?</span><span class="mu-gc">${ART.cat}</span>`},
@@ -9566,6 +9741,7 @@ const GAMES = [
   {id:'hideseek', n:'Hide and Seek', p:[1], cls:'g-hide', art:`<span class="hs-gc"><span class="hs-gpeek">${ART.lion}</span>${hsBushImg()}</span><span class="hs-gc">${hsBushImg()}</span>`},
   {id:'tracks', n:'Train Tracks', p:[1], cls:'g-tracks', art:`<span class="art big">${ctEngine()}</span><span class="art big">${ctStation()}</span>`},
   {id:'cookies', n:'Cookie Shop', p:[1], cls:'g-cookie', art:`<span class="art big">${ckImg({shape:'heart', frost:'pink', candies:3, sprinkles:true})}</span><span class="art">${ckJar()}</span>`},
+  {id:'fireflies', n:'Firefly Festival', p:[1], cls:'g-fireflies', art:`<span class="art">${ffFirefly()}</span><span class="art big">${ffLantern(true)}</span>`},
   {id:'snacktime', n:'Snack Time', p:[1], cls:'g-feed', art:`<span class="art">${ART.banana}</span><span class="art big">${ART.monkey}</span><span class="art">${ART.watermelon}</span>`},
   {id:'dinobuddies', n:'Dino Buddies', p:[1,2], cls:'g-dino', art:`<span class="art mid">${ART.trex}</span><span class="art sm">${ART.egg}</span><span class="art mid flip">${ART.trex}</span>`},
   {id:'paintpals', n:'Paint Pals', p:[1,2], cls:'g-paint', art:`<span class="art mid flip">${ppHalf('giraffe')}</span><span class="art sm">${ART.brush}</span><span class="art mid">${ppHalf('lion')}</span>`},
@@ -9577,7 +9753,8 @@ GAMES.forEach(g => {
   const two = g.p.includes(2), who = g.p.length > 1 ? '<span class="both"><span><b>1</b> or <b>2</b></span> <span>players</span></span>' : two ? '<span><b>2</b> players</span>' : '<span><b>1</b> player</span>';
   b.innerHTML = `<span class="gtext"><span class="gname">${g.n}</span><span class="gplay" data-players="${g.p.join(' ')}">${ART.kidA}${two ? ART.kidB : ''}${who}</span></span><span class="gart">${g.art}</span>`;
   $('#gameList').appendChild(b);
-  tapInScroll(b, () => { FX.pop(); retrigger(b, 'go'); go(g.id, b); }, {bump:false});
+  activityCards.set(g.id, b);
+  tapInScroll(b, event => openActivity(g.id, b, event), {bump:false});
 });
 
 /* ---------- Wild Tap Safari: sound boards, Find It, egg hatching, bubble popping ---------- */
@@ -10282,10 +10459,11 @@ function whoPicker(root, title, key, onPick){
     `<button class="who-btn" data-n="${n}" aria-label="${n} player${n > 1 ? 's' : ''}"><span class="who-kids">${ART.kidA}${n > 1 ? ART.kidB : ''}</span><span class="who-lbl"><b>${n}</b> player${n > 1 ? 's' : ''}</span></button>`).join('')}</div>`;
   el.querySelector('.who-title').textContent = title;
   root.appendChild(el);
-  $$('.who-btn', el).forEach(b => tap(b, () => {
+  $$('.who-btn', el).forEach(b => tap(b, event => {
     const n = +b.dataset.n, all = store.get('players', {}) || {};
     all[key] = n; store.set('players', all);
     FX.pop(); el.hidden = true; onPick(n);
+    if (event.type === 'click') $('.game-back', root)?.focus({preventScroll:true});
   }, {bump:false}));
   return {
     last: () => (store.get('players', {}) || {})[key] || 2,
@@ -10984,6 +11162,193 @@ const Tracks = (() => {
     state: () => pz ? ({mode, place:place.k, pi, level:lvl, lap, goal:pz.goal, picked:pickedUp.slice(), visited:[...visited], map:!mapEl.hidden, Wd:pz.Wd, Ht:pz.Ht, es:pz.es, xs:pz.xs,
       lit:trace().lit.length, done:trace().done, hint:hinted ? [hinted.r, hinted.c] : null, route:pz.path.map(p => [p.r, p.c]),
       cells:pz.grid.flat().filter(g => g.kind === 'track').map(g => ({r:g.r, c:g.c, turns:g.turns, ok:mask(g) === g.sol, step:g.step, decoy:!!g.decoy, pass:g.pass && g.pass.a}))}) : {mode}
+  };
+})();
+
+/* Firefly Festival. Each bit is a lantern. A switch flips every bit in its mask. */
+const FireflyFestival = (() => {
+  const SHAPES = ['circle','diamond','triangle','square','cross'];
+  const LEVELS = [
+    {name:'First lights', masks:[1,2,4], setups:[[1],[0,2],[0,1,2]]},
+    {name:'Twinkle pairs', masks:[1,3,6,12], setups:[[1],[2,3],[0,1,3]]},
+    {name:'Moonlight mix', masks:[3,6,12,24,14], setups:[[0,2],[1,4],[0,2,3,4],[0,1,2,3,4]]}
+  ];
+  const GOAL = 'Can you light all the lanterns?';
+  const PAIRS = 'One switch can flip more than one lantern!';
+  const HINT = 'Try this switch!';
+  const WIN = 'You lit them all!';
+  const END = 'The fireflies are dancing! Hooray!';
+  const lanternsEl = $('#ffLanterns'), switchesEl = $('#ffSwitches'), levelsEl = $('#ffLevels');
+  const progress = $('#ffProgress'), status = $('#ffStatus'), dance = $('#ffDance');
+  const hintButton = $('#ffHint'), nextButton = $('#ffNext'), restart = $('#ffRestart');
+  let level = 0, round = 0, lit = 0, target = 0, hints = [], distances = [];
+  let lanterns = [], switches = [], stalled = 0, best = 0;
+  const config = () => LEVELS[level];
+  const solved = () => lit === target;
+  const last = () => level === LEVELS.length - 1 && round === config().setups.length - 1;
+  const symbols = mask => SHAPES.filter((_, i) => mask & (1 << i));
+  const mark = shape => `<span aria-hidden="true" class="ff-symbol" data-shape="${shape}"></span>`;
+  const prompt = () => level === 0 ? GOAL : GOAL + ' ' + PAIRS;
+  const speak = line => { hush(); say(line, 0, 'find'); };
+
+  /* Work backwards from all-on. Each move is reversible, so this finds the shortest
+     route from every reachable light pattern, even after the player experiments. */
+  function findHints(){
+    hints = [];
+    distances = [];
+    distances[target] = 0;
+    const queue = [target];
+    for (let head = 0; head < queue.length; head++){
+      const state = queue[head];
+      config().masks.forEach((mask, index) => {
+        const previous = state ^ mask;
+        if (distances[previous] !== undefined) return;
+        distances[previous] = distances[state] + 1;
+        hints[previous] = index;
+        queue.push(previous);
+      });
+    }
+  }
+
+  function showHint(on){
+    const pick = on ? hints[lit] : undefined;
+    const mask = pick === undefined ? 0 : config().masks[pick];
+    switches.forEach((button, i) => { button.dataset.hint = String(i === pick); });
+    lanterns.forEach((lamp, i) => { lamp.dataset.hint = String(!!(mask & (1 << i))); });
+    if (pick !== undefined) {
+      status.textContent = `Try the ${symbols(mask).join(', ')} switch.`;
+    }
+  }
+
+  function drawLights(changed){
+    lanterns.forEach((lamp, i) => {
+      const bit = 1 << i;
+      if (!(changed & bit)) return;
+      const on = !!(lit & bit);
+      lamp.dataset.lit = String(on);
+      lamp.setAttribute('aria-label', `${SHAPES[i]} lantern, ${on ? 'lit' : 'dark'}`);
+      lamp.innerHTML = ffLantern(on) + mark(SHAPES[i]);
+    });
+  }
+
+  function drawProgress(){
+    const count = round + Number(solved());
+    progress.setAttribute('aria-label', `${count} of ${config().setups.length} puzzles lit`);
+    progress.innerHTML = config().setups.map((_, i) =>
+      `<span class="${i === count ? 'current' : ''}">${i < count ? ART.star : ''}</span>`).join('');
+  }
+
+  function begin(newLevel, newRound, introduce = false){
+    level = newLevel;
+    round = newRound;
+    stalled = 0;
+    status.textContent = '';
+    const {masks, setups} = config();
+    target = (1 << masks.length) - 1;
+    lit = setups[round].reduce((state, index) => state ^ masks[index], target);
+    findHints();
+    best = distances[lit];
+    $('#ffPuzzle').style.setProperty('--ff-count', masks.length);
+    levelButtons.forEach((button, i) => button.setAttribute('aria-pressed', String(i === level)));
+    lanterns = masks.map(() => {
+      const lamp = document.createElement('span');
+      lamp.className = 'ff-lantern';
+      lamp.setAttribute('role','img');
+      return lamp;
+    });
+    lanternsEl.replaceChildren(...lanterns);
+    switches = masks.map((mask, i) => {
+      const button = document.createElement('button');
+      const shapes = symbols(mask);
+      button.className = 'ff-switch';
+      button.setAttribute('aria-label', `Flip ${shapes.join(', ')} ${shapes.length === 1 ? 'lantern' : 'lanterns'}`);
+      button.innerHTML = shapes.map(mark).join('');
+      tap(button, event => flip(i, event.type === 'click'), {bump:false});
+      return button;
+    });
+    switchesEl.replaceChildren(...switches);
+    hintButton.hidden = false;
+    nextButton.hidden = true;
+    restart.hidden = true;
+    dance.hidden = true;
+    drawLights(target);
+    drawProgress();
+    showHint(level === 0 && round === 0);
+    speak(introduce ? prompt() : GOAL);
+  }
+
+  function flip(i, fromKeyboard){
+    if (solved()) return;
+    const mask = config().masks[i];
+    lit ^= mask;
+    if (distances[lit] < best){
+      best = distances[lit];
+      stalled = 0;
+    } else {
+      stalled++;
+    }
+    drawLights(mask);
+    lanterns.forEach((lamp, index) => {
+      if (mask & (1 << index)) retrigger(lamp, 'flash');
+    });
+    status.textContent = `${symbols(lit).length} of ${lanterns.length} lanterns lit.`;
+    showHint(stalled >= 3);
+    if (!solved()){
+      const notes = [392,440,494,523,587];
+      tone(notes[i], notes[i] * .94, .16, 'triangle', .25);
+      return;
+    }
+    switches.forEach(button => { button.disabled = true; });
+    hintButton.hidden = true;
+    nextButton.hidden = last();
+    restart.hidden = !last();
+    dance.hidden = false;
+    drawProgress();
+    status.textContent = last() ? END : WIN;
+    if (fromKeyboard) (last() ? restart : nextButton).focus();
+    FX.cheer();
+    speak(last() ? END : WIN);
+  }
+
+  const levelIcons = [ART.star, ffFirefly(), ART.owl];
+  const levelButtons = LEVELS.map(({name}, i) => {
+    const button = document.createElement('button');
+    button.className = 'round ff-level';
+    button.setAttribute('aria-label', name);
+    button.innerHTML = levelIcons[i];
+    tap(button, () => {
+      if (i !== level) begin(i,0,true);
+    });
+    return button;
+  });
+  levelsEl.replaceChildren(...levelButtons);
+  dance.innerHTML = [[12,46],[28,65],[49,51],[70,72],[86,42]].map(([x,y], i) =>
+    `<span class="ff-fly" style="--x:${x}%;--y:${y}%;--delay:${i * .12}s">${ffFirefly()}</span>`).join('');
+  put($('#ffReplay'), ART.ear);
+  put(hintButton, ART.hand);
+  put(nextButton, ICON.right);
+  put(restart, ffFirefly());
+  tap($('#ffReplay'), () => speak(solved() ? (last() ? END : WIN) : prompt()), {throttle:500});
+  tap(hintButton, () => { showHint(true); speak(HINT); });
+  tap(nextButton, event => {
+    if (!solved() || last()) return;
+    if (round + 1 < config().setups.length) begin(level,round + 1);
+    else begin(level + 1,0,true);
+    if (event.type === 'click') switches[0].focus();
+  });
+  tap(restart, event => {
+    begin(0,0);
+    if (event.type === 'click') switches[0].focus();
+  });
+
+  return {
+    enter(){
+      if (!target) begin(0,0);
+      else if (solved()) dance.hidden = false;
+      else speak(prompt());
+    },
+    leave(){ dance.hidden = true; },
+    lines:() => [GOAL, PAIRS, HINT, WIN, END]
   };
 })();
 
@@ -12192,7 +12557,7 @@ const SchoolAdventures = (() => {
       tap($('.sa-next', s), () => { if (id === k && phase === 'page' && reading()) next(); });
       tap($('.sa-prev', s), () => { if (id === k && phase === 'page' && reading() && step > 0){ step--; show(); } });
     }
-    $('.sc-back', s).innerHTML = ICON.grid; tap($('.sc-back', s), () => { FX.boop(); if (id === k && e.shelf && phase !== 'shelf'){ clearLater(); shelf(); } else go('school'); });
+    $('.sc-back', s).innerHTML = ICON.grid; tap($('.sc-back', s), event => { FX.boop(); if (id === k && e.shelf && phase !== 'shelf'){ clearLater(); shelf(); } else returnToActivityMenu('school', event); });
     // the speaker says what's on screen again: the page, the question (not once it's answered: the next round is coming), or the shelf
     put(e.replay, ART.ear); tap(e.replay, () => { if (id !== k) return; const r = cur(); if (phase === 'page') readPage(); else if (r && phase === 'ask' && !busy) speak(r.ask); else if (phase === 'shelf') speak(SAY.storytime.pick); }, {throttle:700});
     if (e.shelf) BOOKS.forEach(b => {   // a cover for each story: its friend and its last page
@@ -12262,7 +12627,7 @@ function areaLines(){
       ...Object.values(CAM_SAY), ...Object.values(MODE_SAY), 'Move the phone to look all around!', ...COSTUMES.map(c => `You're ${article(COSTUME_NAME[c])}!`), ...LOOK_ORDER.slice(1).map(k => LOOKS[k].say)],
     photos:['Your pictures!', 'Look at all your pictures!', 'No pictures yet! Tap the camera to take some!', 'All your pictures!'],
     music:[...Object.values(MUSIC_SAY), ...SONGS.map(x => x.n + '!'), 'Yay! Great dancing!', 'Stop!'],
-    games:[...WildTap.lines(), ...MatchUp.lines(), ...SplishSplash.lines(), ...HideSeek.lines(), ...Tracks.lines(), ...CookieShop.lines(), ...DinoBuddies.lines(), ...SnackTime.lines(), ...PaintPals.lines(), ...MotionGames.lines()],
+    games:[...WildTap.lines(), ...MatchUp.lines(), ...SplishSplash.lines(), ...HideSeek.lines(), ...Tracks.lines(), ...CookieShop.lines(), ...FireflyFestival.lines(), ...DinoBuddies.lines(), ...SnackTime.lines(), ...PaintPals.lines(), ...MotionGames.lines()],
     school:[SCHOOL_SAY.school, ...LetterPath.lines(), ...AbcZoo.lines(), ...AbcSnack.lines(), ...NumZoo.lines(), ...NumSnack.lines(), ...Delivery.lines(), ...DinoPicnic.lines(), ...SchoolAdventures.lines()]
   };
 }

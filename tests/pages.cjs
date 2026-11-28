@@ -146,9 +146,17 @@ async function run(browser, origin, name) {
   check(!published.some(f => /^(tests|tools|node_modules|dist)\b|^assets\/family\/|package/.test(f)), 'only the toy is published (no tests, tools or family files)');
   const srv = await serve(site);
   const origin = `http://127.0.0.1:${srv.address().port}`;
-  const browser = await BROWSER.launch();
-  try { for (const name of Object.keys(PHONES)) await run(browser, origin, name); }
-  finally { await browser.close(); srv.close(); fs.rmSync(path.dirname(site), { recursive: true, force: true }); }
+  try {
+    for (const name of Object.keys(PHONES)){
+      // Give each device its own process. WebKit sometimes exits during the second device's camera check.
+      const browser = await BROWSER.launch();
+      try { await run(browser, origin, name); }
+      finally { await browser.close(); }
+    }
+  } finally {
+    srv.close();
+    fs.rmSync(path.dirname(site), {recursive:true, force:true});
+  }
   console.log(failures.length ? `\n${failures.length} check(s) failed.` : '\nAll checks passed.');
   process.exit(failures.length ? 1 : 0);
 })().catch(e => { console.error(e); process.exit(1); });

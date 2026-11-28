@@ -22,10 +22,10 @@ const server = http.createServer((req, res) => {
 });
 const check = (condition, message) => { assert.ok(condition, message); console.log('ok  ' + message); };
 // what the children play with in each game: the Games button must not sit on any of it
-const PLAY = {wildtap:'#wt-menu .wt-tile', matchup:'#muBoard .mu-card', splish:'#ssPal, #ssDuck', hideseek:'#hideseek .hs-bush', tracks:'#ctBoard .ct-cell', cookies:'#cookies .ck-tool, #ckPlate, #ckPal, #ckThink', snacktime:'#stFoods .st-food, #stAnimal, #stThink', dinobuddies:'.db-side, #dbEgg', paintpals:'.pp-easel',
+const PLAY = {wildtap:'#wt-menu .wt-tile', matchup:'#muBoard .mu-card', splish:'#ssPal, #ssDuck', hideseek:'#hideseek .hs-bush', tracks:'#ctBoard .ct-cell', cookies:'#cookies .ck-tool, #ckPlate, #ckPal, #ckThink', fireflies:'.ff-switch, .ff-lantern', snacktime:'#stFoods .st-food, #stAnimal, #stThink', dinobuddies:'.db-side, #dbEgg', paintpals:'.pp-easel',
   balltrail:'#balltrail .mg-board', starflight:'#starflight .mg-board'};
 const CONTROLS = '.round, .sc-back, .wt-back, .who-btn';
-const ACTIVITIES = ['wildtap', 'matchup', 'splish', 'hideseek', 'tracks', 'cookies', 'dinobuddies', 'snacktime', 'paintpals', 'balltrail', 'starflight', 'letterpath', 'abczoo', 'abcsnack', 'numzoo', 'numsnack', 'delivery', 'dinopicnic',
+const ACTIVITIES = ['wildtap', 'matchup', 'splish', 'hideseek', 'tracks', 'cookies', 'fireflies', 'dinobuddies', 'snacktime', 'paintpals', 'balltrail', 'starflight', 'letterpath', 'abczoo', 'abcsnack', 'numzoo', 'numsnack', 'delivery', 'dinopicnic',
   'sorting', 'patterntrain', 'moresnacks', 'storytime', 'feelings', 'phone', 'camera', 'photos', 'music'];
 
 (async () => {
@@ -57,6 +57,8 @@ const ACTIVITIES = ['wildtap', 'matchup', 'splish', 'hideseek', 'tracks', 'cooki
       for (const g of Object.keys(PLAY)){
         await page.evaluate(g => window.__toyPhone.go(g), g); await page.waitForTimeout(g === 'snacktime' ? 1700 : 500);   // (Snack Time: once its foods are dealt)
         if (await page.locator(`#${g} .who-btn:visible`).count()){ await touch(`#${g} .who-btn:visible`); await page.waitForTimeout(400); }   // (two-player games ask how many first)
+        // WebKit can start appIn on the first layout read, after the time-based wait above.
+        await page.waitForFunction(id => getComputedStyle(document.getElementById(id)).transform === 'none', g);
         const [back] = await box(`#${g} .game-back`), plays = await box(`#${g} ${PLAY[g].split(', ').join(`, #${g} `)}`.replace(`#${g} #${g}`, `#${g}`));
         const others = (await page.locator(`#${g} :is(${CONTROLS})`).evaluateAll(els => els.filter(e => !e.classList.contains('game-back') && e.getClientRects().length && getComputedStyle(e).visibility !== 'hidden').map(e => { const r = e.getBoundingClientRect(); return {l:r.left, t:r.top, r:r.right, b:r.bottom}; })));
         check(back && back.w >= 56 && back.h >= 56 && back.l >= 0 && back.t >= 0 && back.r <= viewport.width && back.b <= viewport.height && await page.locator(`#${g} .game-back`).getAttribute('aria-label') === 'Games',
@@ -79,6 +81,30 @@ const ACTIVITIES = ['wildtap', 'matchup', 'splish', 'hideseek', 'tracks', 'cooki
       check(await page.locator('#stReplay').isVisible(), `${tag} snacktime: with it on, the berry speaker shows`);
       await touch('#stReplay'); await page.waitForTimeout(700);
       check((await page.evaluate(() => window.__toyPhone.voice().log)).length > said, `${tag} snacktime: the speaker says what the animal wants again`);
+
+      // Keyboard focus follows both menus in each direction.
+      for (const [menu, id, label] of [['games','fireflies','Firefly Festival'], ['games','dinobuddies','Dino Buddies'], ['school','sorting','Sorting Station']]){
+        await page.evaluate(menu => window.__toyPhone.go(menu), menu);
+        const card = page.locator(`#${menu}`).getByRole('button', {name:label, exact:true});
+        const back = page.locator(`#${id} :is(.sc-back, .game-back)`);
+        await page.waitForFunction(menu => getComputedStyle(document.getElementById(menu)).transform === 'none', menu);
+        await card.focus();
+        const center = await card.evaluate(b => {
+          const r = b.getBoundingClientRect(), apps = document.querySelector('#apps').getBoundingClientRect();
+          return [r.left + r.width/2 - apps.left, r.top + r.height/2 - apps.top];
+        });
+        await card.press('Enter');
+        const origin = await page.locator('#' + id).evaluate(app => app.style.transformOrigin.split(' ').map(parseFloat));
+        check(origin.every((coordinate, i) => Math.abs(coordinate - center[i]) < 2), `${tag} ${label}: opens from the card's center`);
+        const player = page.locator(`#${id} .who:not([hidden]) .who-btn.last`);
+        if (await player.isVisible()){
+          check(await player.evaluate(b => document.activeElement === b), `${tag} ${label}: keyboard launch focuses the player picker`);
+          await player.press('Enter');
+        }
+        check(await back.evaluate(b => document.activeElement === b), `${tag} ${label}: keyboard launch focuses its back button`);
+        await back.press('Enter');
+        check(await card.evaluate(b => document.activeElement === b), `${tag} ${label}: keyboard back returns focus to its card`);
+      }
 
       // 2. leaving any activity stops it
       await page.evaluate(() => window.__toyPhone.go('home')); await page.waitForTimeout(800);
